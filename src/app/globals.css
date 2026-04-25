@@ -2,9 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🌌 BACKGROUND */
+.app-bg {
+  @apply min-h-screen bg-gradient-to-br from-[#0B1F1A] via-[#0E4F3A] to-[#1B3A2F];
+}
+
+/* 🧊 GLASS CARD */
+.glass {
+  @apply bg-white/10 backdrop-blur-xl border border-white/20 
+         rounded-2xl shadow-xl;
+}
+
+/* 🧾 INPUT (ELITE STYLE) */
 .input {
-  @apply w-full p-3 border border-gray-200 rounded-xl mb-3 
-         focus:outline-none focus:ring-2 focus:ring-primary 
-         focus:border-primary bg-white shadow-soft 
+  @apply w-full p-3 rounded-xl 
+         bg-white/80 backdrop-blur 
+         border border-gray-200 
+         focus:ring-2 focus:ring-primary 
+         outline-none transition duration-200;
+}
+
+/* ✨ FLOAT LABEL WRAPPER */
+.input-group {
+  @apply relative;
+}
+
+.input-label {
+  @apply absolute left-3 top-3 text-gray-500 text-sm transition-all;
+}
+
+.input:focus + .input-label,
+.input:not(:placeholder-shown) + .input-label {
+  @apply -top-2 text-xs text-primary bg-white px-1;
+}
+
+/* 💎 BUTTON */
+.btn-primary {
+  @apply bg-gradient-to-r from-primary to-secondary 
+         text-white px-6 py-3 rounded-xl 
+         shadow-lg hover:scale-105 active:scale-95 
          transition duration-200;
+}
+
+.btn-secondary {
+  @apply bg-white/10 text-white px-6 py-3 rounded-xl 
+         backdrop-blur hover:bg-white/20 transition;
+}
+
+/* 📦 SECTION */
+.section {
+  @apply glass p-8 space-y-5;
+}
+
+/* 🏷 TITLE */
+.section-title {
+  @apply text-xl font-semibold text-white;
+}
+
+/* 📂 FILE INPUT */
+.file-input {
+  @apply block w-full text-sm text-white
+         file:mr-4 file:py-2 file:px-4 
+         file:rounded-lg file:border-0 
+         file:bg-primary file:text-white 
+         hover:file:bg-secondary;
 }

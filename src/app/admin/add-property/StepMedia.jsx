@@ -5,23 +5,27 @@ import { useState } from "react";
 export default function StepMedia({ form, setForm }) {
   const [uploading, setUploading] = useState(false);
 
+  // 🔥 UPLOAD FUNCTION
   const uploadImage = async (file) => {
     const data = new FormData();
     data.append("file", file);
 
-    const res = await fetch("http://localhost:5000/api/upload", {
-      method: "POST",
-      body: data,
-    });
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
 
     const result = await res.json();
     return result.url;
   };
 
-  // 🔥 HERO IMAGE
-  const handleHeroUpload = async (e) => {
+  // 🔥 HERO UPLOAD
+  const handleHeroUpload = async (file) => {
     setUploading(true);
-    const url = await uploadImage(e.target.files[0]);
+    const url = await uploadImage(file);
 
     setForm({
       ...form,
@@ -31,11 +35,10 @@ export default function StepMedia({ form, setForm }) {
     setUploading(false);
   };
 
-  // 🔥 GALLERY (MULTIPLE)
-  const handleGalleryUpload = async (e) => {
+  // 🔥 GALLERY UPLOAD
+  const handleGalleryUpload = async (files) => {
     setUploading(true);
 
-    const files = Array.from(e.target.files);
     const urls = [];
 
     for (let file of files) {
@@ -54,9 +57,20 @@ export default function StepMedia({ form, setForm }) {
     setUploading(false);
   };
 
-  // 🔥 FLOOR PLAN
-  const handleFloorPlanUpload = async (e, index) => {
-    const file = e.target.files[0];
+  // 🔥 REMOVE IMAGE
+  const removeImage = (index) => {
+    const updated = [...form.media.gallery];
+    updated.splice(index, 1);
+
+    setForm({
+      ...form,
+      media: { ...form.media, gallery: updated },
+    });
+  };
+
+  // 🔥 FLOOR PLAN UPLOAD
+  const handleFloorPlanUpload = async (file, index) => {
+    setUploading(true);
     const url = await uploadImage(file);
 
     const updated = [...form.gatedContent.floorPlans];
@@ -69,60 +83,144 @@ export default function StepMedia({ form, setForm }) {
         floorPlans: updated,
       },
     });
+
+    setUploading(false);
   };
 
   return (
-    <div className="card space-y-6">
+    <div className="section space-y-10 relative">
 
-      <h2 className="section-title">Media Upload</h2>
+      {/* LOADER OVERLAY */}
+      {uploading && (
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl z-10">
+          <p className="text-white text-lg animate-pulse">
+            Uploading...
+          </p>
+        </div>
+      )}
 
-      {/* HERO */}
+      <h2 className="section-title">Media & Assets</h2>
+
+      {/* HERO IMAGE */}
       <div>
-        <p className="font-semibold">Hero Image</p>
-        <input type="file" onChange={handleHeroUpload} />
+        <p className="text-white font-semibold mb-3">Hero Image</p>
+
+        <div
+          className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center cursor-pointer hover:bg-white/10 transition"
+          onClick={() => document.getElementById("heroUpload").click()}
+        >
+          <p className="text-gray-300">
+            Click or drag image here
+          </p>
+
+          <input
+            id="heroUpload"
+            type="file"
+            hidden
+            onChange={(e) => handleHeroUpload(e.target.files[0])}
+          />
+        </div>
 
         {form.media.heroImageUrl && (
-          <img src={form.media.heroImageUrl} className="w-64 mt-3 rounded-xl" />
+          <img
+            src={form.media.heroImageUrl}
+            className="w-full h-64 object-cover rounded-xl mt-4 shadow-lg"
+          />
         )}
       </div>
 
       {/* GALLERY */}
       <div>
-        <p className="font-semibold">Gallery Images</p>
-        <input type="file" multiple onChange={handleGalleryUpload} />
+        <p className="text-white font-semibold mb-3">Gallery</p>
 
-        <div className="grid grid-cols-4 gap-3 mt-3">
+        <div
+          className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center cursor-pointer hover:bg-white/10 transition"
+          onClick={() => document.getElementById("galleryUpload").click()}
+        >
+          <p className="text-gray-300">
+            Upload multiple images
+          </p>
+
+          <input
+            id="galleryUpload"
+            type="file"
+            multiple
+            hidden
+            onChange={(e) =>
+              handleGalleryUpload(Array.from(e.target.files))
+            }
+          />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
           {form.media.gallery.map((img, i) => (
-            <img key={i} src={img} className="rounded-lg" />
+            <div key={i} className="relative group">
+              <img
+                src={img}
+                className="h-32 w-full object-cover rounded-xl transition group-hover:scale-105"
+              />
+
+              {/* DELETE BUTTON */}
+              <button
+                onClick={() => removeImage(i)}
+                className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition"
+              >
+                ✕
+              </button>
+            </div>
           ))}
         </div>
       </div>
 
       {/* FLOOR PLANS */}
       <div>
-        <p className="font-semibold">Floor Plans</p>
+        <p className="text-white font-semibold mb-4">Floor Plans</p>
 
         {form.gatedContent.floorPlans.map((fp, i) => (
-          <div key={i} className="border p-3 rounded-xl mb-3">
-
+          <div
+            key={i}
+            className="glass p-5 rounded-xl space-y-3 mb-4"
+          >
             <input
               placeholder="Plan Title"
               className="input"
+              value={fp.title}
               onChange={(e) => {
                 const arr = [...form.gatedContent.floorPlans];
                 arr[i].title = e.target.value;
 
                 setForm({
                   ...form,
-                  gatedContent: { ...form.gatedContent, floorPlans: arr },
+                  gatedContent: {
+                    ...form.gatedContent,
+                    floorPlans: arr,
+                  },
                 });
               }}
             />
 
-            <input type="file" onChange={(e) => handleFloorPlanUpload(e, i)} />
+            <div
+              className="border border-white/20 rounded-lg p-4 text-center cursor-pointer hover:bg-white/10"
+              onClick={() =>
+                document.getElementById(`fp-${i}`).click()
+              }
+            >
+              Upload Floor Plan
+              <input
+                id={`fp-${i}`}
+                type="file"
+                hidden
+                onChange={(e) =>
+                  handleFloorPlanUpload(e.target.files[0], i)
+                }
+              />
+            </div>
 
             {fp.image && (
-              <img src={fp.image} className="w-40 mt-2 rounded" />
+              <img
+                src={fp.image}
+                className="h-32 rounded-lg"
+              />
             )}
           </div>
         ))}
@@ -133,17 +231,18 @@ export default function StepMedia({ form, setForm }) {
               ...form,
               gatedContent: {
                 ...form.gatedContent,
-                floorPlans: [...form.gatedContent.floorPlans, { title: "", image: "" }],
+                floorPlans: [
+                  ...form.gatedContent.floorPlans,
+                  { title: "", image: "" },
+                ],
               },
             })
           }
-          className="text-primary"
+          className="text-gold"
         >
           + Add Floor Plan
         </button>
       </div>
-
-      {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
     </div>
   );
 }

@@ -71,209 +71,260 @@ export default function AddProperty() {
     }));
   };
 
-  // 🔥 FINAL SUBMIT
   const handleSubmit = async () => {
-    const res = await fetch("http://localhost:5000/api/properties", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+  try {
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/properties",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 🔥 THIS FIXES AUTH
+        body: JSON.stringify(form),
+      }
+    );
 
     const data = await res.json();
 
     if (res.ok) {
       alert("Property Added ✅");
-      console.log(data);
     } else {
       alert(data.message || "Error ❌");
     }
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error ❌");
+  }
+};
 
   return (
-    <div className="p-10 bg-lightBg min-h-screen">
+    <div className="app-bg p-10">
 
       {/* HEADER */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-dark">Add Property</h1>
-        <p className="text-gray-500">Step {step} of 5</p>
+      <div className="flex justify-between items-center mb-10">
+        <div>
+          <h1 className="text-4xl font-bold text-white">
+            Add Property
+          </h1>
+          <p className="text-gray-300">
+            Step {step} of 5
+          </p>
+        </div>
+
+        {/* PROGRESS BAR */}
+        <div className="w-64 bg-white/20 rounded-full h-2">
+          <div
+            className="bg-gold h-2 rounded-full transition-all"
+            style={{ width: `${(step / 5) * 100}%` }}
+          />
+        </div>
       </div>
 
-      {/* ================= STEP 1 ================= */}
-      {step === 1 && (
-        <div className="card">
-          <h2 className="section-title">Core Details</h2>
+      {/* CONTENT */}
+      <div className="max-w-4xl mx-auto space-y-8">
 
-          <input
-            className="input"
-            placeholder="Slug"
-            onChange={(e) => setForm({ ...form, slug: e.target.value })}
-          />
+        {/* STEP 1 */}
+        {step === 1 && (
+          <div className="section">
+            <h2 className="section-title">Core Details</h2>
 
-          <input
-            className="input"
-            placeholder="Title"
-            onChange={(e) =>
-              handleChange("coreDetails", "title", e.target.value)
-            }
-          />
-
-          <input
-            className="input"
-            placeholder="Developer"
-            onChange={(e) =>
-              handleChange("coreDetails", "developerRef", e.target.value)
-            }
-          />
-
-          <input
-            className="input"
-            placeholder="Starting Price"
-            onChange={(e) =>
-              handleChange("coreDetails", "startingPrice", e.target.value)
-            }
-          />
-        </div>
-      )}
-
-      {/* ================= STEP 2 ================= */}
-      {step === 2 && (
-        <div className="card">
-          <h2 className="section-title">Overview</h2>
-
-          <textarea
-            className="input"
-            placeholder="Description"
-            onChange={(e) =>
-              handleChange("overview", "description", e.target.value)
-            }
-          />
-
-          <h3 className="mt-4 font-semibold">Highlights</h3>
-
-          {form.overview.highlights.map((h, i) => (
-            <input
-              key={i}
-              value={h}
-              onChange={(e) => {
-                const arr = [...form.overview.highlights];
-                arr[i] = e.target.value;
-                handleChange("overview", "highlights", arr);
-              }}
-              className="input"
-            />
-          ))}
-
-          <button
-            onClick={() =>
-              handleChange("overview", "highlights", [
-                ...form.overview.highlights,
-                "",
-              ])
-            }
-            className="text-primary"
-          >
-            + Add Highlight
-          </button>
-        </div>
-      )}
-
-      {/* ================= STEP 3 ================= */}
-      {step === 3 && (
-        <div className="card">
-          <h2 className="section-title">Unit Configurations</h2>
-
-          {form.unitConfigurations.map((u, i) => (
-            <div key={i} className="grid grid-cols-4 gap-2">
+            <div className="input-group">
               <input
-                placeholder="Type"
+                placeholder=" "
                 className="input"
-                onChange={(e) => {
-                  const arr = [...form.unitConfigurations];
-                  arr[i].unitType = e.target.value;
-                  setForm({ ...form, unitConfigurations: arr });
-                }}
+                onChange={(e) =>
+                  setForm({ ...form, slug: e.target.value })
+                }
               />
-              <input
-                placeholder="Area"
-                className="input"
-                onChange={(e) => {
-                  const arr = [...form.unitConfigurations];
-                  arr[i].area = e.target.value;
-                  setForm({ ...form, unitConfigurations: arr });
-                }}
-              />
-              <input
-                placeholder="Price"
-                className="input"
-                onChange={(e) => {
-                  const arr = [...form.unitConfigurations];
-                  arr[i].price = e.target.value;
-                  setForm({ ...form, unitConfigurations: arr });
-                }}
-              />
-              <input
-                placeholder="Payment Plan"
-                className="input"
-                onChange={(e) => {
-                  const arr = [...form.unitConfigurations];
-                  arr[i].paymentPlan = e.target.value;
-                  setForm({ ...form, unitConfigurations: arr });
-                }}
-              />
+              <label className="input-label">Slug</label>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* ================= STEP 4 (🔥 CLOUDINARY) ================= */}
-      {step === 4 && (
-        <StepMedia form={form} setForm={setForm} />
-      )}
+            <div className="input-group">
+              <input
+                placeholder=" "
+                className="input"
+                onChange={(e) =>
+                  handleChange("coreDetails", "title", e.target.value)
+                }
+              />
+              <label className="input-label">Property Title</label>
+            </div>
 
-      {/* ================= STEP 5 ================= */}
-      {step === 5 && (
-        <div className="card">
-          <h2 className="section-title">SEO</h2>
+            <div className="input-group">
+              <input
+                placeholder=" "
+                className="input"
+                onChange={(e) =>
+                  handleChange("coreDetails", "developerRef", e.target.value)
+                }
+              />
+              <label className="input-label">Developer</label>
+            </div>
 
-          <input
-            className="input"
-            placeholder="Meta Title"
-            onChange={(e) =>
-              handleChange("seoEngine", "metaTitle", e.target.value)
-            }
-          />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="input-group">
+                <input
+                  placeholder=" "
+                  className="input"
+                  onChange={(e) =>
+                    handleChange("coreDetails", "startingPrice", e.target.value)
+                  }
+                />
+                <label className="input-label">Starting Price</label>
+              </div>
 
-          <textarea
-            className="input"
-            placeholder="Meta Description"
-            onChange={(e) =>
-              handleChange("seoEngine", "metaDescription", e.target.value)
-            }
-          />
-        </div>
-      )}
+              <div className="input-group">
+                <input
+                  placeholder=" "
+                  className="input"
+                  onChange={(e) =>
+                    handleChange("coreDetails", "maxPrice", e.target.value)
+                  }
+                />
+                <label className="input-label">Max Price</label>
+              </div>
+            </div>
+          </div>
+        )}
 
-      {/* NAV BUTTONS */}
-      <div className="flex justify-between mt-10">
+        {/* STEP 2 */}
+        {step === 2 && (
+          <div className="section">
+            <h2 className="section-title">Overview</h2>
+
+            <textarea
+              className="input"
+              placeholder="Description"
+              onChange={(e) =>
+                handleChange("overview", "description", e.target.value)
+              }
+            />
+
+            <h3 className="text-white font-semibold">Highlights</h3>
+
+            {form.overview.highlights.map((h, i) => (
+              <input
+                key={i}
+                value={h}
+                onChange={(e) => {
+                  const arr = [...form.overview.highlights];
+                  arr[i] = e.target.value;
+                  handleChange("overview", "highlights", arr);
+                }}
+                className="input"
+              />
+            ))}
+
+            <button
+              onClick={() =>
+                handleChange("overview", "highlights", [
+                  ...form.overview.highlights,
+                  "",
+                ])
+              }
+              className="text-gold"
+            >
+              + Add Highlight
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <div className="section">
+            <h2 className="section-title">Configurations</h2>
+
+            {form.unitConfigurations.map((u, i) => (
+              <div key={i} className="grid grid-cols-4 gap-3">
+                <input className="input" placeholder="Type"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].unitType = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+
+                <input className="input" placeholder="Area"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].area = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+
+                <input className="input" placeholder="Price"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].price = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+
+                <input className="input" placeholder="Payment Plan"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].paymentPlan = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* STEP 4 */}
+        {step === 4 && (
+          <StepMedia form={form} setForm={setForm} />
+        )}
+
+        {/* STEP 5 */}
+        {step === 5 && (
+          <div className="section">
+            <h2 className="section-title">SEO</h2>
+
+            <input
+              className="input"
+              placeholder="Meta Title"
+              onChange={(e) =>
+                handleChange("seoEngine", "metaTitle", e.target.value)
+              }
+            />
+
+            <textarea
+              className="input"
+              placeholder="Meta Description"
+              onChange={(e) =>
+                handleChange("seoEngine", "metaDescription", e.target.value)
+              }
+            />
+          </div>
+        )}
+
+      </div>
+
+      {/* NAV */}
+      <div className="flex justify-between mt-10 max-w-4xl mx-auto">
+
         {step > 1 && (
           <button onClick={prev} className="btn-secondary">
-            Back
+            ← Back
           </button>
         )}
 
         {step < 5 ? (
           <button onClick={next} className="btn-primary">
-            Next
+            Next →
           </button>
         ) : (
           <button onClick={handleSubmit} className="btn-primary">
-            Submit
+            🚀 Publish Property
           </button>
         )}
-        
+
       </div>
+
     </div>
   );
 }
