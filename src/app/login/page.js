@@ -1,35 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleLogin = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  credentials: "include", // 🔥 VERY IMPORTANT
-  body: JSON.stringify({ email, password }),
-});
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 🔥 REQUIRED FOR COOKIES
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
-
       console.log("LOGIN RESPONSE:", data);
 
       if (res.ok) {
         alert("Login success ✅");
 
-        // 🔥 Redirect to admin
-        window.location.replace("/admin");
+        // ✅ PROPER REDIRECT
+        router.push("/admin");
       } else {
         alert(data.message || "Login failed ❌");
       }
-
     } catch (error) {
       console.error(error);
       alert("Server error ❌");
