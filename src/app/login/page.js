@@ -25,12 +25,10 @@ export default function LoginPage() {
       const data = await res.json();
       console.log("LOGIN RESPONSE:", data);
 
-      if (res.ok) {
-        alert("Login success ✅");
-
-        // ✅ PROPER REDIRECT
-        router.push("/admin");
-      } else {
+      if (res.ok && data.token) {
+  localStorage.setItem("token", data.token);
+  router.push("/admin");
+} else {
         alert(data.message || "Login failed ❌");
       }
     } catch (error) {

@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Building2,
   Users,
@@ -19,8 +22,19 @@ import {
 } from "recharts";
 
 export default function AdminDashboard() {
-  // 🔥 STATS
-  const stats = [
+  const router = useRouter();
+
+  // 🔐 AUTH CHECK
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login");
+    }
+  }, []);
+
+  // 🔥 STATES (for future real API)
+  const [stats, setStats] = useState([
     {
       title: "Total Properties",
       value: "128",
@@ -45,7 +59,7 @@ export default function AdminDashboard() {
       icon: MessageSquare,
       change: "+5%",
     },
-  ];
+  ]);
 
   // 🔥 CHART DATA
   const revenueData = [
@@ -67,13 +81,26 @@ export default function AdminDashboard() {
     <div className="space-y-6">
 
       {/* HEADER */}
-      <div>
-        <h1 className="text-3xl font-bold text-primary">
-          Dashboard
-        </h1>
-        <p className="text-gray-500">
-          Welcome back, Admin 👋
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-primary">
+            Dashboard
+          </h1>
+          <p className="text-gray-500">
+            Welcome back, Admin 👋
+          </p>
+        </div>
+
+        {/* LOGOUT */}
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            router.push("/login");
+          }}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+        >
+          Logout
+        </button>
       </div>
 
       {/* STATS */}
@@ -83,7 +110,7 @@ export default function AdminDashboard() {
           return (
             <div
               key={index}
-              className="bg-white p-6 rounded-xl shadow-card hover:shadow-lg transition"
+              className="bg-white p-6 rounded-xl shadow-card hover:shadow-xl transition duration-300 border border-gray-100"
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -95,7 +122,7 @@ export default function AdminDashboard() {
                   </h2>
                 </div>
 
-                <div className="bg-primary/10 p-3 rounded-lg">
+                <div className="bg-primary/10 p-3 rounded-xl">
                   <Icon className="text-primary" />
                 </div>
               </div>
@@ -112,7 +139,6 @@ export default function AdminDashboard() {
       {/* CHARTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* REVENUE CHART */}
         <div className="bg-white p-6 rounded-xl shadow-card">
           <h2 className="text-lg font-semibold text-primary mb-4">
             Revenue Growth
@@ -125,14 +151,13 @@ export default function AdminDashboard() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#0A2540"
+                stroke="#0E4F3A"
                 strokeWidth={3}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* PROPERTY DISTRIBUTION */}
         <div className="bg-white p-6 rounded-xl shadow-card">
           <h2 className="text-lg font-semibold text-primary mb-4">
             Properties by Location
@@ -142,7 +167,7 @@ export default function AdminDashboard() {
             <BarChart data={propertyData}>
               <XAxis dataKey="name" />
               <Tooltip />
-              <Bar dataKey="value" fill="#C9A227" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="value" fill="#C9A24D" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -151,7 +176,6 @@ export default function AdminDashboard() {
       {/* LOWER GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* RECENT PROPERTIES */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-card">
           <h2 className="text-lg font-semibold text-primary mb-4">
             Recent Properties
@@ -176,14 +200,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* QUICK ACTIONS */}
         <div className="bg-white p-6 rounded-xl shadow-card">
           <h2 className="text-lg font-semibold text-primary mb-4">
             Quick Actions
           </h2>
 
           <div className="space-y-3">
-            <button className="w-full bg-primary text-white py-2 rounded-lg hover:bg-secondary transition">
+            <button
+              onClick={() => router.push("/admin/add-property")}
+              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-secondary transition"
+            >
               + Add Property
             </button>
 
