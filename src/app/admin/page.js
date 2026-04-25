@@ -25,13 +25,13 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   // 🔐 AUTH CHECK
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
 
-    if (!token) {
-      router.push("/login");
-    }
-  }, []);
+  //   if (!token) {
+  //     router.push("/login");
+  //   }
+  // }, []);
 
   // 🔥 STATES (for future real API)
   const [stats, setStats] = useState([
