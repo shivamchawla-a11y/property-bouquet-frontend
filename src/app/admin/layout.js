@@ -60,7 +60,7 @@ export default function AdminLayout({ children }) {
     },
     {
       name: "Site Settings",
-      path: "/admin/settings",
+      path: "/admin/site-settings/team",
       icon: Settings,
     },
   ];
