@@ -17,12 +17,38 @@ export default function PropertyPreview({ form }) {
   } = form;
 
   const floorPlans = gatedContent?.floorPlans || [];
-
-  // ✅ ACTIVE FLOOR PLAN (DEFAULT FIRST)
   const [activePlan, setActivePlan] = useState(0);
 
   return (
-    <div className="bg-[#f5f5f5] text-[#1f3d2b]">
+    <div className="bg-[#f5f5f5] text-[#1f3d2b] overflow-visible">
+
+      {/* ================= NAVBAR ================= */}
+      <div className="relative overflow-visible bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white h-[80px] px-10 flex items-center justify-between">
+
+        {/* LEFT BRAND */}
+        <div className="leading-tight">
+          <div className="text-sm tracking-[3px] font-semibold">
+            {coreDetails.developerRef || "DEVELOPER"}
+          </div>
+        
+        </div>
+
+        {/* RIGHT CALL BUTTON */}
+        <div className="border border-white rounded-full px-5 py-1 text-sm flex items-center gap-2 bg-white/10 backdrop-blur">
+          📞 +91-9958328555
+        </div>
+
+        {/* CENTER LOGO (FIXED) */}
+        <div className="absolute left-1/2 top-[100%] translate-x-[-50%] translate-y-[-50%] z-20">
+          <div className="bg-white p-2 rounded-full shadow-xl">
+            <img
+              src="/logo.png"
+              alt="logo"
+              className="w-14 h-14 object-contain"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* ================= HERO ================= */}
       <div
@@ -44,29 +70,49 @@ export default function PropertyPreview({ form }) {
             📍 {locationData.address || "Location"}
           </p>
 
-          <div className="flex gap-4 mt-4 flex-wrap">
-            <span className="bg-green-700 px-4 py-2 rounded">
-              {keyMetrics.status || "STATUS"}
-            </span>
+          {/* METRICS BAR */}
+          <div className="mt-6 bg-green-900/80 backdrop-blur px-6 py-4 rounded-xl flex flex-wrap gap-6 text-sm">
 
-            <span className="bg-green-600 px-4 py-2 rounded">
-              {keyMetrics.possession || "POSSESSION"}
-            </span>
+            <div>
+              <p className="opacity-70 text-xs">STATUS</p>
+              <p className="font-semibold">
+                {keyMetrics.status || "NEW LAUNCH"}
+              </p>
+            </div>
 
-            <span className="bg-green-500 px-4 py-2 rounded">
-              {keyMetrics.landArea || "AREA"}
-            </span>
+            <div>
+              <p className="opacity-70 text-xs">POSSESSION</p>
+              <p className="font-semibold">
+                {keyMetrics.possession || "2028"}
+              </p>
+            </div>
 
-            <span className="bg-yellow-600 px-4 py-2 rounded">
-              ₹ {coreDetails.startingPrice || "—"} - {coreDetails.maxPrice || "—"}
-            </span>
+            <div>
+              <p className="opacity-70 text-xs">LAND AREA</p>
+              <p className="font-semibold">
+                {keyMetrics.landArea || "10 Acres"}
+              </p>
+            </div>
+
+            <div>
+              <p className="opacity-70 text-xs">PRICE</p>
+              <p className="font-semibold">
+                ₹ {coreDetails.startingPrice || "—"} - {coreDetails.maxPrice || "—"}
+              </p>
+            </div>
+
           </div>
         </div>
       </div>
 
       {/* ================= ABOUT ================= */}
       <div className="max-w-6xl mx-auto p-10 grid md:grid-cols-2 gap-10 items-center">
+        
         <div>
+          <p className="text-sm text-green-700 font-semibold mb-2">
+            About {coreDetails.developerRef || "Developer"}
+          </p>
+
           <h2 className="text-3xl font-bold mb-4">
             {coreDetails.title}
           </h2>
@@ -83,7 +129,7 @@ export default function PropertyPreview({ form }) {
         {overview.aboutImageUrl && (
           <img
             src={overview.aboutImageUrl}
-            className="rounded-2xl shadow-lg"
+            className="rounded-2xl shadow-lg border-[6px] border-[#c9a64b]"
             alt=""
           />
         )}
@@ -142,14 +188,13 @@ export default function PropertyPreview({ form }) {
         </div>
       )}
 
-      {/* ================= FLOOR PLAN (NEW 🔥) ================= */}
+      {/* ================= FLOOR PLAN ================= */}
       {floorPlans.filter(fp => fp.image).length > 0 && (
         <div className="py-12 bg-white">
           <h2 className="text-center text-2xl font-bold mb-8">
             Floor Plans
           </h2>
 
-          {/* TABS */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
             {floorPlans.map((fp, i) => (
               <button
@@ -166,7 +211,6 @@ export default function PropertyPreview({ form }) {
             ))}
           </div>
 
-          {/* IMAGE */}
           <div className="max-w-4xl mx-auto">
             {floorPlans[activePlan]?.image && (
               <img

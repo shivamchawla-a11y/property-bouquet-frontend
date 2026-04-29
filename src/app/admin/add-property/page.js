@@ -62,6 +62,7 @@ export default function AddProperty() {
   });
 
     const [previewData, setPreviewData] = useState(form);
+    const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
   const t = setTimeout(() => {
@@ -137,20 +138,38 @@ export default function AddProperty() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
-        <div>
-          <h1 className="text-4xl font-bold text-white">Add Property</h1>
-          <p className="text-gray-300">Step {step} of 6</p>
-        </div>
+  <div>
+    <h1 className="text-4xl font-bold text-white">Add Property</h1>
+    <p className="text-gray-300">Step {step} of 6</p>
+  </div>
 
-        <div className="w-64 bg-white/20 rounded-full h-2">
-          <div
-            className="bg-gold h-2 rounded-full transition-all"
-            style={{ width: `${(step / 6) * 100}%` }}
-          />
-        </div>
-      </div>
+  <div className="flex items-center gap-4">
+    {/* PREVIEW TOGGLE */}
+    <button
+      onClick={() => setPreviewMode(!previewMode)}
+      className="bg-white text-black px-4 py-2 rounded-lg font-semibold"
+    >
+      {previewMode ? "← Back to Edit" : "👁 Full Preview"}
+    </button>
 
-      <div className="flex gap-6">
+    {/* PROGRESS BAR */}
+    <div className="w-64 bg-white/20 rounded-full h-2">
+      <div
+        className="bg-gold h-2 rounded-full transition-all"
+        style={{ width: `${(step / 6) * 100}%` }}
+      />
+    </div>
+  </div>
+</div>
+
+      {previewMode ? (
+  // ================= FULL PREVIEW MODE =================
+  <div className="w-full h-[80vh] overflow-y-auto bg-white rounded-xl p-4">
+    <PropertyPreview form={previewData} />
+  </div>
+) : (
+  // ================= EDIT MODE =================
+  <div className="flex gap-6">
 
   {/* LEFT SIDE — FORM */}
   <div className="w-1/2 overflow-y-auto h-[80vh] pr-4">
@@ -426,8 +445,11 @@ export default function AddProperty() {
     <PropertyPreview form={previewData} />
   </div>
 
-</div>
+  
 
 </div>
+)}
+</div>
+
   );
 }
