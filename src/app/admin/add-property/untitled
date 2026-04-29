@@ -1,0 +1,351 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import StepMedia from "./StepMedia";
+import { useRouter } from "next/navigation";
+import PropertyPreview from "./PropertyPreview";
+
+export default function AddProperty() {
+  const [step, setStep] = useState(1);
+  const router = useRouter();
+
+
+  const [form, setForm] = useState({
+    slug: "",
+    marketType: "Primary",
+
+    coreDetails: {
+      title: "",
+      developerRef: "",
+      startingPrice: "",
+      maxPrice: "",
+    },
+
+    keyMetrics: {
+      landArea: "",
+      possession: "",
+      status: "",
+    },
+
+    overview: {
+      description: "",
+      aboutImageUrl: "",
+      highlights: [""],
+    },
+
+    unitConfigurations: [
+      { unitType: "", area: "", price: "", paymentPlan: "" }
+    ],
+
+    media: {
+      heroImageUrl: "",
+      gallery: [""],
+      walkthroughUrl: "",
+    },
+
+    locationData: {
+      address: "",
+      mapEmbedUrl: "",
+      landmarks: [{ name: "", distance: "" }],
+    },
+
+    gatedContent: {
+      brochurePdfUrl: "",
+      floorPlans: [{ title: "", image: "" }],
+    },
+
+    seoEngine: {
+      metaTitle: "",
+      metaDescription: "",
+    },
+
+    faqs: [{ question: "", answer: "" }],
+  });
+
+  const [previewData, setPreviewData] = useState(form);
+
+  useEffect(() => {
+  const t = setTimeout(() => {
+    setPreviewData(form);
+  }, 200);
+
+  return () => clearTimeout(t);
+}, [form]);
+
+  const next = () => setStep((prev) => prev + 1);
+  const prev = () => setStep((prev) => prev - 1);
+
+  const handleChange = (section, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      console.log("Sending form:", form);
+
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/properties",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(form),
+        }
+      );
+
+      const data = await res.json();
+      console.log("Response:", data);
+
+      if (res.ok) {
+        alert("Property Added ✅");
+      } else {
+        alert(data.message || "Error ❌");
+      }
+
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Server error ❌");
+    }
+  };
+
+  return (
+    <div className="app-bg p-10">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-10">
+        <div>
+          <h1 className="text-4xl font-bold text-white">Add Property</h1>
+          <p className="text-gray-300">Step {step} of 6</p>
+        </div>
+
+        <div className="w-64 bg-white/20 rounded-full h-2">
+          <div
+            className="bg-gold h-2 rounded-full transition-all"
+            style={{ width: `${(step / 6) * 100}%` }}
+          />
+        </div>
+      </div>
+
+
+      <div className="flex gap-6">
+
+  {/* LEFT SIDE — FORM */}
+  <div className="w-1/2 overflow-y-auto h-[80vh] pr-4">
+    <div className="space-y-8">
+       {/* STEP 1 */}
+        {step === 1 && (
+          <div className="section">
+            <h2 className="section-title">Core Details</h2>
+
+            <input className="input" placeholder="Slug"
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            />
+
+            <input className="input" placeholder="Title"
+              onChange={(e) => handleChange("coreDetails", "title", e.target.value)}
+            />
+
+            <input className="input" placeholder="Developer"
+              onChange={(e) => handleChange("coreDetails", "developerRef", e.target.value)}
+            />
+
+            <input className="input" placeholder="Starting Price"
+              onChange={(e) => handleChange("coreDetails", "startingPrice", Number(e.target.value))}
+            />
+
+            <input className="input" placeholder="Max Price"
+              onChange={(e) => handleChange("coreDetails", "maxPrice", Number(e.target.value))}
+            />
+          </div>
+        )}
+
+        {/* STEP 2 */}
+        {step === 2 && (
+          <div className="section">
+            <h2>Overview</h2>
+
+            <textarea className="input" placeholder="Description"
+              onChange={(e) => handleChange("overview", "description", e.target.value)}
+            />
+
+            <input className="input" placeholder="About Image URL"
+              onChange={(e) => handleChange("overview", "aboutImageUrl", e.target.value)}
+            />
+
+            <h3>Highlights</h3>
+            {form.overview.highlights.map((h, i) => (
+              <input key={i} className="input" value={h}
+                onChange={(e) => {
+                  const arr = [...form.overview.highlights];
+                  arr[i] = e.target.value;
+                  handleChange("overview", "highlights", arr);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <div className="section">
+            <h2>Configurations</h2>
+
+            {form.unitConfigurations.map((u, i) => (
+              <div key={i} className="grid grid-cols-4 gap-2">
+                <input placeholder="Type" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].unitType = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+                <input placeholder="Area" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].area = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+                <input placeholder="Price" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].price = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+                <input placeholder="Plan" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.unitConfigurations];
+                    arr[i].paymentPlan = e.target.value;
+                    setForm({ ...form, unitConfigurations: arr });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* STEP 4 */}
+        {step === 4 && (
+          <div className="section">
+            <h2>Media</h2>
+
+            <input className="input" placeholder="Hero Image URL"
+              onChange={(e) => handleChange("media", "heroImageUrl", e.target.value)}
+            />
+
+            {form.media.gallery.map((g, i) => (
+              <input key={i} className="input" placeholder="Gallery URL"
+                onChange={(e) => {
+                  const arr = [...form.media.gallery];
+                  arr[i] = e.target.value;
+                  handleChange("media", "gallery", arr);
+                }}
+              />
+            ))}
+
+            <input className="input" placeholder="Walkthrough URL"
+              onChange={(e) => handleChange("media", "walkthroughUrl", e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* STEP 5 */}
+        {step === 5 && (
+          <div className="section">
+            <h2>Location</h2>
+
+            <input className="input" placeholder="Address"
+              onChange={(e) => handleChange("locationData", "address", e.target.value)}
+            />
+
+            <input className="input" placeholder="Map Embed URL"
+              onChange={(e) => handleChange("locationData", "mapEmbedUrl", e.target.value)}
+            />
+
+            {form.locationData.landmarks.map((l, i) => (
+              <div key={i} className="grid grid-cols-2 gap-2">
+                <input placeholder="Name" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.locationData.landmarks];
+                    arr[i].name = e.target.value;
+                    setForm({ ...form, locationData: { ...form.locationData, landmarks: arr } });
+                  }}
+                />
+                <input placeholder="Distance" className="input"
+                  onChange={(e) => {
+                    const arr = [...form.locationData.landmarks];
+                    arr[i].distance = e.target.value;
+                    setForm({ ...form, locationData: { ...form.locationData, landmarks: arr } });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* STEP 6 */}
+        {step === 6 && (
+          <div className="section">
+            <h2>FAQ + SEO</h2>
+
+            {form.faqs.map((f, i) => (
+              <div key={i}>
+                <input className="input" placeholder="Question"
+                  onChange={(e) => {
+                    const arr = [...form.faqs];
+                    arr[i].question = e.target.value;
+                    setForm({ ...form, faqs: arr });
+                  }}
+                />
+                <input className="input" placeholder="Answer"
+                  onChange={(e) => {
+                    const arr = [...form.faqs];
+                    arr[i].answer = e.target.value;
+                    setForm({ ...form, faqs: arr });
+                  }}
+                />
+              </div>
+            ))}
+
+            <input className="input" placeholder="Meta Title"
+              onChange={(e) => handleChange("seoEngine", "metaTitle", e.target.value)}
+            />
+
+            <textarea className="input" placeholder="Meta Description"
+              onChange={(e) => handleChange("seoEngine", "metaDescription", e.target.value)}
+            />
+          </div>
+        )}
+
+      </div>
+
+      <div className="flex justify-between mt-10 max-w-4xl mx-auto">
+        {step > 1 && <button onClick={prev}>Back</button>}
+
+        {step < 6 ? (
+          <button onClick={next}>Next</button>
+        ) : (
+          <button onClick={handleSubmit}>🚀 Publish</button>
+        )}
+    </div>
+  </div>
+
+  {/* RIGHT SIDE — LIVE PREVIEW */}
+  <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
+    <PropertyPreview form={previewData} />
+  </div>
+
+</div>
+
+    </div>
+  );
+}
