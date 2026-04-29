@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export default function PropertyPreview({ form }) {
   if (!form) return null;
 
@@ -11,7 +13,13 @@ export default function PropertyPreview({ form }) {
     locationData = {},
     faqs = [],
     keyMetrics = {},
+    gatedContent = {},
   } = form;
+
+  const floorPlans = gatedContent?.floorPlans || [];
+
+  // ✅ ACTIVE FLOOR PLAN (DEFAULT FIRST)
+  const [activePlan, setActivePlan] = useState(0);
 
   return (
     <div className="bg-[#f5f5f5] text-[#1f3d2b]">
@@ -76,6 +84,7 @@ export default function PropertyPreview({ form }) {
           <img
             src={overview.aboutImageUrl}
             className="rounded-2xl shadow-lg"
+            alt=""
           />
         )}
       </div>
@@ -104,7 +113,7 @@ export default function PropertyPreview({ form }) {
       {unitConfigurations.length > 0 && (
         <div className="py-12 bg-[#f9f9f9]">
           <h2 className="text-center text-2xl font-bold mb-6">
-            Sizes & Floor Plan
+            Sizes & Pricing
           </h2>
 
           <div className="max-w-5xl mx-auto bg-gradient-to-r from-green-800 to-yellow-600 p-6 rounded-xl text-white">
@@ -124,7 +133,7 @@ export default function PropertyPreview({ form }) {
                     <td>{u.unitType}</td>
                     <td>{u.area}</td>
                     <td>{u.paymentPlan}</td>
-                    <td>₹ {u.price}</td>
+                    <td>{u.price}</td>
                   </tr>
                 ))}
               </tbody>
@@ -133,22 +142,39 @@ export default function PropertyPreview({ form }) {
         </div>
       )}
 
-      {/* ================= AMENITIES (using highlights fallback) ================= */}
-      {overview.highlights?.length > 0 && (
-        <div className="bg-white py-12">
+      {/* ================= FLOOR PLAN (NEW 🔥) ================= */}
+      {floorPlans.filter(fp => fp.image).length > 0 && (
+        <div className="py-12 bg-white">
           <h2 className="text-center text-2xl font-bold mb-8">
-            Amenities
+            Floor Plans
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {overview.highlights.slice(0, 8).map((a, i) => (
-              <div
+          {/* TABS */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {floorPlans.map((fp, i) => (
+              <button
                 key={i}
-                className="border p-4 text-center rounded-lg"
+                onClick={() => setActivePlan(i)}
+                className={`px-4 py-2 rounded-lg border ${
+                  activePlan === i
+                    ? "bg-green-800 text-white"
+                    : "bg-gray-100"
+                }`}
               >
-                🏊 {a}
-              </div>
+                {fp.unitType || "Unit"} | {fp.area || "-"} | ₹ {fp.price || "-"}
+              </button>
             ))}
+          </div>
+
+          {/* IMAGE */}
+          <div className="max-w-4xl mx-auto">
+            {floorPlans[activePlan]?.image && (
+              <img
+                src={floorPlans[activePlan].image}
+                className="rounded-xl shadow-lg w-full"
+                alt=""
+              />
+            )}
           </div>
         </div>
       )}
@@ -161,13 +187,16 @@ export default function PropertyPreview({ form }) {
           </h2>
 
           <div className="grid md:grid-cols-4 gap-4 max-w-6xl mx-auto px-6">
-            {media.gallery.filter(Boolean).map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                className="rounded-lg object-cover h-40 w-full"
-              />
-            ))}
+            {media.gallery
+              .filter(img => img && img.trim())
+              .map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  className="rounded-lg object-cover h-40 w-full"
+                  alt=""
+                />
+              ))}
           </div>
         </div>
       )}
@@ -195,19 +224,6 @@ export default function PropertyPreview({ form }) {
               className="w-full h-80 rounded-lg"
             />
           )}
-        </div>
-      </div>
-
-      {/* ================= MASTER PLAN ================= */}
-      <div className="py-12 text-center">
-        <h2 className="text-2xl font-bold mb-6">
-          Master Plan
-        </h2>
-
-        <div className="bg-gray-200 h-60 flex items-center justify-center rounded-xl max-w-5xl mx-auto">
-          <button className="bg-green-800 text-white px-6 py-3 rounded">
-            View Master Plan 👁
-          </button>
         </div>
       </div>
 

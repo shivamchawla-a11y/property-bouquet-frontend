@@ -7,10 +7,12 @@ import { useState, useEffect } from "react";
 
 import {
   LayoutDashboard,
+  MapPin,
+  Building2,
   Home,
   PlusCircle,
   Users,
-  MessageSquare,
+  Settings,
   Menu,
 } from "lucide-react";
 
@@ -21,15 +23,49 @@ export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // ✅ FINAL MENU (Add Property INCLUDED)
   const menu = [
-    { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
-    { name: "Properties", path: "/admin/properties", icon: Home },
-    { name: "Add Property", path: "/admin/add-property", icon: PlusCircle },
-    { name: "Users", path: "/admin/users", icon: Users },
-    { name: "Enquiries", path: "/admin/enquiries", icon: MessageSquare },
+    {
+      name: "Dashboard",
+      path: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Location",
+      path: "/admin/location",
+      icon: MapPin,
+    },
+    {
+      name: "Developer",
+      path: "/admin/developers",
+      icon: Building2,
+    },
+    {
+      name: "Property Inventory",
+      path: "/admin/properties",
+      icon: Home,
+    },
+
+    // 🔥 KEEP THIS (as you requested)
+    {
+      name: "Add Property",
+      path: "/admin/add-property",
+      icon: PlusCircle,
+    },
+
+    {
+      name: "Lead CRM",
+      path: "/admin/leads",
+      icon: Users,
+    },
+    {
+      name: "Site Settings",
+      path: "/admin/settings",
+      icon: Settings,
+    },
   ];
 
-  // 🔐 REAL AUTH CHECK
+  // 🔐 AUTH CHECK
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -53,7 +89,6 @@ export default function AdminLayout({ children }) {
     checkAuth();
   }, []);
 
-  // ⛔ WAIT UNTIL AUTH CHECK
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -65,17 +100,20 @@ export default function AdminLayout({ children }) {
   return (
     <div className="flex h-screen bg-lightBg">
 
-      {/* SIDEBAR */}
+      {/* ================= SIDEBAR ================= */}
       <aside
         className={`${
           collapsed ? "w-20" : "w-64"
         } bg-secondary text-white flex flex-col p-4 transition-all duration-300`}
       >
+        {/* LOGO */}
         <div className="flex items-center justify-between mb-8">
           {!collapsed && (
             <div className="flex items-center gap-2">
               <Image src="/logo.png" width={35} height={35} alt="logo" />
-              <span className="font-bold text-gold">Property Bouquet</span>
+              <span className="font-bold text-gold">
+                Property Bouquet
+              </span>
             </div>
           )}
 
@@ -84,15 +122,18 @@ export default function AdminLayout({ children }) {
           </button>
         </div>
 
+        {/* MENU */}
         <nav className="space-y-2">
           {menu.map((item) => {
             const Icon = item.icon;
+            const active = pathname === item.path;
+
             return (
               <Link
                 key={item.path}
                 href={item.path}
                 className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                  pathname === item.path
+                  active
                     ? "bg-primary shadow-soft"
                     : "hover:bg-primary/50"
                 }`}
@@ -125,8 +166,10 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col">
+
+        {/* HEADER */}
         <header className="bg-white border-b px-6 py-3 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-primary">
             Admin Panel
@@ -138,6 +181,7 @@ export default function AdminLayout({ children }) {
           />
         </header>
 
+        {/* CONTENT */}
         <main className="p-6 overflow-y-auto">
           {children}
         </main>

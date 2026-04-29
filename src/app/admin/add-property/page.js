@@ -38,7 +38,7 @@ export default function AddProperty() {
 
     media: {
       heroImageUrl: "",
-      gallery: [""],
+      gallery: [], // ✅ NOT [""] ❌
       walkthroughUrl: "",
     },
 
@@ -311,40 +311,7 @@ export default function AddProperty() {
 
         {/* ================= STEP 4 ================= */}
         {step === 4 && (
-          <div className="section">
-            <h2>Media</h2>
-
-            <input className="input" placeholder="Hero Image URL"
-              value={form.media.heroImageUrl}
-              onChange={(e) => handleChange("media", "heroImageUrl", e.target.value)}
-            />
-
-            {form.media.gallery.map((g, i) => (
-              <div key={i} className="flex gap-2">
-                <input className="input flex-1"
-                  value={g}
-                  onChange={(e) => {
-                    const arr = [...form.media.gallery];
-                    arr[i] = e.target.value;
-                    handleChange("media", "gallery", arr);
-                  }}
-                />
-
-                <button onClick={() => {
-                  const arr = form.media.gallery.filter((_, idx) => idx !== i);
-                  handleChange("media", "gallery", arr);
-                }}>
-                  ❌
-                </button>
-              </div>
-            ))}
-
-            <button onClick={() =>
-              handleChange("media", "gallery", [...form.media.gallery, ""])
-            }>
-              + Add Image
-            </button>
-          </div>
+          <StepMedia form={form} setForm={setForm} />
         )}
 
         {/* ================= STEP 5 ================= */}
