@@ -29,7 +29,7 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
 
       // ✅ redirect
-      window.location.href = "/admin/site-settings/team";
+      window.location.href = "/admin";
     } else {
       alert(data.message || "Login failed");
     }
