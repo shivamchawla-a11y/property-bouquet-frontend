@@ -14,37 +14,47 @@ export default function TeamManagement() {
     role: "Agent",
   });
 
-  // ✅ CORRECT BASE API
-const API = "https://property-bouquet-backend.onrender.com/api/auth";
+  const API = "https://property-bouquet-backend.onrender.com/api/auth";
+
+  // 🔐 GET TOKEN
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login again ❌");
+      return null;
+    }
+
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  };
 
   // ================= FETCH USERS =================
   const fetchUsers = async () => {
     try {
       setLoading(true);
 
+      const headers = getAuthHeaders();
+      if (!headers) return;
+
       const res = await fetch(`${API}/users`, {
-        credentials: "include",
+        method: "GET",
+        headers,
       });
 
-      // 🔥 HANDLE NON-JSON RESPONSE SAFELY
-      const text = await res.text();
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid server response (not JSON)");
-      }
+      const data = await res.json();
 
       if (res.ok) {
         setUsers(data.data || []);
       } else {
-        alert(data.message || "Failed to load users");
+        alert(data.message || "Failed to load users ❌");
       }
 
     } catch (err) {
       console.error(err);
-      alert(err.message || "Server error ❌");
+      alert("Server error ❌");
     } finally {
       setLoading(false);
     }
@@ -55,67 +65,58 @@ const API = "https://property-bouquet-backend.onrender.com/api/auth";
   }, []);
 
   // ================= CREATE USER =================
-const handleCreate = async () => {
-  if (!form.name || !form.email || !form.password) {
-    return alert("All fields required ❌");
-  }
-
-  try {
-    const res = await fetch(`${API}/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(form),
-    });
-
-    let data;
+  const handleCreate = async () => {
+    if (!form.name || !form.email || !form.password) {
+      return alert("All fields required ❌");
+    }
 
     try {
-      data = await res.json();
-    } catch {
-      console.error("Non-JSON response:", res);
-      return alert("Server error (invalid response)");
-    }
+      const headers = getAuthHeaders();
+      if (!headers) return;
 
-    if (res.ok) {
-      alert("User created ✅");
-
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        role: "Agent",
+      const res = await fetch(`${API}/users`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(form),
       });
 
-      fetchUsers();
-    } else {
-      alert(data.message || "Failed ❌");
-    }
+      const data = await res.json();
 
-  } catch (err) {
-    console.error(err);
-    alert("Server error ❌");
-  }
-};
+      if (res.ok) {
+        alert("User created ✅");
+
+        setForm({
+          name: "",
+          email: "",
+          password: "",
+          role: "Agent",
+        });
+
+        fetchUsers();
+      } else {
+        alert(data.message || "Failed ❌");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Server error ❌");
+    }
+  };
 
   // ================= TOGGLE ACCESS =================
   const toggleStatus = async (id) => {
     try {
       setActionId(id);
 
+      const headers = getAuthHeaders();
+      if (!headers) return;
+
       const res = await fetch(`${API}/users/${id}/toggle`, {
         method: "PATCH",
-        credentials: "include",
+        headers,
       });
 
-      const text = await res.text();
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid server response");
-      }
+      const data = await res.json();
 
       if (res.ok) {
         setUsers((prev) =>
@@ -129,7 +130,7 @@ const handleCreate = async () => {
 
     } catch (err) {
       console.error(err);
-      alert(err.message || "Server error ❌");
+      alert("Server error ❌");
     } finally {
       setActionId(null);
     }
