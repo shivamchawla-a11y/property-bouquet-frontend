@@ -73,8 +73,8 @@ export default function AddProperty() {
 }, [form]);
 
   // ================= NAVIGATION =================
-  const next = () => setStep((prev) => prev + 1);
-  const prev = () => setStep((prev) => prev - 1);
+  const goNext = () => setStep((prev) => prev + 1);
+  const goPrev = () => setStep((prev) => prev - 1);
 
   // ================= COMMON HANDLER =================
   const handleChange = (section, field, value) => {
@@ -430,10 +430,10 @@ export default function AddProperty() {
       </div>
 
       <div className="flex justify-between mt-10 max-w-4xl mx-auto">
-        {step > 1 && <button onClick={prev}>Back</button>}
+        {step > 1 && <button onClick={goPrev}>Back</button>}
 
         {step < 6 ? (
-          <button onClick={next}>Next</button>
+          <button onClick={goNext}>Next</button>
         ) : (
           <button onClick={handleSubmit}>🚀 Publish</button>
         )}
