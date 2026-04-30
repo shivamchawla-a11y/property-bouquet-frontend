@@ -8,36 +8,39 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // 🔥 MUST
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // ✅ FULL RELOAD → ENSURES COOKIE IS AVAILABLE
-        window.location.href = "/admin";
-      } else {
-        alert(data.message || "Login failed");
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }), // ❌ remove credentials
       }
+    );
 
-    } catch (err) {
-      alert("Server error");
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+
+    if (res.ok) {
+      // ✅ STORE TOKEN (MOST IMPORTANT LINE)
+      localStorage.setItem("token", data.token);
+
+      // ✅ redirect
+      window.location.href = "/admin/site-settings/team";
+    } else {
+      alert(data.message || "Login failed");
     }
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-secondary to-dark">
