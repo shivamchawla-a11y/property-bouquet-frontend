@@ -14,7 +14,8 @@ export default function TeamManagement() {
     role: "Agent",
   });
 
-  const API = "https://property-bouquet-backend.onrender.com/api";
+  // ✅ CORRECT BASE API
+const API = "https://property-bouquet-backend.onrender.com/api/auth";
 
   // ================= FETCH USERS =================
   const fetchUsers = async () => {
@@ -25,16 +26,25 @@ export default function TeamManagement() {
         credentials: "include",
       });
 
-      const data = await res.json();
+      // 🔥 HANDLE NON-JSON RESPONSE SAFELY
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response (not JSON)");
+      }
 
       if (res.ok) {
         setUsers(data.data || []);
       } else {
         alert(data.message || "Failed to load users");
       }
+
     } catch (err) {
       console.error(err);
-      alert("Server error ❌");
+      alert(err.message || "Server error ❌");
     } finally {
       setLoading(false);
     }
@@ -45,40 +55,48 @@ export default function TeamManagement() {
   }, []);
 
   // ================= CREATE USER =================
-  const handleCreate = async () => {
-    if (!form.name || !form.email || !form.password) {
-      return alert("All fields required ❌");
-    }
+const handleCreate = async () => {
+  if (!form.name || !form.email || !form.password) {
+    return alert("All fields required ❌");
+  }
+
+  try {
+    const res = await fetch(`${API}/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(form),
+    });
+
+    let data;
 
     try {
-      const res = await fetch(`${API}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
+      data = await res.json();
+    } catch {
+      console.error("Non-JSON response:", res);
+      return alert("Server error (invalid response)");
+    }
+
+    if (res.ok) {
+      alert("User created ✅");
+
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        role: "Agent",
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("User created ✅");
-
-        setForm({
-          name: "",
-          email: "",
-          password: "",
-          role: "Agent",
-        });
-
-        fetchUsers();
-      } else {
-        alert(data.message || "Failed ❌");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Server error ❌");
+      fetchUsers();
+    } else {
+      alert(data.message || "Failed ❌");
     }
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error ❌");
+  }
+};
 
   // ================= TOGGLE ACCESS =================
   const toggleStatus = async (id) => {
@@ -90,10 +108,16 @@ export default function TeamManagement() {
         credentials: "include",
       });
 
-      const data = await res.json();
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response");
+      }
 
       if (res.ok) {
-        // ✅ Optimistic UI update
         setUsers((prev) =>
           prev.map((u) =>
             u._id === id ? { ...u, isActive: !u.isActive } : u
@@ -102,9 +126,10 @@ export default function TeamManagement() {
       } else {
         alert(data.message || "Action failed ❌");
       }
+
     } catch (err) {
       console.error(err);
-      alert("Server error ❌");
+      alert(err.message || "Server error ❌");
     } finally {
       setActionId(null);
     }
@@ -113,10 +138,9 @@ export default function TeamManagement() {
   return (
     <div className="p-6 space-y-8">
 
-      {/* HEADER */}
       <h1 className="text-2xl font-bold">Team Management</h1>
 
-      {/* ================= CREATE USER ================= */}
+      {/* CREATE USER */}
       <div className="bg-white p-6 rounded-xl shadow space-y-4">
         <h2 className="font-semibold">Add Team Member</h2>
 
@@ -159,7 +183,7 @@ export default function TeamManagement() {
         </button>
       </div>
 
-      {/* ================= USERS TABLE ================= */}
+      {/* USERS TABLE */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
 
         {loading ? (
@@ -190,7 +214,6 @@ export default function TeamManagement() {
                   <td>{u.email}</td>
                   <td>{u.role}</td>
 
-                  {/* STATUS */}
                   <td>
                     <span
                       className={`px-2 py-1 rounded text-xs ${
@@ -203,7 +226,6 @@ export default function TeamManagement() {
                     </span>
                   </td>
 
-                  {/* ACTION */}
                   <td className="text-right pr-4">
                     <button
                       disabled={actionId === u._id}
@@ -228,7 +250,6 @@ export default function TeamManagement() {
           </table>
         )}
       </div>
-
     </div>
   );
 }
