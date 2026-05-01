@@ -18,24 +18,23 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }), // ❌ remove credentials
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       }
     );
 
     const data = await res.json();
 
     if (res.ok) {
-      // ✅ STORE TOKEN (MOST IMPORTANT LINE)
+      // ✅ STORE TOKEN (THIS WAS MISSING)
       localStorage.setItem("token", data.token);
 
-      // ✅ redirect
       window.location.href = "/admin";
     } else {
       alert(data.message || "Login failed");
     }
 
   } catch (err) {
-    console.error(err);
     alert("Server error");
   } finally {
     setLoading(false);
