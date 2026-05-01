@@ -90,8 +90,15 @@ export default function AddProperty() {
   // ================= SUBMIT =================
   const handleSubmit = async () => {
   try {
+    const token = localStorage.getItem("token");
 
-    // 🔥 CLEAN CONFIGS (MOST IMPORTANT FIX)
+    if (!token) {
+      alert("Session expired ❌ Please login again");
+      window.location.href = "/login";
+      return;
+    }
+
+    // 🔥 CLEAN CONFIGS
     const cleanedConfigurations = form.unitConfigurations.filter(
       (u) =>
         u.unitType?.trim() ||
@@ -100,7 +107,6 @@ export default function AddProperty() {
         u.paymentPlan?.trim()
     );
 
-    // 🔥 OPTIONAL: REMOVE INVALID ONES (STRICT)
     const validConfigurations = cleanedConfigurations.filter(
       (u) => u.price && u.price.trim() !== ""
     );
@@ -116,16 +122,22 @@ export default function AddProperty() {
       "https://property-bouquet-backend.onrender.com/api/properties",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // 🔥 MOST IMPORTANT FIX
+        },
         body: JSON.stringify(cleanedForm),
       }
     );
 
     const data = await res.json();
 
-    if (res.ok) alert("Property Added ✅");
-    else alert(data.message || "Error ❌");
+    if (res.ok) {
+      alert("Property Added ✅");
+    } else {
+      console.error(data);
+      alert(data.message || "Forbidden ❌");
+    }
 
   } catch (err) {
     console.error(err);
