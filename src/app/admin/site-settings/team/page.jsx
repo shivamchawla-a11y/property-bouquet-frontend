@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { User, Shield } from "lucide-react";
 
 export default function TeamManagement() {
+  const router = useRouter();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
@@ -13,7 +16,6 @@ export default function TeamManagement() {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const [showModal, setShowModal] = useState(false);
-
   const [toast, setToast] = useState(null);
 
   const [form, setForm] = useState({
@@ -44,6 +46,51 @@ export default function TeamManagement() {
     };
   };
 
+  // ================= 🔐 ROLE PROTECTION =================
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const res = await fetch(
+          "https://property-bouquet-backend.onrender.com/api/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+
+        // 🔥 BLOCK AGENT
+        if (data.user.role !== "SuperAdmin") {
+          router.push("/admin");
+          return;
+        }
+
+        // ✅ ONLY SUPERADMIN CONTINUES
+        fetchUsers();
+
+      } catch (err) {
+        console.error(err);
+        router.push("/login");
+      }
+    };
+
+    checkAccess();
+  }, []);
+
   // ================= FETCH USERS =================
   const fetchUsers = async () => {
     try {
@@ -70,10 +117,6 @@ export default function TeamManagement() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   // ================= CREATE USER =================
   const handleCreate = async () => {
@@ -254,7 +297,6 @@ export default function TeamManagement() {
                   <td className="p-3 font-medium">{u.name}</td>
                   <td>{u.email}</td>
 
-                  {/* ROLE BADGE */}
                   <td>
                     {u.role === "SuperAdmin" ? (
                       <span className="flex items-center gap-1 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
@@ -302,12 +344,10 @@ export default function TeamManagement() {
         )}
       </div>
 
-      {/* ================= MODAL ================= */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
           <div className="bg-white p-6 rounded-xl w-full max-w-md space-y-4">
-
             <h2 className="text-lg font-semibold">Add User</h2>
 
             <input
@@ -356,7 +396,6 @@ export default function TeamManagement() {
                 Create
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -364,7 +403,6 @@ export default function TeamManagement() {
   );
 }
 
-// STAT CARD
 function Stat({ title, value }) {
   return (
     <div className="bg-white p-4 rounded-xl shadow text-center">
