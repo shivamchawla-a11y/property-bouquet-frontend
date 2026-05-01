@@ -22,8 +22,9 @@ export default function AdminLayout({ children }) {
 
   const [collapsed, setCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null); // ✅ ROLE STATE
 
-  // ✅ FINAL MENU (Add Property INCLUDED)
+  // ✅ MENU WITH ROLE CONTROL
   const menu = [
     {
       name: "Dashboard",
@@ -45,27 +46,28 @@ export default function AdminLayout({ children }) {
       path: "/admin/properties",
       icon: Home,
     },
-
-    // 🔥 KEEP THIS (as you requested)
     {
       name: "Add Property",
       path: "/admin/add-property",
       icon: PlusCircle,
     },
 
+    // 🔒 SUPER ADMIN ONLY
     {
       name: "Lead CRM",
       path: "/admin/leads",
       icon: Users,
+      roles: ["SuperAdmin"],
     },
     {
       name: "Site Settings",
       path: "/admin/site-settings/team",
       icon: Settings,
+      roles: ["SuperAdmin"],
     },
   ];
 
-  // 🔐 AUTH CHECK
+  // 🔐 AUTH CHECK + ROLE FETCH
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -76,9 +78,12 @@ export default function AdminLayout({ children }) {
           }
         );
 
+        const data = await res.json();
+
         if (!res.ok) {
           router.push("/login");
         } else {
+          setRole(data.user.role); // ✅ STORE ROLE
           setLoading(false);
         }
       } catch (err) {
@@ -87,9 +92,10 @@ export default function AdminLayout({ children }) {
     };
 
     checkAuth();
-  }, []);
+  }, [router]);
 
-  if (loading) {
+  // ⏳ LOADING STATE
+  if (loading || !role) {
     return (
       <div className="h-screen flex items-center justify-center">
         <p className="text-gray-500">Checking authentication...</p>
@@ -124,25 +130,30 @@ export default function AdminLayout({ children }) {
 
         {/* MENU */}
         <nav className="space-y-2">
-          {menu.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.path;
+          {menu
+            .filter((item) => {
+              if (!item.roles) return true; // visible to all
+              return item.roles.includes(role);
+            })
+            .map((item) => {
+              const Icon = item.icon;
+              const active = pathname === item.path;
 
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                  active
-                    ? "bg-primary shadow-soft"
-                    : "hover:bg-primary/50"
-                }`}
-              >
-                <Icon size={20} />
-                {!collapsed && <span>{item.name}</span>}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition ${
+                    active
+                      ? "bg-primary shadow-soft"
+                      : "hover:bg-primary/50"
+                  }`}
+                >
+                  <Icon size={20} />
+                  {!collapsed && <span>{item.name}</span>}
+                </Link>
+              );
+            })}
         </nav>
 
         {/* LOGOUT */}

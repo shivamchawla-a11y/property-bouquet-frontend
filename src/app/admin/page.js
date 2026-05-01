@@ -24,14 +24,8 @@ import {
 export default function AdminDashboard() {
   const router = useRouter();
 
-  // 🔐 AUTH CHECK
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-
-  //   if (!token) {
-  //     router.push("/login");
-  //   }
-  // }, []);
+  // 🔥 USER STATE
+  const [user, setUser] = useState(null);
 
   // 🔥 STATES (for future real API)
   const [stats, setStats] = useState([
@@ -61,6 +55,42 @@ export default function AdminDashboard() {
     },
   ]);
 
+  // 🔥 FETCH USER
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const res = await fetch(
+          "https://property-bouquet-backend.onrender.com/api/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setUser(data.user);
+        } else {
+          router.push("/login");
+        }
+      } catch (err) {
+        console.error(err);
+        router.push("/login");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   // 🔥 CHART DATA
   const revenueData = [
     { name: "Jan", value: 40000 },
@@ -87,20 +117,50 @@ export default function AdminDashboard() {
             Dashboard
           </h1>
           <p className="text-gray-500">
-            Welcome back, Admin 👋
+            Welcome back, {user?.name || "Admin"} 👋
           </p>
         </div>
 
-        {/* LOGOUT */}
-        <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            router.push("/login");
-          }}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-        >
-          Logout
-        </button>
+        {/* PROFILE SECTION */}
+        <div className="flex items-center gap-4">
+
+          {/* SEARCH */}
+          <input
+            placeholder="Search..."
+            className="border px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-primary text-sm"
+          />
+
+          {/* USER CARD */}
+          <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-lg">
+
+            {/* AVATAR */}
+            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              {user?.name?.charAt(0)?.toUpperCase() || "A"}
+            </div>
+
+            {/* NAME + ROLE */}
+            <div className="text-sm leading-tight">
+              <p className="font-semibold">
+                {user?.name || "Admin"}
+              </p>
+              <p className="text-gray-500 text-xs">
+                {user?.role || "Role"}
+              </p>
+            </div>
+
+            {/* LOGOUT */}
+            <button
+              onClick={() => {
+                localStorage.removeItem("token");
+                router.push("/login");
+              }}
+              className="ml-3 text-xs text-red-500 hover:underline"
+            >
+              Logout
+            </button>
+
+          </div>
+        </div>
       </div>
 
       {/* STATS */}
@@ -213,11 +273,17 @@ export default function AdminDashboard() {
               + Add Property
             </button>
 
-            <button className="w-full bg-gold text-black py-2 rounded-lg hover:bg-goldLight transition">
+            <button
+              onClick={() => router.push("/admin/leads")}
+              className="w-full bg-gold text-black py-2 rounded-lg hover:bg-goldLight transition"
+            >
               View Enquiries
             </button>
 
-            <button className="w-full border py-2 rounded-lg hover:bg-gray-100 transition">
+            <button
+              onClick={() => router.push("/admin/site-settings/team")}
+              className="w-full border py-2 rounded-lg hover:bg-gray-100 transition"
+            >
               Manage Users
             </button>
           </div>

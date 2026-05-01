@@ -189,7 +189,7 @@ export default function PropertiesPage() {
 
           {/* ADD */}
           <button
-            onClick={() => router.push("/add-property")}
+            onClick={() => router.push("/admin/add-property")}
             className="bg-gold hover:bg-goldLight text-black px-5 py-2 rounded-lg font-semibold shadow-soft"
           >
             + Add Property
