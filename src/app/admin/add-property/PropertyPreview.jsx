@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function PropertyPreview({ form }) {
+export default function PropertyPreview({ form, developers = [] }) {
   if (!form) return null;
 
   const {
@@ -19,6 +19,30 @@ export default function PropertyPreview({ form }) {
   const floorPlans = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
 
+  // ================= FIX: DEVELOPER NAME RESOLVER =================
+  const getDeveloperName = () => {
+    // If custom developer name exists → use it
+    if (coreDetails?.developerName && coreDetails.developerName.trim()) {
+      return coreDetails.developerName;
+    }
+
+    // If developerRef is ObjectId → map it
+    if (coreDetails?.developerRef) {
+      const dev = developers.find(
+        (d) => d._id === coreDetails.developerRef
+      );
+
+      if (dev) return dev.name;
+
+      // fallback if not found
+      return coreDetails.developerRef;
+    }
+
+    return "DEVELOPER";
+  };
+
+  const developerName = getDeveloperName();
+
   return (
     <div className="bg-[#f5f5f5] text-[#1f3d2b] overflow-visible">
 
@@ -28,9 +52,8 @@ export default function PropertyPreview({ form }) {
         {/* LEFT BRAND */}
         <div className="leading-tight">
           <div className="text-sm tracking-[3px] font-semibold">
-            {coreDetails.developerRef || "DEVELOPER"}
+            {developerName}
           </div>
-        
         </div>
 
         {/* RIGHT CALL BUTTON */}
@@ -38,7 +61,7 @@ export default function PropertyPreview({ form }) {
           📞 +91-9958328555
         </div>
 
-        {/* CENTER LOGO (FIXED) */}
+        {/* CENTER LOGO */}
         <div className="absolute left-1/2 top-[100%] translate-x-[-50%] translate-y-[-50%] z-20">
           <div className="bg-white p-2 rounded-full shadow-xl">
             <img
@@ -110,7 +133,7 @@ export default function PropertyPreview({ form }) {
         
         <div>
           <p className="text-sm text-green-700 font-semibold mb-2">
-            About {coreDetails.developerRef || "Developer"}
+            About {developerName}
           </p>
 
           <h2 className="text-3xl font-bold mb-4">

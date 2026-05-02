@@ -14,6 +14,7 @@ import {
   Users,
   Settings,
   Menu,
+  Tag,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -37,15 +38,20 @@ export default function AdminLayout({ children }) {
       icon: MapPin,
     },
     {
-      name: "Developer",
-      path: "/admin/developers",
-      icon: Building2,
-    },
-    {
-      name: "Property Inventory",
-      path: "/admin/properties",
-      icon: Home,
-    },
+  name: "Developer",
+  path: "/admin/developers",
+  icon: Building2,
+},
+{
+  name: "Categories",
+  path: "/admin/categories",
+  icon: Tag,
+},
+{
+  name: "Property Inventory",
+  path: "/admin/properties",
+  icon: Home,
+},
     {
       name: "Add Property",
       path: "/admin/add-property",

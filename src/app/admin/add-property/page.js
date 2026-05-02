@@ -14,11 +14,12 @@ export default function AddProperty() {
     marketType: "Primary",
 
     coreDetails: {
-      title: "",
-      developerRef: "",
-      startingPrice: "",
-      maxPrice: "",
-    },
+  title: "",
+  developerRef: "",     // ObjectId
+  developerName: "",    // Custom name
+  startingPrice: "",
+  maxPrice: "",
+},
 
     keyMetrics: {
       landArea: "",
@@ -63,6 +64,27 @@ export default function AddProperty() {
 
     const [previewData, setPreviewData] = useState(form);
     const [previewMode, setPreviewMode] = useState(false);
+    const [developers, setDevelopers] = useState([]);
+    const [useCustomDeveloper, setUseCustomDeveloper] = useState(false);
+
+    const API = "https://property-bouquet-backend.onrender.com/api";
+
+    useEffect(() => {
+  const fetchDevelopers = async () => {
+    try {
+      const res = await fetch(`${API}/developers`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setDevelopers(data.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchDevelopers();
+}, []);
 
   useEffect(() => {
   const t = setTimeout(() => {
@@ -112,9 +134,16 @@ export default function AddProperty() {
     );
 
     const cleanedForm = {
-      ...form,
-      unitConfigurations: validConfigurations,
-    };
+  ...form,
+  coreDetails: {
+    ...form.coreDetails,
+    developerRef: useCustomDeveloper
+      ? null
+      : form.coreDetails.developerRef,
+    developerName: form.coreDetails.developerName,
+  },
+  unitConfigurations: validConfigurations,
+};
 
     console.log("🚀 FINAL PAYLOAD:", cleanedForm);
 
@@ -202,10 +231,86 @@ export default function AddProperty() {
               onChange={(e) => handleChange("coreDetails", "title", e.target.value)}
             />
 
-            <input className="input" placeholder="Developer"
-              value={form.coreDetails.developerRef}
-              onChange={(e) => handleChange("coreDetails", "developerRef", e.target.value)}
-            />
+            <div className="space-y-2">
+  <label className="text-sm text-gray-500">Developer</label>
+
+  {!useCustomDeveloper ? (
+    <select
+  className="input"
+  value={form.coreDetails.developerRef || ""}
+  onChange={(e) => {
+    if (e.target.value === "OTHER") {
+      setUseCustomDeveloper(true);
+
+      setForm(prev => ({
+        ...prev,
+        coreDetails: {
+          ...prev.coreDetails,
+          developerRef: "",
+          developerName: "",
+        }
+      }));
+
+    } else {
+      const selectedDev = developers.find(
+        d => d._id === e.target.value
+      );
+
+      setUseCustomDeveloper(false);
+
+      setForm(prev => ({
+        ...prev,
+        coreDetails: {
+          ...prev.coreDetails,
+          developerRef: selectedDev?._id || "",
+          developerName: selectedDev?.name || "", // ✅ STORE NAME
+        }
+      }));
+    }
+  }}
+>
+  <option value="">Select Developer</option>
+
+  {developers.map((dev) => (
+    <option key={dev._id} value={dev._id}>
+      {dev.name}
+    </option>
+  ))}
+
+  <option value="OTHER">+ Add Custom Developer</option>
+</select>
+  ) : (
+    <div className="flex gap-2">
+      <input
+  className="input flex-1"
+  placeholder="Enter developer name"
+  value={form.coreDetails.developerName}
+  onChange={(e) =>
+    handleChange("coreDetails", "developerName", e.target.value)
+  }
+/>
+
+      <button
+        type="button"
+       onClick={() => {
+  setUseCustomDeveloper(false);
+
+  setForm(prev => ({
+    ...prev,
+    coreDetails: {
+      ...prev.coreDetails,
+      developerRef: "",
+      developerName: "",
+    }
+  }));
+}}
+        className="px-3 rounded bg-gray-200 hover:bg-gray-300"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+            </div>
 
             <input className="input" placeholder="Starting Price"
               value={form.coreDetails.startingPrice}

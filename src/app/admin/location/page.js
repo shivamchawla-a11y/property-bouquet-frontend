@@ -1,136 +1,299 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  MapPin,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+} from "lucide-react";
 
 export default function LocationPage() {
-  const [cities, setCities] = useState([
-    {
-      name: "Gurgaon",
-      zones: [
-        {
-          name: "Golf Course Road",
-          localities: ["DLF Phase 1", "DLF Phase 2"],
-        },
-      ],
-    },
-  ]);
+  const API = "https://property-bouquet-backend.onrender.com/api";
 
-  const [city, setCity] = useState("");
-  const [zone, setZone] = useState("");
-  const [locality, setLocality] = useState("");
+  const [locations, setLocations] = useState([]);
+  const [expanded, setExpanded] = useState({});
+  const [activeInput, setActiveInput] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [selectedZone, setSelectedZone] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
-  // ADD CITY
-  const addCity = () => {
-    if (!city) return;
-    setCities([...cities, { name: city, zones: [] }]);
-    setCity("");
+  const [search, setSearch] = useState("");
+
+  // ================= FETCH =================
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch(`${API}/locations/tree`);
+      const data = await res.json();
+      if (res.ok) setLocations(data.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ADD ZONE
-  const addZone = () => {
-    if (!zone || selectedCity === null) return;
+  useEffect(() => {
+    fetchLocations();
+  }, []);
 
-    const updated = [...cities];
-    updated[selectedCity].zones.push({ name: zone, localities: [] });
-    setCities(updated);
-    setZone("");
+  // ================= ADD =================
+  const addLocation = async (parentId) => {
+    if (!inputValue.trim()) return;
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/locations`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: inputValue,
+        parent: parentId || null,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    setInputValue("");
+    setActiveInput(null);
+    fetchLocations();
   };
 
-  // ADD LOCALITY
-  const addLocality = () => {
-    if (!locality || selectedCity === null || selectedZone === null) return;
+  // ================= DELETE =================
+  const deleteLocation = async (id) => {
+    if (!confirm("Delete this location?")) return;
 
-    const updated = [...cities];
-    updated[selectedCity].zones[selectedZone].localities.push(locality);
-    setCities(updated);
-    setLocality("");
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/locations/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    fetchLocations();
   };
+
+  // ================= UPDATE =================
+  const updateLocation = async (id) => {
+    if (!editValue.trim()) return;
+
+    const token = localStorage.getItem("token");
+
+    await fetch(`${API}/locations/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name: editValue }),
+    });
+
+    setEditingId(null);
+    fetchLocations();
+  };
+
+  // ================= SEARCH MATCH =================
+  const matchesSearch = (name) =>
+    name.toLowerCase().includes(search.toLowerCase());
+
+  // ================= AUTO EXPAND SEARCH =================
+  const shouldExpand = (node) => {
+    if (matchesSearch(node.name)) return true;
+    return node.children?.some(shouldExpand);
+  };
+
+  // ================= TREE =================
+  const renderTree = (nodes, level = 0) => {
+    return nodes.map((node) => {
+      const isExpanded = expanded[node._id] || shouldExpand(node);
+
+      return (
+        <div key={node._id}>
+
+          {/* NODE */}
+          <div
+            className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-100 group transition"
+            style={{ marginLeft: level * 20 }}
+          >
+            {/* EXPAND */}
+            {node.children?.length > 0 ? (
+              <button onClick={() =>
+                setExpanded(prev => ({
+                  ...prev,
+                  [node._id]: !prev[node._id]
+                }))
+              }>
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+            ) : (
+              <span className="w-4" />
+            )}
+
+            {/* NAME / EDIT */}
+            {editingId === node._id ? (
+              <input
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="input text-sm"
+              />
+            ) : (
+              <span className="font-medium">{node.name}</span>
+            )}
+
+            {/* ACTIONS */}
+            <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100">
+
+              {/* ADD */}
+              <button
+                onClick={() => {
+                  setActiveInput(node._id);
+                  setInputValue("");
+                }}
+                className="text-blue-500 text-xs flex items-center gap-1"
+              >
+                <Plus size={14} />
+              </button>
+
+              {/* EDIT */}
+              {editingId === node._id ? (
+                <>
+                  <button onClick={() => updateLocation(node._id)}>
+                    <Check size={14} className="text-green-600" />
+                  </button>
+                  <button onClick={() => setEditingId(null)}>
+                    <X size={14} />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setEditingId(node._id);
+                    setEditValue(node.name);
+                  }}
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+
+              {/* DELETE */}
+              <button onClick={() => deleteLocation(node._id)}>
+                <Trash2 size={14} className="text-red-500" />
+              </button>
+
+            </div>
+          </div>
+
+          {/* ADD INPUT */}
+          {activeInput === node._id && (
+            <div
+              className="flex gap-2 mt-2"
+              style={{ marginLeft: (level + 1) * 20 }}
+            >
+              <input
+                autoFocus
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Enter child"
+                className="input flex-1"
+              />
+
+              <button
+                onClick={() => addLocation(node._id)}
+                className="bg-primary text-white px-3 rounded"
+              >
+                Add
+              </button>
+
+              <button onClick={() => setActiveInput(null)}>Cancel</button>
+            </div>
+          )}
+
+          {/* CHILDREN */}
+          {isExpanded &&
+            node.children?.length > 0 &&
+            renderTree(node.children, level + 1)}
+        </div>
+      );
+    });
+  };
+
+  // ================= ROOT =================
+  const addRoot = () => addLocation(null);
+
+  if (loading) {
+    return (
+      <div className="h-[60vh] flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
 
+      {/* HEADER */}
       <h1 className="text-2xl font-bold flex items-center gap-2">
-        <MapPin /> Location Management
+        <MapPin /> Location Manager
       </h1>
 
-      {/* ADD CITY */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-3">
-        <h2 className="font-semibold">Add City</h2>
-        <div className="flex gap-2">
-          <input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="City Name"
-            className="input flex-1"
-          />
-          <button onClick={addCity} className="btn-primary">Add</button>
-        </div>
+      {/* SEARCH */}
+      <div className="bg-white p-4 rounded-xl shadow">
+        <input
+          placeholder="Search locations..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input w-full"
+        />
       </div>
 
-      {/* ADD ZONE */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-3">
-        <h2 className="font-semibold">Add Zone</h2>
+      {/* ADD ROOT */}
+      <div className="bg-white p-5 rounded-xl shadow flex gap-2">
+        <input
+          value={activeInput === "root" ? inputValue : ""}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Add root (e.g. Gurgaon)"
+          className="input flex-1"
+          onFocus={() => setActiveInput("root")}
+        />
 
-        <select
-          className="input w-full"
-          onChange={(e) => setSelectedCity(e.target.value)}
+        <button
+          onClick={addRoot}
+          className="bg-primary text-white px-4 rounded-lg"
         >
-          <option>Select City</option>
-          {cities.map((c, i) => (
-            <option key={i} value={i}>{c.name}</option>
-          ))}
-        </select>
-
-        <div className="flex gap-2">
-          <input
-            value={zone}
-            onChange={(e) => setZone(e.target.value)}
-            placeholder="Zone Name"
-            className="input flex-1"
-          />
-          <button onClick={addZone} className="btn-primary">Add</button>
-        </div>
+          Add
+        </button>
       </div>
 
-      {/* ADD LOCALITY */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-3">
-        <h2 className="font-semibold">Add Locality</h2>
-
-        <select
-          className="input w-full"
-          onChange={(e) => setSelectedCity(e.target.value)}
-        >
-          <option>Select City</option>
-          {cities.map((c, i) => (
-            <option key={i} value={i}>{c.name}</option>
-          ))}
-        </select>
-
-        {selectedCity !== null && (
-          <select
-            className="input w-full"
-            onChange={(e) => setSelectedZone(e.target.value)}
-          >
-            <option>Select Zone</option>
-            {cities[selectedCity]?.zones.map((z, i) => (
-              <option key={i} value={i}>{z.name}</option>
-            ))}
-          </select>
+      {/* TREE */}
+      <div className="bg-white p-5 rounded-xl shadow">
+        {locations.length ? (
+          renderTree(locations)
+        ) : (
+          <p className="text-gray-500">No locations</p>
         )}
-
-        <div className="flex gap-2">
-          <input
-            value={locality}
-            onChange={(e) => setLocality(e.target.value)}
-            placeholder="Locality"
-            className="input flex-1"
-          />
-          <button onClick={addLocality} className="btn-primary">Add</button>
-        </div>
       </div>
 
     </div>
