@@ -44,15 +44,24 @@ export default function AddProperty() {
     },
 
     locationData: {
-      address: "",
-      mapEmbedUrl: "",
-      landmarks: [{ name: "", distance: "" }],
-    },
+  locationRef: "",   // ObjectId from DB
+  locationName: "",  // store name for preview
+  customLocation: "", // if user types manually
+  address: "",
+  mapEmbedUrl: "",
+  landmarks: [{ name: "", distance: "" }],
+},
 
     gatedContent: {
       brochurePdfUrl: "",
       floorPlans: [{ title: "", image: "" }],
     },
+
+    categoryData: {
+  categoryRef: "",
+  categoryName: "",
+  customCategory: "",
+},
 
     seoEngine: {
       metaTitle: "",
@@ -66,8 +75,46 @@ export default function AddProperty() {
     const [previewMode, setPreviewMode] = useState(false);
     const [developers, setDevelopers] = useState([]);
     const [useCustomDeveloper, setUseCustomDeveloper] = useState(false);
+    const [locations, setLocations] = useState([]);
+    const [useCustomLocation, setUseCustomLocation] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [useCustomCategory, setUseCustomCategory] = useState(false);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
+
+    useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API}/categories`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setCategories(data.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchCategories();
+}, []);
+
+    useEffect(() => {
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch(`${API}/locations/tree`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setLocations(data.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchLocations();
+}, []);
 
     useEffect(() => {
   const fetchDevelopers = async () => {
@@ -135,6 +182,7 @@ export default function AddProperty() {
 
     const cleanedForm = {
   ...form,
+
   coreDetails: {
     ...form.coreDetails,
     developerRef: useCustomDeveloper
@@ -142,6 +190,32 @@ export default function AddProperty() {
       : form.coreDetails.developerRef,
     developerName: form.coreDetails.developerName,
   },
+
+  categoryData: {
+    categoryRef: useCustomCategory
+      ? null
+      : form.categoryData.categoryRef,
+    categoryName: useCustomCategory
+      ? form.categoryData.customCategory
+      : form.categoryData.categoryName,
+  },
+
+  locationData: {
+    ...form.locationData,
+    locationRef: useCustomLocation
+      ? null
+      : form.locationData.locationRef,
+    locationName: useCustomLocation
+      ? form.locationData.customLocation
+      : form.locationData.locationName,
+  },
+
+  keyMetrics: {
+  ...form.keyMetrics,
+  totalUnits: Number(form.keyMetrics.totalUnits) || 0,
+  totalTowers: Number(form.keyMetrics.totalTowers) || 0,
+},
+
   unitConfigurations: validConfigurations,
 };
 
@@ -172,6 +246,26 @@ export default function AddProperty() {
     console.error(err);
     alert("Server error ❌");
   }
+};
+
+const buildOptions = (nodes, prefix = "") => {
+  let options = [];
+
+  nodes.forEach((node) => {
+    const label = prefix ? `${prefix} > ${node.name}` : node.name;
+
+    options.push({
+      _id: node._id,
+      name: node.name,
+      label,
+    });
+
+    if (node.children && node.children.length > 0) {
+      options = options.concat(buildOptions(node.children, label));
+    }
+  });
+
+  return options;
 };
 
   return (
@@ -312,7 +406,94 @@ export default function AddProperty() {
   )}
             </div>
 
-            <input className="input" placeholder="Starting Price"
+              {/* ================= CATEGORY ================= */}
+<div className="space-y-2">
+  <label className="text-sm text-gray-500">Category</label>
+
+  {!useCustomCategory ? (
+    <select
+      className="input"
+      value={form.categoryData.categoryRef || ""}
+      onChange={(e) => {
+        if (e.target.value === "OTHER") {
+          setUseCustomCategory(true);
+
+          setForm(prev => ({
+            ...prev,
+            categoryData: {
+              categoryRef: "",
+              categoryName: "",
+              customCategory: "",
+            }
+          }));
+        } else {
+          const selected = categories.find(
+            c => c._id === e.target.value
+          );
+
+          setUseCustomCategory(false);
+
+          setForm(prev => ({
+            ...prev,
+            categoryData: {
+              categoryRef: selected?._id || "",
+              categoryName: selected?.name || "",
+              customCategory: "",
+            }
+          }));
+        }
+      }}
+    >
+      <option value="">Select Category</option>
+
+      {categories.map((cat) => (
+        <option key={cat._id} value={cat._id}>
+          {cat.name}
+        </option>
+      ))}
+
+      <option value="OTHER">+ Add Custom Category</option>
+    </select>
+  ) : (
+    <div className="flex gap-2">
+      <input
+        className="input flex-1"
+        placeholder="Enter custom category"
+        value={form.categoryData.customCategory}
+        onChange={(e) =>
+          setForm(prev => ({
+            ...prev,
+            categoryData: {
+              ...prev.categoryData,
+              customCategory: e.target.value,
+            }
+          }))
+        }
+      />
+
+      <button
+        type="button"
+        onClick={() => {
+          setUseCustomCategory(false);
+
+          setForm(prev => ({
+            ...prev,
+            categoryData: {
+              categoryRef: "",
+              categoryName: "",
+              customCategory: "",
+            }
+          }));
+        }}
+        className="px-3 rounded bg-gray-200 hover:bg-gray-300"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+</div>
+
+              <input className="input" placeholder="Starting Price"
               value={form.coreDetails.startingPrice}
               onChange={(e) => handleChange("coreDetails", "startingPrice", e.target.value)}
             />
@@ -321,8 +502,82 @@ export default function AddProperty() {
               value={form.coreDetails.maxPrice}
               onChange={(e) => handleChange("coreDetails", "maxPrice", e.target.value)}
             />
+
+            <div className="mt-6">
+  <h3 className="font-semibold mb-2">Key Metrics</h3>
+
+  <div className="grid grid-cols-2 gap-4">
+
+    <input
+      className="input"
+      placeholder="Status (e.g. New Launch)"
+      value={form.keyMetrics.status}
+      onChange={(e) =>
+        handleChange("keyMetrics", "status", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Possession (e.g. 2028)"
+      value={form.keyMetrics.possession}
+      onChange={(e) =>
+        handleChange("keyMetrics", "possession", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Land Area (e.g. 10 Acres)"
+      value={form.keyMetrics.landArea}
+      onChange={(e) =>
+        handleChange("keyMetrics", "landArea", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Total Units"
+      value={form.keyMetrics.totalUnits || ""}
+      onChange={(e) =>
+        handleChange("keyMetrics", "totalUnits", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Total Towers"
+      value={form.keyMetrics.totalTowers || ""}
+      onChange={(e) =>
+        handleChange("keyMetrics", "totalTowers", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Floors"
+      value={form.keyMetrics.floors || ""}
+      onChange={(e) =>
+        handleChange("keyMetrics", "floors", e.target.value)
+      }
+    />
+
+    <input
+      className="input col-span-2"
+      placeholder="RERA Number"
+      value={form.keyMetrics.reraNumber || ""}
+      onChange={(e) =>
+        handleChange("keyMetrics", "reraNumber", e.target.value)
+      }
+    />
+
+  </div>
+</div>
           </div>
+          
         )}
+
+        
 
         {/* ================= STEP 2 ================= */}
         {step === 2 && (
@@ -453,57 +708,185 @@ export default function AddProperty() {
         {/* ================= STEP 5 ================= */}
         {step === 5 && (
           <div className="section">
-            <h2>Location</h2>
+  <h2>Location</h2>
 
-            <input className="input" placeholder="Address"
-              value={form.locationData.address}
-              onChange={(e) => handleChange("locationData", "address", e.target.value)}
-            />
+  {/* LOCATION SELECT */}
+  <div className="space-y-2">
+    <label className="text-sm text-gray-500">Select Location</label>
 
-            {form.locationData.landmarks.map((l, i) => (
-              <div key={i} className="flex gap-2">
-                <input value={l.name} placeholder="Name"
-                  onChange={(e) => {
-                    const arr = [...form.locationData.landmarks];
-                    arr[i].name = e.target.value;
-                    setForm(prev => ({ ...prev, locationData: { ...prev.locationData, landmarks: arr } }));
-                  }}
-                />
+    {!useCustomLocation ? (
+      <select
+        className="input"
+        value={form.locationData.locationRef || ""}
+        onChange={(e) => {
+          if (e.target.value === "OTHER") {
+            setUseCustomLocation(true);
 
-                <input value={l.distance} placeholder="Distance"
-                  onChange={(e) => {
-                    const arr = [...form.locationData.landmarks];
-                    arr[i].distance = e.target.value;
-                    setForm(prev => ({ ...prev, locationData: { ...prev.locationData, landmarks: arr } }));
-                  }}
-                />
+            setForm(prev => ({
+              ...prev,
+              locationData: {
+                ...prev.locationData,
+                locationRef: "",
+                locationName: "",
+                customLocation: "",
+              }
+            }));
 
-                <button onClick={() => {
-                  const arr = form.locationData.landmarks.filter((_, idx) => idx !== i);
-                  setForm(prev => ({ ...prev, locationData: { ...prev.locationData, landmarks: arr } }));
-                }}>
-                  ❌
-                </button>
-              </div>
-            ))}
+          } else {
+            const selected = buildOptions(locations).find(
+              l => l._id === e.target.value
+            );
 
-            <button onClick={() =>
-              setForm(prev => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  landmarks: [...prev.locationData.landmarks, { name: "", distance: "" }]
-                }
-              }))
-            }>
-              + Add Landmark
-            </button>
-          </div>
+            setUseCustomLocation(false);
+
+            setForm(prev => ({
+              ...prev,
+              locationData: {
+                ...prev.locationData,
+                locationRef: selected?._id || "",
+                locationName: selected?.label || "",
+                customLocation: "",
+              }
+            }));
+          }
+        }}
+      >
+        <option value="">Select Location</option>
+
+        {buildOptions(locations).map((loc) => (
+          <option key={loc._id} value={loc._id}>
+            {loc.label}
+          </option>
+        ))}
+
+        <option value="OTHER">+ Add Custom Location</option>
+      </select>
+    ) : (
+      <div className="flex gap-2">
+        <input
+          className="input flex-1"
+          placeholder="Enter custom location"
+          value={form.locationData.customLocation}
+          onChange={(e) =>
+            setForm(prev => ({
+              ...prev,
+              locationData: {
+                ...prev.locationData,
+                customLocation: e.target.value,
+              }
+            }))
+          }
+        />
+
+        <button
+          type="button"
+          onClick={() => {
+            setUseCustomLocation(false);
+
+            setForm(prev => ({
+              ...prev,
+              locationData: {
+                ...prev.locationData,
+                locationRef: "",
+                locationName: "",
+                customLocation: "",
+              }
+            }));
+          }}
+          className="px-3 rounded bg-gray-200 hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+      </div>
+    )}
+  </div>
+
+  {/* ADDRESS */}
+  <input
+    className="input"
+    placeholder="Full Address"
+    value={form.locationData.address}
+    onChange={(e) =>
+      handleChange("locationData", "address", e.target.value)
+    }
+  />
+
+  {/* LANDMARKS */}
+  {form.locationData.landmarks.map((l, i) => (
+    <div key={i} className="flex gap-2">
+      <input
+        value={l.name}
+        placeholder="Name"
+        onChange={(e) => {
+          const arr = [...form.locationData.landmarks];
+          arr[i].name = e.target.value;
+          setForm(prev => ({
+            ...prev,
+            locationData: { ...prev.locationData, landmarks: arr }
+          }));
+        }}
+      />
+
+      <input
+        value={l.distance}
+        placeholder="Distance"
+        onChange={(e) => {
+          const arr = [...form.locationData.landmarks];
+          arr[i].distance = e.target.value;
+          setForm(prev => ({
+            ...prev,
+            locationData: { ...prev.locationData, landmarks: arr }
+          }));
+        }}
+      />
+
+      <button onClick={() => {
+        const arr = form.locationData.landmarks.filter((_, idx) => idx !== i);
+        setForm(prev => ({
+          ...prev,
+          locationData: { ...prev.locationData, landmarks: arr }
+        }));
+      }}>
+        ❌
+      </button>
+    </div>
+  ))}
+
+  <button onClick={() =>
+    setForm(prev => ({
+      ...prev,
+      locationData: {
+        ...prev.locationData,
+        landmarks: [...prev.locationData.landmarks, { name: "", distance: "" }]
+      }
+    }))
+  }>
+    + Add Landmark
+  </button>
+</div>
         )}
 
         {/* ================= STEP 6 ================= */}
         {step === 6 && (
           <div className="section">
+            <div className="mt-6">
+  <h3 className="font-semibold mb-2">Brochure</h3>
+
+  <input
+    className="input"
+    placeholder="Brochure PDF URL (Google Drive / CDN link)"
+    value={form.gatedContent.brochurePdfUrl}
+    onChange={(e) =>
+      setForm(prev => ({
+        ...prev,
+        gatedContent: {
+          ...prev.gatedContent,
+          brochurePdfUrl: e.target.value,
+        }
+      }))
+    }
+  />
+</div>
             <h2>FAQs</h2>
 
             {form.faqs.map((f, i) => (
@@ -543,6 +926,7 @@ export default function AddProperty() {
             </button>
           </div>
         )}
+        
 
       </div>
 

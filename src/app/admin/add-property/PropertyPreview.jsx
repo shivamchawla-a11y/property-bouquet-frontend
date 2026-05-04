@@ -41,6 +41,39 @@ export default function PropertyPreview({ form, developers = [] }) {
     return "DEVELOPER";
   };
 
+  // ================= CATEGORY NAME RESOLVER =================
+const getCategoryName = () => {
+  if (form?.categoryData?.customCategory?.trim()) {
+    return form.categoryData.customCategory;
+  }
+
+  if (form?.categoryData?.categoryName?.trim()) {
+    return form.categoryData.categoryName;
+  }
+
+  return "CATEGORY";
+};
+
+// ================= LOCATION NAME RESOLVER =================
+const getLocationName = () => {
+  if (locationData?.customLocation?.trim()) {
+    return locationData.customLocation;
+  }
+
+  if (locationData?.locationName?.trim()) {
+    return locationData.locationName;
+  }
+
+  if (locationData?.address?.trim()) {
+    return locationData.address;
+  }
+
+  return "Location";
+};
+
+const categoryName = getCategoryName();
+const locationName = getLocationName();
+
   const developerName = getDeveloperName();
 
   return (
@@ -89,9 +122,19 @@ export default function PropertyPreview({ form, developers = [] }) {
             {coreDetails.title || "Property Title"}
           </h1>
 
+          <div className="flex gap-3 mt-2 text-xs">
+  <span className="bg-white/20 px-3 py-1 rounded-full">
+    {categoryName}
+  </span>
+
+  <span className="bg-white/20 px-3 py-1 rounded-full">
+    {developerName}
+  </span>
+</div>
+
           <p className="text-sm text-gray-200">
-            📍 {locationData.address || "Location"}
-          </p>
+              📍 {locationName}
+            </p>
 
           {/* METRICS BAR */}
           <div className="mt-6 bg-green-900/80 backdrop-blur px-6 py-4 rounded-xl flex flex-wrap gap-6 text-sm">
@@ -123,6 +166,20 @@ export default function PropertyPreview({ form, developers = [] }) {
                 ₹ {coreDetails.startingPrice || "—"} - {coreDetails.maxPrice || "—"}
               </p>
             </div>
+
+            <div>
+  <p className="opacity-70 text-xs">UNITS</p>
+  <p className="font-semibold">
+    {keyMetrics.totalUnits || "—"}
+  </p>
+</div>
+
+<div>
+  <p className="opacity-70 text-xs">TOWERS</p>
+  <p className="font-semibold">
+    {keyMetrics.totalTowers || "—"}
+  </p>
+</div>
 
           </div>
         </div>
@@ -293,6 +350,30 @@ export default function PropertyPreview({ form, developers = [] }) {
           )}
         </div>
       </div>
+
+      {/* ================= CTA / BROCHURE ================= */}
+{gatedContent?.brochurePdfUrl && (
+  <div className="py-12 bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white text-center">
+    
+    <h2 className="text-2xl font-bold mb-4">
+      Download Brochure
+    </h2>
+
+    <p className="mb-6 text-sm opacity-90">
+      Get complete details, floor plans & pricing
+    </p>
+
+    <a
+      href={gatedContent.brochurePdfUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold hover:scale-105 transition"
+    >
+      📄 Download Brochure
+    </a>
+
+  </div>
+)}
 
       {/* ================= FAQ ================= */}
       {faqs.filter(f => f.question).length > 0 && (
