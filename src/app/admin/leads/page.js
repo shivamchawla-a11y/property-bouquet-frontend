@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Users,
-  Download,
   Phone,
   MessageCircle,
+  Flame,
+  Snowflake,
+  ThermometerSun,
+  CheckCircle,
 } from "lucide-react";
 
 export default function LeadsPage() {
-  const router = useRouter();
-
   const [leads, setLeads] = useState([]);
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,24 +21,16 @@ export default function LeadsPage() {
 
   const [agentFilter, setAgentFilter] = useState("All");
   const [propertyFilter, setPropertyFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("All");
-const [statusFilter, setStatusFilter] = useState("All");
 
   const [assignModal, setAssignModal] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState("");
-   const [editingNoteId, setEditingNoteId] = useState(null);
-const [noteValue, setNoteValue] = useState("");
 
-const statusStyle = (status) => {
-  if (status === "New") return "bg-blue-100 text-blue-700 border-blue-200";
-  if (status === "Interested") return "bg-green-100 text-green-700 border-green-200";
-  if (status === "Not Interested") return "bg-red-100 text-red-600 border-red-200";
-  if (status === "Visit") return "bg-yellow-100 text-yellow-700 border-yellow-200";
-  if (status === "Closed") return "bg-purple-100 text-purple-700 border-purple-200";
-  return "bg-gray-100 text-gray-600 border-gray-200";
-};
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [noteValue, setNoteValue] = useState("");
 
   const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -53,18 +45,14 @@ const statusStyle = (status) => {
   }, []);
 
   const fetchLeads = async () => {
-    const res = await fetch(`${API}/leads`, {
-      headers: getHeaders(),
-    });
+    const res = await fetch(`${API}/leads`, { headers: getHeaders() });
     const data = await res.json();
     setLeads(data.data || []);
     setLoading(false);
   };
 
   const fetchAgents = async () => {
-    const res = await fetch(`${API}/auth/users`, {
-      headers: getHeaders(),
-    });
+    const res = await fetch(`${API}/auth/users`, { headers: getHeaders() });
     const data = await res.json();
     setAgents((data.data || []).filter((u) => u.role === "Agent"));
   };
@@ -78,50 +66,64 @@ const statusStyle = (status) => {
     fetchLeads();
   };
 
+  const getLatestNote = (notes) => {
+    if (Array.isArray(notes) && notes.length > 0) {
+      return notes[notes.length - 1].text;
+    }
+    return "";
+  };
+
+  // ================= COUNTS =================
+  const total = leads.length;
+  const hot = leads.filter((l) => l.priority === "Hot").length;
+  const warm = leads.filter((l) => l.priority === "Warm").length;
+  const cold = leads.filter((l) => l.priority === "Cold").length;
+  const closed = leads.filter((l) => l.status === "Closed").length;
+
   // ================= FILTER =================
   const filteredLeads = leads.filter((l) => {
-  const searchMatch =
-    l.name?.toLowerCase().includes(search.toLowerCase()) ||
-    l.phone?.includes(search);
+    const searchMatch =
+      l.name?.toLowerCase().includes(search.toLowerCase()) ||
+      l.phone?.includes(search);
 
-  const propertyMatch =
-    propertyFilter === "All" || l.property === propertyFilter;
+    const propertyMatch =
+      propertyFilter === "All" || l.property === propertyFilter;
 
-  const sourceMatch =
-    sourceFilter === "All" || l.source === sourceFilter;
+    const statusMatch =
+      statusFilter === "All" || l.status === statusFilter;
 
-  const statusMatch =
-    statusFilter === "All" || l.status === statusFilter;
-
-  const agentMatch =
-    (agentFilter === "All" ||
+    const agentMatch =
+      agentFilter === "All" ||
       (agentFilter === "Unassigned" && !l.assignedTo) ||
-      (l.assignedTo && l.assignedTo._id === agentFilter)) &&
+      (l.assignedTo && l.assignedTo._id === agentFilter);
 
-    (tab === "All" ||
+    const dateMatch =
+      (!startDate || new Date(l.createdAt) >= new Date(startDate)) &&
+      (!endDate || new Date(l.createdAt) <= new Date(endDate));
+
+    const tabMatch =
+      tab === "All" ||
       (tab === "Assigned" && l.assignedTo) ||
-      (tab === "Unassigned" && !l.assignedTo));
+      (tab === "Unassigned" && !l.assignedTo);
 
-  const dateMatch =
-    (!startDate || new Date(l.createdAt) >= new Date(startDate)) &&
-    (!endDate || new Date(l.createdAt) <= new Date(endDate));
+    return (
+      searchMatch &&
+      propertyMatch &&
+      statusMatch &&
+      agentMatch &&
+      dateMatch &&
+      tabMatch
+    );
+  });
 
-  return (
-    searchMatch &&
-    propertyMatch &&
-    sourceMatch &&
-    statusMatch &&
-    agentMatch &&
-    dateMatch
-  );
-});
-  const formatDate = (date) =>
-    new Date(date).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const statusStyle = (s) => {
+    if (s === "New") return "bg-blue-100 text-blue-700";
+    if (s === "Interested") return "bg-green-100 text-green-700";
+    if (s === "Not Interested") return "bg-red-100 text-red-600";
+    if (s === "Visit") return "bg-yellow-100 text-yellow-700";
+    if (s === "Closed") return "bg-purple-100 text-purple-700";
+    return "bg-gray-100 text-gray-600";
+  };
 
   const priorityStyle = (p) => {
     if (p === "Hot") return "bg-red-100 text-red-600";
@@ -133,18 +135,12 @@ const statusStyle = (status) => {
   if (loading) return <div className="p-10">Loading...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6 bg-[#f4f6f9] min-h-screen">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold flex gap-2">
-          <Users /> Lead Management
-        </h1>
-
-        <button className="bg-[#c9a64b] text-white px-5 py-2 rounded-xl shadow">
-          <Download size={16} /> Export
-        </button>
-      </div>
+      <h1 className="text-3xl font-bold flex gap-2">
+        <Users /> Lead Dashboard
+      </h1>
 
       {/* TABS */}
       <div className="flex gap-3">
@@ -153,9 +149,7 @@ const statusStyle = (status) => {
             key={t}
             onClick={() => setTab(t)}
             className={`px-5 py-2 rounded-full ${
-              tab === t
-                ? "bg-green-800 text-white"
-                : "bg-gray-100"
+              tab === t ? "bg-green-800 text-white" : "bg-white shadow"
             }`}
           >
             {t}
@@ -163,314 +157,291 @@ const statusStyle = (status) => {
         ))}
       </div>
 
+      {/* KPI CARDS */}
+      <div className="grid grid-cols-5 gap-4">
+
+        <Card title="Total" value={total} icon={<Users />} />
+
+        <Card
+          title="Hot"
+          value={hot}
+          icon={<Flame className="text-red-500" />}
+        />
+
+        <Card
+          title="Warm"
+          value={warm}
+          icon={<ThermometerSun className="text-yellow-500" />}
+        />
+
+        <Card
+          title="Cold"
+          value={cold}
+          icon={<Snowflake className="text-blue-500" />}
+        />
+
+        <Card
+          title="Closed"
+          value={closed}
+          icon={<CheckCircle className="text-green-600" />}
+        />
+      </div>
+
+      {/* FILTERS */}
       {/* FILTER BAR */}
       <div className="bg-white p-5 rounded-2xl shadow flex flex-wrap gap-4">
 
         <input
-          placeholder="Search name / phone..."
-          className="border px-4 py-2 rounded-xl w-[220px]"
+          placeholder="Search name / phone"
+          className="border px-4 py-2 rounded-xl"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div>
-          <p className="text-xs text-gray-500">Assigned To</p>
-          <select
-  className="border px-3 py-2 rounded-xl min-w-[180px]"
-  value={agentFilter}
-  onChange={(e) => setAgentFilter(e.target.value)}
->
-  <option value="All">All Agents</option>
-  <option value="Unassigned">Unassigned</option>
+        <select
+          className="border px-3 py-2 rounded-xl"
+          onChange={(e) => setPropertyFilter(e.target.value)}
+        >
+          <option value="All">All Properties</option>
+          {[...new Set(leads.map((l) => l.property))].map((p) => (
+            <option key={p}>{p}</option>
+          ))}
+        </select>
 
-  {agents.map((a) => (
-    <option key={a._id} value={a._id}>
-      {a.name}
-    </option>
-  ))}
-</select>
-        </div>
+        <select
+          className="border px-3 py-2 rounded-xl"
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="All">All Status</option>
+          <option>New</option>
+          <option>Interested</option>
+          <option>Not Interested</option>
+          <option>Visit</option>
+          <option>Closed</option>
+        </select>
 
-        <div>
-          <p className="text-xs text-gray-500">Property</p>
-          <select
-            className="border px-3 py-2 rounded-xl"
-            onChange={(e) => setPropertyFilter(e.target.value)}
-          >
-            <option value="All">All</option>
-            {[...new Set(leads.map((l) => l.property))].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
+        <select
+          className="border px-3 py-2 rounded-xl"
+          onChange={(e) => setAgentFilter(e.target.value)}
+        >
+          <option value="All">All Agents</option>
+          <option value="Unassigned">Unassigned</option>
+          {agents.map((a) => (
+            <option key={a._id} value={a._id}>
+              {a.name}
+            </option>
+          ))}
+        </select>
 
-        <div>
-          <p className="text-xs text-gray-500">From</p>
-          <input
-            type="date"
-            className="border px-3 py-2 rounded-xl"
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </div>
+        <input
+          type="date"
+          className="border px-3 py-2 rounded-xl"
+          onChange={(e) => setStartDate(e.target.value)}
+        />
 
-        <div>
-          <p className="text-xs text-gray-500">To</p>
-          <input
-            type="date"
-            className="border px-3 py-2 rounded-xl"
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-
+        <input
+          type="date"
+          className="border px-3 py-2 rounded-xl"
+          onChange={(e) => setEndDate(e.target.value)}
+        />
       </div>
 
+
       {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
 
-<div className="bg-white rounded-2xl shadow-lg overflow-hidden border">
+        <table className="w-full text-sm">
 
-  <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="p-5 text-left">Lead</th>
+              <th>Property</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Agent</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-    <thead className="bg-gray-50 text-gray-600 sticky top-0 z-10">
-      <tr>
-        <th className="p-5 text-left">Lead</th>
-        <th>Property</th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Agent</th>
-        <th>Notes</th>
-        <th>Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+          <tbody>
+            {filteredLeads.map((l) => (
+              <tr key={l._id} className="border-t hover:bg-gray-50">
 
-    <tbody>
-      {filteredLeads.map((l) => (
-        <tr
-          key={l._id}
-          className="border-t hover:bg-gray-50 transition-all duration-200"
-        >
+                <td className="p-5">
+                  <div className="font-semibold">{l.name}</div>
+                  <div className="text-xs text-gray-500">{l.phone}</div>
+                </td>
 
-          {/* LEAD */}
-          <td className="p-5">
-            <div className="font-semibold text-gray-800">
-              {l.name}
-            </div>
-            <div className="text-xs text-gray-500">
-              {l.phone}
-            </div>
-          </td>
+                <td>{l.property}</td>
 
-          <td className="text-gray-700">{l.property}</td>
-
-          {/* STATUS */}
-          <td>
-  <div
-    className={`flex items-center gap-2 px-2 py-1 rounded-full border w-fit ${statusStyle(
-      l.status
-    )}`}
-  >
-    {/* STATUS DOT */}
-    <span className="w-2 h-2 rounded-full bg-current"></span>
-
-    {/* DROPDOWN */}
-    <select
-      value={l.status || "New"}
-      onChange={(e) =>
-        updateLead(l._id, { status: e.target.value })
-      }
-      className="bg-transparent outline-none text-xs font-semibold cursor-pointer"
-    >
-      <option>New</option>
-      <option>Interested</option>
-      <option>Not Interested</option>
-      <option>Visit</option>
-      <option>Closed</option>
-    </select>
-  </div>
-</td>
-
-          {/* PRIORITY */}
-          <td>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                priorityStyle(l.priority)
-              }`}
-            >
-              {l.priority || "Warm"}
-            </span>
-          </td>
-
-          {/* AGENT */}
-          <td>
-  {l.assignedTo ? (
-    <div className="flex flex-col">
-      <span className="text-sm font-semibold text-gray-800">
-        {l.assignedTo.name}
-      </span>
-      <button
-        onClick={() => {
-          setAssignModal(l);
-          setSelectedAgent(l.assignedTo._id);
-        }}
-        className="text-xs text-blue-600 hover:underline"
-      >
-        Change
-      </button>
-    </div>
-  ) : (
-    <button
-      onClick={() => {
-        setAssignModal(l);
-        setSelectedAgent("");
-      }}
-      className="text-blue-600 font-medium hover:underline"
-    >
-      Assign
-    </button>
-  )}
-</td>
-
-          {/* NOTES (NEW SYSTEM) */}
-          <td className="w-[220px]">
-
-            {editingNoteId === l._id ? (
-              <div className="space-y-2">
-
-                <textarea
-                  value={noteValue}
-                  onChange={(e) => setNoteValue(e.target.value)}
-                  className="w-full border rounded-lg p-2 text-xs resize-none focus:outline-green-600"
-                  rows={3}
-                />
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      updateLead(l._id, { notes: noteValue });
-                      setEditingNoteId(null);
-                    }}
-                    className="bg-green-700 text-white px-3 py-1 rounded text-xs"
+                <td>
+                  <select
+                    value={l.status}
+                    onChange={(e) =>
+                      updateLead(l._id, { status: e.target.value })
+                    }
+                    className={`px-2 py-1 rounded ${statusStyle(l.status)}`}
                   >
-                    Save
-                  </button>
+                    <option>New</option>
+                    <option>Interested</option>
+                    <option>Not Interested</option>
+                    <option>Visit</option>
+                    <option>Closed</option>
+                  </select>
+                </td>
 
-                  <button
-                    onClick={() => setEditingNoteId(null)}
-                    className="bg-gray-200 px-3 py-1 rounded text-xs"
+                <td>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${priorityStyle(
+                      l.priority
+                    )}`}
                   >
-                    Cancel
-                  </button>
-                </div>
-
-              </div>
-            ) : (
-              <div
-                onClick={() => {
-                  setEditingNoteId(l._id);
-                  setNoteValue(l.notes || "");
-                }}
-                className="cursor-pointer bg-gray-50 border rounded-lg p-2 text-xs hover:bg-gray-100 transition"
-              >
-                {l.notes ? (
-                  l.notes.length > 60
-                    ? l.notes.slice(0, 60) + "..."
-                    : l.notes
-                ) : (
-                  <span className="text-gray-400">
-                    + Add note
+                    {l.priority || "Warm"}
                   </span>
-                )}
-              </div>
-            )}
+                </td>
 
-          </td>
+                <td>
+                  {l.assignedTo ? (
+                    <div>
+                      {l.assignedTo.name}
+                      <div className="flex gap-2 text-xs">
+                        <button
+                          onClick={() => {
+                            setAssignModal(l);
+                            setSelectedAgent(l.assignedTo._id);
+                          }}
+                          className="text-blue-600"
+                        >
+                          Change
+                        </button>
 
-          {/* DATE */}
-          <td className="text-xs text-gray-600">
-            {formatDate(l.createdAt)}
-          </td>
+                        <button
+                          onClick={() =>
+                            updateLead(l._id, { assignedTo: null })
+                          }
+                          className="text-red-500"
+                        >
+                          Unassign
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setAssignModal(l)}
+                      className="text-blue-600"
+                    >
+                      Assign
+                    </button>
+                  )}
+                </td>
 
-          {/* ACTIONS */}
-          <td className="flex gap-2 items-center">
+                <td className="w-[220px]">
+                  {editingNoteId === l._id ? (
+                    <div>
+                      <textarea
+                        value={noteValue}
+                        onChange={(e) => setNoteValue(e.target.value)}
+                        className="w-full border p-2 rounded"
+                      />
 
-            <button
-              onClick={() => window.open(`tel:${l.phone}`)}
-              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg shadow"
-            >
-              📞
-            </button>
+                      <button
+                        onClick={() => {
+                            updateLead(l._id, { notes: noteValue || "" });
+                            setEditingNoteId(null);
+                          }}
+                        className="text-green-600 text-xs"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => {
+                        setEditingNoteId(l._id);
+                        setNoteValue(getLatestNote(l.notes));
+                      }}
+                      className="bg-gray-50 p-2 rounded cursor-pointer text-xs hover:bg-gray-100"
+                    >
+                      {getLatestNote(l.notes) || "+ Add note"}
+                    </div>
+                  )}
+                </td>
 
-            <button
-              onClick={() =>
-                window.open(`https://wa.me/91${l.phone}`)
-              }
-              className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg shadow"
-            >
-              💬
-            </button>
+                <td className="flex gap-2">
+                  <button
+                    onClick={() => window.open(`tel:${l.phone}`)}
+                    className="bg-green-600 text-white p-2 rounded-lg"
+                  >
+                    <Phone size={14} />
+                  </button>
 
-          </td>
+                  <button
+                    onClick={() =>
+                      window.open(`https://wa.me/91${l.phone}`)
+                    }
+                    className="bg-green-500 text-white p-2 rounded-lg"
+                  >
+                    <MessageCircle size={14} />
+                  </button>
+                </td>
 
-        </tr>
-      ))}
-    </tbody>
+              </tr>
+            ))}
+          </tbody>
 
-  </table>
-</div>
+        </table>
+      </div>
 
       {/* ASSIGN MODAL */}
       {assignModal && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[9999]">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
 
-          <div className="bg-white p-6 rounded-2xl w-[350px] shadow-xl">
+          <div className="bg-white p-6 rounded-xl w-[300px]">
 
-            <h2 className="text-lg font-bold mb-4">
-              Assign Lead
-            </h2>
+            <h2 className="font-bold mb-4">Assign Agent</h2>
 
-            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-              {agents.map((a) => (
-                <div
-                  key={a._id}
-                  onClick={() => setSelectedAgent(a._id)}
-                  className={`p-3 border rounded cursor-pointer ${
-                    selectedAgent === a._id
-                      ? "bg-green-100 border-green-600"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {a.name}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => {
-                  if (!selectedAgent) return;
-                  updateLead(assignModal._id, {
-                    assignedTo: selectedAgent,
-                  });
-                  setAssignModal(null);
-                  setSelectedAgent("");
-                }}
-                className="flex-1 bg-green-800 text-white py-2 rounded-lg"
+            {agents.map((a) => (
+              <div
+                key={a._id}
+                onClick={() => setSelectedAgent(a._id)}
+                className={`p-2 border mb-2 cursor-pointer ${
+                  selectedAgent === a._id ? "bg-green-200" : ""
+                }`}
               >
-                OK
-              </button>
+                {a.name}
+              </div>
+            ))}
 
-              <button
-                onClick={() => setAssignModal(null)}
-                className="flex-1 bg-gray-200 py-2 rounded-lg"
-              >
-                Cancel
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                updateLead(assignModal._id, {
+                  assignedTo: selectedAgent || null,
+                });
+                setAssignModal(null);
+              }}
+              className="bg-green-700 text-white px-4 py-2 mt-3 w-full"
+            >
+              Save
+            </button>
 
           </div>
         </div>
       )}
 
+    </div>
+  );
+}
+
+// 🔥 CARD COMPONENT
+function Card({ title, value, icon }) {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
+      <div>
+        <p className="text-gray-500 text-sm">{title}</p>
+        <h2 className="text-xl font-bold">{value}</h2>
+      </div>
+      {icon}
     </div>
   );
 }

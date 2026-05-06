@@ -6,6 +6,50 @@ import { useRouter } from "next/navigation";
 import PropertyPreview from "../../add-property/PropertyPreview";
 import { useParams } from "next/navigation";
 
+import {
+  Waves,
+  Dumbbell,
+  Building,
+  Trees,
+  Car,
+  ArrowUpDown,
+  Shield,
+  Zap,
+  Home,
+  Baby,
+  Footprints,
+  Camera,
+  Gamepad2,
+  Sparkles,
+  ShoppingBag,
+  Phone,
+  Wind,
+} from "lucide-react";
+
+// ✅ Amenities with icons
+const AMENITIES = [
+  { name: "Swimming Pool", icon: Waves },
+  { name: "Gym", icon: Dumbbell },
+  { name: "Clubhouse", icon: Building },
+  { name: "Garden", icon: Trees },
+  { name: "Parking", icon: Car },
+  { name: "Lift", icon: ArrowUpDown },
+  { name: "Security", icon: Shield },
+  { name: "Power Backup", icon: Zap },
+  { name: "Balcony", icon: Home },
+  { name: "Kids Play Area", icon: Baby },
+  { name: "Jogging Track", icon: Footprints },
+  { name: "CCTV", icon: Camera },
+  { name: "Indoor Games", icon: Gamepad2 },
+  { name: "Spa", icon: Sparkles },
+  { name: "Shopping Center", icon: ShoppingBag },
+  { name: "WiFi", icon: Zap },
+  { name: "Fire Safety", icon: Shield },
+  { name: "Rainwater Harvesting", icon: Trees },
+  { name: "Intercom", icon: Phone },
+  { name: "Air Conditioning", icon: Wind },
+];
+
 export default function EditProperty() {
   const [step, setStep] = useState(1);
   const router = useRouter();
@@ -17,8 +61,9 @@ export default function EditProperty() {
 
     coreDetails: {
   title: "",
-  developerRef: "",     // ObjectId
-  developerName: "",    // Custom name
+  developerRef: "",
+  developerName: "",
+  developerLogo: "",   // ✅ ADD THIS
   startingPrice: "",
   maxPrice: "",
 },
@@ -81,6 +126,7 @@ export default function EditProperty() {
     const [useCustomLocation, setUseCustomLocation] = useState(false);
     const [categories, setCategories] = useState([]);
     const [useCustomCategory, setUseCustomCategory] = useState(false);
+    const [customAmenity, setCustomAmenity] = useState("");
     const [loading, setLoading] = useState(true);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
@@ -456,35 +502,37 @@ if (loading) {
   className="input"
   value={form.coreDetails.developerRef || ""}
   onChange={(e) => {
-    if (e.target.value === "OTHER") {
-      setUseCustomDeveloper(true);
+  if (e.target.value === "OTHER") {
+    setUseCustomDeveloper(true);
 
-      setForm(prev => ({
-        ...prev,
-        coreDetails: {
-          ...prev.coreDetails,
-          developerRef: "",
-          developerName: "",
-        }
-      }));
+    setForm(prev => ({
+      ...prev,
+      coreDetails: {
+        ...prev.coreDetails,
+        developerRef: "",
+        developerName: "",
+        developerLogo: "", // ✅ ADD THIS
+      }
+    }));
 
-    } else {
-      const selectedDev = developers.find(
-        d => d._id === e.target.value
-      );
+  } else {
+    const selectedDev = developers.find(
+      d => d._id === e.target.value
+    );
 
-      setUseCustomDeveloper(false);
+    setUseCustomDeveloper(false);
 
-      setForm(prev => ({
-        ...prev,
-        coreDetails: {
-          ...prev.coreDetails,
-          developerRef: selectedDev?._id || "",
-          developerName: selectedDev?.name || "", // ✅ STORE NAME
-        }
-      }));
-    }
-  }}
+    setForm(prev => ({
+      ...prev,
+      coreDetails: {
+        ...prev.coreDetails,
+        developerRef: selectedDev?._id || "",
+        developerName: selectedDev?.name || "",
+        developerLogo: selectedDev?.logo || "", // ✅ IMPORTANT
+      }
+    }));
+  }
+}}
 >
   <option value="">Select Developer</option>
 
@@ -704,49 +752,121 @@ if (loading) {
 
         {/* ================= STEP 2 ================= */}
         {step === 2 && (
-          <div className="section">
-            <h2>Overview</h2>
+  <div className="section">
+    <h2>Overview</h2>
 
-            <textarea className="input" placeholder="Description"
-              value={form.overview.description}
-              onChange={(e) => handleChange("overview", "description", e.target.value)}
+    <textarea
+      className="input"
+      placeholder="Description"
+      value={form.overview.description}
+      onChange={(e) =>
+        handleChange("overview", "description", e.target.value)
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="About Image URL"
+      value={form.overview.aboutImageUrl}
+      onChange={(e) =>
+        handleChange("overview", "aboutImageUrl", e.target.value)
+      }
+    />
+
+    {/* ================= AMENITIES ================= */}
+    <h3 className="mt-6 font-semibold text-lg">Amenities</h3>
+
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+      {AMENITIES.map((item) => {
+        const selected = form.overview.highlights.includes(item.name);
+        const Icon = item.icon;
+
+        return (
+          <label
+            key={item.name}
+            className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition ${
+              selected
+                ? "bg-green-100 border-green-400"
+                : "bg-gray-100 border-gray-200"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => {
+                let updated;
+
+                if (selected) {
+                  updated = form.overview.highlights.filter(
+                    (h) => h !== item.name
+                  );
+                } else {
+                  updated = [...form.overview.highlights, item.name];
+                }
+
+                handleChange("overview", "highlights", updated);
+              }}
             />
 
-            <input className="input" placeholder="About Image URL"
-              value={form.overview.aboutImageUrl}
-              onChange={(e) => handleChange("overview", "aboutImageUrl", e.target.value)}
-            />
+            <Icon size={18} className="text-gray-700" />
+            <span>{item.name}</span>
+          </label>
+        );
+      })}
+    </div>
 
-            <h3>Highlights</h3>
+    {/* ================= CUSTOM AMENITY ================= */}
+    <div className="mt-5 flex gap-2">
+      <input
+        className="input flex-1"
+        placeholder="Add custom amenity"
+        value={customAmenity}
+        onChange={(e) => setCustomAmenity(e.target.value)}
+      />
 
-            {form.overview.highlights.map((h, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  className="input flex-1"
-                  value={h}
-                  onChange={(e) => {
-                    const arr = [...form.overview.highlights];
-                    arr[i] = e.target.value;
-                    handleChange("overview", "highlights", arr);
-                  }}
-                />
+      <button
+        type="button"
+        className="bg-black text-white px-4 rounded"
+        onClick={() => {
+          if (!customAmenity.trim()) return;
 
-                <button onClick={() => {
-                  const arr = form.overview.highlights.filter((_, idx) => idx !== i);
-                  handleChange("overview", "highlights", arr);
-                }}>
-                  ❌
-                </button>
-              </div>
-            ))}
+          if (!form.overview.highlights.includes(customAmenity)) {
+            handleChange("overview", "highlights", [
+              ...form.overview.highlights,
+              customAmenity,
+            ]);
+          }
 
-            <button onClick={() =>
-              handleChange("overview", "highlights", [...form.overview.highlights, ""])
-            }>
-              + Add Highlight
-            </button>
-          </div>
-        )}
+          setCustomAmenity("");
+        }}
+      >
+        + Add
+      </button>
+    </div>
+
+    {/* ================= SELECTED ================= */}
+    <div className="mt-5 flex flex-wrap gap-2">
+      {form.overview.highlights.map((item, i) => (
+        <div
+          key={i}
+          className="bg-black text-white px-3 py-1 rounded-full flex items-center gap-2"
+        >
+          {item}
+          <button
+            onClick={() => {
+              const updated = form.overview.highlights.filter(
+                (_, idx) => idx !== i
+              );
+              handleChange("overview", "highlights", updated);
+            }}
+          >
+            ❌
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* ================= STEP 3 ================= */}
         {step === 3 && (

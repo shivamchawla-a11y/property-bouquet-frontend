@@ -50,6 +50,31 @@ export default function PropertyPreview({ form, developers = [] }) {
     keyMetrics = {},
     gatedContent = {},
   } = form;
+  function getDeveloperLogo() {
+  // ✅ 1. Direct logo (highest priority)
+  if (coreDetails?.developerLogo) {
+    return coreDetails.developerLogo;
+  }
+
+  // ✅ 2. Populated object
+  if (
+    coreDetails?.developerRef &&
+    typeof coreDetails.developerRef === "object"
+  ) {
+    return coreDetails.developerRef.logo || "";
+  }
+
+  // ✅ 3. Lookup from developers list
+  if (coreDetails?.developerRef) {
+    const dev = developers.find(
+      (d) => d._id === coreDetails.developerRef
+    );
+    return dev?.logo || "";
+  }
+
+  return "";
+}
+
 
   const floorPlans = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
@@ -57,6 +82,9 @@ export default function PropertyPreview({ form, developers = [] }) {
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const developerLogo = getDeveloperLogo(); // ✅ ADD THIS LINE
+
+  
   
 
   const handleLeadSubmit = async () => {
@@ -148,18 +176,26 @@ const getCategoryName = () => {
   return "CATEGORY";
 };
 
+
 // ================= LOCATION NAME RESOLVER =================
 const getLocationName = () => {
   if (locationData?.customLocation?.trim()) {
     return locationData.customLocation;
   }
 
-  if (locationData?.locationName?.trim()) {
-    return locationData.locationName;
+  if (locationData?.locationName?.includes(">")) {
+    const parts = locationData.locationName.split(">").map(p => p.trim());
+
+    // 🔥 SHOW LAST 2 LEVELS ONLY
+    if (parts.length >= 2) {
+      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
+    }
+
+    return parts[0];
   }
 
-  if (locationData?.address?.trim()) {
-    return locationData.address;
+  if (locationData?.locationName) {
+    return locationData.locationName;
   }
 
   return "Location";
@@ -177,11 +213,22 @@ const locationName = getLocationName();
       <div className="relative overflow-visible bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white h-[80px] px-10 flex items-center justify-between">
 
         {/* LEFT BRAND */}
-        <div className="leading-tight">
-          <div className="text-sm tracking-[3px] font-semibold">
-            {developerName}
-          </div>
-        </div>
+<div className="text-white flex items-center">
+  {developerLogo && developerLogo.trim() !== "" ? (
+    <img
+      src={developerLogo}
+      alt={developerName}
+      className="h-10 object-contain"
+      onError={(e) => (e.target.style.display = "none")} // fallback safety
+    />
+  ) : (
+    <div>
+      <p className="text-2xl tracking-[6px] font-light">
+        {developerName || "DEVELOPER"}
+      </p>
+    </div>
+  )}
+</div>
 
         {/* RIGHT CALL BUTTON */}
         <div className="border border-white rounded-full px-5 py-1 text-sm flex items-center gap-2 bg-white/10 backdrop-blur">
@@ -201,113 +248,134 @@ const locationName = getLocationName();
       </div>
 
       {/* ================= HERO ================= */}
-      <div
-        className="relative h-[520px] bg-cover bg-center flex items-end"
-        style={{
-          backgroundImage: media?.heroImageUrl
-            ? `url(${media.heroImageUrl})`
-            : "linear-gradient(#000,#222)",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
 
-        <div className="relative z-10 p-10 text-white">
-          <h1 className="text-4xl font-bold mb-2">
-            {coreDetails.title || "Property Title"}
-          </h1>
+{/* ================= HERO ================= */}
+<div
+  className="relative h-[640px] bg-cover bg-center flex items-end"
+  style={{
+    backgroundImage: media?.heroImageUrl
+      ? `url(${media.heroImageUrl})`
+      : "linear-gradient(#000,#222)",
+  }}
+>
+  {/* OVERLAY */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-          <div className="flex gap-3 mt-2 text-xs">
-  <span className="bg-white/20 px-3 py-1 rounded-full">
-    {categoryName}
-  </span>
+  {/* CONTENT (LOWER POSITIONED) */}
+  <div className="relative z-10 w-full pb-16 px-6 flex flex-col items-center text-center">
 
-  <span className="bg-white/20 px-3 py-1 rounded-full">
-    {developerName}
-  </span>
-</div>
+    {/* TITLE */}
+    <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
+      {coreDetails.title}
+    </h1>
 
-          <p className="text-sm text-gray-200">
-              📍 {locationName}
-            </p>
+    {/* LOCATION */}
+    <p className="mt-3 text-lg text-gray-200 flex items-center gap-2">
+      📍 {locationName}
+    </p>
 
-          {/* METRICS BAR */}
-          <div className="mt-6 bg-green-900/80 backdrop-blur px-6 py-4 rounded-xl flex flex-wrap gap-6 text-sm">
+    {/* METRICS BAR */}
+    <div className="mt-8 bg-[#1f3d2b]/90 backdrop-blur-xl border border-white/20 rounded-xl px-8 py-5 flex flex-wrap justify-center items-center gap-10 text-white shadow-2xl">
 
-            <div>
-              <p className="opacity-70 text-xs">STATUS</p>
-              <p className="font-semibold">
-                {keyMetrics.status || "NEW LAUNCH"}
-              </p>
-            </div>
-
-            <div>
-              <p className="opacity-70 text-xs">POSSESSION</p>
-              <p className="font-semibold">
-                {keyMetrics.possession || "2028"}
-              </p>
-            </div>
-
-            <div>
-              <p className="opacity-70 text-xs">LAND AREA</p>
-              <p className="font-semibold">
-                {keyMetrics.landArea || "10 Acres"}
-              </p>
-            </div>
-
-            <div>
-              <p className="opacity-70 text-xs">PRICE</p>
-              <p className="font-semibold">
-                ₹ {coreDetails.startingPrice || "—"} - {coreDetails.maxPrice || "—"}
-              </p>
-            </div>
-
-            <div>
-  <p className="opacity-70 text-xs">UNITS</p>
-  <p className="font-semibold">
-    {keyMetrics.totalUnits || "—"}
-  </p>
-</div>
-
-<div>
-  <p className="opacity-70 text-xs">TOWERS</p>
-  <p className="font-semibold">
-    {keyMetrics.totalTowers || "—"}
-  </p>
-</div>
-
-          </div>
-        </div>
+      {/* SIZES */}
+      <div className="text-center">
+        <p className="text-xs text-gray-300 tracking-widest">SIZES</p>
+        <p className="text-xl font-semibold">
+          {unitConfigurations?.length > 0
+            ? unitConfigurations.map(u => u.unitType).join(" & ")
+            : "3 & 4 BHK"}
+        </p>
       </div>
 
-      {/* ================= ABOUT ================= */}
-      <div className="max-w-6xl mx-auto p-10 grid md:grid-cols-2 gap-10 items-center">
-        
-        <div>
-          <p className="text-sm text-green-700 font-semibold mb-2">
-            About {developerName}
-          </p>
+      <div className="hidden md:block h-10 w-[1px] bg-white/20" />
 
-          <h2 className="text-3xl font-bold mb-4">
-            {coreDetails.title}
-          </h2>
-
-          <p className="text-gray-700 leading-relaxed">
-            {overview.description || "No description provided"}
-          </p>
-
-          <button className="mt-6 bg-green-700 text-white px-5 py-2 rounded">
-            More Details →
-          </button>
-        </div>
-
-        {overview.aboutImageUrl && (
-          <img
-            src={overview.aboutImageUrl}
-            className="rounded-2xl shadow-lg border-[6px] border-[#c9a64b]"
-            alt=""
-          />
-        )}
+      {/* STATUS */}
+      <div className="text-center">
+        <p className="text-xs text-gray-300 tracking-widest">STATUS</p>
+        <p className="text-xl font-semibold">
+          {keyMetrics.status || "NEW LAUNCH"}
+        </p>
       </div>
+
+      <div className="hidden md:block h-10 w-[1px] bg-white/20" />
+
+      {/* AREA */}
+      <div className="text-center">
+        <p className="text-xs text-gray-300 tracking-widest">CARPET AREA</p>
+        <p className="text-xl font-semibold">
+          {unitConfigurations?.length > 0
+            ? `${unitConfigurations[0]?.area || ""} - ${
+                unitConfigurations[unitConfigurations.length - 1]?.area || ""
+              }`
+            : "1250 - 2140 SQ.FT."}
+        </p>
+      </div>
+
+      <div className="hidden md:block h-10 w-[1px] bg-white/20" />
+
+      {/* PRICE */}
+      <div className="text-center">
+        <p className="text-xs text-gray-300 tracking-widest">
+          STARTING PRICE
+        </p>
+        <p className="text-xl font-semibold">
+          ₹ {coreDetails.startingPrice || "5 Cr"} -{" "}
+          {coreDetails.maxPrice || "10 Cr"}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      {/* ================= ABOUT (PREMIUM UI) ================= */}
+<div className="bg-[#f8f8f8] py-16">
+  <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+
+    {/* LEFT CONTENT */}
+    <div>
+      {/* SMALL TITLE */}
+      <p className="text-sm text-[#1f3d2b] font-semibold mb-2">
+        About us {developerName}
+      </p>
+
+      {/* MAIN TITLE */}
+      <h2 className="text-5xl font-bold text-[#1f3d2b] leading-tight mb-4">
+        {coreDetails.title}
+      </h2>
+
+      {/* DESCRIPTION */}
+      <p className="text-gray-700 leading-relaxed text-[15px]">
+        {overview.description || "No description provided"}
+      </p>
+
+      {/* BUTTON */}
+      <button className="mt-6 bg-[#c9a64b] hover:bg-[#b8933f] text-white px-6 py-3 rounded shadow-md flex items-center gap-2 font-medium transition">
+        More Details
+        <span>▶</span>
+      </button>
+    </div>
+
+    {/* RIGHT IMAGE DESIGN */}
+    {overview.aboutImageUrl && (
+      <div className="relative">
+
+        {/* GOLD BACK LAYER */}
+        <div className="absolute -top-4 right-0 w-full h-full bg-[#c9a64b] rounded-3xl z-0" />
+
+        {/* GREEN BASE SHADOW */}
+        <div className="absolute bottom-[-15px] left-6 w-[90%] h-full bg-[#1f3d2b] rounded-3xl z-0" />
+
+        {/* MAIN IMAGE */}
+        <img
+          src={overview.aboutImageUrl}
+          alt="about"
+          className="relative z-10 rounded-3xl w-full h-[380px] object-cover shadow-xl"
+        />
+      </div>
+    )}
+
+  </div>
+</div>
 
       {/* ================= HIGHLIGHTS ================= */}
       {overview.highlights?.filter(Boolean).length > 0 && (

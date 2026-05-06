@@ -59,8 +59,9 @@ export default function AddProperty() {
 
     coreDetails: {
   title: "",
-  developerRef: "",     // ObjectId
-  developerName: "",    // Custom name
+  developerRef: "",
+  developerName: "",
+  developerLogo: "", // ✅ ADD THIS
   startingPrice: "",
   maxPrice: "",
 },
@@ -390,35 +391,37 @@ const buildOptions = (nodes, prefix = "") => {
   className="input"
   value={form.coreDetails.developerRef || ""}
   onChange={(e) => {
-    if (e.target.value === "OTHER") {
-      setUseCustomDeveloper(true);
+  if (e.target.value === "OTHER") {
+    setUseCustomDeveloper(true);
 
-      setForm(prev => ({
-        ...prev,
-        coreDetails: {
-          ...prev.coreDetails,
-          developerRef: "",
-          developerName: "",
-        }
-      }));
+    setForm(prev => ({
+      ...prev,
+      coreDetails: {
+        ...prev.coreDetails,
+        developerRef: "",
+        developerName: "",
+        developerLogo: "", // ✅ ADD THIS
+      }
+    }));
 
-    } else {
-      const selectedDev = developers.find(
-        d => d._id === e.target.value
-      );
+  } else {
+    const selectedDev = developers.find(
+      d => d._id === e.target.value
+    );
 
-      setUseCustomDeveloper(false);
+    setUseCustomDeveloper(false);
 
-      setForm(prev => ({
-        ...prev,
-        coreDetails: {
-          ...prev.coreDetails,
-          developerRef: selectedDev?._id || "",
-          developerName: selectedDev?.name || "", // ✅ STORE NAME
-        }
-      }));
-    }
-  }}
+    setForm(prev => ({
+      ...prev,
+      coreDetails: {
+        ...prev.coreDetails,
+        developerRef: selectedDev?._id || "",
+        developerName: selectedDev?.name || "",
+        developerLogo: selectedDev?.logo || "", // ✅ IMPORTANT
+      }
+    }));
+  }
+}}
 >
   <option value="">Select Developer</option>
 
