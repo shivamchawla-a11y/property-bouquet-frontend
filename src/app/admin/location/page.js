@@ -135,106 +135,154 @@ export default function LocationPage() {
 
           {/* NODE */}
           <div
-            className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-100 group transition"
-            style={{ marginLeft: level * 20 }}
-          >
-            {/* EXPAND */}
-            {node.children?.length > 0 ? (
-              <button onClick={() =>
-                setExpanded(prev => ({
-                  ...prev,
-                  [node._id]: !prev[node._id]
-                }))
-              }>
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </button>
-            ) : (
-              <span className="w-4" />
-            )}
+  className="relative group transition-all duration-300"
+  style={{ marginLeft: level * 20 }}
+>
+  <div className="flex items-center gap-3 p-3 rounded-xl border bg-gradient-to-r from-white to-gray-50 shadow-sm hover:shadow-md transition">
 
-            {/* NAME / EDIT */}
-            {editingId === node._id ? (
-              <input
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="input text-sm"
-              />
-            ) : (
-              <span className="font-medium">{node.name}</span>
-            )}
+    {/* CONNECTOR LINE */}
+    {level > 0 && (
+      <div className="absolute left-[-10px] top-0 h-full w-[2px] bg-gray-200" />
+    )}
 
-            {/* ACTIONS */}
-            <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100">
+    {/* EXPAND BUTTON */}
+    {node.children?.length > 0 ? (
+      <button
+        onClick={() =>
+          setExpanded((prev) => ({
+            ...prev,
+            [node._id]: !prev[node._id],
+          }))
+        }
+        className="p-1 rounded hover:bg-gray-200 transition"
+      >
+        {isExpanded ? (
+          <ChevronDown size={16} />
+        ) : (
+          <ChevronRight size={16} />
+        )}
+      </button>
+    ) : (
+      <span className="w-5" />
+    )}
 
-              {/* ADD */}
-              <button
-                onClick={() => {
-                  setActiveInput(node._id);
-                  setInputValue("");
-                }}
-                className="text-blue-500 text-xs flex items-center gap-1"
-              >
-                <Plus size={14} />
-              </button>
+    {/* ICON */}
+    <div className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 p-2 rounded-lg shadow-sm">
+      <MapPin size={14} />
+    </div>
 
-              {/* EDIT */}
-              {editingId === node._id ? (
-                <>
-                  <button onClick={() => updateLocation(node._id)}>
-                    <Check size={14} className="text-green-600" />
-                  </button>
-                  <button onClick={() => setEditingId(null)}>
-                    <X size={14} />
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => {
-                    setEditingId(node._id);
-                    setEditValue(node.name);
-                  }}
-                >
-                  <Pencil size={14} />
-                </button>
-              )}
+    {/* NAME / INPUT */}
+    <div className="flex-1">
+      {editingId === node._id ? (
+        <input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="input text-sm w-full"
+        />
+      ) : (
+        <div>
+          <p className="font-semibold text-gray-800">{node.name}</p>
 
-              {/* DELETE */}
-              <button onClick={() => deleteLocation(node._id)}>
-                <Trash2 size={14} className="text-red-500" />
-              </button>
+          {/* OPTIONAL PATH STYLE */}
+          {level > 0 && (
+            <p className="text-xs text-gray-400">
+              Sub-location
+            </p>
+          )}
+        </div>
+      )}
+    </div>
 
-            </div>
-          </div>
+    {/* CHILD COUNT */}
+    {node.children?.length > 0 && (
+      <div className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+        {node.children.length}
+      </div>
+    )}
+
+    {/* ACTIONS (ONLY ON HOVER) */}
+    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+
+      {/* ADD */}
+      <button
+        onClick={() => {
+          setActiveInput(node._id);
+          setInputValue("");
+        }}
+        className="p-1 rounded hover:bg-blue-100 text-blue-600"
+      >
+        <Plus size={14} />
+      </button>
+
+      {/* EDIT */}
+      {editingId === node._id ? (
+        <>
+          <button onClick={() => updateLocation(node._id)}>
+            <Check size={14} className="text-green-600" />
+          </button>
+          <button onClick={() => setEditingId(null)}>
+            <X size={14} />
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => {
+            setEditingId(node._id);
+            setEditValue(node.name);
+          }}
+          className="p-1 rounded hover:bg-gray-200"
+        >
+          <Pencil size={14} />
+        </button>
+      )}
+
+      {/* DELETE */}
+      <button
+        onClick={() => deleteLocation(node._id)}
+        className="p-1 rounded hover:bg-red-100 text-red-500"
+      >
+        <Trash2 size={14} />
+      </button>
+    </div>
+  </div>
+</div>
 
           {/* ADD INPUT */}
           {activeInput === node._id && (
-            <div
-              className="flex gap-2 mt-2"
-              style={{ marginLeft: (level + 1) * 20 }}
-            >
-              <input
-                autoFocus
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Enter child"
-                className="input flex-1"
-              />
+  <div
+    className="flex items-center gap-2 mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200"
+    style={{ marginLeft: (level + 1) * 20 }}
+  >
+    <input
+      autoFocus
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
+      placeholder="Add sub-location..."
+      className="input flex-1 bg-white"
+    />
 
-              <button
-                onClick={() => addLocation(node._id)}
-                className="bg-primary text-white px-3 rounded"
-              >
-                Add
-              </button>
+    <button
+      onClick={() => addLocation(node._id)}
+      className="bg-blue-600 text-white px-3 py-1 rounded-lg"
+    >
+      Add
+    </button>
 
-              <button onClick={() => setActiveInput(null)}>Cancel</button>
-            </div>
-          )}
+    <button
+      onClick={() => setActiveInput(null)}
+      className="text-gray-500"
+    >
+      Cancel
+    </button>
+  </div>
+)}
 
           {/* CHILDREN */}
-          {isExpanded &&
-            node.children?.length > 0 &&
-            renderTree(node.children, level + 1)}
+          {isExpanded && node.children?.length > 0 && (
+  <div className="ml-2 border-l border-dashed border-gray-300 pl-2 mt-1 transition-all duration-300">
+    {renderTree(node.children, level + 1)}
+  </div>
+)}
         </div>
       );
     });

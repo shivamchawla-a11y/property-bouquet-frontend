@@ -1,6 +1,41 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Waves,
+  Dumbbell,
+  Building2,
+  Trees,
+  Car,
+  ArrowUpCircle,
+  ShieldCheck,
+  Zap,
+  Home,
+  Baby,
+  Footprints,
+  Camera,
+  Gamepad2,
+  Sparkles,
+  ShoppingBag,
+} from "lucide-react";
+
+const amenityIcons = {
+  "Swimming Pool": <Waves size={28} />,
+  Gym: <Dumbbell size={28} />,
+  Clubhouse: <Building2 size={28} />,
+  Garden: <Trees size={28} />,
+  Parking: <Car size={28} />,
+  Lift: <ArrowUpCircle size={28} />,
+  Security: <ShieldCheck size={28} />,
+  "Power Backup": <Zap size={28} />,
+  Balcony: <Home size={28} />,
+  "Kids Play Area": <Baby size={28} />,
+  "Jogging Track": <Footprints size={28} />,
+  CCTV: <Camera size={28} />,
+  "Indoor Games": <Gamepad2 size={28} />,
+  Spa: <Sparkles size={28} />,
+  "Shopping Center": <ShoppingBag size={28} />,
+};
 
 export default function PropertyPreview({ form, developers = [] }) {
   if (!form) return null;
@@ -18,28 +53,87 @@ export default function PropertyPreview({ form, developers = [] }) {
 
   const floorPlans = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [leadName, setLeadName] = useState("");
+  const [leadPhone, setLeadPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  
+
+  const handleLeadSubmit = async () => {
+  if (!leadName.trim() || !leadPhone.trim()) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/leads",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: leadName,
+          phone: leadPhone,
+          property: coreDetails?.title || "",
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Failed ❌");
+      return;
+    }
+
+    // ✅ CLOSE MODAL
+    setShowModal(false);
+
+    // ✅ DOWNLOAD PDF
+    window.open(gatedContent.brochurePdfUrl, "_blank");
+
+    // RESET
+    setLeadName("");
+    setLeadPhone("");
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error ❌");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   // ================= FIX: DEVELOPER NAME RESOLVER =================
   const getDeveloperName = () => {
-    // If custom developer name exists → use it
-    if (coreDetails?.developerName && coreDetails.developerName.trim()) {
-      return coreDetails.developerName;
-    }
+  // ✅ Custom name (highest priority)
+  if (coreDetails?.developerName?.trim()) {
+    return coreDetails.developerName;
+  }
 
-    // If developerRef is ObjectId → map it
-    if (coreDetails?.developerRef) {
-      const dev = developers.find(
-        (d) => d._id === coreDetails.developerRef
-      );
+  // ✅ If populated object from backend
+  if (
+    coreDetails?.developerRef &&
+    typeof coreDetails.developerRef === "object"
+  ) {
+    return coreDetails.developerRef.name || "DEVELOPER";
+  }
 
-      if (dev) return dev.name;
+  // ✅ If only ID (fallback case)
+  if (coreDetails?.developerRef) {
+    const dev = developers.find(
+      (d) => d._id === coreDetails.developerRef
+    );
 
-      // fallback if not found
-      return coreDetails.developerRef;
-    }
+    if (dev) return dev.name;
+  }
 
-    return "DEVELOPER";
-  };
+  return "DEVELOPER";
+};
 
   // ================= CATEGORY NAME RESOLVER =================
 const getCategoryName = () => {
@@ -223,15 +317,21 @@ const locationName = getLocationName();
           </h2>
 
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto px-6">
-            {overview.highlights.filter(Boolean).map((h, i) => (
-              <div
-                key={i}
-                className="bg-[#f1f1f1] p-4 rounded-lg text-center shadow"
-              >
-                {h}
-              </div>
-            ))}
-          </div>
+  {overview.highlights.filter(Boolean).map((h, i) => (
+    <div
+      key={i}
+      className="bg-[#f1f1f1] p-5 rounded-xl text-center shadow flex flex-col items-center gap-3 hover:shadow-lg transition"
+    >
+      {/* ICON */}
+      <div className="text-green-700">
+        {amenityIcons[h] || <Home size={28} />} {/* fallback icon */}
+      </div>
+
+      {/* TEXT */}
+      <p className="text-sm font-medium">{h}</p>
+    </div>
+  ))}
+</div>
         </div>
       )}
 
@@ -351,27 +451,39 @@ const locationName = getLocationName();
         </div>
       </div>
 
-      {/* ================= CTA / BROCHURE ================= */}
+      {/* ================= PREMIUM BROCHURE CTA ================= */}
 {gatedContent?.brochurePdfUrl && (
-  <div className="py-12 bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white text-center">
-    
-    <h2 className="text-2xl font-bold mb-4">
-      Download Brochure
-    </h2>
+  <div className="relative py-16 text-white overflow-hidden">
 
-    <p className="mb-6 text-sm opacity-90">
-      Get complete details, floor plans & pricing
-    </p>
+    {/* BACKGROUND GLOW */}
+    <div className="absolute inset-0 bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b]" />
+    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
 
-    <a
-      href={gatedContent.brochurePdfUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold hover:scale-105 transition"
-    >
-      📄 Download Brochure
-    </a>
+    <div className="relative z-10 max-w-5xl mx-auto text-center px-6">
 
+      {/* ICON */}
+      <div className="mb-4 text-4xl">📄</div>
+
+      {/* TITLE */}
+      <h2 className="text-3xl font-bold mb-3">
+        Unlock Full Project Details
+      </h2>
+
+      {/* SUBTEXT */}
+      <p className="text-sm opacity-90 mb-8">
+        Get brochure, floor plans, pricing & exclusive insights instantly
+      </p>
+
+      {/* CTA BUTTON */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-white text-[#1f3d2b] px-8 py-4 rounded-full font-semibold shadow-xl hover:scale-105 transition flex items-center gap-2 mx-auto"
+      >
+        Download Brochure
+        <span className="text-lg">→</span>
+      </button>
+
+    </div>
   </div>
 )}
 
@@ -398,6 +510,82 @@ const locationName = getLocationName();
           </div>
         </div>
       )}
+
+        {/* ================= PREMIUM LEAD MODAL ================= */}
+{showModal && (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+
+    <div className="w-[92%] max-w-md rounded-2xl overflow-hidden shadow-2xl bg-white">
+
+      {/* HEADER */}
+      <div className="bg-gradient-to-r from-[#c9a64b] to-[#1f3d2b] px-6 py-4 flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-white">
+          Get Instant Access
+        </h2>
+
+        <button
+          onClick={() => setShowModal(false)}
+          className="text-white text-xl"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* BODY */}
+      <div className="p-6 space-y-4">
+
+        <p className="text-sm text-gray-600 text-center">
+          Fill details to download brochure instantly
+        </p>
+
+        {/* NAME FIELD */}
+        <div className="relative">
+          <input
+            type="text"
+            value={leadName}
+            onChange={(e) => setLeadName(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 pt-5 pb-2 focus:outline-none focus:ring-2 focus:ring-[#1f3d2b]"
+            placeholder=" "
+          />
+          <label className="absolute left-4 top-2 text-xs text-gray-500">
+            Full Name *
+          </label>
+        </div>
+
+        {/* PHONE FIELD */}
+        <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1f3d2b]">
+
+          <div className="px-3 flex items-center bg-gray-50 text-sm">
+            🇮🇳 +91
+          </div>
+
+          <input
+            type="tel"
+            value={leadPhone}
+            onChange={(e) => setLeadPhone(e.target.value)}
+            className="flex-1 px-4 py-3 outline-none"
+            placeholder="Enter phone number"
+          />
+        </div>
+
+        {/* CTA BUTTON */}
+        <button
+          onClick={handleLeadSubmit}
+          disabled={submitting}
+          className="w-full bg-gradient-to-r from-[#c9a64b] to-[#1f3d2b] text-white py-3 rounded-lg font-semibold hover:scale-[1.02] transition"
+        >
+          {submitting ? "Processing..." : "Download Brochure →"}
+        </button>
+
+        {/* TRUST TEXT */}
+        <p className="text-xs text-gray-500 text-center">
+          🔒 Your details are safe & never shared
+        </p>
+
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );

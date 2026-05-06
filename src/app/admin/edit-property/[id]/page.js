@@ -1,57 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import StepMedia from "./StepMedia";
+import StepMedia from "../../add-property/StepMedia";
 import { useRouter } from "next/navigation";
-import PropertyPreview from "./PropertyPreview";
+import PropertyPreview from "../../add-property/PropertyPreview";
+import { useParams } from "next/navigation";
 
-import {
-  Waves,
-  Dumbbell,
-  Building,
-  Trees,
-  Car,
-  ArrowUpDown,
-  Shield,
-  Zap,
-  Home,
-  Baby,
-  Footprints,
-  Camera,
-  Gamepad2,
-  Sparkles,
-  ShoppingBag,
-  Phone,
-  Wind,
-} from "lucide-react";
-
-// ✅ Amenities with icons
-const AMENITIES = [
-  { name: "Swimming Pool", icon: Waves },
-  { name: "Gym", icon: Dumbbell },
-  { name: "Clubhouse", icon: Building },
-  { name: "Garden", icon: Trees },
-  { name: "Parking", icon: Car },
-  { name: "Lift", icon: ArrowUpDown },
-  { name: "Security", icon: Shield },
-  { name: "Power Backup", icon: Zap },
-  { name: "Balcony", icon: Home },
-  { name: "Kids Play Area", icon: Baby },
-  { name: "Jogging Track", icon: Footprints },
-  { name: "CCTV", icon: Camera },
-  { name: "Indoor Games", icon: Gamepad2 },
-  { name: "Spa", icon: Sparkles },
-  { name: "Shopping Center", icon: ShoppingBag },
-  { name: "WiFi", icon: Zap },
-  { name: "Fire Safety", icon: Shield },
-  { name: "Rainwater Harvesting", icon: Trees },
-  { name: "Intercom", icon: Phone },
-  { name: "Air Conditioning", icon: Wind },
-];
-
-export default function AddProperty() {
+export default function EditProperty() {
   const [step, setStep] = useState(1);
   const router = useRouter();
+  const { id } = useParams();
 
   const [form, setForm] = useState({
     slug: "",
@@ -123,10 +81,132 @@ export default function AddProperty() {
     const [useCustomLocation, setUseCustomLocation] = useState(false);
     const [categories, setCategories] = useState([]);
     const [useCustomCategory, setUseCustomCategory] = useState(false);
-    const [customAmenity, setCustomAmenity] = useState("");
-    const [fullFormMode, setFullFormMode] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
+
+    useEffect(() => {
+  const fetchProperty = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+  const property = data.data;
+
+  // ✅ SAFE NORMALIZATION (NO CRASHES)
+  const safeForm = {
+    ...property,
+
+    coreDetails: {
+      title: "",
+      developerRef: "",
+      developerName: "",
+      startingPrice: "",
+      maxPrice: "",
+      ...property.coreDetails,
+    },
+
+    keyMetrics: {
+      landArea: "",
+      possession: "",
+      status: "",
+      totalUnits: "",
+      totalTowers: "",
+      floors: "",
+      reraNumber: "",
+      ...property.keyMetrics,
+    },
+
+    overview: {
+      description: "",
+      aboutImageUrl: "",
+      highlights: property.overview?.highlights?.length
+        ? property.overview.highlights
+        : [""],
+      ...property.overview,
+    },
+
+    unitConfigurations:
+      property.unitConfigurations?.length > 0
+        ? property.unitConfigurations
+        : [{ unitType: "", area: "", price: "", paymentPlan: "" }],
+
+    media: {
+      heroImageUrl: "",
+      gallery: property.media?.gallery || [],
+      walkthroughUrl: "",
+      ...property.media,
+    },
+
+    locationData: {
+      locationRef: "",
+      locationName: "",
+      customLocation: "",
+      address: "",
+      mapEmbedUrl: "",
+      landmarks:
+        property.locationData?.landmarks?.length > 0
+          ? property.locationData.landmarks
+          : [{ name: "", distance: "" }],
+      ...property.locationData,
+    },
+
+    gatedContent: {
+      brochurePdfUrl: "",
+      floorPlans:
+        property.gatedContent?.floorPlans?.length > 0
+          ? property.gatedContent.floorPlans
+          : [{ title: "", image: "" }],
+      ...property.gatedContent,
+    },
+
+    categoryData: {
+      categoryRef: "",
+      categoryName: "",
+      customCategory: "",
+      ...property.categoryData,
+    },
+
+    seoEngine: {
+      metaTitle: "",
+      metaDescription: "",
+      ...property.seoEngine,
+    },
+
+    faqs:
+      property.faqs?.length > 0
+        ? property.faqs
+        : [{ question: "", answer: "" }],
+  };
+
+  setForm(safeForm);
+  setPreviewData(safeForm);
+
+  // ✅ toggles
+  if (!property.coreDetails?.developerRef) setUseCustomDeveloper(true);
+  if (!property.locationData?.locationRef) setUseCustomLocation(true);
+  if (!property.categoryData?.categoryRef) setUseCustomCategory(true);
+
+  setLoading(false); // 🔥 IMPORTANT
+}
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (id) fetchProperty();
+}, [id]);
 
     useEffect(() => {
   const fetchCategories = async () => {
@@ -135,8 +215,8 @@ export default function AddProperty() {
       const data = await res.json();
 
       if (res.ok) {
-        setCategories(data.data || []);
-      }
+  setCategories(data.data || []);
+}
     } catch (err) {
       console.error(err);
     }
@@ -203,17 +283,16 @@ export default function AddProperty() {
   };
 
   // ================= SUBMIT =================
-  const handleSubmit = async () => {
+  const handleUpdate = async () => {
   try {
     const token = localStorage.getItem("token");
 
-    if (!token) {
-      alert("Session expired ❌ Please login again");
-      window.location.href = "/login";
-      return;
-    }
+if (!token) {
+  alert("Session expired ❌");
+  router.push("/login");
+  return;
+}
 
-    // 🔥 CLEAN CONFIGS
     const cleanedConfigurations = form.unitConfigurations.filter(
       (u) =>
         u.unitType?.trim() ||
@@ -227,53 +306,50 @@ export default function AddProperty() {
     );
 
     const cleanedForm = {
-  ...form,
+      ...form,
 
-  coreDetails: {
-    ...form.coreDetails,
-    developerRef: useCustomDeveloper
-      ? null
-      : form.coreDetails.developerRef,
-    developerName: form.coreDetails.developerName,
-  },
+      coreDetails: {
+        ...form.coreDetails,
+        developerRef: useCustomDeveloper
+          ? null
+          : form.coreDetails.developerRef,
+      },
 
-  categoryData: {
-    categoryRef: useCustomCategory
-      ? null
-      : form.categoryData.categoryRef,
-    categoryName: useCustomCategory
-      ? form.categoryData.customCategory
-      : form.categoryData.categoryName,
-  },
+      categoryData: {
+        categoryRef: useCustomCategory
+          ? null
+          : form.categoryData.categoryRef,
+        categoryName: useCustomCategory
+          ? form.categoryData.customCategory
+          : form.categoryData.categoryName,
+      },
 
-  locationData: {
-    ...form.locationData,
-    locationRef: useCustomLocation
-      ? null
-      : form.locationData.locationRef,
-    locationName: useCustomLocation
-      ? form.locationData.customLocation
-      : form.locationData.locationName,
-  },
+      locationData: {
+        ...form.locationData,
+        locationRef: useCustomLocation
+          ? null
+          : form.locationData.locationRef,
+        locationName: useCustomLocation
+          ? form.locationData.customLocation
+          : form.locationData.locationName,
+      },
 
-  keyMetrics: {
+      unitConfigurations: validConfigurations,
+
+      keyMetrics: {
   ...form.keyMetrics,
   totalUnits: Number(form.keyMetrics.totalUnits) || 0,
   totalTowers: Number(form.keyMetrics.totalTowers) || 0,
 },
-
-  unitConfigurations: validConfigurations,
-};
-
-    console.log("🚀 FINAL PAYLOAD:", cleanedForm);
+    };
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/properties",
+      `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
       {
-        method: "POST",
+        method: "PATCH", // 🔥 CHANGE HERE
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // 🔥 MOST IMPORTANT FIX
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(cleanedForm),
       }
@@ -282,12 +358,11 @@ export default function AddProperty() {
     const data = await res.json();
 
     if (res.ok) {
-      alert("Property Added ✅");
+  alert("Property Updated ✅");
+  router.push("/admin/properties"); // ✅ ADD THIS
     } else {
-      console.error(data);
-      alert(data.message || "Forbidden ❌");
+      alert(data.message || "Update failed ❌");
     }
-
   } catch (err) {
     console.error(err);
     alert("Server error ❌");
@@ -313,14 +388,16 @@ const buildOptions = (nodes, prefix = "") => {
 
   return options;
 };
-
+if (loading) {
+  return <div className="text-white p-10">Loading property...</div>;
+}
   return (
     <div className="app-bg p-10">
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
   <div>
-    <h1 className="text-4xl font-bold text-white">Add Property</h1>
+    <h1 className="text-4xl font-bold text-white">Edit Property</h1>
     <p className="text-gray-300">Step {step} of 6</p>
   </div>
 
@@ -332,13 +409,6 @@ const buildOptions = (nodes, prefix = "") => {
     >
       {previewMode ? "← Back to Edit" : "👁 Full Preview"}
     </button>
-
-    <button
-  onClick={() => setFullFormMode(!fullFormMode)}
-  className="bg-white text-black px-4 py-2 rounded-lg font-semibold"
->
-  {fullFormMode ? "↔ Split View" : "📝 Full Form"}
-</button>
 
     {/* PROGRESS BAR */}
     <div className="w-64 bg-white/20 rounded-full h-2">
@@ -360,11 +430,7 @@ const buildOptions = (nodes, prefix = "") => {
   <div className="flex gap-6">
 
   {/* LEFT SIDE — FORM */}
-  <div
-  className={`${
-    fullFormMode ? "w-full" : "w-1/2"
-  } overflow-y-auto h-[80vh] pr-4`}
->
+  <div className="w-1/2 overflow-y-auto h-[80vh] pr-4">
     <div className="space-y-8">
 
         {/* ================= STEP 1 ================= */}
@@ -637,123 +703,50 @@ const buildOptions = (nodes, prefix = "") => {
         
 
         {/* ================= STEP 2 ================= */}
-        {/* ================= STEP 2 ================= */}
-{step === 2 && (
-  <div className="section">
-    <h2>Overview</h2>
+        {step === 2 && (
+          <div className="section">
+            <h2>Overview</h2>
 
-    <textarea
-      className="input"
-      placeholder="Description"
-      value={form.overview.description}
-      onChange={(e) =>
-        handleChange("overview", "description", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="About Image URL"
-      value={form.overview.aboutImageUrl}
-      onChange={(e) =>
-        handleChange("overview", "aboutImageUrl", e.target.value)
-      }
-    />
-
-    {/* ================= AMENITIES ================= */}
-    <h3 className="mt-6 font-semibold text-lg">Amenities</h3>
-
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-      {AMENITIES.map((item) => {
-        const selected = form.overview.highlights.includes(item.name);
-        const Icon = item.icon;
-
-        return (
-          <label
-            key={item.name}
-            className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition ${
-              selected
-                ? "bg-green-100 border-green-400"
-                : "bg-gray-100 border-gray-200"
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={() => {
-                let updated;
-
-                if (selected) {
-                  updated = form.overview.highlights.filter(
-                    (h) => h !== item.name
-                  );
-                } else {
-                  updated = [...form.overview.highlights, item.name];
-                }
-
-                handleChange("overview", "highlights", updated);
-              }}
+            <textarea className="input" placeholder="Description"
+              value={form.overview.description}
+              onChange={(e) => handleChange("overview", "description", e.target.value)}
             />
 
-            <Icon size={18} className="text-gray-700" />
-            <span>{item.name}</span>
-          </label>
-        );
-      })}
-    </div>
+            <input className="input" placeholder="About Image URL"
+              value={form.overview.aboutImageUrl}
+              onChange={(e) => handleChange("overview", "aboutImageUrl", e.target.value)}
+            />
 
-    {/* ================= CUSTOM AMENITY ================= */}
-    <div className="mt-5 flex gap-2">
-      <input
-        className="input flex-1"
-        placeholder="Add custom amenity"
-        value={customAmenity}
-        onChange={(e) => setCustomAmenity(e.target.value)}
-      />
+            <h3>Highlights</h3>
 
-      <button
-        type="button"
-        className="bg-black text-white px-4 rounded"
-        onClick={() => {
-          if (!customAmenity.trim()) return;
+            {form.overview.highlights.map((h, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  className="input flex-1"
+                  value={h}
+                  onChange={(e) => {
+                    const arr = [...form.overview.highlights];
+                    arr[i] = e.target.value;
+                    handleChange("overview", "highlights", arr);
+                  }}
+                />
 
-          if (!form.overview.highlights.includes(customAmenity)) {
-            handleChange("overview", "highlights", [
-              ...form.overview.highlights,
-              customAmenity,
-            ]);
-          }
+                <button onClick={() => {
+                  const arr = form.overview.highlights.filter((_, idx) => idx !== i);
+                  handleChange("overview", "highlights", arr);
+                }}>
+                  ❌
+                </button>
+              </div>
+            ))}
 
-          setCustomAmenity("");
-        }}
-      >
-        + Add
-      </button>
-    </div>
-
-    {/* ================= SELECTED ================= */}
-    <div className="mt-5 flex flex-wrap gap-2">
-      {form.overview.highlights.map((item, i) => (
-        <div
-          key={i}
-          className="bg-black text-white px-3 py-1 rounded-full flex items-center gap-2"
-        >
-          {item}
-          <button
-            onClick={() => {
-              const updated = form.overview.highlights.filter(
-                (_, idx) => idx !== i
-              );
-              handleChange("overview", "highlights", updated);
-            }}
-          >
-            ❌
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+            <button onClick={() =>
+              handleChange("overview", "highlights", [...form.overview.highlights, ""])
+            }>
+              + Add Highlight
+            </button>
+          </div>
+        )}
 
         {/* ================= STEP 3 ================= */}
         {step === 3 && (
@@ -1066,19 +1059,16 @@ const buildOptions = (nodes, prefix = "") => {
         {step < 6 ? (
           <button onClick={goNext}>Next</button>
         ) : (
-          <button onClick={handleSubmit}>🚀 Publish</button>
+          <button onClick={handleUpdate}>💾 Update Property</button>
         )}
     </div>
   </div>
 
    {/* RIGHT SIDE — LIVE PREVIEW */}
-  {!fullFormMode && (
   <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
     <PropertyPreview form={previewData} />
   </div>
-)}
 
-  
 
 </div>
 )}

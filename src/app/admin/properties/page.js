@@ -16,6 +16,12 @@ export default function PropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
   const [filter, setFilter] = useState("active"); // active | inactive | all
+  const [user, setUser] = useState(null);
+
+useEffect(() => {
+  const u = JSON.parse(localStorage.getItem("user"));
+  setUser(u);
+}, []);
 
   const router = useRouter();
 
@@ -123,6 +129,49 @@ export default function PropertiesPage() {
       setActionId(null);
     }
   };
+
+  // ================= TOGGLE ACTIVE =================
+const handleTogglePublish = async (id, currentStatus) => {
+  try {
+    setActionId(id);
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          isActive: !currentStatus,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setProperties((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? { ...item, isActive: !currentStatus }
+            : item
+        )
+      );
+    } else {
+      alert(data.message || "Failed ❌");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error ❌");
+  } finally {
+    setActionId(null);
+  }
+};
+
 
   // ================= FILTER =================
   const filtered = properties.filter((p) =>
@@ -277,46 +326,64 @@ export default function PropertiesPage() {
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
 
-                      <button
-                        onClick={() =>
-                          router.push(`/property/${property.slug}`)
-                        }
-                        className="p-2 bg-blue-500 text-white rounded-lg"
-                      >
-                        <Eye size={16} />
-                      </button>
+  {/* VIEW */}
+  <button
+    onClick={() =>
+      router.push(`/property/${property.slug}`)
+    }
+    className="p-2 bg-blue-500 text-white rounded-lg"
+  >
+    <Eye size={16} />
+  </button>
 
-                      <button
-                        onClick={() =>
-                          router.push(`/edit-property/${property._id}`)
-                        }
-                        className="p-2 bg-primary text-white rounded-lg"
-                      >
-                        <Pencil size={16} />
-                      </button>
+  {/* EDIT */}
+  <button
+    onClick={() =>
+      router.push(`/admin/edit-property/${property._id}`)
+    }
+    className="p-2 bg-primary text-white rounded-lg"
+  >
+    <Pencil size={16} />
+  </button>
 
-                      {property.isActive ? (
-                        <button
-                          disabled={actionId === property._id}
-                          onClick={() =>
-                            handleDelete(property._id)
-                          }
-                          className="p-2 bg-red-500 text-white rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      ) : (
-                        <button
-                          disabled={actionId === property._id}
-                          onClick={() =>
-                            handleRestore(property._id)
-                          }
-                          className="p-2 bg-green-600 text-white rounded-lg"
-                        >
-                          <RotateCcw size={16} />
-                        </button>
-                      )}
-                    </div>
+  {/* PUBLISH / UNPUBLISH */}
+  {user?.role === "SuperAdmin" && (
+  <button
+    disabled={actionId === property._id}
+    onClick={() =>
+      handleTogglePublish(property._id, property.isActive)
+    }
+    className={`p-2 rounded-lg text-white ${
+      property.isActive ? "bg-yellow-500" : "bg-green-600"
+    }`}
+  >
+    {property.isActive ? "Unpublish" : "Publish"}
+  </button>
+)}
+
+  {/* DELETE / RESTORE */}
+  {property.isActive ? (
+    <button
+      disabled={actionId === property._id}
+      onClick={() =>
+        handleDelete(property._id)
+      }
+      className="p-2 bg-red-500 text-white rounded-lg"
+    >
+      <Trash2 size={16} />
+    </button>
+  ) : (
+    <button
+      disabled={actionId === property._id}
+      onClick={() =>
+        handleRestore(property._id)
+      }
+      className="p-2 bg-green-600 text-white rounded-lg"
+    >
+      <RotateCcw size={16} />
+    </button>
+  )}
+</div>
                   </td>
                 </tr>
               ))
