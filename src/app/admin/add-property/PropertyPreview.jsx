@@ -328,6 +328,7 @@ const locationName = getLocationName();
 </div>
 
       {/* ================= ABOUT (PREMIUM UI) ================= */}
+      
 <div className="bg-[#f8f8f8] py-16">
   <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
 
