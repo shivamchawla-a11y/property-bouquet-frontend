@@ -8,11 +8,11 @@ import PropertyPreview from "./PropertyPreview";
 import {
   Waves,
   Dumbbell,
-  Building,
+  Building2,
   Trees,
   Car,
   ArrowUpDown,
-  Shield,
+  ShieldCheck,
   Zap,
   Home,
   Baby,
@@ -21,19 +21,29 @@ import {
   Gamepad2,
   Sparkles,
   ShoppingBag,
+  Coffee,
+  School,
+  Hospital,
+  Wifi,
+  Utensils,
+  Film,
+  Landmark,
+  Bus,
+  Store,
   Phone,
   Wind,
 } from "lucide-react";
 
 // ✅ Amenities with icons
+// ✅ Amenities with icons
 const AMENITIES = [
   { name: "Swimming Pool", icon: Waves },
   { name: "Gym", icon: Dumbbell },
-  { name: "Clubhouse", icon: Building },
+  { name: "Clubhouse", icon: Building2 },
   { name: "Garden", icon: Trees },
   { name: "Parking", icon: Car },
   { name: "Lift", icon: ArrowUpDown },
-  { name: "Security", icon: Shield },
+  { name: "Security", icon: ShieldCheck },
   { name: "Power Backup", icon: Zap },
   { name: "Balcony", icon: Home },
   { name: "Kids Play Area", icon: Baby },
@@ -42,11 +52,38 @@ const AMENITIES = [
   { name: "Indoor Games", icon: Gamepad2 },
   { name: "Spa", icon: Sparkles },
   { name: "Shopping Center", icon: ShoppingBag },
-  { name: "WiFi", icon: Zap },
-  { name: "Fire Safety", icon: Shield },
+  { name: "WiFi", icon: Wifi },
+  { name: "Fire Safety", icon: ShieldCheck },
   { name: "Rainwater Harvesting", icon: Trees },
   { name: "Intercom", icon: Phone },
   { name: "Air Conditioning", icon: Wind },
+];
+
+const CUSTOM_ICONS = [
+  { name: "Home", icon: Home },
+  { name: "Swimming", icon: Waves },
+  { name: "Gym", icon: Dumbbell },
+  { name: "Club", icon: Building2 },
+  { name: "Garden", icon: Trees },
+  { name: "Parking", icon: Car },
+  { name: "Lift", icon: ArrowUpDown },
+  { name: "Security", icon: ShieldCheck },
+  { name: "Power", icon: Zap },
+  { name: "Kids", icon: Baby },
+  { name: "Track", icon: Footprints },
+  { name: "CCTV", icon: Camera },
+  { name: "Games", icon: Gamepad2 },
+  { name: "Spa", icon: Sparkles },
+  { name: "Shopping", icon: ShoppingBag },
+  { name: "Cafe", icon: Coffee },
+  { name: "School", icon: School },
+  { name: "Hospital", icon: Hospital },
+  { name: "Wifi", icon: Wifi },
+  { name: "Restaurant", icon: Utensils },
+  { name: "Cinema", icon: Film },
+  { name: "Temple", icon: Landmark },
+  { name: "Bus", icon: Bus },
+  { name: "Store", icon: Store },
 ];
 
 export default function AddProperty() {
@@ -73,10 +110,10 @@ export default function AddProperty() {
     },
 
     overview: {
-      description: "",
-      aboutImageUrl: "",
-      highlights: [""],
-    },
+  description: "",
+  aboutImageUrl: "",
+  highlights: [],
+},
 
     unitConfigurations: [
       { unitType: "", area: "", price: "", paymentPlan: "" }
@@ -126,6 +163,7 @@ export default function AddProperty() {
     const [useCustomCategory, setUseCustomCategory] = useState(false);
     const [customAmenity, setCustomAmenity] = useState("");
     const [fullFormMode, setFullFormMode] = useState(false);
+    const [selectedCustomIcon, setSelectedCustomIcon] = useState("Home");
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -668,7 +706,12 @@ const buildOptions = (nodes, prefix = "") => {
 
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
       {AMENITIES.map((item) => {
-        const selected = form.overview.highlights.includes(item.name);
+        const selected = form.overview.highlights.some((h) => {
+  const name =
+    typeof h === "string" ? h : h.name;
+
+  return name === item.name;
+});
         const Icon = item.icon;
 
         return (
@@ -687,12 +730,22 @@ const buildOptions = (nodes, prefix = "") => {
                 let updated;
 
                 if (selected) {
-                  updated = form.overview.highlights.filter(
-                    (h) => h !== item.name
-                  );
-                } else {
-                  updated = [...form.overview.highlights, item.name];
-                }
+  updated = form.overview.highlights.filter((h) => {
+    const name =
+      typeof h === "string" ? h : h.name;
+
+    return name !== item.name;
+  });
+
+} else {
+  updated = [
+    ...form.overview.highlights,
+    {
+      name: item.name,
+      icon: item.name,
+    },
+  ];
+}
 
                 handleChange("overview", "highlights", updated);
               }}
@@ -706,55 +759,116 @@ const buildOptions = (nodes, prefix = "") => {
     </div>
 
     {/* ================= CUSTOM AMENITY ================= */}
-    <div className="mt-5 flex gap-2">
-      <input
-        className="input flex-1"
-        placeholder="Add custom amenity"
-        value={customAmenity}
-        onChange={(e) => setCustomAmenity(e.target.value)}
-      />
+<div className="mt-6 bg-white border rounded-2xl p-5 shadow-sm">
 
-      <button
-        type="button"
-        className="bg-black text-white px-4 rounded"
-        onClick={() => {
-          if (!customAmenity.trim()) return;
+  <h4 className="font-semibold text-lg mb-4">
+    Add Custom Amenity
+  </h4>
 
-          if (!form.overview.highlights.includes(customAmenity)) {
-            handleChange("overview", "highlights", [
-              ...form.overview.highlights,
-              customAmenity,
-            ]);
-          }
+  {/* INPUT */}
+  <input
+    className="input w-full"
+    placeholder="Enter amenity name"
+    value={customAmenity}
+    onChange={(e) => setCustomAmenity(e.target.value)}
+  />
 
-          setCustomAmenity("");
-        }}
-      >
-        + Add
-      </button>
+  {/* ICON SELECTOR */}
+  <div className="mt-5">
+    <p className="text-sm text-gray-500 mb-3">
+      Select Icon
+    </p>
+
+    <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+
+      {CUSTOM_ICONS.map((item) => {
+        const Icon = item.icon;
+
+        return (
+          <button
+            key={item.name}
+            type="button"
+            onClick={() => setSelectedCustomIcon(item.name)}
+            className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition ${
+              selectedCustomIcon === item.name
+                ? "bg-green-100 border-green-500"
+                : "bg-gray-50 border-gray-200"
+            }`}
+          >
+            <Icon size={22} />
+            <span className="text-xs">
+              {item.name}
+            </span>
+          </button>
+        );
+      })}
     </div>
+  </div>
+
+  {/* ADD BUTTON */}
+  <button
+    type="button"
+    className="mt-5 bg-black text-white px-5 py-3 rounded-xl"
+    onClick={() => {
+      if (!customAmenity.trim()) return;
+
+      const amenityObject = {
+        name: customAmenity,
+        icon: selectedCustomIcon,
+      };
+
+      handleChange("overview", "highlights", [
+        ...form.overview.highlights,
+        amenityObject,
+      ]);
+
+      setCustomAmenity("");
+      setSelectedCustomIcon("Home");
+    }}
+  >
+    + Add Custom Amenity
+  </button>
+</div>
 
     {/* ================= SELECTED ================= */}
-    <div className="mt-5 flex flex-wrap gap-2">
-      {form.overview.highlights.map((item, i) => (
-        <div
-          key={i}
-          className="bg-black text-white px-3 py-1 rounded-full flex items-center gap-2"
-        >
-          {item}
-          <button
-            onClick={() => {
-              const updated = form.overview.highlights.filter(
+<div className="mt-5 flex flex-wrap gap-2">
+
+  {form.overview.highlights.map((item, i) => {
+
+    const itemName =
+      typeof item === "string"
+        ? item
+        : item.name;
+
+    return (
+      <div
+        key={i}
+        className="bg-black text-white px-3 py-1 rounded-full flex items-center gap-2"
+      >
+        {itemName}
+
+        <button
+          type="button"
+          onClick={() => {
+
+            const updated =
+              form.overview.highlights.filter(
                 (_, idx) => idx !== i
               );
-              handleChange("overview", "highlights", updated);
-            }}
-          >
-            ❌
-          </button>
-        </div>
-      ))}
-    </div>
+
+            handleChange(
+              "overview",
+              "highlights",
+              updated
+            );
+          }}
+        >
+          ❌
+        </button>
+      </div>
+    );
+  })}
+</div>
   </div>
 )}
 
@@ -839,165 +953,275 @@ const buildOptions = (nodes, prefix = "") => {
         )}
 
         {/* ================= STEP 5 ================= */}
-        {step === 5 && (
-          <div className="section">
-  <h2>Location</h2>
+{step === 5 && (
+  <div className="section space-y-6">
 
-  {/* LOCATION SELECT */}
-  <div className="space-y-2">
-    <label className="text-sm text-gray-500">Select Location</label>
+    {/* HEADING */}
+    <div>
+      <h2 className="text-2xl font-bold text-[#1f3d2b]">
+        Location Details
+      </h2>
 
-    {!useCustomLocation ? (
-      <select
-        className="input"
-        value={form.locationData.locationRef || ""}
-        onChange={(e) => {
-          if (e.target.value === "OTHER") {
-            setUseCustomLocation(true);
+      <p className="text-sm text-gray-500 mt-1">
+        Add project location, map & nearby landmarks
+      </p>
+    </div>
 
-            setForm(prev => ({
-              ...prev,
-              locationData: {
-                ...prev.locationData,
-                locationRef: "",
-                locationName: "",
-                customLocation: "",
-              }
-            }));
+    {/* LOCATION SELECT */}
+    <div className="space-y-2">
 
-          } else {
-            const selected = buildOptions(locations).find(
-              l => l._id === e.target.value
-            );
+      <label className="text-sm font-medium text-gray-600">
+        Select Location
+      </label>
 
-            setUseCustomLocation(false);
+      {!useCustomLocation ? (
+        <select
+          className="input w-full"
+          value={form.locationData.locationRef || ""}
+          onChange={(e) => {
 
-            setForm(prev => ({
-              ...prev,
-              locationData: {
-                ...prev.locationData,
-                locationRef: selected?._id || "",
-                locationName: selected?.label || "",
-                customLocation: "",
-              }
-            }));
-          }
-        }}
-      >
-        <option value="">Select Location</option>
+            if (e.target.value === "OTHER") {
 
-        {buildOptions(locations).map((loc) => (
-          <option key={loc._id} value={loc._id}>
-            {loc.label}
+              setUseCustomLocation(true);
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  locationRef: "",
+                  locationName: "",
+                  customLocation: "",
+                },
+              }));
+
+            } else {
+
+              const selected = buildOptions(locations).find(
+                (l) => l._id === e.target.value
+              );
+
+              setUseCustomLocation(false);
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  locationRef: selected?._id || "",
+                  locationName: selected?.label || "",
+                  customLocation: "",
+                },
+              }));
+            }
+          }}
+        >
+          <option value="">Select Location</option>
+
+          {buildOptions(locations).map((loc) => (
+            <option key={loc._id} value={loc._id}>
+              {loc.label}
+            </option>
+          ))}
+
+          <option value="OTHER">
+            + Add Custom Location
           </option>
-        ))}
+        </select>
 
-        <option value="OTHER">+ Add Custom Location</option>
-      </select>
-    ) : (
-      <div className="flex gap-2">
-        <input
-          className="input flex-1"
-          placeholder="Enter custom location"
-          value={form.locationData.customLocation}
-          onChange={(e) =>
-            setForm(prev => ({
-              ...prev,
-              locationData: {
-                ...prev.locationData,
-                customLocation: e.target.value,
-              }
-            }))
-          }
-        />
+      ) : (
+
+        <div className="flex flex-col md:flex-row gap-3">
+
+          <input
+            className="input flex-1"
+            placeholder="Enter custom location"
+            value={form.locationData.customLocation}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  customLocation: e.target.value,
+                },
+              }))
+            }
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+
+              setUseCustomLocation(false);
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  locationRef: "",
+                  locationName: "",
+                  customLocation: "",
+                },
+              }));
+            }}
+            className="px-5 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* ADDRESS */}
+    <div className="space-y-2">
+
+      <label className="text-sm font-medium text-gray-600">
+        Full Address
+      </label>
+
+      <input
+        className="input w-full"
+        placeholder="Enter full property address"
+        value={form.locationData.address || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "address",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* GOOGLE MAP URL */}
+    <div className="space-y-2">
+
+      <label className="text-sm font-medium text-gray-600">
+        Google Maps Embed URL
+      </label>
+
+      <input
+        className="input w-full"
+        placeholder="https://www.google.com/maps/embed?pb=..."
+        value={form.locationData.mapEmbedUrl || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "mapEmbedUrl",
+            e.target.value
+          )
+        }
+      />
+
+      <p className="text-xs text-gray-400">
+        Paste Google Maps iframe embed URL here
+      </p>
+    </div>
+
+    {/* LANDMARKS */}
+    <div className="space-y-4">
+
+      <div className="flex items-center justify-between">
+
+        <label className="text-sm font-medium text-gray-600">
+          Nearby Landmarks
+        </label>
 
         <button
           type="button"
-          onClick={() => {
-            setUseCustomLocation(false);
-
-            setForm(prev => ({
+          onClick={() =>
+            setForm((prev) => ({
               ...prev,
               locationData: {
                 ...prev.locationData,
-                locationRef: "",
-                locationName: "",
-                customLocation: "",
-              }
-            }));
-          }}
-          className="px-3 rounded bg-gray-200 hover:bg-gray-300"
+                landmarks: [
+                  ...prev.locationData.landmarks,
+                  {
+                    name: "",
+                    distance: "",
+                  },
+                ],
+              },
+            }))
+          }
+          className="px-4 py-2 rounded-lg bg-[#1f3d2b] text-white text-sm hover:opacity-90 transition"
         >
-          Cancel
+          + Add Landmark
         </button>
       </div>
-    )}
-  </div>
 
-  {/* ADDRESS */}
-  <input
-    className="input"
-    placeholder="Full Address"
-    value={form.locationData.address}
-    onChange={(e) =>
-      handleChange("locationData", "address", e.target.value)
-    }
-  />
+      {form.locationData.landmarks.map((l, i) => (
 
-  {/* LANDMARKS */}
-  {form.locationData.landmarks.map((l, i) => (
-    <div key={i} className="flex gap-2">
-      <input
-        value={l.name}
-        placeholder="Name"
-        onChange={(e) => {
-          const arr = [...form.locationData.landmarks];
-          arr[i].name = e.target.value;
-          setForm(prev => ({
-            ...prev,
-            locationData: { ...prev.locationData, landmarks: arr }
-          }));
-        }}
-      />
+        <div
+          key={i}
+          className="grid grid-cols-1 md:grid-cols-[1fr_180px_60px] gap-3"
+        >
 
-      <input
-        value={l.distance}
-        placeholder="Distance"
-        onChange={(e) => {
-          const arr = [...form.locationData.landmarks];
-          arr[i].distance = e.target.value;
-          setForm(prev => ({
-            ...prev,
-            locationData: { ...prev.locationData, landmarks: arr }
-          }));
-        }}
-      />
+          {/* LANDMARK NAME */}
+          <input
+            className="input w-full"
+            value={l.name}
+            placeholder="Landmark Name"
+            onChange={(e) => {
 
-      <button onClick={() => {
-        const arr = form.locationData.landmarks.filter((_, idx) => idx !== i);
-        setForm(prev => ({
-          ...prev,
-          locationData: { ...prev.locationData, landmarks: arr }
-        }));
-      }}>
-        ❌
-      </button>
+              const arr = [...form.locationData.landmarks];
+              arr[i].name = e.target.value;
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  landmarks: arr,
+                },
+              }));
+            }}
+          />
+
+          {/* DISTANCE */}
+          <input
+            className="input w-full"
+            value={l.distance}
+            placeholder="Distance"
+            onChange={(e) => {
+
+              const arr = [...form.locationData.landmarks];
+              arr[i].distance = e.target.value;
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  landmarks: arr,
+                },
+              }));
+            }}
+          />
+
+          {/* DELETE */}
+          <button
+            type="button"
+            onClick={() => {
+
+              const arr =
+                form.locationData.landmarks.filter(
+                  (_, idx) => idx !== i
+                );
+
+              setForm((prev) => ({
+                ...prev,
+                locationData: {
+                  ...prev.locationData,
+                  landmarks: arr,
+                },
+              }));
+            }}
+            className="rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
     </div>
-  ))}
-
-  <button onClick={() =>
-    setForm(prev => ({
-      ...prev,
-      locationData: {
-        ...prev.locationData,
-        landmarks: [...prev.locationData.landmarks, { name: "", distance: "" }]
-      }
-    }))
-  }>
-    + Add Landmark
-  </button>
-</div>
-        )}
+  </div>
+)}
 
         {/* ================= STEP 6 ================= */}
         {step === 6 && (

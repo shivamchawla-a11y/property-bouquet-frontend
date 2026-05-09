@@ -17,6 +17,15 @@ import {
   Gamepad2,
   Sparkles,
   ShoppingBag,
+  Coffee,
+  School,
+  Hospital,
+  Wifi,
+  Utensils,
+  Film,
+  Landmark,
+  Bus,
+  Store,
 } from "lucide-react";
 
 const amenityIcons = {
@@ -36,6 +45,33 @@ const amenityIcons = {
   Spa: <Sparkles size={28} />,
   "Shopping Center": <ShoppingBag size={28} />,
 };
+
+const CUSTOM_ICONS = [
+  { name: "Home", icon: Home },
+  { name: "Swimming", icon: Waves },
+  { name: "Gym", icon: Dumbbell },
+  { name: "Club", icon: Building2 },
+  { name: "Garden", icon: Trees },
+  { name: "Parking", icon: Car },
+  { name: "Lift", icon: ArrowUpCircle },
+  { name: "Security", icon: ShieldCheck },
+  { name: "Power", icon: Zap },
+  { name: "Kids", icon: Baby },
+  { name: "Track", icon: Footprints },
+  { name: "CCTV", icon: Camera },
+  { name: "Games", icon: Gamepad2 },
+  { name: "Spa", icon: Sparkles },
+  { name: "Shopping", icon: ShoppingBag },
+  { name: "Cafe", icon: Coffee },
+  { name: "School", icon: School },
+  { name: "Hospital", icon: Hospital },
+  { name: "Wifi", icon: Wifi },
+  { name: "Restaurant", icon: Utensils },
+  { name: "Cinema", icon: Film },
+  { name: "Temple", icon: Landmark },
+  { name: "Bus", icon: Bus },
+  { name: "Store", icon: Store },
+];
 
 export default function PropertyPreview({ form, developers = [] }) {
   if (!form) return null;
@@ -378,207 +414,493 @@ const locationName = getLocationName();
   </div>
 </div>
 
-      {/* ================= HIGHLIGHTS ================= */}
-      {overview.highlights?.filter(Boolean).length > 0 && (
-        <div className="bg-white py-12">
-          <h2 className="text-center text-2xl font-bold mb-8">
-            Project Highlights
-          </h2>
-
-          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto px-6">
-  {overview.highlights.filter(Boolean).map((h, i) => (
-    <div
-      key={i}
-      className="bg-[#f1f1f1] p-5 rounded-xl text-center shadow flex flex-col items-center gap-3 hover:shadow-lg transition"
-    >
-      {/* ICON */}
-      <div className="text-green-700">
-        {amenityIcons[h] || <Home size={28} />} {/* fallback icon */}
-      </div>
-
-      {/* TEXT */}
-      <p className="text-sm font-medium">{h}</p>
-    </div>
-  ))}
-</div>
-        </div>
-      )}
-
-      {/* ================= CONFIG TABLE ================= */}
-      {unitConfigurations.length > 0 && (
-        <div className="py-12 bg-[#f9f9f9]">
-          <h2 className="text-center text-2xl font-bold mb-6">
-            Sizes & Pricing
-          </h2>
-
-          <div className="max-w-5xl mx-auto bg-gradient-to-r from-green-800 to-yellow-600 p-6 rounded-xl text-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/30">
-                  <th>Type</th>
-                  <th>Area</th>
-                  <th>Plan</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {unitConfigurations.map((u, i) => (
-                  <tr key={i} className="text-center border-b border-white/10">
-                    <td>{u.unitType}</td>
-                    <td>{u.area}</td>
-                    <td>{u.paymentPlan}</td>
-                    <td>{u.price}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ================= FLOOR PLAN ================= */}
-      {floorPlans.filter(fp => fp.image).length > 0 && (
-        <div className="py-12 bg-white">
-          <h2 className="text-center text-2xl font-bold mb-8">
-            Floor Plans
-          </h2>
-
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {floorPlans.map((fp, i) => (
-              <button
-                key={i}
-                onClick={() => setActivePlan(i)}
-                className={`px-4 py-2 rounded-lg border ${
-                  activePlan === i
-                    ? "bg-green-800 text-white"
-                    : "bg-gray-100"
-                }`}
-              >
-                {fp.unitType || "Unit"} | {fp.area || "-"} | ₹ {fp.price || "-"}
-              </button>
-            ))}
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            {floorPlans[activePlan]?.image && (
-              <img
-                src={floorPlans[activePlan].image}
-                className="rounded-xl shadow-lg w-full"
-                alt=""
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ================= GALLERY ================= */}
-      {media.gallery?.filter(Boolean).length > 0 && (
-        <div className="py-12">
-          <h2 className="text-center text-2xl font-bold mb-6">
-            Gallery
-          </h2>
-
-          <div className="grid md:grid-cols-4 gap-4 max-w-6xl mx-auto px-6">
-            {media.gallery
-              .filter(img => img && img.trim())
-              .map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  className="rounded-lg object-cover h-40 w-full"
-                  alt=""
-                />
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* ================= LOCATION ================= */}
-      <div className="bg-white py-12">
-        <h2 className="text-center text-2xl font-bold mb-6">
-          Location Advantages
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto px-6">
-          <div className="space-y-2">
-            {locationData.landmarks?.map((l, i) => (
-              l.name && (
-                <p key={i}>
-                  • {l.name} - {l.distance}
-                </p>
-              )
-            ))}
-          </div>
-
-          {locationData.mapEmbedUrl && (
-            <iframe
-              src={locationData.mapEmbedUrl}
-              className="w-full h-80 rounded-lg"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* ================= PREMIUM BROCHURE CTA ================= */}
-{gatedContent?.brochurePdfUrl && (
-  <div className="relative py-16 text-white overflow-hidden">
-
-    {/* BACKGROUND GLOW */}
-    <div className="absolute inset-0 bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b]" />
-    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
-
-    <div className="relative z-10 max-w-5xl mx-auto text-center px-6">
-
-      {/* ICON */}
-      <div className="mb-4 text-4xl">📄</div>
-
-      {/* TITLE */}
-      <h2 className="text-3xl font-bold mb-3">
-        Unlock Full Project Details
+{/* ================= HIGHLIGHTS ================= */}
+{Array.isArray(overview.highlights) &&
+  overview.highlights.filter(Boolean).length > 0 && (
+    <div className="bg-white py-12">
+      <h2 className="text-center text-2xl font-bold mb-8">
+        Project Highlights
       </h2>
 
-      {/* SUBTEXT */}
-      <p className="text-sm opacity-90 mb-8">
-        Get brochure, floor plans, pricing & exclusive insights instantly
+      <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto px-6">
+        {overview.highlights
+          .filter((h) => h)
+          .map((h, i) => {
+            // SUPPORT OLD STRING + NEW OBJECT
+            const amenityName =
+              typeof h === "string"
+                ? h
+                : h?.name || "Amenity";
+
+            const iconKey =
+              typeof h === "string"
+                ? "Home"
+                : h?.icon || "Home";
+
+            // FIND ICON
+            const IconComponent =
+              CUSTOM_ICONS.find(
+                (item) => item.name === iconKey
+              )?.icon || Home;
+
+            return (
+              <div
+                key={i}
+                className="bg-[#f1f1f1] p-5 rounded-xl text-center shadow flex flex-col items-center gap-3 hover:shadow-lg transition duration-300 hover:-translate-y-1"
+              >
+                {/* ICON */}
+                <div className="text-green-700">
+                  <IconComponent size={28} />
+                </div>
+
+                {/* NAME */}
+                <p className="text-sm font-medium">
+                  {amenityName}
+                </p>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+)}
+
+      {/* ================= PREMIUM SIZE & FLOOR PLAN ================= */}
+{unitConfigurations.length > 0 && (
+  <div className="py-16 bg-[#f3f3f3]">
+
+    {/* HEADING */}
+    <div className="text-center mb-10">
+      <p className="text-[#1f3d2b] uppercase tracking-wide font-semibold text-sm">
+        Sizes & Floors Plan
       </p>
 
-      {/* CTA BUTTON */}
-      <button
-        onClick={() => setShowModal(true)}
-        className="bg-white text-[#1f3d2b] px-8 py-4 rounded-full font-semibold shadow-xl hover:scale-105 transition flex items-center gap-2 mx-auto"
-      >
-        Download Brochure
-        <span className="text-lg">→</span>
-      </button>
+      <h2 className="text-5xl font-bold text-[#1f3d2b] mt-1">
+        {coreDetails.title}
+      </h2>
+    </div>
 
+    {/* MAIN PREMIUM BOX */}
+    <div className="max-w-6xl mx-auto relative px-6">
+
+      {/* GRADIENT BACKGROUND */}
+      <div className="bg-gradient-to-r from-[#1f5c32] to-[#c49b33] rounded-[28px] p-8 md:p-10 shadow-2xl">
+
+        {/* TABLE */}
+        <div className="border border-white/40 overflow-hidden bg-white/10 backdrop-blur-sm">
+
+          <table className="w-full text-white">
+
+            <thead className="bg-white text-[#1f3d2b]">
+              <tr>
+                <th className="py-4 border-r border-gray-300 text-xl font-bold">
+                  Unit Type
+                </th>
+
+                <th className="py-4 border-r border-gray-300 text-xl font-bold">
+                  Area (Sq.ft.)
+                </th>
+
+                <th className="py-4 border-r border-gray-300 text-xl font-bold">
+                  Payment Plan
+                </th>
+
+                <th className="py-4 text-xl font-bold">
+                  Price
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {unitConfigurations.map((u, i) => (
+                <tr
+                  key={i}
+                  className="text-center border-t border-white/20"
+                >
+                  <td className="py-4 border-r border-white/20 text-2xl font-medium">
+                    {u.unitType}
+                  </td>
+
+                  <td className="py-4 border-r border-white/20 text-xl">
+                    {u.area}
+                  </td>
+
+                  <td className="py-4 border-r border-white/20 text-xl">
+                    {u.paymentPlan}
+                  </td>
+
+                  <td className="py-4 text-2xl font-bold">
+                    ₹ {u.price}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
+
+        {/* FLOOR PLAN CARD */}
+        {floorPlans.filter(fp => fp.image).length > 0 && (
+          <div className="mt-10 bg-[#f7f7f7] rounded-[24px] p-6 shadow-2xl border-2 border-[#1f5c32] relative">
+
+            {/* ACTIVE IMAGE */}
+            <div className="flex justify-center">
+              <img
+                src={floorPlans[activePlan]?.image}
+                alt="floor-plan"
+                className="rounded-xl max-h-[420px] object-contain"
+              />
+            </div>
+
+            {/* PLAN SELECTOR */}
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              {floorPlans.map((fp, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActivePlan(i)}
+                  className={`px-5 py-2 rounded-full border transition font-medium ${
+                    activePlan === i
+                      ? "bg-[#1f5c32] text-white border-[#1f5c32]"
+                      : "bg-white text-[#1f3d2b] border-gray-300"
+                  }`}
+                >
+                  {fp.unitType}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* CTA BUTTONS */}
+      <div className="flex flex-wrap justify-center gap-6 mt-10">
+
+        {/* GET IN TOUCH */}
+        <button className="bg-[#1f5c32] hover:scale-105 transition text-white px-8 py-4 rounded-md flex items-center gap-3 shadow-xl text-xl font-semibold">
+          ✉️ Get in Touch
+        </button>
+
+        {/* CALL BUTTON */}
+        <button className="bg-[#c49b33] hover:scale-105 transition text-white px-8 py-4 rounded-md flex items-center gap-3 shadow-xl text-xl font-semibold">
+          🎧 +91-9958328555
+        </button>
+
+      </div>
     </div>
   </div>
 )}
 
-      {/* ================= FAQ ================= */}
-      {faqs.filter(f => f.question).length > 0 && (
-        <div className="bg-white py-12">
-          <h2 className="text-center text-2xl font-bold mb-6">
-            FAQs
-          </h2>
+      {/* ================= GALLERY ================= */}
+{media.gallery?.filter(Boolean).length > 0 && (
+  <div className="bg-[#f3f3f3] py-16">
 
-          <div className="max-w-4xl mx-auto space-y-4">
-            {faqs.map((f, i) => (
-              f.question && (
-                <details key={i} className="border rounded p-4">
-                  <summary className="font-semibold cursor-pointer">
-                    {f.question}
-                  </summary>
-                  <p className="mt-2 text-gray-600">
-                    {f.answer}
-                  </p>
-                </details>
-              )
-            ))}
-          </div>
+    {/* HEADING */}
+    <div className="text-center mb-10">
+      <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
+        Gallery
+      </p>
+
+      <h2 className="text-4xl font-bold text-[#1f5b36]">
+        {coreDetails.title}
+      </h2>
+    </div>
+
+    {/* GALLERY GRID */}
+    <div className="max-w-6xl mx-auto px-4">
+
+      <div className="grid grid-cols-12 gap-3 auto-rows-[120px]">
+
+        {media.gallery
+          .filter((img) => img && img.trim())
+          .map((img, i) => {
+
+            // BIG LAYOUT LIKE DESIGN
+            let spanClass = "col-span-3 row-span-1";
+
+            if (i === 0) spanClass = "col-span-6 row-span-2";
+            if (i === 3) spanClass = "col-span-3 row-span-2";
+            if (i === 6) spanClass = "col-span-3 row-span-2";
+
+            return (
+              <div
+                key={i}
+                className={`overflow-hidden rounded-md shadow-md ${spanClass}`}
+              >
+                <img
+                  src={img}
+                  alt=""
+                  className="w-full h-full object-cover hover:scale-110 transition duration-700"
+                />
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  </div>
+)}
+
+{/* ================= LOCATION ADVANTAGES ================= */}
+<div className="bg-[#efefef] py-16">
+
+  {/* HEADING */}
+  <div className="text-center mb-12">
+    <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
+      Location Advantages
+    </p>
+
+    <h2 className="text-4xl font-bold text-[#1f5b36]">
+      {coreDetails.title}
+    </h2>
+  </div>
+
+  <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
+
+    {/* LEFT SIDE LANDMARKS */}
+    <div className="space-y-5">
+
+      {locationData.landmarks?.map(
+        (l, i) =>
+          l.name && (
+            <div key={i} className="flex items-start gap-4">
+
+              {/* GOLD DOT + LINE */}
+              <div className="flex flex-col items-center mt-1">
+                <div className="w-3 h-3 rounded-full bg-[#b9932f]" />
+
+                {i !== locationData.landmarks.length - 1 && (
+                  <div className="w-[2px] h-8 bg-[#b9932f]" />
+                )}
+              </div>
+
+              {/* TEXT */}
+              <p className="text-[#222] font-medium text-lg leading-relaxed">
+                {l.name} – {l.distance}
+              </p>
+            </div>
+          )
+      )}
+    </div>
+
+    {/* RIGHT SIDE MAP */}
+    <div className="rounded-xl overflow-hidden shadow-xl border border-gray-300 bg-white">
+
+      {locationData.mapEmbedUrl ? (
+        <iframe
+          src={locationData.mapEmbedUrl}
+          className="w-full h-[360px]"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      ) : (
+        <div className="h-[360px] flex items-center justify-center text-gray-500">
+          Map Not Available
         </div>
       )}
+    </div>
+  </div>
+</div>
+
+{/* ================= MASTER PLAN CTA ================= */}
+{gatedContent?.brochurePdfUrl && (
+  <div className="bg-[#f3f3f3] py-20 overflow-hidden">
+
+    {/* HEADING */}
+    <div className="text-center mb-10">
+      <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
+        Master Plan
+      </p>
+
+      <h2 className="text-4xl font-bold text-[#1f5b36]">
+        {coreDetails.title}
+      </h2>
+    </div>
+
+    {/* CENTER DESIGN */}
+    <div className="relative max-w-6xl mx-auto px-6">
+
+      {/* GREEN + GOLD STRIP */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-24 z-0">
+        <div className="grid grid-cols-2 h-full">
+          <div className="bg-[#1f5b36]" />
+          <div className="bg-[#b9932f]" />
+        </div>
+      </div>
+
+      {/* IMAGE CARD */}
+      <div className="relative z-10 max-w-5xl mx-auto bg-white rounded-xl overflow-hidden shadow-2xl border border-gray-300">
+
+        <div className="relative">
+
+          {/* IMAGE */}
+          <img
+            src={
+              media?.gallery?.[0] ||
+              media?.heroImageUrl ||
+              "/placeholder.jpg"
+            }
+            alt="Master Plan"
+            className="w-full h-[500px] object-cover opacity-20"
+          />
+
+          {/* LIGHT OVERLAY */}
+          <div className="absolute inset-0 bg-white/40" />
+
+          {/* BUTTON */}
+          <div className="absolute inset-0 flex items-center justify-center">
+
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#1f5b36] hover:bg-[#17452a] text-white px-8 py-4 rounded-lg shadow-2xl text-2xl font-semibold flex items-center gap-3 transition duration-300 hover:scale-105"
+            >
+              View Master Plan
+
+              <span className="text-xl">
+                ◉
+              </span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* ================= FAQs ================= */}
+{faqs.filter((f) => f.question).length > 0 && (
+  <div className="relative bg-[#f3f3f3] py-20 overflow-hidden">
+
+    {/* LIGHT BACKGROUND EFFECT */}
+    <div className="absolute inset-0 opacity-[0.03]">
+      <div
+  className="absolute inset-0 opacity-[0.04]"
+  style={{
+    backgroundImage:
+      "radial-gradient(circle, #1f5b36 1px, transparent 1px)",
+    backgroundSize: "30px 30px",
+  }}
+/>
+    </div>
+
+    <div className="relative z-10">
+
+      {/* HEADING */}
+      <div className="text-center mb-12">
+        <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
+          FAQs
+        </p>
+
+        <h2 className="text-4xl font-bold text-[#1f5b36]">
+          {coreDetails.title}
+        </h2>
+      </div>
+
+      {/* FAQ LIST */}
+      <div className="max-w-5xl mx-auto px-6 space-y-3">
+
+        {faqs.map(
+          (f, i) =>
+            f.question && (
+              <details
+                key={i}
+                open={i === 0} // ✅ FIRST FAQ ALWAYS OPEN
+                className="group bg-[#efefef] border border-gray-300 shadow-sm overflow-hidden"
+              >
+
+                {/* QUESTION */}
+                <summary className="list-none cursor-pointer px-6 py-5 flex items-center justify-between text-[20px] font-semibold text-[#111]">
+
+                  <div className="flex items-center gap-5">
+
+                    {/* PLUS / MINUS */}
+                    <span className="text-3xl leading-none font-light group-open:hidden">
+                      +
+                    </span>
+
+                    <span className="text-3xl leading-none font-light hidden group-open:block">
+                      −
+                    </span>
+
+                    <span>{f.question}</span>
+                  </div>
+                </summary>
+
+                {/* ANSWER */}
+                <div className="px-16 pb-6 text-gray-800 text-[15px] leading-relaxed border-t border-gray-300 bg-[#efefef]">
+                  <div className="pt-5 max-w-4xl">
+                    {f.answer}
+                  </div>
+                </div>
+              </details>
+            )
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+{/* ================= FOOTER CTA ================= */}
+<div className="bg-gradient-to-r from-[#1f5b36] to-[#b9932f] py-10">
+
+  <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+
+    {/* LEFT SIDE */}
+    <div className="flex items-center gap-6">
+
+      {/* ICON */}
+      <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-10 h-10 text-[#1f5b36]"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5H4.5A2.25 2.25 0 002.25 6.75m19.5 0v.243a2.25 2.25 0 01-.97 1.846l-7.5 5.25a2.25 2.25 0 01-2.56 0l-7.5-5.25a2.25 2.25 0 01-.97-1.846V6.75"
+          />
+        </svg>
+      </div>
+
+      {/* TEXT */}
+      <div className="text-white">
+
+        <h3 className="text-4xl font-bold leading-tight">
+          The Door is Always Open
+        </h3>
+
+        <p className="text-sm md:text-base mt-2 opacity-95 leading-relaxed max-w-xl">
+          Big decisions deserve better than "maybe." Reach out now for a
+          transparent look at everything this project offers.
+        </p>
+      </div>
+    </div>
+
+    {/* RIGHT BUTTON */}
+    <button
+      onClick={() => setShowModal(true)}
+      className="bg-white hover:scale-105 transition duration-300 text-[#1f5b36] font-bold text-2xl px-10 py-5 rounded-md shadow-xl flex items-center gap-4"
+    >
+
+      {/* ICON */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        className="w-9 h-9"
+      >
+        <path d="M1.5 4.5h21v15h-21v-15zm1.5 1.5v.638l9 5.4 9-5.4v-.638h-18zm18 12v-9.112l-8.614 5.168a.75.75 0 01-.772 0l-8.614-5.168v9.112h18z" />
+      </svg>
+
+      Contact Us
+    </button>
+  </div>
+</div>
 
         {/* ================= PREMIUM LEAD MODAL ================= */}
 {showModal && (
