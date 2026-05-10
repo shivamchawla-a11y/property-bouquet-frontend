@@ -7,6 +7,7 @@ import {
   Eye,
   RefreshCw,
   RotateCcw,
+  Globe,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -130,48 +131,6 @@ useEffect(() => {
     }
   };
 
-  // ================= TOGGLE ACTIVE =================
-const handleTogglePublish = async (id, currentStatus) => {
-  try {
-    setActionId(id);
-
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(
-      `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          isActive: !currentStatus,
-        }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (res.ok) {
-      setProperties((prev) =>
-        prev.map((item) =>
-          item._id === id
-            ? { ...item, isActive: !currentStatus }
-            : item
-        )
-      );
-    } else {
-      alert(data.message || "Failed ❌");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Server error ❌");
-  } finally {
-    setActionId(null);
-  }
-};
-
 
   // ================= FILTER =================
   const filtered = properties.filter((p) =>
@@ -185,9 +144,15 @@ const handleTogglePublish = async (id, currentStatus) => {
 
       {/* ================= HEADER ================= */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary">
-          Properties
-        </h1>
+        <div>
+  <h1 className="text-3xl font-bold text-[#0f3b2e]">
+    Property Inventory
+  </h1>
+
+  <p className="text-gray-500 mt-1 text-sm">
+    Manage live listings, drafts, and property visibility
+  </p>
+</div>
 
         <div className="flex gap-3">
 
@@ -239,7 +204,7 @@ const handleTogglePublish = async (id, currentStatus) => {
           {/* ADD */}
           <button
             onClick={() => router.push("/admin/add-property")}
-            className="bg-gold hover:bg-goldLight text-black px-5 py-2 rounded-lg font-semibold shadow-soft"
+            className="bg-gradient-to-r from-[#c9a64b] to-[#e0be69] hover:opacity-90 text-black px-6 py-3 rounded-2xl font-bold shadow-lg transition"
           >
             + Add Property
           </button>
@@ -252,21 +217,20 @@ const handleTogglePublish = async (id, currentStatus) => {
           placeholder="Search by property title..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border px-4 py-2 rounded-lg w-1/3 focus:ring-2 focus:ring-primary outline-none"
+          className="w-[340px] bg-gray-50 border border-gray-200 px-5 py-3 rounded-2xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition"
         />
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 text-gray-600 text-sm">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.06)] overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead className="bg-[#f8faf9] text-gray-500 text-xs uppercase tracking-wider">
             <tr>
               <th className="p-4 text-left">Title</th>
               <th className="p-4 text-left">Market</th>
               <th className="p-4 text-left">Price</th>
               <th className="p-4 text-left">Location</th>
               <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Possession</th>
               <th className="p-4 text-left">Created</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
@@ -275,7 +239,7 @@ const handleTogglePublish = async (id, currentStatus) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" className="p-6 text-center">
+                <td colSpan="7" className="p-6 text-center">
                   Loading...
                 </td>
               </tr>
@@ -283,7 +247,7 @@ const handleTogglePublish = async (id, currentStatus) => {
               filtered.map((property) => (
                 <tr
                   key={property._id}
-                  className="border-t hover:bg-gray-50 transition"
+                  className="border-t border-gray-100 hover:bg-[#fafdfb] transition duration-200"
                 >
                   <td className="p-4 font-semibold">
                     {property.coreDetails?.title || "N/A"}
@@ -300,24 +264,44 @@ const handleTogglePublish = async (id, currentStatus) => {
                   </td>
 
                   <td className="p-4">
-                    {property.locationData?.address || "N/A"}
-                  </td>
+  <div
+    className="max-w-[140px] truncate cursor-pointer"
+    title={
+      property.locationData?.locationName ||
+      property.locationData?.customLocation ||
+      property.locationData?.address ||
+      "N/A"
+    }
+  >
+    {property.locationData?.locationName
+      ?.split(">")[0]
+      ?.trim() ||
+      property.locationData?.customLocation ||
+      property.locationData?.address ||
+      "N/A"}
+  </div>
+</td>
 
                   <td className="p-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        property.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {property.isActive ? "Active" : "Inactive"}
-                    </span>
+  className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide ${
+    property.isActive
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-amber-100 text-amber-700"
+  }`}
+>
+  <span
+    className={`w-2 h-2 rounded-full ${
+      property.isActive
+        ? "bg-emerald-500"
+        : "bg-amber-500"
+    }`}
+  />
+
+  {property.isActive ? "LIVE" : "DRAFT"}
+</span>
                   </td>
 
-                  <td className="p-4">
-                    {property.keyMetrics?.possession || "N/A"}
-                  </td>
 
                   <td className="p-4 text-sm text-gray-500">
                     {new Date(property.createdAt).toLocaleDateString()}
@@ -331,65 +315,69 @@ const handleTogglePublish = async (id, currentStatus) => {
     onClick={() =>
       router.push(`/property/${property.slug}`)
     }
-    className="p-2 bg-blue-500 text-white rounded-lg"
+    className="h-11 w-11 flex items-center justify-center rounded-xl bg-blue-500 hover:bg-blue-600 text-white transition shadow-md"
   >
     <Eye size={16} />
   </button>
+
+  {/* LIVE WEBSITE */}
+{property.isActive && (
+  <button
+    onClick={() =>
+      window.open(
+        `/${property.slug}`,
+        "_blank"
+      )
+    }
+    className="h-11 w-11 flex items-center justify-center rounded-xl bg-black hover:bg-gray-800 text-white transition shadow-md"
+  >
+    <Globe size={16} />
+  </button>
+)}
 
   {/* EDIT */}
   <button
     onClick={() =>
       router.push(`/admin/edit-property/${property._id}`)
     }
-    className="p-2 bg-primary text-white rounded-lg"
+    className="h-11 w-11 flex items-center justify-center rounded-xl bg-[#0f3b2e] hover:bg-[#145240] text-white transition shadow-md"
   >
     <Pencil size={16} />
   </button>
 
-  {/* PUBLISH / UNPUBLISH */}
-  {user?.role === "SuperAdmin" && (
+  {/* DELETE / RESTORE */}
+{property.isActive ? (
   <button
     disabled={actionId === property._id}
     onClick={() =>
-      handleTogglePublish(property._id, property.isActive)
+      handleDelete(property._id)
     }
-    className={`p-2 rounded-lg text-white ${
-      property.isActive ? "bg-yellow-500" : "bg-green-600"
-    }`}
+    className="h-11 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold transition whitespace-nowrap"
   >
-    {property.isActive ? "Unpublish" : "Publish"}
+    {actionId === property._id
+      ? "Processing..."
+      : "📥 Move to Draft"}
+  </button>
+) : (
+  <button
+    disabled={actionId === property._id}
+    onClick={() =>
+      handleRestore(property._id)
+    }
+    className="h-11 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-md whitespace-nowrap"
+  >
+    {actionId === property._id
+      ? "Processing..."
+      : "🚀 Go Live"}
   </button>
 )}
-
-  {/* DELETE / RESTORE */}
-  {property.isActive ? (
-    <button
-      disabled={actionId === property._id}
-      onClick={() =>
-        handleDelete(property._id)
-      }
-      className="p-2 bg-red-500 text-white rounded-lg"
-    >
-      <Trash2 size={16} />
-    </button>
-  ) : (
-    <button
-      disabled={actionId === property._id}
-      onClick={() =>
-        handleRestore(property._id)
-      }
-      className="p-2 bg-green-600 text-white rounded-lg"
-    >
-      <RotateCcw size={16} />
-    </button>
-  )}
 </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="p-8 text-center text-gray-500">
+                <td colSpan="7" className="p-8 text-center text-gray-500">
                   No properties found
                 </td>
               </tr>
