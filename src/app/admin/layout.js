@@ -15,6 +15,7 @@ import {
   Settings,
   Menu,
   Tag,
+  FileText,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -23,9 +24,9 @@ export default function AdminLayout({ children }) {
 
   const [collapsed, setCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null); // ✅ ROLE STATE
+  const [role, setRole] = useState(null);
 
-  // ✅ MENU WITH ROLE CONTROL
+  // ================= MENU =================
   const menu = [
     {
       name: "Dashboard",
@@ -38,24 +39,29 @@ export default function AdminLayout({ children }) {
       icon: MapPin,
     },
     {
-  name: "Developer",
-  path: "/admin/developers",
-  icon: Building2,
-},
-{
-  name: "Categories",
-  path: "/admin/categories",
-  icon: Tag,
-},
-{
-  name: "Property Inventory",
-  path: "/admin/properties",
-  icon: Home,
-},
+      name: "Developer",
+      path: "/admin/developers",
+      icon: Building2,
+    },
+    {
+      name: "Categories",
+      path: "/admin/categories",
+      icon: Tag,
+    },
+    {
+      name: "Property Inventory",
+      path: "/admin/properties",
+      icon: Home,
+    },
     {
       name: "Add Property",
       path: "/admin/add-property",
       icon: PlusCircle,
+    },
+    {
+      name: "Pages",
+      path: "/admin/pages",
+      icon: FileText,
     },
 
     // 🔒 SUPER ADMIN ONLY
@@ -73,7 +79,7 @@ export default function AdminLayout({ children }) {
     },
   ];
 
-  // 🔐 AUTH CHECK + ROLE FETCH
+  // ================= AUTH CHECK =================
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -89,7 +95,7 @@ export default function AdminLayout({ children }) {
         if (!res.ok) {
           router.push("/login");
         } else {
-          setRole(data.user.role); // ✅ STORE ROLE
+          setRole(data.user.role);
           setLoading(false);
         }
       } catch (err) {
@@ -100,70 +106,107 @@ export default function AdminLayout({ children }) {
     checkAuth();
   }, [router]);
 
-  // ⏳ LOADING STATE
+  // ================= LOADING =================
   if (loading || !role) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-gray-500">Checking authentication...</p>
+      <div className="h-screen flex items-center justify-center bg-[#f7f9f8]">
+        <p className="text-gray-500 text-lg">
+          Checking authentication...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-lightBg">
+    <div className="flex h-screen overflow-hidden bg-[#f7f9f8]">
 
       {/* ================= SIDEBAR ================= */}
       <aside
         className={`${
-          collapsed ? "w-20" : "w-64"
-        } bg-secondary text-white flex flex-col p-4 transition-all duration-300`}
+          collapsed ? "w-20" : "w-72"
+        } bg-[#0f3b2e] text-white flex flex-col transition-all duration-300 h-screen overflow-y-auto border-r border-white/10`}
       >
-        {/* LOGO */}
-        <div className="flex items-center justify-between mb-8">
-          {!collapsed && (
-            <div className="flex items-center gap-2">
-              <Image src="/logo.png" width={35} height={35} alt="logo" />
-              <span className="font-bold text-gold">
-                Property Bouquet
-              </span>
-            </div>
-          )}
+        {/* ================= TOP ================= */}
+        <div className="sticky top-0 z-20 bg-[#0f3b2e] px-4 py-5 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            {!collapsed && (
+              <div className="flex items-center gap-3">
+                <div className="bg-white rounded-2xl p-2 shadow-lg">
+                  <Image
+                    src="/logo.png"
+                    width={34}
+                    height={34}
+                    alt="logo"
+                  />
+                </div>
 
-          <button onClick={() => setCollapsed(!collapsed)}>
-            <Menu />
-          </button>
+                <div>
+                  <h2 className="font-bold text-white leading-tight">
+                    Property Bouquet
+                  </h2>
+
+                  <p className="text-xs text-white/60">
+                    Admin Dashboard
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* MENU */}
-        <nav className="space-y-2">
+        {/* ================= MENU ================= */}
+        <nav className="flex-1 px-3 py-5 space-y-2">
           {menu
             .filter((item) => {
-              if (!item.roles) return true; // visible to all
+              if (!item.roles) return true;
               return item.roles.includes(role);
             })
             .map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.path;
+
+              const active =
+                pathname === item.path ||
+                pathname.startsWith(item.path + "/");
 
               return (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition ${
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${
                     active
-                      ? "bg-primary shadow-soft"
-                      : "hover:bg-primary/50"
+                      ? "bg-gradient-to-r from-[#c9a64b] to-[#e0be69] text-black shadow-lg"
+                      : "hover:bg-white/10 text-white/90"
                   }`}
                 >
-                  <Icon size={20} />
-                  {!collapsed && <span>{item.name}</span>}
+                  <div
+                    className={`flex items-center justify-center ${
+                      active
+                        ? "text-black"
+                        : "text-white/80"
+                    }`}
+                  >
+                    <Icon size={20} />
+                  </div>
+
+                  {!collapsed && (
+                    <span className="font-medium text-sm">
+                      {item.name}
+                    </span>
+                  )}
                 </Link>
               );
             })}
         </nav>
 
-        {/* LOGOUT */}
-        <div className="mt-auto">
+        {/* ================= FOOTER ================= */}
+        <div className="p-4 border-t border-white/10 sticky bottom-0 bg-[#0f3b2e]">
           <button
             onClick={async () => {
               await fetch(
@@ -176,7 +219,7 @@ export default function AdminLayout({ children }) {
 
               window.location.href = "/login";
             }}
-            className="w-full bg-gold text-black py-2 rounded-lg hover:bg-goldLight font-semibold"
+            className="w-full bg-gradient-to-r from-[#c9a64b] to-[#e0be69] hover:opacity-90 text-black py-3 rounded-2xl font-bold transition shadow-lg"
           >
             {!collapsed ? "Logout" : "↩"}
           </button>
@@ -184,22 +227,34 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* ================= MAIN ================= */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* HEADER */}
-        <header className="bg-white border-b px-6 py-3 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-primary">
-            Admin Panel
-          </h2>
+        {/* ================= HEADER ================= */}
+        <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
+          <div>
+            <h1 className="text-2xl font-bold text-[#0f3b2e]">
+              Admin Panel
+            </h1>
 
-          <input
-            placeholder="Search..."
-            className="border px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-primary text-sm"
-          />
+            <p className="text-sm text-gray-500 mt-0.5">
+              Manage your property platform
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <input
+              placeholder="Search..."
+              className="w-[260px] bg-[#f7f9f8] border border-gray-200 px-4 py-2.5 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f3b2e] transition"
+            />
+
+            <div className="h-11 w-11 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center font-bold shadow-md">
+              {role?.charAt(0)}
+            </div>
+          </div>
         </header>
 
-        {/* CONTENT */}
-        <main className="p-6 overflow-y-auto">
+        {/* ================= CONTENT ================= */}
+        <main className="flex-1 overflow-auto p-6 bg-[#f7f9f8]">
           {children}
         </main>
       </div>

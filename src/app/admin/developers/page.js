@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, Trash2, Eye } from "lucide-react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 
 export default function DevelopersPage() {
@@ -19,7 +20,8 @@ export default function DevelopersPage() {
       const data = await res.json();
 
       if (res.ok) setDevelopers(data.data || []);
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to load developers ❌");
     } finally {
       setLoading(false);
@@ -37,19 +39,14 @@ export default function DevelopersPage() {
     try {
       const res = await fetch(`${API}/developers`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          logo,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, logo }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.message);
+        toast.error(data.message || "Failed ❌");
         return;
       }
 
@@ -58,7 +55,8 @@ export default function DevelopersPage() {
       setName("");
       setLogo("");
       fetchDevelopers();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Server error ❌");
     }
   };
@@ -79,7 +77,8 @@ export default function DevelopersPage() {
 
       toast.success("Deleted 🗑️");
       fetchDevelopers();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Server error ❌");
     }
   };
@@ -133,7 +132,7 @@ export default function DevelopersPage() {
         {/* PREVIEW */}
         {logo && (
           <div className="flex items-center gap-3 mt-2">
-            <img src={logo} className="h-10" />
+            <img src={logo} className="h-10" alt="logo preview" />
             <span className="text-sm text-gray-500">Logo Preview</span>
           </div>
         )}
@@ -162,6 +161,7 @@ export default function DevelopersPage() {
                   <img
                     src={dev.logo}
                     className="h-10 w-10 object-contain"
+                    alt={dev.name}
                   />
                 </td>
 
@@ -172,12 +172,28 @@ export default function DevelopersPage() {
                 </td>
 
                 <td className="text-right pr-4">
-                  <button
-                    onClick={() => deleteDeveloper(dev._id)}
-                    className="text-red-500 hover:scale-110 transition"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+
+                  <div className="flex justify-end items-center gap-4">
+
+                    {/* PREVIEW */}
+                    <Link
+                       href={`/developers/${dev.slug}`}
+                      target="_blank"
+                      className="text-blue-600 hover:scale-110 transition"
+                    >
+                      <Eye size={18} />
+                    </Link>
+
+                    {/* DELETE */}
+                    <button
+                      onClick={() => deleteDeveloper(dev._id)}
+                      className="text-red-500 hover:scale-110 transition"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+
+                  </div>
+
                 </td>
 
               </tr>

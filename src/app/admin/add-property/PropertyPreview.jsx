@@ -1,5 +1,6 @@
 "use client";
-
+import { motion } from "framer-motion";
+import { formatPrice } from "@/utils/formatPrice";
 import { useState } from "react";
 import {
   Waves,
@@ -27,6 +28,58 @@ import {
   Bus,
   Store,
 } from "lucide-react";
+const fadeUp = {
+  hidden: {
+    opacity: 0,
+    y: 60,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
+  },
+};
+
+const fadeLeft = {
+  hidden: {
+    opacity: 0,
+    x: -60,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.8,
+    },
+  },
+};
+
+const fadeRight = {
+  hidden: {
+    opacity: 0,
+    x: 60,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.8,
+    },
+  },
+};
+
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.25,
+delayChildren: 0.2,
+    },
+  },
+};
 
 const amenityIcons = {
   "Swimming Pool": <Waves size={28} />,
@@ -243,50 +296,62 @@ const locationName = getLocationName();
   const developerName = getDeveloperName();
 
   return (
-    <div className="bg-[#f5f5f5] text-[#1f3d2b] overflow-visible">
+    <div className="bg-[#f5f5f5] text-[#1f3d2b] overflow-x-hidden">
 
       {/* ================= NAVBAR ================= */}
-      <div className="relative overflow-visible bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white h-[80px] px-10 flex items-center justify-between">
+<div className="relative overflow-visible bg-gradient-to-r from-[#1f3d2b] to-[#c9a64b] text-white h-[88px] px-10 flex items-center justify-between shadow-[0_8px_30px_rgba(0,0,0,0.18)]">
 
-        {/* LEFT BRAND */}
-<div className="text-white flex items-center">
-  {developerLogo && developerLogo.trim() !== "" ? (
-    <img
-      src={developerLogo}
-      alt={developerName}
-      className="h-10 object-contain"
-      onError={(e) => (e.target.style.display = "none")} // fallback safety
-    />
-  ) : (
-    <div>
-      <p className="text-2xl tracking-[6px] font-light">
-        {developerName || "DEVELOPER"}
-      </p>
+  {/* SUBTLE PREMIUM OVERLAY */}
+  <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05),transparent,rgba(255,255,255,0.05))] pointer-events-none" />
+
+  {/* LEFT BRAND */}
+  <div className="relative z-10 flex items-center">
+    {developerLogo && developerLogo.trim() !== "" ? (
+      <img
+        src={developerLogo}
+        alt={developerName}
+        className="h-14 max-w-[180px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]"
+        onError={(e) => (e.target.style.display = "none")}
+      />
+    ) : (
+      <div>
+        <p className="text-[26px] tracking-[7px] font-light text-white drop-shadow-lg">
+          {developerName || "DEVELOPER"}
+        </p>
+      </div>
+    )}
+  </div>
+
+  {/* RIGHT CALL BUTTON */}
+  <div className="relative z-10 border border-white/20 rounded-full px-5 py-2 text-sm flex items-center gap-2 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-all duration-300">
+    <span className="text-base">📞</span>
+    <span className="font-medium tracking-wide">
+      +91-9958328555
+    </span>
+  </div>
+
+  {/* CENTER LOGO */}
+  <div className="absolute left-1/2 top-[100%] translate-x-[-50%] translate-y-[-50%] z-20">
+    <div className="bg-white p-2.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.25)] border border-white/40">
+      <img
+        src="/logo.png"
+        alt="logo"
+        className="w-16 h-16 object-contain"
+      />
     </div>
-  )}
+  </div>
 </div>
 
-        {/* RIGHT CALL BUTTON */}
-        <div className="border border-white rounded-full px-5 py-1 text-sm flex items-center gap-2 bg-white/10 backdrop-blur">
-          📞 +91-9958328555
-        </div>
-
-        {/* CENTER LOGO */}
-        <div className="absolute left-1/2 top-[100%] translate-x-[-50%] translate-y-[-50%] z-20">
-          <div className="bg-white p-2 rounded-full shadow-xl">
-            <img
-              src="/logo.png"
-              alt="logo"
-              className="w-14 h-14 object-contain"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ================= HERO ================= */}
 
 {/* ================= HERO ================= */}
-<div
+<motion.div
+  initial={{ scale: 1.1, opacity: 0 }}
+  animate={{
+  scale: 1,
+  opacity: 1,
+  backgroundPosition: ["50% 50%", "52% 48%", "50% 50%"],
+}}
+  transition={{ duration: 1.2 }}
   className="relative h-[640px] bg-cover bg-center flex items-end"
   style={{
     backgroundImage: media?.heroImageUrl
@@ -294,16 +359,34 @@ const locationName = getLocationName();
       : "linear-gradient(#000,#222)",
   }}
 >
+
   {/* OVERLAY */}
   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
   {/* CONTENT (LOWER POSITIONED) */}
-  <div className="relative z-10 w-full pb-16 px-6 flex flex-col items-center text-center">
+
+  <motion.div
+  variants={staggerContainer}
+  initial="hidden"
+  animate="visible"
+  className="relative z-10 w-full pb-16 px-6 flex flex-col items-center text-center"
+>
 
     {/* TITLE */}
-    <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
+    <motion.h1
+  variants={fadeUp}
+  animate={{
+    y: [0, -6, 0],
+  }}
+  transition={{
+    duration: 4,
+    repeat: Infinity,
+    ease: "easeInOut",
+  }}
+  className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg"
+>
       {coreDetails.title}
-    </h1>
+    </motion.h1>
 
     {/* LOCATION */}
     <p className="mt-3 text-lg text-gray-200 flex items-center gap-2">
@@ -311,7 +394,15 @@ const locationName = getLocationName();
     </p>
 
     {/* METRICS BAR */}
-    <div className="mt-8 bg-[#1f3d2b]/90 backdrop-blur-xl border border-white/20 rounded-xl px-8 py-5 flex flex-wrap justify-center items-center gap-10 text-white shadow-2xl">
+    <motion.div
+  variants={fadeUp}
+  whileHover={{
+  y: -8,
+  scale: 1.02,
+  boxShadow: "0 30px 60px rgba(0,0,0,0.35)",
+}}
+  className="mt-8 bg-[#1f3d2b]/90 backdrop-blur-xl border border-white/20 rounded-xl px-8 py-5 flex flex-wrap justify-center items-center gap-10 text-white shadow-2xl"
+>
 
       {/* SIZES */}
       <div className="text-center">
@@ -355,17 +446,22 @@ const locationName = getLocationName();
           STARTING PRICE
         </p>
         <p className="text-xl font-semibold">
-          ₹ {coreDetails.startingPrice || "5 Cr"} -{" "}
-          {coreDetails.maxPrice || "10 Cr"}
+          ₹ {formatPrice(coreDetails.startingPrice)} - {formatPrice(coreDetails.maxPrice)}
         </p>
       </div>
-    </div>
-  </div>
-</div>
+    </motion.div>
+  </motion.div>
+</motion.div>
 
-      {/* ================= ABOUT (PREMIUM UI) ================= */}
+{/* ================= ABOUT (PREMIUM UI) ================= */}
       
-<div className="bg-[#f8f8f8] py-16">
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={fadeUp}
+  className="bg-[#f8f8f8] py-16"
+>
   <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
 
     {/* LEFT CONTENT */}
@@ -403,7 +499,14 @@ const locationName = getLocationName();
         <div className="absolute bottom-[-15px] left-6 w-[90%] h-full bg-[#1f3d2b] rounded-3xl z-0" />
 
         {/* MAIN IMAGE */}
-        <img
+        <motion.img
+  whileHover={{
+    scale: 1.04,
+    rotate: -1,
+  }}
+  transition={{
+    duration: 0.5,
+  }}
           src={overview.aboutImageUrl}
           alt="about"
           className="relative z-10 rounded-3xl w-full h-[380px] object-cover shadow-xl"
@@ -412,9 +515,17 @@ const locationName = getLocationName();
     )}
 
   </div>
-</div>
+    </motion.div>
+
+{/* ================= ABOUT (PREMIUM UI) ================= */}
 
 {/* ================= HIGHLIGHTS ================= */}
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={staggerContainer}
+>
 {Array.isArray(overview.highlights) &&
   overview.highlights.filter(Boolean).length > 0 && (
     <div className="bg-white py-12">
@@ -463,6 +574,7 @@ const locationName = getLocationName();
       </div>
     </div>
 )}
+</motion.div>
 
       {/* ================= PREMIUM SIZE & FLOOR PLAN ================= */}
 {unitConfigurations.length > 0 && (
@@ -542,15 +654,6 @@ const locationName = getLocationName();
         {floorPlans.filter(fp => fp.image).length > 0 && (
           <div className="mt-10 bg-[#f7f7f7] rounded-[24px] p-6 shadow-2xl border-2 border-[#1f5c32] relative">
 
-            {/* ACTIVE IMAGE */}
-            <div className="flex justify-center">
-              <img
-                src={floorPlans[activePlan]?.image}
-                alt="floor-plan"
-                className="rounded-xl max-h-[420px] object-contain"
-              />
-            </div>
-
             {/* PLAN SELECTOR */}
             <div className="flex flex-wrap justify-center gap-3 mt-6">
               {floorPlans.map((fp, i) => (
@@ -567,6 +670,16 @@ const locationName = getLocationName();
                 </button>
               ))}
             </div>
+
+            {/* ACTIVE IMAGE */}
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              <img
+                src={floorPlans[activePlan]?.image}
+                alt="floor-plan"
+                className="rounded-xl max-h-[420px] object-contain"
+              />
+            </div>
+
           </div>
         )}
 
@@ -592,10 +705,19 @@ const locationName = getLocationName();
 
       {/* ================= GALLERY ================= */}
 {media.gallery?.filter(Boolean).length > 0 && (
-  <div className="bg-[#f3f3f3] py-16">
+  <motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.15 }}
+  variants={staggerContainer}
+  className="bg-[#f3f3f3] py-16"
+>
 
     {/* HEADING */}
-    <div className="text-center mb-10">
+    <motion.div
+  variants={fadeUp}
+  className="text-center mb-10"
+>
       <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
         Gallery
       </p>
@@ -603,7 +725,7 @@ const locationName = getLocationName();
       <h2 className="text-4xl font-bold text-[#1f5b36]">
         {coreDetails.title}
       </h2>
-    </div>
+    </motion.div>
 
     {/* GALLERY GRID */}
     <div className="max-w-6xl mx-auto px-4">
@@ -622,28 +744,43 @@ const locationName = getLocationName();
             if (i === 6) spanClass = "col-span-3 row-span-2";
 
             return (
-              <div
-                key={i}
-                className={`overflow-hidden rounded-md shadow-md ${spanClass}`}
-              >
+              <motion.div
+  key={i}
+  variants={fadeUp}
+  whileHover={{
+    scale: 1.04,
+    y: -6,
+  }}
+  transition={{ duration: 0.4 }}
+  className={`overflow-hidden rounded-md shadow-md ${spanClass}`}
+>
                 <img
                   src={img}
                   alt=""
                   className="w-full h-full object-cover hover:scale-110 transition duration-700"
                 />
-              </div>
+              </motion.div>
             );
           })}
       </div>
     </div>
-  </div>
+  </motion.div>
 )}
 
 {/* ================= LOCATION ADVANTAGES ================= */}
-<div className="bg-[#efefef] py-16">
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={staggerContainer}
+  className="bg-[#efefef] py-16"
+>
 
   {/* HEADING */}
-  <div className="text-center mb-12">
+  <motion.div
+  variants={fadeUp}
+  className="text-center mb-12"
+>
     <p className="text-[#1f5b36] uppercase font-semibold tracking-wide">
       Location Advantages
     </p>
@@ -651,17 +788,27 @@ const locationName = getLocationName();
     <h2 className="text-4xl font-bold text-[#1f5b36]">
       {coreDetails.title}
     </h2>
-  </div>
+  </motion.div>
 
   <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
 
     {/* LEFT SIDE LANDMARKS */}
-    <div className="space-y-5">
+    <motion.div
+  variants={fadeLeft}
+  className="space-y-5"
+>
 
       {locationData.landmarks?.map(
         (l, i) =>
           l.name && (
-            <div key={i} className="flex items-start gap-4">
+            <motion.div
+  key={i}
+  variants={fadeUp}
+  whileHover={{
+    x: 8,
+  }}
+  className="flex items-start gap-4"
+>
 
               {/* GOLD DOT + LINE */}
               <div className="flex flex-col items-center mt-1">
@@ -676,13 +823,20 @@ const locationName = getLocationName();
               <p className="text-[#222] font-medium text-lg leading-relaxed">
                 {l.name} – {l.distance}
               </p>
-            </div>
+            </motion.div>
           )
       )}
-    </div>
+    </motion.div>
 
     {/* RIGHT SIDE MAP */}
-    <div className="rounded-xl overflow-hidden shadow-xl border border-gray-300 bg-white">
+    <motion.div
+  variants={fadeRight}
+  whileHover={{
+    y: -6,
+    scale: 1.01,
+  }}
+  className="rounded-xl overflow-hidden shadow-xl border border-gray-300 bg-white"
+>
 
       {locationData.mapEmbedUrl ? (
         <iframe
@@ -697,9 +851,9 @@ const locationName = getLocationName();
           Map Not Available
         </div>
       )}
-    </div>
+    </motion.div>
   </div>
-</div>
+</motion.div>
 
 {/* ================= MASTER PLAN CTA ================= */}
 {gatedContent?.brochurePdfUrl && (
