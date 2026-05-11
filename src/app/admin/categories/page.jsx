@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Tag,
   Trash2,
@@ -185,27 +186,36 @@ export default function CategoriesPage() {
             )}
 
             {/* ACTIONS */}
-            <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2">
 
-              {/* ADD SUBCATEGORY */}
-              <button
-                onClick={() => {
-                  setActiveInput(node._id);
-                  setInputValue("");
-                }}
-                className="flex items-center gap-1 text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100"
-              >
-                <Plus size={12} /> Add
-              </button>
+  {/* VIEW */}
+  <Link
+    href={`/categories/${node.slug}`}
+    className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100"
+  >
+    View
+  </Link>
 
-              {/* DELETE */}
-              <button
-                onClick={() => deleteCategory(node._id)}
-                className="p-1 rounded hover:bg-red-100 text-red-500"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
+  {/* ADD SUBCATEGORY */}
+  <button
+    onClick={() => {
+      setActiveInput(node._id);
+      setInputValue("");
+    }}
+    className="flex items-center gap-1 text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100"
+  >
+    <Plus size={12} /> Add
+  </button>
+
+  {/* DELETE */}
+  <button
+    onClick={() => deleteCategory(node._id)}
+    className="p-1 rounded hover:bg-red-100 text-red-500"
+  >
+    <Trash2 size={14} />
+  </button>
+
+</div>
           </div>
 
           {/* ADD INPUT */}
@@ -228,6 +238,7 @@ export default function CategoriesPage() {
               >
                 Add
               </button>
+              
 
               <button onClick={() => setActiveInput(null)}>
                 Cancel

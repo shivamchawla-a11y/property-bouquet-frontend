@@ -236,6 +236,13 @@ export default function LocationPage() {
         </button>
       )}
 
+      <button
+  onClick={() => window.open(`/locations/${node.slug}`, "_blank")}
+  className="text-xs px-2 py-1 rounded bg-green-100 text-green-700"
+>
+  View
+</button>
+
       {/* DELETE */}
       <button
         onClick={() => deleteLocation(node._id)}
