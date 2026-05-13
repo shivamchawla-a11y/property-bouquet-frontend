@@ -1,87 +1,236 @@
 "use client";
 
-import { ChevronDown, Search, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ChevronDown,
+  Menu,
+  Search,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+
+const menuItems = [
+  {
+    title: "City",
+    items: ["Gurgaon", "Noida", "Delhi", "Dubai"],
+  },
+  {
+    title: "Budget",
+    items: ["1 Cr - 2 Cr", "2 Cr - 5 Cr", "5 Cr+"],
+  },
+  {
+    title: "Projects Status",
+    items: ["New Launch", "Ready To Move", "Under Construction"],
+  },
+  {
+    title: "Property Type",
+    items: ["Apartments", "Penthouses", "Villas", "Plots"],
+  },
+  {
+    title: "Rental",
+    items: ["Luxury Rentals", "Commercial Rentals"],
+  },
+];
 
 export default function Navbar() {
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 30);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="absolute top-0 left-0 z-50 w-full">
-      <div className="flex items-center justify-between px-8 py-6">
+    <header
+      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
+        scrolled
+          ? "bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3"
+          : "bg-transparent py-5"
+      }`}
+    >
+      <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
 
-        {/* LEFT */}
-        <div className="flex items-center gap-10">
+        {/* NAVBAR */}
+        <div className="flex items-center justify-between">
 
-          {/* LOGO */}
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="logo"
-              className="w-12 h-12 object-contain"
-            />
+          {/* LEFT */}
+          <div className="flex items-center gap-8">
 
-            <h1 className="text-white text-3xl font-bold">
-              Property Bouquet
-            </h1>
+            {/* LOGO */}
+            <Link
+              href="/"
+              className="flex items-center gap-3 shrink-0"
+            >
+              <img
+                src="/logo.png"
+                alt="Property Bouquet"
+                className="w-10 h-10 object-contain"
+              />
+
+              <div className="leading-tight">
+                <h1
+                  className={`text-[26px] font-bold tracking-tight transition ${
+                    scrolled ? "text-[#111]" : "text-white"
+                  }`}
+                >
+                  Property
+                </h1>
+
+                <p
+                  className={`text-sm font-medium tracking-[3px] uppercase transition ${
+                    scrolled
+                      ? "text-gray-500"
+                      : "text-white/70"
+                  }`}
+                >
+                  Bouquet
+                </p>
+              </div>
+            </Link>
+
+            {/* DESKTOP MENU */}
+            <nav className="hidden xl:flex items-center gap-2">
+
+              {/* MENU ICON */}
+              <button
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition ${
+                  scrolled
+                    ? "hover:bg-gray-100 text-black"
+                    : "hover:bg-white/10 text-white"
+                }`}
+              >
+                <Menu size={18} />
+              </button>
+
+              {menuItems.map((item) => (
+                <div
+                  key={item.title}
+                  className="relative"
+                  onMouseEnter={() => setActiveMenu(item.title)}
+                  onMouseLeave={() => setActiveMenu(null)}
+                >
+                  <button
+                    className={`flex items-center gap-1.5 px-4 h-10 rounded-full text-[14px] font-medium transition-all ${
+                      scrolled
+                        ? "text-gray-700 hover:bg-gray-100 hover:text-black"
+                        : "text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {item.title}
+
+                    <ChevronDown
+                      size={14}
+                      className={`transition ${
+                        activeMenu === item.title
+                          ? "rotate-180"
+                          : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* DROPDOWN */}
+                  <AnimatePresence>
+                    {activeMenu === item.title && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 15 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute top-[52px] left-0 w-[260px]"
+                      >
+                        <div className="rounded-[28px] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] p-4">
+
+                          <p className="text-xs uppercase tracking-[3px] text-gray-400 px-3 mb-3">
+                            {item.title}
+                          </p>
+
+                          <div className="space-y-1">
+                            {item.items.map((sub) => (
+                              <button
+                                key={sub}
+                                className="w-full text-left px-4 py-3 rounded-2xl text-[15px] text-gray-700 hover:bg-[#f5f7fb] hover:text-red-500 transition font-medium"
+                              >
+                                {sub}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </nav>
           </div>
 
-          {/* MENU */}
-          <nav className="hidden xl:flex items-center gap-8 text-white font-semibold">
+          {/* RIGHT */}
+          <div className="flex items-center gap-3">
 
-            <button className="flex items-center gap-1">
-              Buy <ChevronDown size={16} />
+            {/* INSIGHTS */}
+            <button className="hidden lg:flex h-11 px-5 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-semibold items-center shadow-lg hover:scale-105 transition">
+              INSIGHTS
             </button>
 
-            <button className="flex items-center gap-1">
-              City <ChevronDown size={16} />
+            {/* GLOBAL */}
+            <button className="hidden lg:flex h-11 px-5 rounded-full bg-gradient-to-r from-[#d7b04c] to-[#b88922] text-white text-sm font-semibold items-center relative shadow-lg hover:scale-105 transition">
+              Global
+
+              <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-[1px] rounded-full font-bold">
+                NEW
+              </span>
             </button>
 
-            <button className="flex items-center gap-1">
-              Budget <ChevronDown size={16} />
+            {/* SEARCH */}
+            <button
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                scrolled
+                  ? "bg-gray-100 text-black hover:bg-gray-200"
+                  : "bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+              }`}
+            >
+              <Search size={17} />
             </button>
 
-            <button className="flex items-center gap-1">
-              Projects Status <ChevronDown size={16} />
+            {/* LOGIN */}
+            <button
+              className={`hidden md:flex items-center gap-2 px-2 transition ${
+                scrolled ? "text-black" : "text-white"
+              }`}
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition ${
+                  scrolled
+                    ? "bg-gray-100"
+                    : "bg-white/10 border border-white/10 backdrop-blur-md"
+                }`}
+              >
+                <User size={17} />
+              </div>
+
+              <span className="text-sm font-medium">
+                Log in
+              </span>
             </button>
 
-            <button className="flex items-center gap-1">
-              Property Type <ChevronDown size={16} />
+            {/* POST PROPERTY */}
+            <button className="relative overflow-hidden bg-white text-black px-6 h-11 rounded-full font-semibold text-sm shadow-[0_8px_25px_rgba(0,0,0,0.12)] hover:scale-105 transition-all">
+
+              <span className="relative z-10">
+                Post Property
+              </span>
+
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-yellow-300 text-red-500 text-[9px] px-2 py-[3px] rounded-full font-bold">
+                FREE
+              </span>
             </button>
-          </nav>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-4">
-
-          <button className="hidden lg:flex h-12 px-6 rounded-full bg-blue-600 text-white font-semibold items-center">
-            INSIGHTS
-          </button>
-
-          <button className="hidden lg:flex h-12 px-6 rounded-full bg-gold text-white font-semibold items-center relative">
-            Global
-
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-2 py-[2px] rounded-full">
-              NEW
-            </span>
-          </button>
-
-          <button className="w-12 h-12 rounded-full border border-white/40 bg-white/10 backdrop-blur flex items-center justify-center text-white">
-            <Search size={20} />
-          </button>
-
-          <button className="hidden md:flex items-center gap-2 text-white">
-            <div className="w-12 h-12 rounded-full border border-white/40 bg-white/10 backdrop-blur flex items-center justify-center">
-              <User size={20} />
-            </div>
-
-            Log in
-          </button>
-
-          <button className="bg-white text-black px-7 py-4 rounded-full font-semibold shadow-lg relative">
-            Post Property
-
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-yellow-300 text-red-500 text-[10px] px-2 py-1 rounded-full font-bold">
-              FREE
-            </span>
-          </button>
+          </div>
         </div>
       </div>
     </header>
