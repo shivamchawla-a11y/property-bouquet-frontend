@@ -358,54 +358,60 @@ export default function Footer() {
     </div>
 
     {/* BOTTOM BAR */}
-    <div className="border-t border-[#E6C87A]/10 backdrop-blur-md bg-black/10">
+<div className="relative border-t border-[#E6C87A]/10 overflow-hidden">
 
-      <div className="max-w-[1450px] mx-auto px-5 py-7">
+  {/* SAME BG CONTINUATION */}
+  <div className="absolute inset-0 bg-transparent backdrop-blur-[2px]" />
 
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+  {/* SOFT GOLDEN FADE */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
 
-          {/* LEFT */}
-          <p className="text-white/55 text-[13px] text-center lg:text-left tracking-[0.4px]">
-            © 2026 Property Bouquet. All Rights Reserved.
-          </p>
+  <div className="relative z-10 max-w-[1450px] mx-auto px-5 py-7">
 
-          {/* CENTER */}
-          <div className="flex items-center gap-2 text-white/60 text-[13px] tracking-[0.3px]">
+    <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
 
-            <MapPin
-              size={14}
-              className="text-[#E6C87A]"
+      {/* LEFT */}
+      <p className="text-white/55 text-[13px] text-center lg:text-left tracking-[0.4px]">
+        © 2026 Property Bouquet. All Rights Reserved.
+      </p>
+
+      {/* CENTER */}
+      <div className="flex items-center gap-2 text-white/60 text-[13px] tracking-[0.3px]">
+
+        <MapPin
+          size={14}
+          className="text-[#E6C87A]"
+        />
+
+        Gurgaon • Dubai • Delhi NCR
+      </div>
+
+      {/* RIGHT */}
+      <div className="flex items-center gap-4">
+
+        {[
+          FaInstagram,
+          FaFacebookF,
+          FaLinkedinIn,
+        ].map((Icon, index) => (
+          <button
+            key={index}
+            className="group relative overflow-hidden w-12 h-12 rounded-full border border-[#E6C87A]/10 bg-white/[0.025] backdrop-blur-xl hover:border-[#E6C87A]/40 transition-all duration-500 flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.18)] hover:shadow-[0_0_35px_rgba(230,200,122,0.18)]"
+          >
+
+            {/* GOLDEN HOVER EFFECT */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-[#E6C87A]/20 via-transparent to-transparent" />
+
+            <Icon
+              size={17}
+              className="relative z-10 text-white/70 group-hover:text-[#F5D98B] transition-all duration-300"
             />
-
-            Gurgaon • Dubai • Delhi NCR
-          </div>
-
-          {/* RIGHT */}
-          <div className="flex items-center gap-4">
-
-            {[
-              FaInstagram,
-              FaFacebookF,
-              FaLinkedinIn,
-            ].map((Icon, index) => (
-              <button
-                key={index}
-                className="group relative overflow-hidden w-12 h-12 rounded-full border border-[#E6C87A]/10 bg-white/[0.05] backdrop-blur-2xl hover:border-[#E6C87A]/40 transition-all duration-500 flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.35)] hover:shadow-[0_0_35px_rgba(230,200,122,0.22)]"
-              >
-
-                {/* GOLDEN HOVER EFFECT */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-[#E6C87A]/30 via-transparent to-transparent" />
-
-                <Icon
-                  size={17}
-                  className="relative z-10 text-white/70 group-hover:text-[#F5D98B] transition-all duration-300"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+          </button>
+        ))}
       </div>
     </div>
+  </div>
+</div>
   </div>
 </div>
     </footer>
