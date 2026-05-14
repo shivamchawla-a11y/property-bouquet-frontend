@@ -5,6 +5,8 @@ import FeaturedProjects from "@/components/home/FeaturedProjects";
 import TrendingProjects from "@/components/home/TrendingProjects";
 import ExploreLocations from "@/components/home/ExploreLocations";
 import Footer from "@/components/home/Footer";
+import PremiumPartners from "@/components/home/PremiumPartners";
+import LuxuryInsightsSection from "@/components/home/LuxuryInsightsSection";
 
 export default function HomePage() {
   return (
@@ -25,7 +27,11 @@ export default function HomePage() {
 
       <ExploreLocations />
 
-      {/* <Footer/> */}
+      <PremiumPartners />
+
+      <LuxuryInsightsSection /> 
+
+      <Footer/>
 
     </main>
   );

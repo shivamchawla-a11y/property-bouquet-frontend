@@ -1,193 +1,214 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import {
-  Heart,
-  MapPin,
-  ShieldCheck,
   ArrowRight,
+  BedDouble,
+  Bath,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
-const featuredProjects = [
+const featuredProperties = [
   {
     id: 1,
-    title: "Trump Towers",
-    location: "Sector 65, Golf Course Ext Road",
+    title: "The Crest Penthouse",
+    location: "DLF Camellias, Gurgaon",
     image: "/project1.webp",
+    beds: "6 Beds",
+    baths: "6 Baths",
+    sqft: "12,000 Sq.Ft.",
+    price: "₹48.75 Cr++",
+    appreciation: "28% - 34%",
   },
+
   {
     id: 2,
-    title: "DLF The Camellias",
-    location: "Golf Course Road, Gurgaon",
+    title: "Aralias Estate",
+    location: "Nandi Hills, Bengaluru",
     image: "/project2.webp",
+    beds: "5 Beds",
+    baths: "7 Baths",
+    sqft: "9,500 Sq.Ft.",
+    price: "₹32.40 Cr++",
+    appreciation: "26% - 31%",
   },
+
   {
     id: 3,
-    title: "M3M Capital",
-    location: "Sector 113, Dwarka Expressway",
+    title: "Trump Residences",
+    location: "Worli, Mumbai",
     image: "/project3.webp",
-  },
-  {
-    id: 4,
-    title: "Smartworld One DXP",
-    location: "Sector 113, Gurgaon",
-    image: "/project4.webp",
+    beds: "4 Beds",
+    baths: "5 Baths",
+    sqft: "6,200 Sq.Ft.",
+    price: "₹38.90 Cr++",
+    appreciation: "24% - 30%",
   },
 ];
 
 export default function FeaturedProjects() {
   return (
-    <section className="bg-[#f7f7f7] py-20">
+    <section className="bg-[#f6f3ee] py-16 overflow-hidden">
 
-      <div className="max-w-[1450px] mx-auto px-4">
+      <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
 
-        {/* HEADING */}
-        <div className="text-center mb-14">
+        <div className="grid lg:grid-cols-[320px_1fr] gap-10 items-start">
 
-          <motion.h2
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-5xl md:text-6xl font-black"
-          >
-            <span className="text-red-600">
-              Featured
-            </span>{" "}
-            <span className="text-secondary">
-              Projects
-            </span>
-          </motion.h2>
+          {/* LEFT */}
+          <div className="pt-4">
 
-          <div className="w-24 h-1 bg-red-500 rounded-full mx-auto mt-5" />
+            <p className="text-[11px] uppercase tracking-[2.5px] text-black/55 font-semibold font-body mb-6">
+              FEATURED PROPERTIES
+            </p>
 
-          <p className="text-gray-500 text-lg mt-6 max-w-3xl mx-auto leading-8">
-            Explore handpicked luxury residences and investment
-            opportunities from top developers across Gurgaon,
-            Delhi NCR and Dubai.
-          </p>
-        </div>
+            <h2 className="font-heading text-[44px] leading-[1.12] text-[#151515]">
+              Exclusive Mandates.
+              <br />
+              Extraordinary Assets.
+            </h2>
 
-        {/* CARDS */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-7">
+            <button className="mt-10 flex items-center gap-3 text-[#bf8b37] text-[13px] tracking-[1px] font-semibold font-body group">
+              VIEW ALL PROPERTIES
 
-          {featuredProjects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 60 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.6,
-                delay: index * 0.12,
-              }}
-              viewport={{ once: true }}
-              whileHover={{
-                y: -10,
-              }}
-              className="group relative overflow-hidden rounded-[30px] bg-white shadow-[0_10px_35px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.18)] transition-all duration-500"
-            >
+              <ArrowRight
+                size={15}
+                className="group-hover:translate-x-1 transition"
+              />
+            </button>
+          </div>
 
-              {/* IMAGE */}
-              <div className="relative h-[430px] overflow-hidden">
+          {/* RIGHT */}
+          <div>
 
-                {/* MAIN IMAGE */}
-                <motion.img
-                  src={project.image}
-                  alt={project.title}
-                  whileHover={{
-                    scale: 1.12,
-                    rotate: 1,
+            {/* ARROWS */}
+            <div className="flex justify-end gap-3 mb-5">
+
+              <button className="w-11 h-11 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition">
+
+                <ChevronLeft size={18} />
+              </button>
+
+              <button className="w-11 h-11 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition">
+
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* CARDS */}
+            <div className="grid md:grid-cols-3 gap-5">
+
+              {featuredProperties.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{
+                    opacity: 0,
+                    y: 40,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
                   }}
                   transition={{
-                    duration: 0.9,
-                    ease: "easeOut",
+                    duration: 0.6,
+                    delay: index * 0.1,
                   }}
-                  className="w-full h-full object-cover"
-                />
+                  viewport={{
+                    once: true,
+                  }}
+                  whileHover={{
+                    y: -5,
+                  }}
+                  className="bg-white rounded-[18px] overflow-hidden border border-black/5 shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+                >
 
-                {/* PREMIUM OVERLAY */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-95" />
+                  {/* IMAGE */}
+                  <div className="relative h-[220px] overflow-hidden">
 
-                {/* LIGHT EFFECT */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-700" />
-
-                {/* TOP BADGES */}
-                <div className="absolute top-5 left-5 right-5 flex justify-between z-20">
-
-                  <div className="bg-white/95 backdrop-blur-xl px-4 py-2 rounded-full flex items-center gap-2 shadow-lg border border-white/40">
-
-                    <ShieldCheck
-                      size={16}
-                      className="text-emerald-600"
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition duration-700 hover:scale-105"
                     />
 
-                    <span className="text-[11px] font-bold tracking-wide text-gray-800">
-                      RERA APPROVED
-                    </span>
+                    {/* BADGE */}
+                    <div className="absolute top-4 left-4 bg-[#c89948] text-white text-[9px] tracking-[1px] px-3 py-2 rounded-full font-semibold font-body">
+                      EXCLUSIVE MANDATE
+                    </div>
                   </div>
 
-                  <button className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-lg hover:scale-110 hover:bg-white transition duration-300">
+                  {/* CONTENT */}
+                  <div className="p-5">
 
-                    <Heart
-                      size={18}
-                      className="text-gray-700"
-                    />
-                  </button>
-                </div>
+                    <h3 className="text-[24px] text-[#171717] font-heading leading-tight">
+                      {item.title}
+                    </h3>
 
-                {/* FLOATING SHINE */}
-                <div className="absolute inset-0 overflow-hidden">
+                    <div className="flex items-center gap-2 text-black/55 mt-2 font-body">
 
-                  <div className="absolute top-0 -left-[120%] w-[80%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-12 group-hover:left-[140%] transition-all duration-1000" />
-                </div>
+                      <MapPin size={14} />
 
-                {/* CONTENT */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
+                      <span className="text-[13px]">
+                        {item.location}
+                      </span>
+                    </div>
 
-                  <motion.h3
-                    whileHover={{ x: 2 }}
-                    className="text-[28px] font-bold mb-3 leading-tight"
-                  >
-                    {project.title}
-                  </motion.h3>
+                    {/* DETAILS */}
+                    <div className="flex flex-wrap gap-4 mt-5 text-black/60">
 
-                  <div className="flex items-center gap-2 text-white/85 mb-6">
+                      <div className="flex items-center gap-1.5">
 
-                    <MapPin size={16} />
+                        <BedDouble size={15} />
 
-                    <span className="text-sm tracking-wide">
-                      {project.location}
-                    </span>
+                        <span className="text-[12px] font-body">
+                          {item.beds}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+
+                        <Bath size={15} />
+
+                        <span className="text-[12px] font-body">
+                          {item.baths}
+                        </span>
+                      </div>
+
+                      <div className="text-[12px] font-body">
+                        {item.sqft}
+                      </div>
+                    </div>
+
+                    {/* BOTTOM */}
+                    <div className="grid grid-cols-2 gap-5 mt-6 pt-5 border-t border-black/5">
+
+                      <div>
+                        <p className="text-[11px] text-black/45 font-body mb-1">
+                          Starting Price
+                        </p>
+
+                        <h4 className="text-[24px] font-semibold text-[#111] font-body">
+                          {item.price}
+                        </h4>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-black/45 font-body mb-1">
+                          Est. Appreciation (5Y)
+                        </p>
+
+                        <h4 className="text-[24px] font-semibold text-[#111] font-body">
+                          {item.appreciation}
+                        </h4>
+                      </div>
+                    </div>
                   </div>
-
-                  {/* BUTTON */}
-                  <button className="w-full h-14 rounded-2xl bg-white text-secondary font-bold flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all duration-300 shadow-xl">
-
-                    Explore Project
-
-                    <ArrowRight
-                      size={18}
-                      className="group-hover:translate-x-1 transition"
-                    />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* VIEW ALL */}
-        <div className="flex justify-center mt-14">
-
-          <button className="group h-16 px-10 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-lg shadow-[0_15px_40px_rgba(239,68,68,0.35)] transition-all duration-300 flex items-center gap-3 hover:scale-105">
-
-            View All Projects
-
-            <ArrowRight
-              size={20}
-              className="group-hover:translate-x-1 transition"
-            />
-          </button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

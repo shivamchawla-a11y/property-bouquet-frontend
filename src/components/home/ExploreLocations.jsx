@@ -1,138 +1,214 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import {
-  MapPin,
   ArrowRight,
-  Building2,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  MapPin,
 } from "lucide-react";
 
 const locations = [
   {
     id: 1,
     name: "Golf Course Road",
-    city: "Gurgaon",
+    city: "Gurugram",
+    appreciation: "24%",
     image: "/location1.webp",
-    projects: "120+ Projects",
   },
 
   {
     id: 2,
-    name: "Dwarka Expressway",
-    city: "Gurgaon",
+    name: "Bandra Kurla Complex",
+    city: "Mumbai",
+    appreciation: "22%",
     image: "/location2.webp",
-    projects: "95+ Projects",
   },
 
   {
     id: 3,
-    name: "Sohna Road",
-    city: "Gurgaon",
+    name: "Nandi Hills",
+    city: "Bengaluru",
+    appreciation: "30%",
     image: "/location3.webp",
-    projects: "80+ Projects",
   },
 
   {
     id: 4,
-    name: "New Gurgaon",
-    city: "Gurgaon",
+    name: "Marine Drive",
+    city: "Mumbai",
+    appreciation: "20%",
     image: "/location4.webp",
-    projects: "70+ Projects",
   },
 
   {
     id: 5,
-    name: "Palm Jumeirah",
-    city: "Dubai",
+    name: "DLF Phase 5",
+    city: "Gurugram",
+    appreciation: "23%",
     image: "/location5.webp",
-    projects: "40+ Projects",
   },
 
   {
     id: 6,
-    name: "Downtown Dubai",
-    city: "Dubai",
+    name: "Sahakar Nagar",
+    city: "Pune",
+    appreciation: "20%",
     image: "/location6.webp",
-    projects: "65+ Projects",
   },
 ];
 
 export default function ExploreLocations() {
   return (
-    <section className="bg-[#f7f7f7] py-24 overflow-hidden">
+    <section className="relative bg-[#f6f3ee] py-24 overflow-hidden border-t border-black/5">
 
-      <div className="max-w-[1450px] mx-auto px-4">
+      {/* BACKGROUND GLOW */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#c89d58]/10 blur-[120px] rounded-full" />
 
-        {/* HEADING */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-14">
+      <div className="max-w-[1440px] mx-auto px-5 relative z-10">
 
-          <div>
+        {/* TOP HEADING */}
+        <div className="text-center mb-16">
 
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="uppercase tracking-[5px] text-red-500 font-semibold text-sm"
-            >
-              Prime Destinations
-            </motion.p>
+          <motion.p
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.5,
+            }}
+            viewport={{
+              once: true,
+            }}
+            className="text-[11px] uppercase tracking-[3px] text-[#b88a3b] font-semibold mb-5"
+          >
+            EXPLORE BY LOCATION
+          </motion.p>
 
-            <motion.h2
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-5xl md:text-6xl font-black text-secondary mt-3 leading-tight"
-            >
-              Explore <span className="text-red-600">Locations</span>
-            </motion.h2>
+          <motion.h2
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            viewport={{
+              once: true,
+            }}
+            className="text-[38px] md:text-[54px] leading-[1.08] text-[#171717]"
+            style={{
+              fontFamily:
+                "Georgia, Times New Roman, serif",
+            }}
+          >
+            India’s Most Premium
+            <br />
 
-            <p className="text-gray-500 text-lg mt-6 max-w-3xl leading-8">
-              Discover the most sought-after luxury real estate
-              destinations featuring iconic residences, investment
-              hotspots and premium lifestyle communities.
-            </p>
-          </div>
-
-          {/* BUTTON */}
-          <button className="group hidden lg:flex items-center gap-3 h-16 px-8 rounded-full bg-white border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300">
-
-            <span className="font-bold text-secondary">
-              Explore All Locations
+            <span className="text-[#b88a3b]">
+              Investment Corridors
             </span>
+          </motion.h2>
 
-            <div className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center group-hover:translate-x-1 transition">
-              <ArrowRight size={18} />
+          <motion.p
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.7,
+            }}
+            viewport={{
+              once: true,
+            }}
+            className="max-w-[760px] mx-auto mt-7 text-[15px] leading-[2] text-black/55"
+          >
+            Explore India’s highest-performing luxury
+            micro-markets curated for appreciation,
+            exclusivity, lifestyle and institutional-grade
+            investment potential.
+          </motion.p>
+
+          {/* BUTTONS */}
+          <div className="flex items-center justify-center gap-4 mt-10">
+
+            <button className="group flex items-center gap-3 h-[52px] px-7 rounded-full bg-[#171717] text-white text-[13px] tracking-[1px] font-semibold shadow-[0_10px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02] transition-all duration-300">
+
+              VIEW ALL LOCATIONS
+
+              <ArrowRight
+                size={15}
+                className="group-hover:translate-x-1 transition"
+              />
+            </button>
+
+            {/* ARROWS */}
+            <div className="flex items-center gap-3">
+
+              <button className="w-12 h-12 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl shadow-lg flex items-center justify-center text-black/70 hover:bg-black hover:text-white transition-all duration-300">
+
+                <ChevronLeft size={18} />
+              </button>
+
+              <button className="w-12 h-12 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl shadow-lg flex items-center justify-center text-black/70 hover:bg-black hover:text-white transition-all duration-300">
+
+                <ChevronRight size={18} />
+              </button>
             </div>
-          </button>
+          </div>
         </div>
 
-        {/* GRID */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-7">
+        {/* CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
 
           {locations.map((location, index) => (
             <motion.div
               key={location.id}
-              initial={{ opacity: 0, y: 70 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.6,
-                delay: index * 0.1,
+              initial={{
+                opacity: 0,
+                y: 40,
               }}
-              viewport={{ once: true }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.08,
+              }}
+              viewport={{
+                once: true,
+              }}
               whileHover={{
                 y: -10,
               }}
-              className="group relative overflow-hidden rounded-[32px] h-[420px] cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
+              className="group relative h-[340px] rounded-[28px] overflow-hidden"
             >
+
+              {/* GLASS OUTER */}
+              <div className="absolute inset-0 rounded-[28px] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.08)]" />
 
               {/* IMAGE */}
               <motion.img
                 src={location.image}
                 alt={location.name}
                 whileHover={{
-                  scale: 1.12,
+                  scale: 1.08,
                 }}
                 transition={{
                   duration: 1,
@@ -142,77 +218,77 @@ export default function ExploreLocations() {
               />
 
               {/* OVERLAY */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
 
-              {/* LIGHT EFFECT */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-700" />
+              {/* SHINE EFFECT */}
+              <div className="absolute inset-0 overflow-hidden">
 
-              {/* FLOATING GLASS */}
-              <div className="absolute top-5 left-5 z-20 bg-white/15 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+                <div className="absolute top-0 -left-[120%] w-[70%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-12 group-hover:left-[140%] transition-all duration-1000" />
+              </div>
 
-                <Building2
-                  size={16}
-                  className="text-white"
-                />
+              {/* TOP TAG */}
+              <div className="absolute top-5 left-5 z-20">
 
-                <span className="text-white text-sm font-semibold">
-                  {location.projects}
-                </span>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/15">
+
+                  <TrendingUp
+                    size={14}
+                    className="text-[#d7b26d]"
+                  />
+
+                  <span className="text-[11px] tracking-[1px] font-semibold text-white">
+                    HIGH GROWTH
+                  </span>
+                </div>
               </div>
 
               {/* CONTENT */}
-              <div className="absolute bottom-0 left-0 right-0 z-20 p-7">
+              <div className="absolute bottom-0 left-0 right-0 z-20 p-6">
 
                 {/* CITY */}
-                <div className="flex items-center gap-2 text-white/80 mb-3">
+                <div className="flex items-center gap-2 text-white/75 mb-3">
 
-                  <MapPin size={16} />
+                  <MapPin size={14} />
 
-                  <span className="text-sm tracking-wide uppercase">
+                  <span className="text-[12px] uppercase tracking-[1px] font-medium">
                     {location.city}
                   </span>
                 </div>
 
                 {/* NAME */}
-                <h3 className="text-3xl font-bold text-white leading-tight">
+                <h3 className="text-[24px] leading-[1.15] font-semibold text-white">
                   {location.name}
                 </h3>
 
-                {/* BUTTON */}
-                <div className="mt-7 flex items-center justify-between">
+                {/* APPRECIATION */}
+                <div className="mt-6 flex items-end justify-between">
 
-                  <button className="text-white font-semibold tracking-wide">
-                    Explore Area
-                  </button>
+                  <div>
 
-                  <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
+                    <p className="text-[10px] uppercase tracking-[1.5px] text-white/60 mb-2">
+                      Top Appreciation
+                    </p>
 
-                    <ArrowRight size={18} />
+                    <p className="text-[38px] leading-none font-semibold text-[#d7b26d]">
+                      {location.appreciation}
+                    </p>
+                  </div>
+
+                  {/* ARROW */}
+                  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white group-hover:bg-[#c89d58] group-hover:text-black transition-all duration-300 shadow-lg">
+
+                    <ArrowRight size={17} />
                   </div>
                 </div>
               </div>
 
-              {/* SHINE EFFECT */}
-              <div className="absolute inset-0 overflow-hidden">
+              {/* BORDER */}
+              <div className="absolute inset-0 rounded-[28px] border border-white/10 pointer-events-none" />
 
-                <div className="absolute top-0 -left-[120%] w-[80%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-12 group-hover:left-[140%] transition-all duration-1000" />
-              </div>
+              {/* GOLD GLOW */}
+              <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[120px] h-[120px] bg-[#c89d58]/20 blur-[60px] opacity-0 group-hover:opacity-100 transition duration-500" />
             </motion.div>
           ))}
-        </div>
-
-        {/* MOBILE BUTTON */}
-        <div className="flex justify-center mt-12 lg:hidden">
-
-          <button className="group flex items-center gap-3 h-14 px-8 rounded-full bg-red-500 text-white font-bold shadow-xl">
-
-            Explore All Locations
-
-            <ArrowRight
-              size={18}
-              className="group-hover:translate-x-1 transition"
-            />
-          </button>
         </div>
       </div>
     </section>

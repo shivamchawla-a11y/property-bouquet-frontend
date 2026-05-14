@@ -54,44 +54,65 @@ const services = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#7d0c16] text-white overflow-hidden">
+    <footer className="relative overflow-hidden bg-[#f6f3ee] border-t border-black/10">
 
       {/* TOP SECTION */}
-      <div className="relative">
+      <div className="relative overflow-hidden">
 
-        {/* GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#8d0f18] via-[#9d101c] to-[#8d0f18]" />
+        {/* BACKGROUND GLOW */}
+        <div className="absolute top-[-150px] left-[-120px] w-[420px] h-[420px] rounded-full bg-[#c89d58]/10 blur-[140px]" />
 
-        <div className="relative max-w-[1450px] mx-auto px-4 py-20">
+        <div className="absolute bottom-[-180px] right-[-120px] w-[420px] h-[420px] rounded-full bg-[#c89d58]/10 blur-[150px]" />
 
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-[1450px] mx-auto px-5 py-20">
+
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
 
             {/* LEFT */}
-            <div>
+            <div className="relative z-10">
+
+              {/* TAG */}
+              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#c89d58]/20 bg-white/70 backdrop-blur-xl mb-8 shadow-sm">
+
+                <div className="w-2 h-2 rounded-full bg-[#c89d58]" />
+
+                <span className="text-[11px] tracking-[2px] uppercase text-[#9a6f2f] font-semibold">
+                  Luxury Real Estate Advisory
+                </span>
+              </div>
 
               {/* LOGO */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-5 mb-8">
 
-                <img
-                  src="/logo.png"
-                  alt="logo"
-                  className="w-14 h-14 object-contain"
-                />
+                <div className="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-[#021f1b] via-[#032821] to-[#04150f] flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.18)] border border-[#c89d58]/10">
+
+                  <img
+                    src="/logo.png"
+                    alt="logo"
+                    className="w-[72px] h-[72px] object-contain"
+                  />
+                </div>
 
                 <div>
 
-                  <h2 className="text-3xl font-black">
+                  <h2
+                    className="text-[40px] leading-none text-[#171717]"
+                    style={{
+                      fontFamily:
+                        "Georgia, Times New Roman, serif",
+                    }}
+                  >
                     Property Bouquet
                   </h2>
 
-                  <p className="text-white/70 mt-1">
-                    Luxury Real Estate Company
+                  <p className="text-black/45 mt-2 text-[15px] tracking-wide">
+                    Curating Luxury Investments Across India & Dubai
                   </p>
                 </div>
               </div>
 
-              {/* TEXT */}
-              <p className="text-lg leading-9 text-white/90 max-w-2xl">
+              {/* DESCRIPTION */}
+              <p className="text-[16px] leading-[2] text-black/60 max-w-[720px]">
                 Property Bouquet specializes in premium luxury
                 residences, branded developments, and investment
                 opportunities across Gurgaon, Dubai and Delhi NCR.
@@ -100,88 +121,95 @@ export default function Footer() {
               </p>
 
               {/* CONTACT */}
-              <div className="mt-10 space-y-5">
+              <div className="mt-12 grid sm:grid-cols-3 gap-5">
 
                 {/* PHONE */}
-                <div className="flex items-center gap-5">
+                <div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500">
 
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
 
-                    <Phone size={22} />
+                    <Phone size={18} />
                   </div>
 
-                  <div>
+                  <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+                    Call Us
+                  </p>
 
-                    <p className="text-white/60 text-sm">
-                      Call Us
-                    </p>
-
-                    <h4 className="font-bold text-xl">
-                      +91 9958-328-555
-                    </h4>
-                  </div>
+                  <h4 className="text-[#171717] text-[18px] font-semibold mt-1">
+                    +91 9958-328-555
+                  </h4>
                 </div>
 
                 {/* EMAIL */}
-                <div className="flex items-center gap-5">
+                <div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500">
 
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
 
-                    <Mail size={22} />
+                    <Mail size={18} />
                   </div>
 
-                  <div>
+                  <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+                    Email
+                  </p>
 
-                    <p className="text-white/60 text-sm">
-                      Email Address
-                    </p>
-
-                    <h4 className="font-bold text-xl">
-                      support@propertybouquet.com
-                    </h4>
-                  </div>
+                  <h4 className="text-[#171717] text-[16px] font-semibold mt-1 break-all">
+                    support@propertybouquet.com
+                  </h4>
                 </div>
 
                 {/* WHATSAPP */}
-                <div className="flex items-center gap-5">
+<div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500 overflow-hidden">
 
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
+  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
 
-                    <MessageCircle size={22} />
-                  </div>
+    <MessageCircle size={18} />
+  </div>
 
-                  <div>
+  <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+    WhatsApp
+  </p>
 
-                    <p className="text-white/60 text-sm">
-                      WhatsApp
-                    </p>
-
-                    <h4 className="font-bold text-xl">
-                      wa.me/propertybouquet
-                    </h4>
-                  </div>
-                </div>
+  <h4 className="text-[#171717] text-[15px] font-semibold mt-1 break-all leading-[1.5]">
+    wa.me/propertybouquet
+  </h4>
+</div>
               </div>
             </div>
 
             {/* RIGHT FORM */}
             <div className="relative">
 
-              {/* GLOW */}
-              <div className="absolute inset-0 bg-white/5 blur-3xl rounded-[40px]" />
+              {/* OUTER GLOW */}
+              <div className="absolute inset-0 bg-[#c89d58]/10 blur-[80px] rounded-[40px]" />
 
-              <div className="relative bg-white/8 backdrop-blur-xl border border-white/10 rounded-[36px] p-8 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+              {/* CARD */}
+              <div className="relative overflow-hidden rounded-[38px] border border-black/5 bg-white/75 backdrop-blur-2xl p-8 md:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.08)]">
 
-                {/* HEADING */}
+                {/* TOP LIGHT */}
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4ae67]/60 to-transparent" />
+
+                {/* HEADER */}
                 <div className="text-center">
 
-                  <h3 className="text-4xl font-black">
-                    Get Instant Callback
+                  <p className="text-[11px] tracking-[2px] uppercase text-[#b98b3c] font-semibold mb-4">
+                    Private Consultation
+                  </p>
+
+                  <h3
+                    className="text-[42px] leading-[1.08] text-[#171717]"
+                    style={{
+                      fontFamily:
+                        "Georgia, Times New Roman, serif",
+                    }}
+                  >
+                    Get Instant
+                    <br />
+                    Callback
                   </h3>
 
-                  <p className="text-white/70 mt-3 text-lg">
+                  <p className="text-black/50 mt-5 text-[15px] leading-8 max-w-[420px] mx-auto">
                     Get expert advice on your luxury property
-                    investment
+                    investment from our senior advisory team.
                   </p>
                 </div>
 
@@ -191,23 +219,33 @@ export default function Footer() {
                   <input
                     type="text"
                     placeholder="Your Name"
-                    className="w-full h-16 rounded-2xl bg-white/10 border border-white/10 px-6 text-white placeholder:text-white/50 outline-none focus:border-white/30"
+                    className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
                   />
 
                   <input
                     type="text"
                     placeholder="Phone Number"
-                    className="w-full h-16 rounded-2xl bg-white/10 border border-white/10 px-6 text-white placeholder:text-white/50 outline-none focus:border-white/30"
+                    className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
                   />
 
-                  <button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#f2c48f] to-[#e5d0a5] text-[#5a0912] font-black text-lg hover:scale-[1.01] transition-all duration-300 shadow-2xl">
+                  <button className="group relative overflow-hidden w-full h-[62px] rounded-2xl bg-gradient-to-r from-[#d8b36c] to-[#b88731] text-black font-semibold text-[15px] shadow-[0_15px_40px_rgba(212,174,103,0.35)] hover:scale-[1.01] transition-all duration-500">
 
-                    Contact Now
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition" />
+
+                    <span className="relative flex items-center justify-center gap-2">
+
+                      Contact Now
+
+                      <ArrowRight
+                        size={16}
+                        className="group-hover:translate-x-1 transition"
+                      />
+                    </span>
                   </button>
                 </div>
 
                 {/* BOTTOM */}
-                <p className="text-center text-white/60 text-sm mt-6 leading-7">
+                <p className="text-center text-black/40 text-[13px] mt-6 leading-7">
                   Our luxury property consultants will contact
                   you within 30 minutes.
                 </p>
@@ -218,136 +256,93 @@ export default function Footer() {
       </div>
 
       {/* LINKS SECTION */}
-      <div className="border-t border-white/10 bg-[#730913]">
+      <div className="border-t border-black/8 bg-[#f8f5f0]">
 
-        <div className="max-w-[1450px] mx-auto px-4 py-16">
+        <div className="max-w-[1450px] mx-auto px-5 py-16">
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-14">
 
-            {/* COLUMN 1 */}
-            <div>
+            {/* COLUMN */}
+            {[
+              {
+                title: "Quick Links",
+                items: quickLinks,
+                icon: "arrow",
+              },
+              {
+                title: "Popular Cities",
+                items: cities,
+                icon: "arrow",
+              },
+              {
+                title: "Prime Locations",
+                items: locations,
+                icon: "location",
+              },
+              {
+                title: "Tools & Services",
+                items: services,
+                icon: "arrow",
+              },
+            ].map((section, index) => (
+              <div key={index}>
 
-              <h3 className="text-2xl font-bold mb-8">
-                Quick Links
-              </h3>
+                <h3
+                  className="text-[30px] text-[#171717] mb-8"
+                  style={{
+                    fontFamily:
+                      "Georgia, Times New Roman, serif",
+                  }}
+                >
+                  {section.title}
+                </h3>
 
-              <div className="space-y-4">
+                <div className="space-y-5">
 
-                {quickLinks.map((item) => (
-                  <Link
-                    key={item}
-                    href="/"
-                    className="group flex items-center gap-3 text-white/75 hover:text-white transition"
-                  >
+                  {section.items.map((item) => (
+                    <Link
+                      key={item}
+                      href="/"
+                      className="group flex items-center gap-3 text-black/55 hover:text-[#b98b3c] transition-all duration-300"
+                    >
 
-                    <ArrowRight
-                      size={16}
-                      className="group-hover:translate-x-1 transition"
-                    />
+                      {section.icon === "arrow" ? (
+                        <ArrowRight
+                          size={15}
+                          className="group-hover:translate-x-1 transition"
+                        />
+                      ) : (
+                        <MapPin size={15} />
+                      )}
 
-                    {item}
-                  </Link>
-                ))}
+                      <span className="text-[15px]">
+                        {item}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* COLUMN 2 */}
-            <div>
-
-              <h3 className="text-2xl font-bold mb-8">
-                Popular Cities
-              </h3>
-
-              <div className="space-y-4">
-
-                {cities.map((item) => (
-                  <Link
-                    key={item}
-                    href="/"
-                    className="group flex items-center gap-3 text-white/75 hover:text-white transition"
-                  >
-
-                    <ArrowRight
-                      size={16}
-                      className="group-hover:translate-x-1 transition"
-                    />
-
-                    {item}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* COLUMN 3 */}
-            <div>
-
-              <h3 className="text-2xl font-bold mb-8">
-                Prime Locations
-              </h3>
-
-              <div className="space-y-4">
-
-                {locations.map((item) => (
-                  <Link
-                    key={item}
-                    href="/"
-                    className="group flex items-center gap-3 text-white/75 hover:text-white transition"
-                  >
-
-                    <MapPin size={16} />
-
-                    {item}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* COLUMN 4 */}
-            <div>
-
-              <h3 className="text-2xl font-bold mb-8">
-                Tools & Services
-              </h3>
-
-              <div className="space-y-4">
-
-                {services.map((item) => (
-                  <Link
-                    key={item}
-                    href="/"
-                    className="group flex items-center gap-3 text-white/75 hover:text-white transition"
-                  >
-
-                    <ArrowRight
-                      size={16}
-                      className="group-hover:translate-x-1 transition"
-                    />
-
-                    {item}
-                  </Link>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* BOTTOM */}
-      <div className="border-t border-white/10 bg-[#630710]">
+      <div className="border-t border-black/8 bg-[#f3efe8]">
 
-        <div className="max-w-[1450px] mx-auto px-4 py-6">
+        <div className="max-w-[1450px] mx-auto px-5 py-7">
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
 
             {/* LEFT */}
-            <p className="text-white/60 text-sm text-center lg:text-left">
+            <p className="text-black/45 text-[13px] text-center lg:text-left">
               © 2026 Property Bouquet. All Rights Reserved.
             </p>
 
             {/* CENTER */}
-            <div className="flex items-center gap-2 text-white/60 text-sm">
+            <div className="flex items-center gap-2 text-black/45 text-[13px]">
 
-              <MapPin size={15} />
+              <MapPin size={14} />
 
               Gurgaon • Dubai • Delhi NCR
             </div>
@@ -355,20 +350,22 @@ export default function Footer() {
             {/* RIGHT */}
             <div className="flex items-center gap-4">
 
-              <button className="w-11 h-11 rounded-full bg-white/10 hover:bg-white hover:text-[#7d0c16] transition-all duration-300 flex items-center justify-center">
+              {[
+                FaInstagram,
+                FaFacebookF,
+                FaLinkedinIn,
+              ].map((Icon, index) => (
+                <button
+                  key={index}
+                  className="group w-11 h-11 rounded-full border border-black/8 bg-white hover:bg-gradient-to-br hover:from-[#02231d] hover:to-[#04150f] transition-all duration-500 flex items-center justify-center shadow-sm"
+                >
 
-                <FaInstagram size={18} />
-              </button>
-
-              <button className="w-11 h-11 rounded-full bg-white/10 hover:bg-white hover:text-[#7d0c16] transition-all duration-300 flex items-center justify-center">
-
-                <FaFacebookF size={18} />
-              </button>
-
-              <button className="w-11 h-11 rounded-full bg-white/10 hover:bg-white hover:text-[#7d0c16] transition-all duration-300 flex items-center justify-center">
-
-                <FaLinkedinIn size={18} />
-              </button>
+                  <Icon
+                    size={17}
+                    className="text-black/60 group-hover:text-[#d4ae67] transition"
+                  />
+                </button>
+              ))}
             </div>
           </div>
         </div>

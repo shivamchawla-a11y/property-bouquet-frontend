@@ -1,40 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ChevronDown,
-  Menu,
-  Search,
-  User,
-} from "lucide-react";
 import Link from "next/link";
+import {
+  Menu,
+  ChevronDown,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const menuItems = [
+const navItems = [
   {
-    title: "City",
-    items: ["Gurgaon", "Noida", "Delhi", "Dubai"],
-  },
-  {
-    title: "Budget",
-    items: ["1 Cr - 2 Cr", "2 Cr - 5 Cr", "5 Cr+"],
-  },
-  {
-    title: "Projects Status",
-    items: ["New Launch", "Ready To Move", "Under Construction"],
-  },
-  {
-    title: "Property Type",
+    title: "PROPERTIES",
     items: ["Apartments", "Penthouses", "Villas", "Plots"],
   },
   {
-    title: "Rental",
-    items: ["Luxury Rentals", "Commercial Rentals"],
+    title: "INVESTMENT INTELLIGENCE",
+    items: ["Market Reports", "ROI Analysis", "Luxury Trends"],
+  },
+  {
+    title: "LOCATIONS",
+    items: ["Dubai", "Gurgaon", "Goa", "London"],
+  },
+  {
+    title: "ADVISORY",
+    items: ["Private Advisory", "Investment Planning"],
+  },
+  {
+    title: "MARKET INSIGHTS",
+    items: ["Insights", "Guides", "Luxury News"],
+  },
+  {
+    title: "ABOUT US",
+    items: ["Our Story", "Clients", "Vision"],
   },
 ];
 
 export default function Navbar() {
-  const [activeMenu, setActiveMenu] = useState(null);
+  const [active, setActive] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -44,24 +46,24 @@ export default function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () =>
+      window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
+      className={`fixed top-0 left-0 w-full z-[999] transition-all duration-500 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3"
-          : "bg-transparent py-5"
+          ? "bg-black/80 backdrop-blur-xl border-b border-white/10"
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
-
-        {/* NAVBAR */}
-        <div className="flex items-center justify-between">
-
+        
+        <div className="h-[82px] flex items-center justify-between">
+          
           {/* LEFT */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-10">
 
             {/* LOGO */}
             <Link
@@ -70,92 +72,70 @@ export default function Navbar() {
             >
               <img
                 src="/logo.png"
-                alt="Property Bouquet"
-                className="w-10 h-10 object-contain"
+                alt="logo"
+                className="w-[48px] h-[48px] object-contain"
               />
 
-              <div className="leading-tight">
-                <h1
-                  className={`text-[26px] font-bold tracking-tight transition ${
-                    scrolled ? "text-[#111]" : "text-white"
-                  }`}
-                >
-                  Property
-                </h1>
+              <div className="leading-none">
+                <h2 className="text-[24px] xl:text-[26px] font-semibold text-white tracking-tight font-heading">
+                  PROPERTY
+                </h2>
 
-                <p
-                  className={`text-sm font-medium tracking-[3px] uppercase transition ${
-                    scrolled
-                      ? "text-gray-500"
-                      : "text-white/70"
-                  }`}
-                >
-                  Bouquet
+                <p className="text-[#c59d4f] tracking-[4px] text-[11px] xl:text-[12px] font-medium mt-1">
+                  BOUQUET
                 </p>
               </div>
             </Link>
 
             {/* DESKTOP MENU */}
-            <nav className="hidden xl:flex items-center gap-2">
-
-              {/* MENU ICON */}
-              <button
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition ${
-                  scrolled
-                    ? "hover:bg-gray-100 text-black"
-                    : "hover:bg-white/10 text-white"
-                }`}
-              >
-                <Menu size={18} />
-              </button>
-
-              {menuItems.map((item) => (
+            <nav className="hidden xl:flex items-center gap-[2px]">
+              {navItems.map((item) => (
                 <div
                   key={item.title}
                   className="relative"
-                  onMouseEnter={() => setActiveMenu(item.title)}
-                  onMouseLeave={() => setActiveMenu(null)}
+                  onMouseEnter={() => setActive(item.title)}
+                  onMouseLeave={() => setActive(null)}
                 >
-                  <button
-                    className={`flex items-center gap-1.5 px-4 h-10 rounded-full text-[14px] font-medium transition-all ${
-                      scrolled
-                        ? "text-gray-700 hover:bg-gray-100 hover:text-black"
-                        : "text-white hover:bg-white/10"
-                    }`}
-                  >
+                  <button className="flex items-center gap-1 text-white/85 hover:text-[#d6aa53] transition text-[11px] xl:text-[12px] font-medium tracking-[0.08em] px-2.5 h-9 uppercase">
                     {item.title}
 
                     <ChevronDown
-                      size={14}
-                      className={`transition ${
-                        activeMenu === item.title
+                      size={13}
+                      className={`transition duration-300 ${
+                        active === item.title
                           ? "rotate-180"
                           : ""
                       }`}
                     />
                   </button>
 
-                  {/* DROPDOWN */}
                   <AnimatePresence>
-                    {activeMenu === item.title && (
+                    {active === item.title && (
                       <motion.div
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 15 }}
-                        transition={{ duration: 0.18 }}
-                        className="absolute top-[52px] left-0 w-[260px]"
+                        initial={{
+                          opacity: 0,
+                          y: 12,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          y: 8,
+                        }}
+                        transition={{
+                          duration: 0.2,
+                        }}
+                        className="absolute top-[48px] left-0 w-[240px]"
                       >
-                        <div className="rounded-[28px] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] p-4">
-
-                          <p className="text-xs uppercase tracking-[3px] text-gray-400 px-3 mb-3">
-                            {item.title}
-                          </p>
+                        <div className="rounded-[22px] border border-white/10 bg-[#0b0b0b]/95 backdrop-blur-2xl p-3 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
 
                           <div className="space-y-1">
                             {item.items.map((sub) => (
                               <button
                                 key={sub}
-                                className="w-full text-left px-4 py-3 rounded-2xl text-[15px] text-gray-700 hover:bg-[#f5f7fb] hover:text-red-500 transition font-medium"
+                                className="w-full text-left px-4 py-3 rounded-xl text-white/75 hover:bg-white/5 hover:text-[#d6aa53] transition text-[13px]"
                               >
                                 {sub}
                               </button>
@@ -173,62 +153,14 @@ export default function Navbar() {
           {/* RIGHT */}
           <div className="flex items-center gap-3">
 
-            {/* INSIGHTS */}
-            <button className="hidden lg:flex h-11 px-5 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-semibold items-center shadow-lg hover:scale-105 transition">
-              INSIGHTS
+            {/* CONSULTATION BUTTON */}
+            <button className="hidden lg:flex h-[44px] px-6 rounded-xl bg-gradient-to-b from-[#d9b061] to-[#b8862e] text-black font-semibold text-[11px] tracking-[0.12em] shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:scale-[1.03] transition uppercase items-center">
+              Private Consultation
             </button>
 
-            {/* GLOBAL */}
-            <button className="hidden lg:flex h-11 px-5 rounded-full bg-gradient-to-r from-[#d7b04c] to-[#b88922] text-white text-sm font-semibold items-center relative shadow-lg hover:scale-105 transition">
-              Global
-
-              <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-[1px] rounded-full font-bold">
-                NEW
-              </span>
-            </button>
-
-            {/* SEARCH */}
-            <button
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                scrolled
-                  ? "bg-gray-100 text-black hover:bg-gray-200"
-                  : "bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
-              }`}
-            >
-              <Search size={17} />
-            </button>
-
-            {/* LOGIN */}
-            <button
-              className={`hidden md:flex items-center gap-2 px-2 transition ${
-                scrolled ? "text-black" : "text-white"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition ${
-                  scrolled
-                    ? "bg-gray-100"
-                    : "bg-white/10 border border-white/10 backdrop-blur-md"
-                }`}
-              >
-                <User size={17} />
-              </div>
-
-              <span className="text-sm font-medium">
-                Log in
-              </span>
-            </button>
-
-            {/* POST PROPERTY */}
-            <button className="relative overflow-hidden bg-white text-black px-6 h-11 rounded-full font-semibold text-sm shadow-[0_8px_25px_rgba(0,0,0,0.12)] hover:scale-105 transition-all">
-
-              <span className="relative z-10">
-                Post Property
-              </span>
-
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-yellow-300 text-red-500 text-[9px] px-2 py-[3px] rounded-full font-bold">
-                FREE
-              </span>
+            {/* MENU */}
+            <button className="w-[46px] h-[46px] rounded-full border border-[#b8862e]/40 bg-black/30 backdrop-blur-xl flex items-center justify-center text-[#d9b061] hover:bg-[#d9b061] hover:text-black transition-all duration-300">
+              <Menu size={18} />
             </button>
           </div>
         </div>
