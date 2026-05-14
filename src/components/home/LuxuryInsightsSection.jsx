@@ -307,132 +307,78 @@ export default function LuxuryInsightsSection() {
 </div>
 
         {/* MIDDLE GRID */}
-<div className="grid xl:grid-cols-[1.02fr_0.95fr_1.18fr] border-x border-b border-black/10 overflow-hidden rounded-t-[10px]">
+<div className="grid xl:grid-cols-[0.95fr_1.18fr] border-x border-b border-black/10 overflow-hidden rounded-t-[10px]">
 
-  {/* MARKET INSIGHTS */}
-  <div className="bg-[#f7f4ee] border-r border-black/10 px-8 py-8 xl:px-10 xl:py-10">
 
-    <p className="text-[10px] tracking-[2px] uppercase text-black/55 font-semibold mb-5">
-      Market Insights
-    </p>
-
-    <h2
-      className="text-[34px] xl:text-[38px] leading-[1.12] text-[#171717] font-medium"
-      style={{
-        fontFamily:
-          "Georgia, Times New Roman, serif",
-      }}
-    >
-      India’s Luxury Market
-      <br />
-      At A Glance.
-    </h2>
-
-    <div className="grid grid-cols-2 gap-x-7 gap-y-8 mt-10">
-
-      {insights.map((item, index) => (
-        <div
-          key={index}
-          className="relative"
-        >
-
-          <p className="text-[9px] uppercase tracking-[1.5px] text-black/40 font-semibold mb-2">
-            {item.label}
-          </p>
-
-          <h4 className="text-[28px] leading-none text-[#b98b3c] font-semibold">
-            {item.value}
-          </h4>
-
-          {/* MINI CHART */}
-          <div className="mt-3 opacity-60">
-            <svg
-              width="90"
-              height="28"
-              viewBox="0 0 90 28"
-              fill="none"
-            >
-              <path
-                d="M2 23C12 22 14 16 22 18C29 19 35 8 44 12C54 16 57 7 67 8C75 9 80 2 88 4"
-                stroke="#b98b3c"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-
-              <circle
-                cx="88"
-                cy="4"
-                r="2.6"
-                fill="#b98b3c"
-              />
-            </svg>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="flex items-center justify-between mt-10 pt-5 border-t border-black/5">
-
-      <p className="text-[11px] text-black/45">
-        Source: Internal Research &
-        Market Reports
-      </p>
-
-      <button className="group flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px]">
-
-        View All Insights
-
-        <ArrowRight
-          size={13}
-          className="group-hover:translate-x-1 transition"
-        />
-      </button>
-    </div>
-  </div>
 
   {/* NEWS & INSIGHTS */}
-  <div className="bg-[#fbf9f5] border-r border-black/10 px-8 py-8 xl:px-10 xl:py-10">
+  <div className="bg-[#fbf9f5] border-r border-black/10 px-8 py-8 xl:px-10 xl:py-10 flex flex-col justify-between">
 
-    <p className="text-[10px] tracking-[2px] uppercase text-black/55 font-semibold mb-7">
-      News & Insights
-    </p>
+    <div>
 
-    <div className="space-y-7">
+      <p className="text-[10px] tracking-[2px] uppercase text-black/55 font-semibold mb-7">
+        News & Insights
+      </p>
 
-      {news.map((item, index) => (
-        <div
-          key={index}
-          className="flex gap-4 group cursor-pointer"
-        >
+      <h2
+        className="text-[34px] xl:text-[38px] leading-[1.12] text-[#171717] font-medium mb-10"
+        style={{
+          fontFamily:
+            "Georgia, Times New Roman, serif",
+        }}
+      >
+        Latest Luxury
+        <br />
+        Market Updates.
+      </h2>
 
-          {/* DATE */}
-          <div className="w-[62px] h-[62px] rounded-[10px] bg-[#f1ece3] border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-md">
+      <div className="space-y-7">
 
-            <span className="text-[24px] leading-none font-semibold text-[#171717]">
-              {item.day}
-            </span>
+        {news.map((item, index) => (
+          <div
+            key={index}
+            className="flex gap-4 group cursor-pointer"
+          >
 
-            <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
-              {item.month}
-            </span>
+            {/* DATE */}
+            <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
+
+              <span className="text-[24px] leading-none font-semibold text-[#171717]">
+                {item.day}
+              </span>
+
+              <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
+                {item.month}
+              </span>
+            </div>
+
+            {/* TEXT */}
+            <div className="pt-[2px]">
+
+              <h4 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[320px] transition-all duration-300 group-hover:text-[#b98b3c]">
+                {item.title}
+              </h4>
+
+              <div className="flex items-center gap-3 mt-2">
+
+                <p className="text-[12px] text-black/45">
+                  6 Min Read
+                </p>
+
+                <div className="w-1 h-1 rounded-full bg-black/25" />
+
+                <p className="text-[12px] text-[#b98b3c] font-medium">
+                  Luxury Real Estate
+                </p>
+              </div>
+            </div>
           </div>
-
-          {/* TEXT */}
-          <div className="pt-[2px]">
-
-            <h4 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[280px] transition group-hover:text-[#b98b3c]">
-              {item.title}
-            </h4>
-
-            <p className="mt-2 text-[12px] text-black/45">
-              6 Min Read
-            </p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
 
-    <button className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px]">
+    {/* BUTTON */}
+    <button className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px] w-fit">
 
       View All News
 
@@ -443,162 +389,233 @@ export default function LuxuryInsightsSection() {
     </button>
   </div>
 
-  {/* TOP IMAGE */}
+  {/* RIGHT IMAGE */}
   <div className="relative min-h-[540px] overflow-hidden bg-black">
 
     <img
       src="/market1.png"
       alt="Luxury Interior"
-      className="absolute inset-0 w-full h-full object-cover object-center scale-[1.01]"
+      className="absolute inset-0 w-full h-full object-cover object-center"
     />
 
-    {/* SMOOTH OVERLAY */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
+    {/* PREMIUM OVERLAY */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
 
-    {/* EDGE SHADOW */}
+    {/* SOFT SHADOW */}
     <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.18)]" />
+
   </div>
 </div>
 
-{/* BOTTOM GRID */}
-<div className="grid xl:grid-cols-[1fr_1.08fr_1.05fr] border-x border-b border-black/10 overflow-hidden rounded-b-[10px]">
+{/* PREMIUM TRANSITION DIVIDER */}
+<div className="relative h-[120px] overflow-hidden border-x border-black/10 bg-[#f6f3ee]">
 
-  {/* ROI CALCULATOR */}
-  <div className="relative overflow-hidden bg-gradient-to-br from-[#021c18] via-[#03241e] to-[#02110d] border-r border-white/10 px-8 py-8 xl:px-10 xl:py-10">
+  {/* TOP FADE */}
+  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
 
-    {/* GLOW */}
-    <div className="absolute top-[-80px] left-[-80px] w-[220px] h-[220px] bg-[#d4ae67]/10 blur-[120px]" />
+  {/* GLOW */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-[#c89d58]/10 blur-[130px]" />
 
-    <div className="relative z-10">
+  {/* GLASS STRIP */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[82%] h-[1px] bg-gradient-to-r from-transparent via-[#c89d58]/30 to-transparent" />
 
-      <p className="text-[10px] tracking-[2px] uppercase text-[#d4ae67] font-semibold mb-5">
-        ROI Calculator
+  {/* FLOATING BADGE */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+
+    <div className="px-6 py-3 rounded-full border border-white/60 bg-white/60 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.06)]">
+
+      <p className="text-[10px] tracking-[3px] uppercase text-black/45 font-semibold">
+        Wealth Intelligence
       </p>
+    </div>
+  </div>
+</div>
 
-      <h2
-        className="text-[34px] xl:text-[38px] leading-[1.12] text-white"
-        style={{
-          fontFamily:
-            "Georgia, Times New Roman, serif",
-        }}
-      >
-        Model Your Investment.
-        <br />
-        Plan Your Returns.
-      </h2>
+{/* BOTTOM SECTION */}
+<div className="border-x border-b border-black/10 overflow-hidden rounded-b-[10px] bg-[#02110d]">
 
-      <div className="mt-10 space-y-8">
+  {/* TOP TWO CARDS */}
+  <div className="grid xl:grid-cols-2">
 
-        {[
-          "Investment Amount",
-          "Holding Period",
-          "Expected Appreciation",
-        ].map((item, index) => (
-          <div key={index}>
+    {/* ROI CALCULATOR */}
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#021c18] via-[#03241e] to-[#02110d] border-b xl:border-b-0 xl:border-r border-white/10 px-8 py-8 xl:px-10 xl:py-10">
 
-            <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+      {/* GLOW */}
+      <div className="absolute top-[-80px] left-[-80px] w-[220px] h-[220px] bg-[#d4ae67]/10 blur-[120px]" />
 
-              <span>{item}</span>
+      <div className="relative z-10">
 
-              <span>
-                {index === 0
-                  ? "₹ 10,00,00,000"
-                  : index === 1
-                  ? "5 Years"
-                  : "20%"}
-              </span>
+        <p className="text-[10px] tracking-[2px] uppercase text-[#d4ae67] font-semibold mb-5">
+          ROI Calculator
+        </p>
+
+        <h2
+          className="text-[32px] xl:text-[36px] leading-[1.12] text-white"
+          style={{
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+          }}
+        >
+          Model Your Investment.
+          <br />
+          Plan Your Returns.
+        </h2>
+
+        <div className="mt-10 space-y-8">
+
+          {[
+            "Investment Amount",
+            "Holding Period",
+            "Expected Appreciation",
+          ].map((item, index) => (
+            <div key={index}>
+
+              <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+
+                <span>{item}</span>
+
+                <span>
+                  {index === 0
+                    ? "₹ 10,00,00,000"
+                    : index === 1
+                    ? "5 Years"
+                    : "20%"}
+                </span>
+              </div>
+
+              {/* SLIDER */}
+              <div className="relative h-[3px] rounded-full bg-white/10 overflow-visible">
+
+                <div className="absolute left-0 top-0 h-full w-[65%] bg-gradient-to-r from-[#b98b3c] to-[#d9b56c]" />
+
+                <div className="absolute left-[65%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#d4ae67] border-[3px] border-[#08201b] shadow-[0_0_15px_rgba(212,174,103,0.7)]" />
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
 
-            {/* SLIDER */}
-            <div className="relative h-[3px] rounded-full bg-white/10 overflow-visible">
+    {/* RETURNS CARD */}
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#032821] via-[#021d18] to-[#02110d] flex items-center justify-center px-6 py-10 xl:py-12">
 
-              <div className="absolute left-0 top-0 h-full w-[65%] bg-gradient-to-r from-[#b98b3c] to-[#d9b56c]" />
+      {/* GLOW */}
+      <div className="absolute w-[320px] h-[320px] rounded-full bg-[#d4ae67]/10 blur-[130px]" />
 
-              <div className="absolute left-[65%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#d4ae67] border-[3px] border-[#08201b] shadow-[0_0_15px_rgba(212,174,103,0.7)]" />
-            </div>
+      <div className="relative z-10 w-full max-w-[370px] rounded-[28px] border border-[#d4ae67]/15 bg-white/[0.04] backdrop-blur-3xl px-8 py-9 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+
+        {/* TOP */}
+        <div className="text-center">
+
+          <p className="text-[10px] uppercase tracking-[2px] text-white/40 font-semibold">
+            Projected Value (5Y)
+          </p>
+
+          <h3 className="text-[#d4ae67] text-[48px] leading-none font-semibold mt-5">
+            ₹ 24.88 Cr*
+          </h3>
+        </div>
+
+        {/* RETURNS */}
+        <div className="space-y-6 mt-10">
+
+          <div className="flex items-center justify-between">
+
+            <span className="text-white/55 text-[13px]">
+              Total Returns
+            </span>
+
+            <span className="text-[28px] text-white font-semibold">
+              ₹ 14.88 Cr
+            </span>
           </div>
-        ))}
+
+          <div className="h-px bg-white/10" />
+
+          <div className="flex items-center justify-between">
+
+            <span className="text-white/55 text-[13px]">
+              ROI
+            </span>
+
+            <span className="text-[30px] text-[#d4ae67] font-semibold">
+              148.8%
+            </span>
+          </div>
+        </div>
+
+        {/* BUTTON */}
+        <button className="mt-10 h-[54px] rounded-2xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[13px] font-semibold w-full hover:brightness-110 hover:scale-[1.01] transition-all duration-300 shadow-[0_10px_30px_rgba(212,174,103,0.25)]">
+
+          DOWNLOAD FULL REPORT
+        </button>
+
+        <p className="text-[10px] text-white/35 mt-4 text-center">
+          *Indicative returns for reference only
+        </p>
       </div>
     </div>
   </div>
 
-  {/* RETURNS CARD */}
-  <div className="relative overflow-hidden bg-gradient-to-br from-[#032821] via-[#021d18] to-[#02110d] border-r border-white/10 flex items-center justify-center px-6 py-8">
 
-    {/* GLOW */}
-    <div className="absolute w-[280px] h-[280px] rounded-full bg-[#d4ae67]/10 blur-[120px]" />
+  {/* PREMIUM ADVISORY TRANSITION */}
+<div className="relative h-[140px] overflow-hidden bg-[#02110d] border-t border-white/10">
 
-    <div className="relative z-10 w-full max-w-[310px] rounded-[24px] border border-[#d4ae67]/15 bg-white/[0.03] backdrop-blur-2xl px-8 py-8 shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
+  {/* GOLD LIGHT */}
+  <div className="absolute left-1/2 top-[-120px] -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-[#d4ae67]/10 blur-[140px]" />
 
-      <p className="text-[10px] uppercase tracking-[2px] text-white/40 font-semibold">
-        Projected Value (5Y)
-      </p>
+  {/* LINE */}
+  <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#d4ae67]/20 to-transparent" />
 
-      <h3 className="text-[#d4ae67] text-[44px] leading-none font-semibold mt-5">
-        ₹ 24.88 Cr*
-      </h3>
+  {/* CENTER GLASS */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
 
-      <div className="space-y-6 mt-8">
+    <div className="rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-2xl px-7 py-3 shadow-[0_15px_45px_rgba(0,0,0,0.25)]">
 
-        <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
 
-          <span className="text-white/55 text-[13px]">
-            Total Returns
-          </span>
+        <div className="w-2 h-2 rounded-full bg-[#d4ae67]" />
 
-          <span className="text-[26px] text-white font-semibold">
-            ₹ 14.88 Cr
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between">
-
-          <span className="text-white/55 text-[13px]">
-            ROI
-          </span>
-
-          <span className="text-[28px] text-[#d4ae67] font-semibold">
-            148.8%
-          </span>
-        </div>
+        <p className="text-[10px] uppercase tracking-[3px] text-white/60 font-semibold">
+          Private Advisory Network
+        </p>
       </div>
-
-      <button className="mt-9 h-[52px] rounded-xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[13px] font-semibold w-full hover:brightness-110 transition-all duration-300 shadow-[0_10px_30px_rgba(212,174,103,0.25)]">
-
-        DOWNLOAD FULL REPORT
-      </button>
-
-      <p className="text-[10px] text-white/35 mt-4 text-center">
-        *Indicative returns for reference only
-      </p>
     </div>
   </div>
 
-  {/* ADVISORY */}
-  <div className="relative min-h-[430px] overflow-hidden bg-black">
+  {/* BOTTOM SHADOW */}
+  <div className="absolute bottom-0 inset-x-0 h-[120px] bg-gradient-to-b from-transparent to-black/25" />
+</div>
 
-    {/* IMAGE */}
-    <img
-      src="/market2.png"
-      alt="Luxury Advisory"
-      className="absolute inset-0 w-full h-full object-cover object-center scale-[1.01]"
-    />
+ {/* ADVISORY SECTION */}
+<div className="grid lg:grid-cols-[0.95fr_1.05fr] overflow-hidden rounded-[34px] border border-black/10 bg-[#f7f4ee] shadow-[0_20px_70px_rgba(0,0,0,0.06)]">
 
-    {/* OVERLAY */}
-    <div className="absolute inset-0 bg-gradient-to-r from-[#021c18]/96 via-[#03221c]/88 to-black/25" />
+  {/* LEFT CONTENT */}
+  <div className="relative overflow-hidden bg-gradient-to-br from-[#021c18] via-[#03241e] to-[#02110d] px-7 py-12 md:px-10 xl:px-14">
 
-    {/* SHADOW */}
-    <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.35)]" />
+    {/* PREMIUM GLOW */}
+    <div className="absolute top-[-100px] left-[-80px] w-[260px] h-[260px] rounded-full bg-[#d4ae67]/10 blur-[120px]" />
 
-    {/* CONTENT */}
-    <div className="relative z-10 h-full flex flex-col justify-center px-8 py-10 xl:px-10 text-white">
+    <div className="absolute bottom-[-120px] right-[-80px] w-[240px] h-[240px] rounded-full bg-[#d4ae67]/5 blur-[120px]" />
 
-      <p className="text-[10px] tracking-[2px] uppercase text-[#d4ae67] font-semibold mb-5">
-        White-Glove Advisory
-      </p>
+    {/* GLASS NOISE */}
+    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:22px_22px]" />
 
+    <div className="relative z-10 max-w-[560px]">
+
+      {/* LABEL */}
+      <div className="inline-flex items-center gap-2 rounded-full border border-[#d4ae67]/20 bg-white/[0.04] backdrop-blur-xl px-4 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.18)]">
+
+        <div className="w-2 h-2 rounded-full bg-[#d4ae67]" />
+
+        <p className="text-[10px] tracking-[2px] uppercase text-[#d4ae67] font-semibold">
+          White-Glove Advisory
+        </p>
+      </div>
+
+      {/* HEADING */}
       <h2
-        className="text-[34px] xl:text-[38px] leading-[1.12]"
+        className="mt-7 text-[34px] md:text-[42px] xl:text-[50px] leading-[1.08] text-white"
         style={{
           fontFamily:
             "Georgia, Times New Roman, serif",
@@ -609,40 +626,133 @@ export default function LuxuryInsightsSection() {
         We Build Legacies.
       </h2>
 
-      <div className="mt-9 space-y-5">
+      {/* DESCRIPTION */}
+      <p className="mt-6 text-white/62 text-[13px] leading-[2] max-w-[500px]">
+        Tailored advisory for luxury residences,
+        branded developments, and high-growth
+        investment opportunities across India &
+        Dubai — curated with institutional-grade
+        market intelligence and private access.
+      </p>
+
+      {/* FEATURE CARDS */}
+      <div className="grid sm:grid-cols-2 gap-4 mt-10">
 
         {advisoryPoints.map((item, index) => (
           <div
             key={index}
-            className="flex items-start gap-4"
+            className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.05] backdrop-blur-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)] hover:-translate-y-1 hover:border-[#d4ae67]/20 transition-all duration-500"
           >
 
-            <div className="w-10 h-10 rounded-full border border-[#d4ae67]/35 bg-white/[0.03] backdrop-blur-md flex items-center justify-center shrink-0 text-[#d4ae67]">
+            {/* HOVER LIGHT */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-gradient-to-br from-[#d4ae67]/10 via-transparent to-transparent" />
 
-              <ShieldCheck size={16} />
-            </div>
+            <div className="relative z-10">
 
-            <div>
+              {/* ICON */}
+              <div className="w-11 h-11 rounded-2xl border border-[#d4ae67]/30 bg-gradient-to-br from-[#d4ae67]/10 to-transparent text-[#d4ae67] flex items-center justify-center shadow-[0_0_20px_rgba(212,174,103,0.12)]">
 
-              <h4 className="text-[15px] font-medium">
+                <ShieldCheck size={17} />
+              </div>
+
+              {/* TITLE */}
+              <h4 className="mt-4 text-[14px] font-medium text-white leading-[1.5]">
                 {item}
               </h4>
 
-              <p className="text-white/55 text-[12px] mt-1 leading-[1.7]">
+              {/* TEXT */}
+              <p className="text-white/50 text-[11px] mt-2 leading-[1.8]">
                 Curated premium advisory &
-                investment strategy.
+                investment strategy for luxury
+                real estate portfolios.
               </p>
             </div>
           </div>
         ))}
       </div>
 
-      <button className="mt-10 h-[52px] px-8 rounded-xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[13px] font-semibold w-fit hover:brightness-110 transition-all duration-300 shadow-[0_10px_30px_rgba(212,174,103,0.25)]">
+      {/* BUTTON */}
+      <button className="group mt-10 h-[54px] px-9 rounded-2xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[12px] font-semibold tracking-[1px] hover:brightness-110 hover:scale-[1.01] transition-all duration-300 shadow-[0_12px_35px_rgba(212,174,103,0.28)]">
 
-        SCHEDULE PRIVATE CONSULTATION
+        <span className="flex items-center gap-3">
+          SCHEDULE PRIVATE CONSULTATION
+
+          <ArrowRight
+            size={14}
+            className="group-hover:translate-x-1 transition"
+          />
+        </span>
       </button>
     </div>
   </div>
+
+  {/* RIGHT IMAGE SIDE */}
+  <div className="relative min-h-[520px] overflow-hidden bg-black">
+
+    {/* IMAGE */}
+    <img
+      src="/market2.png"
+      alt="Luxury Advisory"
+      className="absolute inset-0 w-full h-full object-cover object-center scale-[1.03]"
+    />
+
+    {/* OVERLAYS */}
+    <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-transparent to-[#021c18]/35" />
+
+    <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.22)]" />
+
+    {/* FLOATING GLASS STATS */}
+    <div className="absolute bottom-7 left-7 right-7 z-20">
+
+      <div className="rounded-[28px] border border-white/10 bg-white/[0.08] backdrop-blur-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+
+        <div className="grid grid-cols-3 gap-5">
+
+          <div>
+            <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
+              Assets Advised
+            </p>
+
+            <h3 className="text-white text-[26px] leading-none font-semibold">
+              ₹850Cr+
+            </h3>
+          </div>
+
+          <div>
+            <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
+              Markets
+            </p>
+
+            <h3 className="text-white text-[26px] leading-none font-semibold">
+              12+
+            </h3>
+          </div>
+
+          <div>
+            <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
+              Retention
+            </p>
+
+            <h3 className="text-[#d4ae67] text-[26px] leading-none font-semibold">
+              98%
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* TOP FLOATING BADGE */}
+    <div className="absolute top-7 right-7 z-20">
+
+      <div className="rounded-full border border-white/10 bg-white/[0.08] backdrop-blur-xl px-5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.28)]">
+
+        <p className="text-white text-[11px] tracking-[1.5px] uppercase">
+          Luxury Investment Advisory
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
       </div>
     </section>

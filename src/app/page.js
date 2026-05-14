@@ -16,9 +16,6 @@ export default function HomePage() {
 
       <HeroSection />
 
-      {/* AD BANNER */}
-      <LuxuryBanner />
-
       {/* FEATURED */}
       <FeaturedProjects />
 
@@ -28,7 +25,7 @@ export default function HomePage() {
       <ExploreLocations />
 
       <PremiumPartners />
-
+ 
       <LuxuryInsightsSection /> 
 
       <Footer/>

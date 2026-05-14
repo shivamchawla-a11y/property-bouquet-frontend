@@ -255,121 +255,159 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* LINKS SECTION */}
-      <div className="border-t border-black/8 bg-[#f8f5f0]">
+      {/* PREMIUM FOOTER WRAPPER */}
+<div className="relative overflow-hidden border-t border-[#E6C87A]/10">
 
-        <div className="max-w-[1450px] mx-auto px-5 py-16">
+  {/* BACKGROUND IMAGE */}
+  <div
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+    style={{
+      backgroundImage: "url('/bg-waves.png')",
+    }}
+  />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-14">
+  {/* PREMIUM OVERLAY */}
+  <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(4,12,10,0.58),rgba(4,12,10,0.74))]" />
 
-            {/* COLUMN */}
-            {[
-              {
-                title: "Quick Links",
-                items: quickLinks,
-                icon: "arrow",
-              },
-              {
-                title: "Popular Cities",
-                items: cities,
-                icon: "arrow",
-              },
-              {
-                title: "Prime Locations",
-                items: locations,
-                icon: "location",
-              },
-              {
-                title: "Tools & Services",
-                items: services,
-                icon: "arrow",
-              },
-            ].map((section, index) => (
-              <div key={index}>
+  {/* GOLDEN LIGHT EFFECT */}
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(230,200,122,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(201,162,77,0.18),transparent_32%)]" />
 
-                <h3
-                  className="text-[30px] text-[#171717] mb-8"
-                  style={{
-                    fontFamily:
-                      "Georgia, Times New Roman, serif",
-                  }}
+  {/* TOP GOLD GLOW */}
+  <div className="absolute top-[-80px] left-[8%] w-[420px] h-[420px] rounded-full bg-[#E6C87A]/20 blur-[160px]" />
+
+  {/* RIGHT GLOW */}
+  <div className="absolute top-[20%] right-[5%] w-[380px] h-[380px] rounded-full bg-[#C9A24D]/15 blur-[150px]" />
+
+  {/* BOTTOM GLOW */}
+  <div className="absolute bottom-[-140px] left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-[#E6C87A]/14 blur-[180px]" />
+
+  <div className="relative z-10">
+
+    {/* LINKS SECTION */}
+    <div className="max-w-[1450px] mx-auto px-5 py-20">
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-16">
+
+        {/* COLUMN */}
+        {[
+          {
+            title: "Quick Links",
+            items: quickLinks,
+            icon: "arrow",
+          },
+          {
+            title: "Popular Cities",
+            items: cities,
+            icon: "arrow",
+          },
+          {
+            title: "Prime Locations",
+            items: locations,
+            icon: "location",
+          },
+          {
+            title: "Tools & Services",
+            items: services,
+            icon: "arrow",
+          },
+        ].map((section, index) => (
+          <div key={index}>
+
+            {/* HEADING */}
+            <h3
+              className="text-[32px] text-white mb-9 tracking-wide drop-shadow-[0_0_18px_rgba(230,200,122,0.18)]"
+              style={{
+                fontFamily:
+                  "Georgia, Times New Roman, serif",
+              }}
+            >
+              {section.title}
+            </h3>
+
+            {/* LINKS */}
+            <div className="space-y-5">
+
+              {section.items.map((item) => (
+                <Link
+                  key={item}
+                  href="/"
+                  className="group flex items-center gap-3 text-white/75 hover:text-[#F5D98B] transition-all duration-300"
                 >
-                  {section.title}
-                </h3>
 
-                <div className="space-y-5">
+                  {section.icon === "arrow" ? (
+                    <ArrowRight
+                      size={15}
+                      className="text-[#E6C87A]/80 group-hover:text-[#F5D98B] group-hover:translate-x-1 transition-all duration-300"
+                    />
+                  ) : (
+                    <MapPin
+                      size={15}
+                      className="text-[#E6C87A]/80 group-hover:text-[#F5D98B] transition-all duration-300"
+                    />
+                  )}
 
-                  {section.items.map((item) => (
-                    <Link
-                      key={item}
-                      href="/"
-                      className="group flex items-center gap-3 text-black/55 hover:text-[#b98b3c] transition-all duration-300"
-                    >
+                  <span className="text-[15px] tracking-[0.3px] group-hover:drop-shadow-[0_0_12px_rgba(230,200,122,0.35)] transition-all duration-300">
+                    {item}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
 
-                      {section.icon === "arrow" ? (
-                        <ArrowRight
-                          size={15}
-                          className="group-hover:translate-x-1 transition"
-                        />
-                      ) : (
-                        <MapPin size={15} />
-                      )}
+    {/* BOTTOM BAR */}
+    <div className="border-t border-[#E6C87A]/10 backdrop-blur-md bg-black/10">
 
-                      <span className="text-[15px]">
-                        {item}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+      <div className="max-w-[1450px] mx-auto px-5 py-7">
+
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+
+          {/* LEFT */}
+          <p className="text-white/55 text-[13px] text-center lg:text-left tracking-[0.4px]">
+            © 2026 Property Bouquet. All Rights Reserved.
+          </p>
+
+          {/* CENTER */}
+          <div className="flex items-center gap-2 text-white/60 text-[13px] tracking-[0.3px]">
+
+            <MapPin
+              size={14}
+              className="text-[#E6C87A]"
+            />
+
+            Gurgaon • Dubai • Delhi NCR
+          </div>
+
+          {/* RIGHT */}
+          <div className="flex items-center gap-4">
+
+            {[
+              FaInstagram,
+              FaFacebookF,
+              FaLinkedinIn,
+            ].map((Icon, index) => (
+              <button
+                key={index}
+                className="group relative overflow-hidden w-12 h-12 rounded-full border border-[#E6C87A]/10 bg-white/[0.05] backdrop-blur-2xl hover:border-[#E6C87A]/40 transition-all duration-500 flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.35)] hover:shadow-[0_0_35px_rgba(230,200,122,0.22)]"
+              >
+
+                {/* GOLDEN HOVER EFFECT */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-[#E6C87A]/30 via-transparent to-transparent" />
+
+                <Icon
+                  size={17}
+                  className="relative z-10 text-white/70 group-hover:text-[#F5D98B] transition-all duration-300"
+                />
+              </button>
             ))}
           </div>
         </div>
       </div>
-
-      {/* BOTTOM */}
-      <div className="border-t border-black/8 bg-[#f3efe8]">
-
-        <div className="max-w-[1450px] mx-auto px-5 py-7">
-
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-
-            {/* LEFT */}
-            <p className="text-black/45 text-[13px] text-center lg:text-left">
-              © 2026 Property Bouquet. All Rights Reserved.
-            </p>
-
-            {/* CENTER */}
-            <div className="flex items-center gap-2 text-black/45 text-[13px]">
-
-              <MapPin size={14} />
-
-              Gurgaon • Dubai • Delhi NCR
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex items-center gap-4">
-
-              {[
-                FaInstagram,
-                FaFacebookF,
-                FaLinkedinIn,
-              ].map((Icon, index) => (
-                <button
-                  key={index}
-                  className="group w-11 h-11 rounded-full border border-black/8 bg-white hover:bg-gradient-to-br hover:from-[#02231d] hover:to-[#04150f] transition-all duration-500 flex items-center justify-center shadow-sm"
-                >
-
-                  <Icon
-                    size={17}
-                    className="text-black/60 group-hover:text-[#d4ae67] transition"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+    </div>
+  </div>
+</div>
     </footer>
   );
 }
