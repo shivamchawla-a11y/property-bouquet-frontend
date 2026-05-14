@@ -41,23 +41,7 @@ const locations = [
     city: "Mumbai",
     appreciation: "20%",
     image: "/location4.webp",
-  },
-
-  {
-    id: 5,
-    name: "DLF Phase 5",
-    city: "Gurugram",
-    appreciation: "23%",
-    image: "/location5.webp",
-  },
-
-  {
-    id: 6,
-    name: "Sahakar Nagar",
-    city: "Pune",
-    appreciation: "20%",
-    image: "/location6.webp",
-  },
+  }
 ];
 
 export default function ExploreLocations() {
