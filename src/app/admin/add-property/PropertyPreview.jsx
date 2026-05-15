@@ -3088,7 +3088,7 @@ const locationName = getLocationName();
           {/* IMAGE */}
           <div className="relative h-[340px] overflow-hidden">
             <img
-              src="/faq-image.jpg"
+              src="/location6.webp"
               alt="faq"
               className="w-full h-full object-cover"
             />
@@ -3110,11 +3110,11 @@ const locationName = getLocationName();
                     fontFamily: "Cormorant Garamond, serif",
                   }}
                 >
-                  ELDECO
+                  SIGNATURE
                 </h3>
 
                 <p className="uppercase tracking-[4px] text-sm mt-1">
-                  CAMELOT
+                  GLOBAL
                 </p>
               </div>
             </div>
