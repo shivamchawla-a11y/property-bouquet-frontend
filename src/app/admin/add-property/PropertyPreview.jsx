@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -41,7 +41,7 @@ import {
   IndianRupee,
 
 } from "lucide-react";
-import Footer from "@/components/home/Footer";
+
 const fadeUp = {
   hidden: {
     opacity: 0,
@@ -143,16 +143,61 @@ const CUSTOM_ICONS = [
 export default function PropertyPreview({ form, developers = [] }) {
   if (!form) return null;
 
-  const {
-    coreDetails = {},
-    overview = {},
-    media = {},
-    unitConfigurations = [],
-    locationData = {},
-    faqs = [],
-    keyMetrics = {},
-    gatedContent = {},
-  } = form;
+const {
+  coreDetails = {},
+  overview = {},
+  media = {},
+  unitConfigurations = [],
+  locationData = {},
+  faqs = [],
+  keyMetrics = {},
+  gatedContent = {},
+  heroSection = {},
+  categoryData = {},
+} = form;
+
+const aboutSectionNumber =
+  overview?.aboutSectionNumber || "02";
+
+const aboutSectionLabel =
+  overview?.aboutSectionLabel || "About The Project";
+
+const aboutHeadingLine1 =
+  overview?.aboutHeadingLine1 || "A Vision That";
+
+const aboutHeadingLine2 =
+  overview?.aboutHeadingLine2 || "Transcends the Ordinary";
+
+const aboutParagraph2 =
+  overview?.aboutParagraph2 ||
+  "More than just a residence, it is a legacy in the making — crafted for discerning individuals and families who seek exclusivity in every detail of life.";
+
+const featureBar =
+  overview?.featureBar?.length > 0
+    ? overview.featureBar
+    : [
+        {
+          title: "TIMELESS ARCHITECTURE",
+          desc: "Modern design rooted in elegance and longevity.",
+          icon: "◈",
+        },
+        {
+          title: "SPACES DESIGNED FOR LIFE",
+          desc: "Expansive layouts that adapt to every moment.",
+          icon: "⌂",
+        },
+        {
+          title: "CURATED EXPERIENCE",
+          desc: "Every detail carefully chosen for elevated living.",
+          icon: "✦",
+        },
+        {
+          title: "PRIVACY BY DESIGN",
+          desc: "Low-density planning for unmatched seclusion.",
+          icon: "▣",
+        },
+      ];
+
   function getDeveloperLogo() {
   // ✅ 1. Direct logo (highest priority)
   if (coreDetails?.developerLogo) {
@@ -423,467 +468,549 @@ const locationName = getLocationName();
     </div>
 
     {/* ================= CINEMATIC HERO ================= */}
-    <motion.div
-      initial={{
-        scale: 1.05,
-        opacity: 0,
-      }}
-      animate={{
-        scale: 1,
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1.4,
-      }}
+<motion.div
+  initial={{
+    scale: 1.05,
+    opacity: 0,
+  }}
+  animate={{
+    scale: 1,
+    opacity: 1,
+  }}
+  transition={{
+    duration: 1.4,
+  }}
+  className="
+    relative
+    min-h-screen
+    overflow-hidden
+    flex
+    items-end
+    isolate
+  "
+  style={{
+    backgroundImage: media?.heroImageUrl
+      ? `url(${media.heroImageUrl})`
+      : "linear-gradient(#000,#111)",
+    backgroundSize: "cover",
+    backgroundPosition: "center center",
+  }}
+>
+
+  {/* ================= LUXURY OVERLAYS ================= */}
+  <div className="absolute inset-0">
+
+    {/* LEFT DARK */}
+    <div className="absolute inset-0 bg-gradient-to-r from-[#020806]/95 via-[#07120f]/70 to-transparent" />
+
+    {/* RIGHT GOLD */}
+    <div className="absolute inset-0 bg-gradient-to-l from-[#c89d581f] via-transparent to-transparent" />
+
+    {/* BOTTOM DEPTH */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
+
+    {/* GOLD LIGHT */}
+    <div className="absolute left-[6%] top-[14%] w-[520px] h-[520px] bg-[#c89d58]/10 blur-[140px] rounded-full" />
+
+    {/* EXTRA AMBIENT LIGHT */}
+    <div className="absolute right-[10%] bottom-[10%] w-[380px] h-[380px] bg-[#d8b46b]/10 blur-[120px] rounded-full" />
+  </div>
+
+  {/* ================= CONTENT ================= */}
+  <motion.div
+    variants={staggerContainer}
+    initial="hidden"
+    animate="visible"
+    className="relative z-20 w-full px-5 lg:px-10 pb-10 md:pb-14 xl:pb-16 pt-28 md:pt-32"
+  >
+
+    <div className="max-w-[1450px] mx-auto w-full">
+
+      <div className="max-w-[860px]">
+
+        {/* LABEL */}
+        <motion.div
+          variants={fadeUp}
+          className="inline-flex items-center gap-3 mb-6"
+        >
+          <div className="w-10 h-[1px] bg-[#d8b46b]" />
+
+          <p
+            className="text-[#d8b46b] text-[11px] tracking-[4px] uppercase font-semibold"
+            style={{
+              fontFamily:
+                "Inter, sans-serif",
+            }}
+          >
+            {heroSection?.propertyStatus ||
+              "PRIVATE DIGITAL MANDATE"}
+          </p>
+        </motion.div>
+
+        {/* TITLE */}
+        <motion.h1
+          variants={fadeUp}
+          className="
+            text-white
+            font-normal
+            leading-[0.92]
+            tracking-[-3px]
+            text-[44px]
+            sm:text-[56px]
+            md:text-[72px]
+            xl:text-[92px]
+            2xl:text-[105px]
+            max-w-[950px]
+          "
+          style={{
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+          }}
+        >
+          {coreDetails?.title}
+        </motion.h1>
+
+        {/* LOCATION */}
+        <motion.div
+          variants={fadeUp}
+          className="mt-7 flex items-center gap-3 text-white/82"
+        >
+
+          <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+
+            <MapPin
+              size={18}
+              className="text-[#d8b46b]"
+            />
+          </div>
+
+          <p
+            className="text-[16px] md:text-[24px] font-light tracking-wide"
+            style={{
+              fontFamily:
+                "Inter, sans-serif",
+            }}
+          >
+            {locationName}
+          </p>
+        </motion.div>
+
+        {/* DIVIDER */}
+        <motion.div
+          variants={fadeUp}
+          className="w-[90px] h-[1px] bg-gradient-to-r from-[#c9a64b] to-transparent mt-8"
+        />
+
+        {/* DESCRIPTION */}
+        <motion.p
+          variants={fadeUp}
+          className="
+            mt-7
+            max-w-[620px]
+            text-[15px]
+            md:text-[17px]
+            leading-[2]
+            text-white/72
+            font-light
+          "
+          style={{
+            fontFamily:
+              "Inter, sans-serif",
+          }}
+        >
+          {heroSection?.heroDescription ||
+            "A rare fusion of architectural brilliance and low-density luxury living."}
+        </motion.p>
+
+        {/* BUTTONS */}
+        <motion.div
+          variants={fadeUp}
+          className="flex flex-wrap items-center gap-5 mt-12"
+        >
+
+          {/* DOWNLOAD */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="
+              group
+              relative
+              overflow-hidden
+              h-[50px]
+              px-7
+              rounded-[5px]
+              bg-[#c9a64b]
+              text-[#111]
+              text-[11px]
+              tracking-[1.5px]
+              font-[600]
+              transition-all
+              duration-300
+              hover:brightness-110
+              shadow-[0_10px_30px_rgba(201,166,75,0.28)]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+
+            <div className="relative flex items-center gap-3">
+              <Download size={15} strokeWidth={2.2} />
+
+              {heroSection?.brochureButtonText ||
+                "DOWNLOAD BROCHURE"}
+            </div>
+          </button>
+
+          {/* WATCH VIDEO */}
+<a
+  href={
+    media?.walkthroughUrl?.trim()
+      ? media.walkthroughUrl
+      : "#"
+  }
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={(e) => {
+    if (!media?.walkthroughUrl?.trim()) {
+      e.preventDefault();
+    }
+  }}
+  className="group relative flex items-center gap-4 transition-all duration-500"
+  style={{
+    fontFamily: "Inter, sans-serif",
+    opacity: media?.walkthroughUrl?.trim()
+      ? 1
+      : 0.72,
+  }}
+>
+
+  {/* OUTER GLOW */}
+  <div className="relative">
+
+    {/* GOLD AMBIENT */}
+    <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-2xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+
+    {/* RING GLOW */}
+    <div className="absolute inset-0 rounded-full border border-[#d8b46b]/20 scale-[1.18] opacity-0 group-hover:opacity-100 group-hover:scale-[1.28] transition-all duration-700" />
+
+    {/* MAIN BUTTON */}
+    <div
       className="
         relative
-        min-h-screen
-        overflow-hidden
+        w-[58px]
+        h-[58px]
+        rounded-full
         flex
-        items-end
-        isolate
+        items-center
+        justify-center
+        overflow-hidden
+        border
+        border-white/15
+        shadow-[0_10px_40px_rgba(0,0,0,0.35)]
+        backdrop-blur-2xl
+        transition-all
+        duration-500
+        group-hover:scale-105
+        group-hover:border-[#d8b46b]/40
       "
       style={{
-        backgroundImage: media?.heroImageUrl
-          ? `url(${media.heroImageUrl})`
-          : "linear-gradient(#000,#111)",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
+        background: `
+          linear-gradient(
+            145deg,
+            rgba(255,255,255,0.10),
+            rgba(255,255,255,0.03)
+          )
+        `,
       }}
     >
 
-      {/* ================= LUXURY OVERLAYS ================= */}
-      <div className="absolute inset-0">
+      {/* INNER GOLD SHINE */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#d8b46b]/10 via-transparent to-transparent opacity-60" />
 
-        {/* LEFT DARK */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#020806]/95 via-[#07120f]/70 to-transparent" />
+      {/* PLAY ICON */}
+      <Play
+        size={17}
+        fill="currentColor"
+        className="
+          relative
+          z-10
+          ml-[2px]
+          text-white
+          group-hover:text-[#f3d38d]
+          transition-all
+          duration-500
+        "
+      />
+    </div>
+  </div>
 
-        {/* RIGHT GOLD */}
-        <div className="absolute inset-0 bg-gradient-to-l from-[#c89d581f] via-transparent to-transparent" />
+  {/* TEXT */}
+  <div className="flex flex-col">
 
-        {/* BOTTOM DEPTH */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
+    <span
+      className="
+        text-[11px]
+        tracking-[2.8px]
+        uppercase
+        text-white/78
+        group-hover:text-white
+        transition-all
+        duration-500
+      "
+    >
+      {heroSection?.videoButtonText ||
+        "WATCH PROJECT VIDEO"}
+    </span>
 
-        {/* GOLD LIGHT */}
-        <div className="absolute left-[6%] top-[14%] w-[520px] h-[520px] bg-[#c89d58]/10 blur-[140px] rounded-full" />
-
-        {/* EXTRA AMBIENT LIGHT */}
-        <div className="absolute right-[10%] bottom-[10%] w-[380px] h-[380px] bg-[#d8b46b]/10 blur-[120px] rounded-full" />
+    <span className="text-[10px] text-[#d8b46b]/70 tracking-[1.5px] mt-[2px]">
+      Cinematic Walkthrough
+    </span>
+  </div>
+</a>
+        </motion.div>
       </div>
 
-      {/* ================= CONTENT ================= */}
+      {/* ================= PREMIUM METRICS ================= */}
       <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="relative z-20 w-full px-5 lg:px-10 pb-10 md:pb-14 xl:pb-16 pt-28 md:pt-32"
+        variants={fadeUp}
+        className="mt-14"
       >
 
-        <div className="max-w-[1450px] mx-auto w-full">
+        <div
+          className="
+            relative
+            overflow-hidden
+            rounded-[22px]
+            border
+            border-white/12
+            backdrop-blur-xl
+            shadow-[0_20px_60px_rgba(0,0,0,0.38)]
+          "
+          style={{
+            background:
+              `
+              linear-gradient(
+                90deg,
+                rgba(7,20,18,0.82) 0%,
+                rgba(8,30,24,0.78) 28%,
+                rgba(15,40,30,0.72) 52%,
+                rgba(28,45,34,0.66) 72%,
+                rgba(42,48,36,0.58) 100%
+              )
+              `,
+          }}
+        >
 
-          <div className="max-w-[860px]">
+          {/* PREMIUM TINT */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `
+                radial-gradient(circle at left center, rgba(0,180,120,0.08), transparent 32%),
+                radial-gradient(circle at center, rgba(201,166,75,0.10), transparent 35%),
+                radial-gradient(circle at right center, rgba(201,166,75,0.08), transparent 30%)
+              `,
+            }}
+          />
 
-            {/* LABEL */}
-            <motion.div
-              variants={fadeUp}
-              className="inline-flex items-center gap-3 mb-6"
-            >
-              <div className="w-10 h-[1px] bg-[#d8b46b]" />
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-5">
 
-              <p
-                className="text-[#d8b46b] text-[11px] tracking-[4px] uppercase font-semibold"
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
-                PRIVATE DIGITAL MANDATE
-              </p>
-            </motion.div>
+            {/* ACRES */}
+            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
 
-            {/* TITLE */}
-            <motion.h1
-              variants={fadeUp}
-              className="
-                text-white
-                font-normal
-                leading-[0.92]
-                tracking-[-3px]
-                text-[44px]
-                sm:text-[56px]
-                md:text-[72px]
-                xl:text-[92px]
-                2xl:text-[105px]
-                max-w-[950px]
-              "
-              style={{
-                fontFamily:
-                  "Georgia, Times New Roman, serif",
-              }}
-            >
-              {coreDetails?.title}
-            </motion.h1>
-
-            {/* LOCATION */}
-            <motion.div
-              variants={fadeUp}
-              className="mt-7 flex items-center gap-3 text-white/82"
-            >
-
-              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 flex items-center justify-center">
-
-                <MapPin
+              <div className="flex justify-center mb-2">
+                <LayoutGrid
                   size={18}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-[16px] md:text-[24px] font-light tracking-wide"
+                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
+              >
+                {keyMetrics?.landArea || "1.83"}
+              </p>
+
+              <p
+                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
                 style={{
                   fontFamily:
                     "Inter, sans-serif",
                 }}
               >
-                {locationName}
+                Acres
               </p>
-            </motion.div>
+            </div>
 
-            {/* DIVIDER */}
-            <motion.div
-              variants={fadeUp}
-              className="w-[90px] h-[1px] bg-gradient-to-r from-[#c9a64b] to-transparent mt-8"
-            />
+            {/* TOWERS */}
+            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
 
-            {/* DESCRIPTION */}
-            <motion.p
-              variants={fadeUp}
-              className="
-                mt-7
-                max-w-[620px]
-                text-[15px]
-                md:text-[17px]
-                leading-[2]
-                text-white/72
-                font-light
-              "
-              style={{
-                fontFamily:
-                  "Inter, sans-serif",
-              }}
-            >
-              A rare fusion of architectural brilliance
-              and low-density luxury living, crafted for
-              those who expect nothing less than
-              extraordinary.
-            </motion.p>
+              <div className="flex justify-center mb-2">
+                <Building2
+                  size={18}
+                  className="text-[#d8b46b]"
+                />
+              </div>
 
-            {/* BUTTONS */}
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-wrap items-center gap-5 mt-12"
-            >
+              <p
+                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
+              >
+                {keyMetrics?.totalTowers || "2"}
+              </p>
 
-              {/* DOWNLOAD */}
-<button
-  onClick={() => setShowModal(true)}
-  className="
-    group
-    relative
-    overflow-hidden
-    h-[50px]
-    px-7
-    rounded-[5px]
-    bg-[#c9a64b]
-    text-[#111]
-    text-[11px]
-    tracking-[1.5px]
-    font-[600]
-    transition-all
-    duration-300
-    hover:brightness-110
-    shadow-[0_10px_30px_rgba(201,166,75,0.28)]
-  "
+              <p
+                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
+                style={{
+                  fontFamily:
+                    "Inter, sans-serif",
+                }}
+              >
+                Towers
+              </p>
+            </div>
+
+            {/* UNITS */}
+            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+
+              <div className="flex justify-center mb-2">
+                <Users
+                  size={18}
+                  className="text-[#d8b46b]"
+                />
+              </div>
+
+              <p
+                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
+              >
+                {keyMetrics?.totalUnits || "95"}
+              </p>
+
+              <p
+                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
+                style={{
+                  fontFamily:
+                    "Inter, sans-serif",
+                }}
+              >
+                Units
+              </p>
+            </div>
+
+            {/* POSSESSION */}
+            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+
+              <div className="flex justify-center mb-2">
+                <CalendarDays
+                  size={18}
+                  className="text-[#d8b46b]"
+                />
+              </div>
+
+              <p
+                className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                Possession
+              </p>
+
+              <p
+                className="text-[20px] md:text-[28px] leading-none text-white font-[400]"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
+              >
+                {keyMetrics?.possession || "May 2030"}
+              </p>
+            </div>
+
+            {/* PRICE */}
+            <div className="py-4 lg:py-5 px-4 text-center">
+
+              <div className="flex justify-center mb-2">
+                <IndianRupee
+                  size={18}
+                  className="text-[#d8b46b]"
+                />
+              </div>
+
+              <p
+                className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                Starts At
+              </p>
+
+              <p
+                className="text-[24px] md:text-[34px] leading-none text-[#dfbc67] font-[400]"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
+              >
+                ₹ {formatPrice(coreDetails?.startingPrice)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ================= TAGLINE ================= */}
+<motion.div
+  variants={fadeUp}
+  className="flex flex-wrap items-center justify-center gap-4 mt-8 text-[#d8b46b]/90 text-[10px] tracking-[4px] uppercase text-center"
   style={{
     fontFamily: "Inter, sans-serif",
   }}
 >
-  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-  <div className="relative flex items-center gap-3">
-    <Download size={15} strokeWidth={2.2} />
-    DOWNLOAD BROCHURE
-  </div>
-</button>
+  <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
 
-              {/* WATCH VIDEO */}
-              <button
-                className="group flex items-center gap-4 text-white/75 hover:text-white transition-all duration-300"
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
+  {(
+    heroSection?.taglineItems?.filter(
+      item => item?.trim() !== ""
+    )?.length > 0
+      ? heroSection.taglineItems.filter(
+          item => item?.trim() !== ""
+        )
+      : [
+          "Ultra-Luxury Residences",
+          "Low-Density Living",
+          "Exclusive Community",
+        ]
+  ).map((item, index, arr) => (
+    <React.Fragment key={index}>
+      <span>{item}</span>
 
-                <div className="relative">
+      {index !== arr.length - 1 && (
+        <span>|</span>
+      )}
+    </React.Fragment>
+  ))}
 
-                  <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
+  <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
+</motion.div>
+    </div>
+  </motion.div>
+</motion.div>
 
-                  <div className="relative w-[56px] h-[56px] rounded-full border border-white/20 bg-white/5 backdrop-blur-xl flex items-center justify-center">
-
-                    <Play
-                      size={16}
-                      fill="currentColor"
-                      className="ml-[2px]"
-                    />
-                  </div>
-                </div>
-
-                <span className="text-[11px] tracking-[2px] uppercase">
-                  WATCH PROJECT VIDEO
-                </span>
-              </button>
-            </motion.div>
-          </div>
-
-          {/* ================= NEW SLIM PREMIUM METRICS ================= */}
-          <motion.div
-            variants={fadeUp}
-            className="mt-14"
-          >
-
-            <div
-  className="
-    relative
-    overflow-hidden
-    rounded-[22px]
-    border
-    border-white/12
-    backdrop-blur-xl
-    shadow-[0_20px_60px_rgba(0,0,0,0.38)]
-  "
-  style={{
-    background:
-      `
-      linear-gradient(
-        90deg,
-        rgba(7,20,18,0.82) 0%,
-        rgba(8,30,24,0.78) 28%,
-        rgba(15,40,30,0.72) 52%,
-        rgba(28,45,34,0.66) 72%,
-        rgba(42,48,36,0.58) 100%
-      )
-      `,
-  }}
->
-
-              {/* GLOW */}
-              {/* PREMIUM TINT */}
-<div
-  className="absolute inset-0"
-  style={{
-    background: `
-      radial-gradient(circle at left center, rgba(0,180,120,0.08), transparent 32%),
-      radial-gradient(circle at center, rgba(201,166,75,0.10), transparent 35%),
-      radial-gradient(circle at right center, rgba(201,166,75,0.08), transparent 30%)
-    `,
-  }}
-/>
-
-              <div className="relative z-10 grid grid-cols-2 md:grid-cols-5">
-
-                {/* ACRES */}
-                <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
-
-                  <div className="flex justify-center mb-2">
-
-                    <LayoutGrid
-                      size={18}
-                      className="text-[#d8b46b]"
-                    />
-                  </div>
-
-                  <p
-                    className="text-[22px] md:text-[28px] leading-none text-white font-light"
-                    style={{
-                      fontFamily:
-                        "Georgia, Times New Roman, serif",
-                    }}
-                  >
-                    {keyMetrics?.landParcel ||
-                      "1.83"}
-                  </p>
-
-                  <p
-                    className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
-                    style={{
-                      fontFamily:
-                        "Inter, sans-serif",
-                    }}
-                  >
-                    Acres
-                  </p>
-                </div>
-
-                {/* TOWERS */}
-                <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
-
-                  <div className="flex justify-center mb-2">
-
-                    <Building2
-                      size={18}
-                      className="text-[#d8b46b]"
-                    />
-                  </div>
-
-                  <p
-                    className="text-[22px] md:text-[28px] leading-none text-white font-light"
-                    style={{
-                      fontFamily:
-                        "Georgia, Times New Roman, serif",
-                    }}
-                  >
-                    {keyMetrics?.towerCount ||
-                      "2"}
-                  </p>
-
-                  <p
-                    className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
-                    style={{
-                      fontFamily:
-                        "Inter, sans-serif",
-                    }}
-                  >
-                    Towers
-                  </p>
-                </div>
-
-                {/* UNITS */}
-                <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
-
-                  <div className="flex justify-center mb-2">
-
-                    <Users
-                      size={18}
-                      className="text-[#d8b46b]"
-                    />
-                  </div>
-
-                  <p
-                    className="text-[22px] md:text-[28px] leading-none text-white font-light"
-                    style={{
-                      fontFamily:
-                        "Georgia, Times New Roman, serif",
-                    }}
-                  >
-                    {keyMetrics?.totalUnits ||
-                      "95"}
-                  </p>
-
-                  <p
-                    className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
-                    style={{
-                      fontFamily:
-                        "Inter, sans-serif",
-                    }}
-                  >
-                    Units
-                  </p>
-                </div>
-
-                {/* POSSESSION */}
-<div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
-
-  <div className="flex justify-center mb-2">
-    <CalendarDays
-      size={18}
-      className="text-[#d8b46b]"
-    />
-  </div>
-
-  {/* LABEL FIRST */}
-  <p
-    className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
-    style={{
-      fontFamily: "Inter, sans-serif",
-    }}
-  >
-    Possession
-  </p>
-
-  {/* VALUE BELOW */}
-  <p
-    className="text-[20px] md:text-[28px] leading-none text-white font-[400]"
-    style={{
-      fontFamily:
-        "Georgia, Times New Roman, serif",
-    }}
-  >
-    {keyMetrics?.possessionDate || "May 2030"}
-  </p>
-</div>
-
-{/* PRICE */}
-<div className="py-4 lg:py-5 px-4 text-center">
-
-  <div className="flex justify-center mb-2">
-    <IndianRupee
-      size={18}
-      className="text-[#d8b46b]"
-    />
-  </div>
-
-  {/* LABEL FIRST */}
-  <p
-    className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
-    style={{
-      fontFamily: "Inter, sans-serif",
-    }}
-  >
-    Starts At
-  </p>
-
-  {/* VALUE BELOW */}
-  <p
-    className="text-[24px] md:text-[34px] leading-none text-[#dfbc67] font-[400]"
-    style={{
-      fontFamily:
-        "Georgia, Times New Roman, serif",
-    }}
-  >
-    ₹ {formatPrice(coreDetails?.startingPrice)}
-  </p>
-</div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* TAGLINE */}
-          <motion.div
-            variants={fadeUp}
-            className="flex items-center justify-center gap-4 mt-8 text-[#d8b46b]/90 text-[10px] tracking-[4px] uppercase text-center"
-            style={{
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-
-            <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
-
-            Ultra-Luxury Residences
-
-            <span>|</span>
-
-            Low-Density Living
-
-            <span>|</span>
-
-            Exclusive Community
-
-            <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
-          </motion.div>
-        </div>
-      </motion.div>
-    </motion.div>
 {/* ================= REFINED ULTRA PREMIUM ABOUT SECTION ================= */}
 <motion.section
   initial="hidden"
@@ -917,7 +1044,10 @@ const locationName = getLocationName();
           className="relative overflow-hidden rounded-[14px]"
         >
           <img
-            src={overview.aboutImageUrl}
+            src={
+              overview?.aboutImageUrl ||
+              "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+            }
             alt="About"
             className="
               w-full
@@ -935,20 +1065,22 @@ const locationName = getLocationName();
       {/* ================= RIGHT CONTENT ================= */}
       <div className="pt-2 lg:pt-6">
 
-        {/* TOP LABEL */}
+        {/* ================= TOP LABEL ================= */}
         <div className="flex items-center gap-3 mb-4">
 
+          {/* SECTION NUMBER */}
           <p
             className="text-[#b89149] text-[11px] tracking-[2.5px] uppercase font-semibold"
             style={{
               fontFamily: "Inter, sans-serif",
             }}
           >
-            02
+            {aboutSectionNumber}
           </p>
 
           <div className="w-8 h-[1px] bg-[#c9a64b]" />
 
+          {/* SECTION LABEL */}
           <p
             className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
             style={{
@@ -956,11 +1088,11 @@ const locationName = getLocationName();
               fontWeight: 500,
             }}
           >
-            About The Project
+            {aboutSectionLabel}
           </p>
         </div>
 
-        {/* TITLE */}
+        {/* ================= TITLE ================= */}
         <h2
           className="
             text-[#183126]
@@ -975,12 +1107,14 @@ const locationName = getLocationName();
             fontWeight: 400,
           }}
         >
-          A Vision That
+          {aboutHeadingLine1}
+
           <br />
-          Transcends the Ordinary
+
+          {aboutHeadingLine2}
         </h2>
 
-        {/* GOLD DIVIDER */}
+        {/* ================= GOLD DIVIDER ================= */}
         <div className="flex items-center gap-3 mt-6 mb-7">
 
           <div className="w-14 h-[1px] bg-[#c9a64b]" />
@@ -988,7 +1122,7 @@ const locationName = getLocationName();
           <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
         </div>
 
-        {/* DESCRIPTION */}
+        {/* ================= DESCRIPTION ================= */}
         <div
           className="
             text-[#505050]
@@ -1003,13 +1137,16 @@ const locationName = getLocationName();
             fontFamily: "Inter, sans-serif",
           }}
         >
+
+          {/* PARAGRAPH 1 */}
           <p>
-            {overview.description ||
+            {overview?.description ||
               "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality."}
           </p>
 
+          {/* PARAGRAPH 2 */}
           <p>
-            More than just a residence, it is a legacy in the making — crafted for discerning individuals and families who seek exclusivity in every detail of life.
+            {aboutParagraph2}
           </p>
         </div>
       </div>
@@ -1043,235 +1180,358 @@ const locationName = getLocationName();
 
       <div className="relative z-10 grid grid-cols-2 md:grid-cols-4">
 
-        {[
-          {
-            title: "TIMELESS ARCHITECTURE",
-            desc: "Modern design rooted in elegance and longevity.",
-            icon: "◈",
-          },
-          {
-            title: "SPACES DESIGNED FOR LIFE",
-            desc: "Expansive layouts that adapt to every moment.",
-            icon: "⌂",
-          },
-          {
-            title: "CURATED EXPERIENCE",
-            desc: "Every detail carefully chosen for elevated living.",
-            icon: "✦",
-          },
-          {
-            title: "PRIVACY BY DESIGN",
-            desc: "Low-density planning for unmatched seclusion.",
-            icon: "▣",
-          },
-        ].map((item, index) => (
-          <div
-            key={index}
-            className="
-              relative
-              px-5
-              py-7
-              md:py-8
-              text-center
-              border-r
-              last:border-r-0
-              border-white/10
-            "
-          >
+        {featureBar
+          .slice(0, 4)
+          .map((item, index) => (
+            <div
+              key={index}
+              className="
+                relative
+                px-5
+                py-7
+                md:py-8
+                text-center
+                border-r
+                last:border-r-0
+                border-white/10
+              "
+            >
 
-            {/* ICON */}
-            <div className="flex justify-center mb-4">
+              {/* ICON */}
+              <div className="flex justify-center mb-4">
 
-              <div
-                className="
-                  w-11
-                  h-11
-                  rounded-full
-                  border
-                  border-[#c9a64b]/35
-                  flex
-                  items-center
-                  justify-center
-                  text-[#d8b46b]
-                  text-[18px]
-                "
-              >
-                {item.icon}
+                <div
+                  className="
+                    w-11
+                    h-11
+                    rounded-full
+                    border
+                    border-[#c9a64b]/35
+                    flex
+                    items-center
+                    justify-center
+                    text-[#d8b46b]
+                    text-[18px]
+                  "
+                >
+                  {item?.icon || "✦"}
+                </div>
               </div>
+
+              {/* TITLE */}
+              <h3
+                className="
+                  text-[#d7b367]
+                  text-[10px]
+                  md:text-[11px]
+                  leading-[1.7]
+                  tracking-[1.4px]
+                  uppercase
+                  mb-2
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                {item?.title}
+              </h3>
+
+              {/* DESC */}
+              <p
+                className="
+                  text-white/60
+                  text-[10px]
+                  md:text-[11px]
+                  leading-[1.8]
+                  max-w-[180px]
+                  mx-auto
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                {item?.desc}
+              </p>
             </div>
+          ))}
+      </div>
+    </div>
+  </div>
+</motion.section>
 
-            {/* TITLE */}
-            <h3
-              className="
-                text-[#d7b367]
-                text-[10px]
-                md:text-[11px]
-                leading-[1.7]
-                tracking-[1.4px]
-                uppercase
-                mb-2
-              "
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              {item.title}
-            </h3>
 
-            {/* DESC */}
-            <p
-              className="
-                text-white/60
-                text-[10px]
-                md:text-[11px]
-                leading-[1.8]
-                max-w-[180px]
-                mx-auto
-              "
-              style={{
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              {item.desc}
-            </p>
-          </div>
-        ))}
+{/* ================= PROPERTY HIGHLIGHTS SECTION ================= */}
+<motion.section
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.15 }}
+  variants={fadeUp}
+  className="relative bg-[#f8f5ef] pb-16 md:pb-24 overflow-hidden"
+>
+
+  {/* AMBIENT GLOW */}
+  <div className="absolute right-[-120px] top-[120px] w-[320px] h-[320px] bg-[#c9a64b]/10 blur-[120px] rounded-full" />
+
+  <div className="relative z-10 max-w-[1320px] mx-auto px-4 lg:px-6">
+
+    {/* ================= SECTION HEADER ================= */}
+    <div className="text-center mb-14">
+
+      <div className="flex items-center justify-center gap-3 mb-4">
+
+        <p
+          className="text-[#b89149] text-[11px] tracking-[2.5px] uppercase font-semibold"
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          03
+        </p>
+
+        <div className="w-10 h-[1px] bg-[#c9a64b]" />
+
+        <p
+          className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 500,
+          }}
+        >
+          Property Highlights
+        </p>
+      </div>
+
+      <h2
+        className="
+          text-[#183126]
+          text-[36px]
+          md:text-[62px]
+          leading-[1]
+          tracking-[-2px]
+        "
+        style={{
+          fontFamily: "Georgia, Times New Roman, serif",
+          fontWeight: 400,
+        }}
+      >
+        {overview?.highlightsHeading ||
+          "Crafted for Elevated"}
+        <br />
+        {overview?.highlightsSubheading ||
+          "Modern Living"}
+      </h2>
+
+      <div className="flex items-center justify-center gap-3 mt-6">
+
+        <div className="w-14 h-[1px] bg-[#c9a64b]" />
+
+        <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
       </div>
     </div>
 
-    {/* ================= LOWER INFO STRIP ================= */}
-    <div className="grid md:grid-cols-4 mt-12 border-t border-b border-[#ddcfb7]">
+    {/* ================= HIGHLIGHTS GRID ================= */}
+<div
+  className={`
+    grid
+    gap-5
+    ${
+      (overview?.highlights?.length || 0) <= 2
+        ? "md:grid-cols-2"
+        : (overview?.highlights?.length || 0) <= 4
+        ? "md:grid-cols-2 xl:grid-cols-4"
+        : "md:grid-cols-2 xl:grid-cols-4"
+    }
+  `}
+>
 
-      {[
-        {
-          number: "01",
-          title: "A Landmark in Dwarka",
-          desc: "An iconic address in one of Delhi’s most prestigious and fastest-growing neighbourhoods.",
-          icon: "▥",
-        },
-        {
-          number: "02",
-          title: "Crafted for Generations",
-          desc: "Built with the finest materials and global standards to stand the test of time.",
-          icon: "⌘",
-        },
-        {
-          number: "03",
-          title: "An Elevated Lifestyle",
-          desc: "World-class amenities curated for wellness, comfort and celebration.",
-          icon: "✿",
-        },
-        {
-          number: "04",
-          title: "A Smart Investment",
-          desc: "A rare combination of luxury living and strong long-term value appreciation.",
-          icon: "↗",
-        },
-      ].map((item, index) => (
-        <div
-          key={index}
+  {(
+    overview?.highlights?.some(
+      (item) => item?.heading || item?.subheading
+    )
+      ? overview.highlights
+      : [
+          {
+            heading: "A Landmark in Dwarka",
+            subheading:
+              "An iconic address in one of Delhi’s most prestigious and fastest-growing neighbourhoods.",
+            icon: "▥",
+          },
+          {
+            heading: "Crafted for Generations",
+            subheading:
+              "Built with the finest materials and global standards to stand the test of time.",
+            icon: "⌘",
+          },
+          {
+            heading: "An Elevated Lifestyle",
+            subheading:
+              "World-class amenities curated for wellness, comfort and celebration.",
+            icon: "✿",
+          },
+          {
+            heading: "A Smart Investment",
+            subheading:
+              "A rare combination of luxury living and strong long-term value appreciation.",
+            icon: "↗",
+          },
+
+          /* ================= EXTRA STATIC FALLBACK CARDS ================= */
+
+          {
+            heading: "Private Low-Density Living",
+            subheading:
+              "Exclusively planned residences offering privacy, peace and expansive open spaces.",
+            icon: "◈",
+          },
+          {
+            heading: "World-Class Amenities",
+            subheading:
+              "Curated wellness, leisure and lifestyle experiences designed for refined living.",
+            icon: "✦",
+          },
+          {
+            heading: "Prime Urban Connectivity",
+            subheading:
+              "Seamless access to business districts, airports and premium social infrastructure.",
+            icon: "⌂",
+          },
+          {
+            heading: "Legacy Address",
+            subheading:
+              "A timeless destination crafted to elevate status, comfort and future value.",
+            icon: "▣",
+          },
+        ]
+  )
+    .slice(0, 8)
+    .map((item, index) => (
+      <motion.div
+        key={index}
+        whileHover={{
+          y: -6,
+        }}
+        transition={{
+          duration: 0.35,
+        }}
+        className="
+          relative
+          overflow-hidden
+          rounded-[16px]
+          border
+          border-[#dfd3c0]
+          bg-[#fbf8f2]
+          px-6
+          py-7
+          shadow-[0_12px_30px_rgba(0,0,0,0.05)]
+        "
+      >
+
+        {/* GOLD GLOW */}
+        <div className="absolute top-[-40px] right-[-40px] w-[120px] h-[120px] bg-[#c9a64b]/10 blur-[50px] rounded-full" />
+
+        {/* NUMBER */}
+        <p
           className="
             relative
-            py-7
-            px-5
-            border-r
-            last:border-r-0
-            border-[#ddcfb7]
+            z-10
+            text-[#bc924c]
+            text-[11px]
+            tracking-[2px]
+            uppercase
+            mb-4
           "
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 600,
+          }}
         >
-          {/* NUMBER */}
-          <p
-            className="
-              text-[#bc924c]
-              text-[12px]
-              tracking-[2px]
-              uppercase
-              mb-3
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 600,
-            }}
-          >
-            {item.number}
-          </p>
+          {String(index + 1).padStart(2, "0")}
+        </p>
 
-          {/* TITLE */}
-          <h3
-            className="
-              text-[#21392f]
-              text-[20px]
-              md:text-[28px]
-              leading-[1.15]
-              mb-4
-              max-w-[180px]
-            "
-            style={{
-              fontFamily: "Georgia, Times New Roman, serif",
-              fontWeight: 400,
-            }}
-          >
-            {item.title}
-          </h3>
-
-          {/* DESCRIPTION */}
-          <p
-            className="
-              text-[#5c5c5c]
-              text-[12px]
-              leading-[1.9]
-              max-w-[220px]
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            {item.desc}
-          </p>
-
-          {/* SUBTLE ICON */}
-          <div
-            className="
-              absolute
-              right-5
-              top-10
-              text-[#d6bc88]/45
-              text-[54px]
-              leading-none
-            "
-            style={{
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            {item.icon}
-          </div>
+        {/* ICON */}
+        <div
+          className="
+            absolute
+            right-5
+            top-5
+            text-[#d6bc88]/35
+            text-[52px]
+            leading-none
+          "
+          style={{
+            fontFamily: "Georgia, serif",
+          }}
+        >
+          {item.icon || "✦"}
         </div>
-      ))}
-    </div>
+
+        {/* TITLE */}
+        <h3
+          className="
+            relative
+            z-10
+            text-[#21392f]
+            text-[24px]
+            leading-[1.15]
+            mb-4
+            max-w-[240px]
+          "
+          style={{
+            fontFamily: "Georgia, Times New Roman, serif",
+            fontWeight: 400,
+          }}
+        >
+          {item.heading || item.name}
+        </h3>
+
+        {/* DESCRIPTION */}
+        <p
+          className="
+            relative
+            z-10
+            text-[#5c5c5c]
+            text-[13px]
+            leading-[1.9]
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          {item.subheading || item.desc}
+        </p>
+
+        {/* BOTTOM GOLD LINE */}
+        <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-6" />
+      </motion.div>
+    ))}
+</div>
 
     {/* ================= QUOTE SECTION ================= */}
     <div
       className="
-        mt-8
-        rounded-[10px]
+        mt-12
+        rounded-[12px]
         bg-[#efe9de]
         border
         border-[#e0d3be]
         px-6
-        py-7
+        md:px-10
+        py-8
+        md:py-10
         relative
         overflow-hidden
       "
     >
+
       {/* LEFT QUOTE */}
       <div
         className="
           absolute
           left-6
           top-5
-          text-[#c9a64b]/50
-          text-[50px]
+          text-[#c9a64b]/40
+          text-[70px]
           leading-none
         "
         style={{
@@ -1287,8 +1547,8 @@ const locationName = getLocationName();
           absolute
           right-6
           bottom-0
-          text-[#c9a64b]/50
-          text-[50px]
+          text-[#c9a64b]/40
+          text-[70px]
           leading-none
         "
         style={{
@@ -1303,10 +1563,10 @@ const locationName = getLocationName();
           text-[#4d4d4d]
           italic
           text-[22px]
-          md:text-[30px]
-          leading-[1.45]
+          md:text-[34px]
+          leading-[1.5]
           text-center
-          max-w-[860px]
+          max-w-[900px]
           mx-auto
         "
         style={{
@@ -1314,11 +1574,11 @@ const locationName = getLocationName();
           fontWeight: 400,
         }}
       >
-        At {coreDetails.title}, every detail is designed not just for today,
-        but for a lifetime of unparalleled living.
+        {overview?.highlightQuote ||
+          `At ${coreDetails.title}, every detail is designed not just for today, but for a lifetime of unparalleled living.`}
       </p>
 
-      <div className="w-20 h-[1px] bg-[#c9a64b] mx-auto mt-5" />
+      <div className="w-24 h-[1px] bg-[#c9a64b] mx-auto mt-6" />
     </div>
   </div>
 </motion.section>
@@ -1380,7 +1640,7 @@ const locationName = getLocationName();
           fontWeight: 600,
         }}
       >
-        03
+        04
       </p>
 
       <div className="w-8 h-[1px] bg-[#c9a64b]" />
@@ -1734,7 +1994,7 @@ const locationName = getLocationName();
             fontWeight: 600,
           }}
         >
-          04
+          05
         </p>
 
         <div className="w-8 h-[1px] bg-[#c9a64b]" />
@@ -2171,7 +2431,7 @@ const locationName = getLocationName();
         className="text-center mb-16"
       >
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          05 | GALLERY
+          06 | GALLERY
         </p>
 
         <h2
@@ -2457,7 +2717,7 @@ const locationName = getLocationName();
       className="text-center mb-14"
     >
       <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-        06 | PRIME LOCATION
+        07 | PRIME LOCATION
       </p>
 
       <h2
@@ -2801,7 +3061,7 @@ const locationName = getLocationName();
         className="text-center mb-16"
       >
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          07 | MASTER PLAN
+          08 | MASTER PLAN
         </p>
 
         <h2
@@ -3051,7 +3311,7 @@ const locationName = getLocationName();
         className="text-center mb-16"
       >
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          08 | FAQ
+          09 | FAQ
         </p>
 
         <h2
@@ -3439,7 +3699,6 @@ const locationName = getLocationName();
       </motion.div>
 
     </div>
-      <Footer />
   </section>
 )}
 

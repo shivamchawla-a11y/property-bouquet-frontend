@@ -104,6 +104,22 @@ export default function EditProperty() {
   maxPrice: "",
 },
 
+heroSection: {
+  propertyStatus: "PRIVATE DIGITAL MANDATE",
+
+  heroDescription: "",
+
+  brochureButtonText: "DOWNLOAD BROCHURE",
+
+  videoButtonText: "WATCH PROJECT VIDEO",
+
+  taglineItems: [
+    "Ultra-Luxury Residences",
+    "Low-Density Living",
+    "Exclusive Community",
+  ],
+},
+
     keyMetrics: {
       landArea: "",
       possession: "",
@@ -746,6 +762,142 @@ if (loading) {
               value={form.coreDetails.maxPrice}
               onChange={(e) => handleChange("coreDetails", "maxPrice", e.target.value)}
             />
+
+
+            
+      {/* ================= HERO SECTION ================= */}
+<div className="mt-8">
+  <h3 className="font-semibold mb-4">
+    Hero Section
+  </h3>
+
+  <div className="grid grid-cols-1 gap-4">
+
+    <input
+      className="input"
+      placeholder="propertyStatus Text"
+      value={form.heroSection?.propertyStatus || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "propertyStatus",
+          e.target.value
+        )
+      }
+    />
+
+    <textarea
+      className="input min-h-[120px]"
+      placeholder="Hero Description"
+      value={form.heroSection?.heroDescription || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "heroDescription",
+          e.target.value
+        )
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Brochure Button Text"
+      value={form.heroSection?.brochureButtonText || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "brochureButtonText",
+          e.target.value
+        )
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Video Button Text"
+      value={form.heroSection?.videoButtonText || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "videoButtonText",
+          e.target.value
+        )
+      }
+    />
+  </div>
+</div>
+
+<div className="mt-6">
+  <h4 className="font-medium mb-3">
+    Tagline Items
+  </h4>
+
+  {form.heroSection?.taglineItems?.map((item, index) => (
+    <div key={index} className="flex gap-2 mb-2">
+
+      <input
+        className="input flex-1"
+        placeholder={`Tagline ${index + 1}`}
+        value={item}
+        onChange={(e) => {
+          const updated =
+            [...form.heroSection.taglineItems];
+
+          updated[index] = e.target.value;
+
+          setForm(prev => ({
+            ...prev,
+            heroSection: {
+              ...prev.heroSection,
+              taglineItems: updated,
+            }
+          }));
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={() => {
+          const updated =
+            form.heroSection.taglineItems.filter(
+              (_, i) => i !== index
+            );
+
+          setForm(prev => ({
+            ...prev,
+            heroSection: {
+              ...prev.heroSection,
+              taglineItems: updated,
+            }
+          }));
+        }}
+        className="px-4 bg-red-500 text-white rounded"
+      >
+        X
+      </button>
+    </div>
+  ))}
+
+  <button
+    type="button"
+    onClick={() => {
+      setForm(prev => ({
+        ...prev,
+        heroSection: {
+          ...prev.heroSection,
+          taglineItems: [
+            ...prev.heroSection.taglineItems,
+            "",
+          ],
+        }
+      }));
+    }}
+    className="mt-2 px-4 py-2 bg-gold text-black rounded"
+  >
+    + Add Tagline
+  </button>
+</div>
+
 
             <div className="mt-6">
   <h3 className="font-semibold mb-2">Key Metrics</h3>

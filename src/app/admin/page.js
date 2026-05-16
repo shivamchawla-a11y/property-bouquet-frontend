@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-800">
 
       {/* HEADER */}
       <div className="flex justify-between items-center">
@@ -116,6 +116,7 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-primary">
             Dashboard
           </h1>
+
           <p className="text-gray-500">
             Welcome back, {user?.name || "Admin"} 👋
           </p>
@@ -127,7 +128,7 @@ export default function AdminDashboard() {
           {/* SEARCH */}
           <input
             placeholder="Search..."
-            className="border px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-primary text-sm"
+            className="border bg-white text-gray-800 px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-primary text-sm"
           />
 
           {/* USER CARD */}
@@ -140,9 +141,10 @@ export default function AdminDashboard() {
 
             {/* NAME + ROLE */}
             <div className="text-sm leading-tight">
-              <p className="font-semibold">
+              <p className="font-semibold text-gray-800">
                 {user?.name || "Admin"}
               </p>
+
               <p className="text-gray-500 text-xs">
                 {user?.role || "Role"}
               </p>
@@ -167,6 +169,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {stats.map((item, index) => {
           const Icon = item.icon;
+
           return (
             <div
               key={index}
@@ -177,6 +180,7 @@ export default function AdminDashboard() {
                   <p className="text-gray-500 text-sm">
                     {item.title}
                   </p>
+
                   <h2 className="text-2xl font-bold text-primary mt-1">
                     {item.value}
                   </h2>
@@ -208,6 +212,7 @@ export default function AdminDashboard() {
             <LineChart data={revenueData}>
               <XAxis dataKey="name" />
               <Tooltip />
+
               <Line
                 type="monotone"
                 dataKey="value"
@@ -227,7 +232,12 @@ export default function AdminDashboard() {
             <BarChart data={propertyData}>
               <XAxis dataKey="name" />
               <Tooltip />
-              <Bar dataKey="value" fill="#C9A24D" radius={[6, 6, 0, 0]} />
+
+              <Bar
+                dataKey="value"
+                fill="#C9A24D"
+                radius={[6, 6, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -251,7 +261,10 @@ export default function AdminDashboard() {
                 key={i}
                 className="flex justify-between items-center border-b pb-2"
               >
-                <span className="font-medium">{item}</span>
+                <span className="font-medium text-gray-800">
+                  {item}
+                </span>
+
                 <span className="text-sm text-gray-500">
                   ₹1.2 Cr
                 </span>
@@ -282,7 +295,7 @@ export default function AdminDashboard() {
 
             <button
               onClick={() => router.push("/admin/site-settings/team")}
-              className="w-full border py-2 rounded-lg hover:bg-gray-100 transition"
+              className="w-full border text-gray-800 py-2 rounded-lg hover:bg-gray-100 transition"
             >
               Manage Users
             </button>

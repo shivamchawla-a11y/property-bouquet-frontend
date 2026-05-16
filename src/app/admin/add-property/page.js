@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
 import PropertyPreview from "./PropertyPreview";
@@ -101,6 +101,22 @@ export default function AddProperty() {
   developerLogo: "", // ✅ ADD THIS
   startingPrice: "",
   maxPrice: "",
+},
+
+heroSection: {
+  propertyStatus: "PRIVATE DIGITAL MANDATE",
+
+  heroDescription: "",
+
+  brochureButtonText: "DOWNLOAD BROCHURE",
+
+  videoButtonText: "WATCH PROJECT VIDEO",
+
+  taglineItems: [
+    "Ultra-Luxury Residences",
+    "Low-Density Living",
+    "Exclusive Community",
+  ],
 },
 
     keyMetrics: {
@@ -601,6 +617,139 @@ const buildOptions = (nodes, prefix = "") => {
               onChange={(e) => handleChange("coreDetails", "maxPrice", e.target.value)}
             />
 
+
+      {/* ================= HERO SECTION ================= */}
+<div className="mt-8">
+  <h3 className="font-semibold mb-4">
+    Hero Section
+  </h3>
+
+  <div className="grid grid-cols-1 gap-4">
+
+    <input
+      className="input"
+      placeholder="propertyStatus Text"
+      value={form.heroSection?.propertyStatus || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "propertyStatus",
+          e.target.value
+        )
+      }
+    />
+
+    <textarea
+      className="input min-h-[120px]"
+      placeholder="Hero Description"
+      value={form.heroSection?.heroDescription || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "heroDescription",
+          e.target.value
+        )
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Brochure Button Text"
+      value={form.heroSection?.brochureButtonText || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "brochureButtonText",
+          e.target.value
+        )
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Video Button Text"
+      value={form.heroSection?.videoButtonText || ""}
+      onChange={(e) =>
+        handleChange(
+          "heroSection",
+          "videoButtonText",
+          e.target.value
+        )
+      }
+    />
+  </div>
+</div>
+
+<div className="mt-6">
+  <h4 className="font-medium mb-3">
+    Tagline Items
+  </h4>
+
+  {form.heroSection?.taglineItems?.map((item, index) => (
+    <div key={index} className="flex gap-2 mb-2">
+
+      <input
+        className="input flex-1"
+        placeholder={`Tagline ${index + 1}`}
+        value={item}
+        onChange={(e) => {
+          const updated =
+            [...form.heroSection.taglineItems];
+
+          updated[index] = e.target.value;
+
+          setForm(prev => ({
+            ...prev,
+            heroSection: {
+              ...prev.heroSection,
+              taglineItems: updated,
+            }
+          }));
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={() => {
+          const updated =
+            form.heroSection.taglineItems.filter(
+              (_, i) => i !== index
+            );
+
+          setForm(prev => ({
+            ...prev,
+            heroSection: {
+              ...prev.heroSection,
+              taglineItems: updated,
+            }
+          }));
+        }}
+        className="px-4 bg-red-500 text-white rounded"
+      >
+        X
+      </button>
+    </div>
+  ))}
+
+  <button
+    type="button"
+    onClick={() => {
+      setForm(prev => ({
+        ...prev,
+        heroSection: {
+          ...prev.heroSection,
+          taglineItems: [
+            ...prev.heroSection.taglineItems,
+            "",
+          ],
+        }
+      }));
+    }}
+    className="mt-2 px-4 py-2 bg-gold text-black rounded"
+  >
+    + Add Tagline
+  </button>
+</div>
             <div className="mt-6">
   <h3 className="font-semibold mb-2">Key Metrics</h3>
 
@@ -681,180 +830,311 @@ const buildOptions = (nodes, prefix = "") => {
         {/* ================= STEP 2 ================= */}
 {step === 2 && (
   <div className="section">
-    <h2>Overview</h2>
 
-    <textarea
-      className="input"
-      placeholder="Description"
-      value={form.overview.description}
-      onChange={(e) =>
-        handleChange("overview", "description", e.target.value)
-      }
-    />
+    <h2 className="section-title">
+      About & Property Highlights
+    </h2>
 
-    <input
-      className="input"
-      placeholder="About Image URL"
-      value={form.overview.aboutImageUrl}
-      onChange={(e) =>
-        handleChange("overview", "aboutImageUrl", e.target.value)
-      }
-    />
+    {/* ================= ABOUT SECTION ================= */}
+    <div className="bg-white rounded-2xl p-6 border mb-8">
 
-    {/* ================= AMENITIES ================= */}
-    <h3 className="mt-6 font-semibold text-lg">Amenities</h3>
+      <h3 className="font-semibold text-xl mb-5">
+        About Section
+      </h3>
 
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-      {AMENITIES.map((item) => {
-        const selected = form.overview.highlights.some((h) => {
-  const name =
-    typeof h === "string" ? h : h.name;
+      {/* SECTION NUMBER */}
+      <input
+        className="input mb-4"
+        placeholder="Section Number (Example: 02)"
+        value={form.overview.aboutSectionNumber || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutSectionNumber",
+            e.target.value
+          )
+        }
+      />
 
-  return name === item.name;
-});
-        const Icon = item.icon;
+      {/* ABOUT LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="About Label"
+        value={form.overview.aboutLabel || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutLabel",
+            e.target.value
+          )
+        }
+      />
 
-        return (
-          <label
-            key={item.name}
-            className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition ${
-              selected
-                ? "bg-green-100 border-green-400"
-                : "bg-gray-100 border-gray-200"
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={() => {
-                let updated;
+      {/* TITLE LINE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="About Title Line 1"
+        value={form.overview.aboutTitleLine1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutTitleLine1",
+            e.target.value
+          )
+        }
+      />
 
-                if (selected) {
-  updated = form.overview.highlights.filter((h) => {
-    const name =
-      typeof h === "string" ? h : h.name;
+      {/* TITLE LINE 2 */}
+      <input
+        className="input mb-4"
+        placeholder="About Title Line 2"
+        value={form.overview.aboutTitleLine2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutTitleLine2",
+            e.target.value
+          )
+        }
+      />
 
-    return name !== item.name;
-  });
+      {/* ABOUT DESCRIPTION */}
+      <textarea
+        className="input min-h-[140px] mb-4"
+        placeholder="About Description"
+        value={form.overview.description || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "description",
+            e.target.value
+          )
+        }
+      />
 
-} else {
-  updated = [
-    ...form.overview.highlights,
-    {
-      name: item.name,
-      icon: item.name,
-    },
-  ];
-}
+      {/* SECOND PARAGRAPH */}
+      <textarea
+        className="input min-h-[120px] mb-4"
+        placeholder="Second Paragraph"
+        value={form.overview.aboutParagraph2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutParagraph2",
+            e.target.value
+          )
+        }
+      />
 
-                handleChange("overview", "highlights", updated);
-              }}
-            />
-
-            <Icon size={18} className="text-gray-700" />
-            <span>{item.name}</span>
-          </label>
-        );
-      })}
+      {/* ABOUT IMAGE */}
+      <input
+        className="input"
+        placeholder="About Image URL"
+        value={form.overview.aboutImageUrl || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "aboutImageUrl",
+            e.target.value
+          )
+        }
+      />
     </div>
 
-    {/* ================= CUSTOM AMENITY ================= */}
-<div className="mt-6 bg-white border rounded-2xl p-5 shadow-sm">
+    {/* ================= FEATURE BAR ================= */}
+    <div className="bg-white rounded-2xl p-6 border mb-8">
 
-  <h4 className="font-semibold text-lg mb-4">
-    Add Custom Amenity
-  </h4>
+      <div className="flex items-center justify-between mb-5">
 
-  {/* INPUT */}
-  <input
-    className="input w-full"
-    placeholder="Enter amenity name"
-    value={customAmenity}
-    onChange={(e) => setCustomAmenity(e.target.value)}
-  />
-
-  {/* ICON SELECTOR */}
-  <div className="mt-5">
-    <p className="text-sm text-gray-500 mb-3">
-      Select Icon
-    </p>
-
-    <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-
-      {CUSTOM_ICONS.map((item) => {
-        const Icon = item.icon;
-
-        return (
-          <button
-            key={item.name}
-            type="button"
-            onClick={() => setSelectedCustomIcon(item.name)}
-            className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition ${
-              selectedCustomIcon === item.name
-                ? "bg-green-100 border-green-500"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
-            <Icon size={22} />
-            <span className="text-xs">
-              {item.name}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  </div>
-
-  {/* ADD BUTTON */}
-  <button
-    type="button"
-    className="mt-5 bg-black text-white px-5 py-3 rounded-xl"
-    onClick={() => {
-      if (!customAmenity.trim()) return;
-
-      const amenityObject = {
-        name: customAmenity,
-        icon: selectedCustomIcon,
-      };
-
-      handleChange("overview", "highlights", [
-        ...form.overview.highlights,
-        amenityObject,
-      ]);
-
-      setCustomAmenity("");
-      setSelectedCustomIcon("Home");
-    }}
-  >
-    + Add Custom Amenity
-  </button>
-</div>
-
-    {/* ================= SELECTED ================= */}
-<div className="mt-5 flex flex-wrap gap-2">
-
-  {form.overview.highlights.map((item, i) => {
-
-    const itemName =
-      typeof item === "string"
-        ? item
-        : item.name;
-
-    return (
-      <div
-        key={i}
-        className="bg-black text-white px-3 py-1 rounded-full flex items-center gap-2"
-      >
-        {itemName}
+        <h3 className="font-semibold text-xl">
+          Feature Bar
+        </h3>
 
         <button
           type="button"
           onClick={() => {
 
-            const updated =
-              form.overview.highlights.filter(
-                (_, idx) => idx !== i
-              );
+            const updated = [
+              ...(form.overview.featureBar || []),
+              {
+                title: "",
+                desc: "",
+                icon: "✦",
+              },
+            ];
+
+            handleChange(
+              "overview",
+              "featureBar",
+              updated
+            );
+          }}
+          className="bg-black text-white px-4 py-2 rounded-xl"
+        >
+          + Add Feature
+        </button>
+      </div>
+
+      {(form.overview.featureBar || []).map(
+        (item, index) => (
+          <div
+            key={index}
+            className="border rounded-2xl p-5 mb-5 bg-[#fafafa]"
+          >
+
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-4">
+
+              <h4 className="font-semibold">
+                Feature #{index + 1}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  const updated =
+                    form.overview.featureBar.filter(
+                      (_, i) => i !== index
+                    );
+
+                  handleChange(
+                    "overview",
+                    "featureBar",
+                    updated
+                  );
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* TITLE */}
+            <input
+              className="input mb-4"
+              placeholder="Feature Title"
+              value={item.title || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.featureBar,
+                ];
+
+                updated[index].title =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "featureBar",
+                  updated
+                );
+              }}
+            />
+
+            {/* DESCRIPTION */}
+            <textarea
+              className="input min-h-[100px] mb-4"
+              placeholder="Feature Description"
+              value={item.desc || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.featureBar,
+                ];
+
+                updated[index].desc =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "featureBar",
+                  updated
+                );
+              }}
+            />
+
+            {/* ICON */}
+            <input
+              className="input"
+              placeholder="Icon (✦ ◈ ⌂ ▣)"
+              value={item.icon || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.featureBar,
+                ];
+
+                updated[index].icon =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "featureBar",
+                  updated
+                );
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+
+    {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
+    <div className="bg-white rounded-2xl p-6 border mb-8">
+
+      <h3 className="font-semibold text-xl mb-5">
+        Property Highlights Header
+      </h3>
+
+      <input
+        className="input mb-4"
+        placeholder="Highlights Heading"
+        value={form.overview.highlightsHeading || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "highlightsHeading",
+            e.target.value
+          )
+        }
+      />
+
+      <input
+        className="input"
+        placeholder="Highlights Subheading"
+        value={form.overview.highlightsSubheading || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "highlightsSubheading",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= HIGHLIGHTS CARDS ================= */}
+    <div className="bg-white rounded-2xl p-6 border mb-8">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <h3 className="font-semibold text-xl">
+          Highlight Cards
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => {
+
+            const updated = [
+              ...(form.overview.highlights || []),
+              {
+                heading: "",
+                subheading: "",
+                icon: "✦",
+              },
+            ];
 
             handleChange(
               "overview",
@@ -862,13 +1142,137 @@ const buildOptions = (nodes, prefix = "") => {
               updated
             );
           }}
+          className="bg-black text-white px-4 py-2 rounded-xl"
         >
-          ❌
+          + Add Highlight
         </button>
       </div>
-    );
-  })}
-</div>
+
+      {(form.overview.highlights || []).map(
+        (item, index) => (
+          <div
+            key={index}
+            className="border rounded-2xl p-5 mb-5 bg-[#fafafa]"
+          >
+
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-4">
+
+              <h4 className="font-semibold">
+                Highlight #{index + 1}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  const updated =
+                    form.overview.highlights.filter(
+                      (_, i) => i !== index
+                    );
+
+                  handleChange(
+                    "overview",
+                    "highlights",
+                    updated
+                  );
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* HEADING */}
+            <input
+              className="input mb-4"
+              placeholder="Card Heading"
+              value={item.heading || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.highlights,
+                ];
+
+                updated[index].heading =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "highlights",
+                  updated
+                );
+              }}
+            />
+
+            {/* SUBHEADING */}
+            <textarea
+              className="input min-h-[100px] mb-4"
+              placeholder="Card Description"
+              value={item.subheading || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.highlights,
+                ];
+
+                updated[index].subheading =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "highlights",
+                  updated
+                );
+              }}
+            />
+
+            {/* ICON */}
+            <input
+              className="input"
+              placeholder="Icon (✦ ◈ ↗ ▣)"
+              value={item.icon || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.overview.highlights,
+                ];
+
+                updated[index].icon =
+                  e.target.value;
+
+                handleChange(
+                  "overview",
+                  "highlights",
+                  updated
+                );
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+
+    {/* ================= QUOTE SECTION ================= */}
+    <div className="bg-white rounded-2xl p-6 border">
+
+      <h3 className="font-semibold text-xl mb-5">
+        Quote Section
+      </h3>
+
+      <textarea
+        className="input min-h-[120px]"
+        placeholder="Highlight Quote"
+        value={form.overview.highlightQuote || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "highlightQuote",
+            e.target.value
+          )
+        }
+      />
+    </div>
   </div>
 )}
 
