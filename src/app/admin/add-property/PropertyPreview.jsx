@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -231,8 +231,47 @@ const featureBar =
   const [leadPhone, setLeadPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const developerLogo = getDeveloperLogo(); // ✅ ADD THIS LINE
-  const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+const [selectedIndex, setSelectedIndex] = useState(0);
+
+const gallery =
+  media.gallery?.filter((img) => img && img.trim()) || [];
+
+/* KEYBOARD NAVIGATION */
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (selectedImage === null) return;
+
+    if (e.key === "Escape") {
+      setSelectedImage(null);
+    }
+
+    if (e.key === "ArrowRight") {
+      const newIndex =
+        selectedIndex === gallery.length - 1
+          ? 0
+          : selectedIndex + 1;
+
+      setSelectedIndex(newIndex);
+      setSelectedImage(gallery[newIndex]);
+    }
+
+    if (e.key === "ArrowLeft") {
+      const newIndex =
+        selectedIndex === 0
+          ? gallery.length - 1
+          : selectedIndex - 1;
+
+      setSelectedIndex(newIndex);
+      setSelectedImage(gallery[newIndex]);
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () =>
+    window.removeEventListener("keydown", handleKeyDown);
+}, [selectedImage, selectedIndex, gallery]);
 
   const handleLeadSubmit = async () => {
   if (!leadName.trim() || !leadPhone.trim()) {
@@ -2413,7 +2452,7 @@ const locationName = getLocationName();
       className="relative bg-[#f7f3ee] py-24 overflow-hidden"
     >
 
-      {/* SOFT BACKGROUND PATTERN */}
+      {/* BACKGROUND */}
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
@@ -2423,7 +2462,7 @@ const locationName = getLocationName();
         }}
       />
 
-      <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+      <div className="relative z-10 max-w-[1500px] mx-auto px-5">
 
         {/* ================= HEADING ================= */}
         <motion.div
@@ -2457,121 +2496,232 @@ const locationName = getLocationName();
         </motion.div>
 
         {/* ================= GALLERY WRAPPER ================= */}
-        <motion.div
-          variants={fadeUp}
-          className="relative rounded-[40px] border border-[#e6dacb] bg-white/70 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.08)] overflow-hidden p-4 md:p-6"
-        >
+        <div className="relative rounded-[40px] border border-[#e6d7c3] bg-white/80 backdrop-blur-xl p-5 md:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.10)] overflow-hidden">
 
-          {/* TOP GLOW */}
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#d8bc8c]/10 to-transparent pointer-events-none" />
+          {/* SOFT GLOW */}
+          <div className="absolute -top-32 -left-20 w-72 h-72 bg-[#d4b071]/10 blur-3xl rounded-full" />
 
-          {/* ================= MASONRY GRID ================= */}
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
+          <div className="relative z-10">
 
-            {media.gallery
-              .filter((img) => img && img.trim())
-              .map((img, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  whileHover={{
-                    y: -6,
+            {/* TOP BAR */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+
+              <div>
+                <p className="uppercase tracking-[4px] text-[#b58b47] text-xs font-semibold mb-3">
+                  Premium Lifestyle Showcase
+                </p>
+
+                <h3
+                  className="text-3xl md:text-5xl text-[#17342d] font-light"
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
                   }}
-                  transition={{
-                    duration: 0.35,
-                  }}
-                  onClick={() => {
-                    setSelectedImage(img);
-                    setShowGalleryModal(true);
-                  }}
-                  className="group relative overflow-hidden rounded-[28px] cursor-pointer break-inside-avoid border border-white/40 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
                 >
+                  Curated Spaces & Experiences
+                </h3>
+              </div>
 
-                  {/* IMAGE */}
-                  <div className="overflow-hidden rounded-[28px]">
-                    <img
-                      src={img}
-                      alt={`gallery-${i}`}
-                      className="w-full h-auto object-cover transition duration-700 ease-out group-hover:scale-110"
-                    />
-                  </div>
+              {/* CTA */}
+              <motion.button
+                whileHover={{
+                  scale: 1.04,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
+                onClick={() => {
+                  setSelectedImage(
+                    media.gallery.filter(Boolean)[0]
+                  );
+                  setSelectedIndex(0);
+                }}
+                className="group bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-8 py-4 rounded-2xl flex items-center gap-4 uppercase tracking-[2px] text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-all duration-500"
+              >
 
-                  {/* DARK OVERLAY */}
-                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-500" />
+                <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center group-hover:rotate-12 transition duration-500">
+                  ✦
+                </div>
 
-                  {/* GOLD SHINE EFFECT */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.25),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+                Open Full Gallery
 
-                  {/* VIEW ICON */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 group-hover:translate-x-1 transition"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </motion.button>
+            </div>
 
-                    <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-2xl">
+{/* ================= PREMIUM MASONRY GRID ================= */}
+<div className="grid grid-cols-12 gap-5 auto-rows-[220px] md:auto-rows-[260px]">
 
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-7 h-7 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 12H9m0 0l3-3m-3 3l3 3"
-                        />
-                      </svg>
-                    </div>
-                  </div>
+  {gallery.map((img, i) => {
 
-                  {/* BOTTOM GRADIENT */}
-                  <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-90 transition duration-500" />
-                </motion.div>
-              ))}
+    /* PREMIUM BALANCED LAYOUT */
+    let spanClass =
+      "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
+
+    if (i % 7 === 0)
+      spanClass =
+        "col-span-12 lg:col-span-6 row-span-2";
+
+    else if (i % 5 === 0)
+      spanClass =
+        "col-span-12 sm:col-span-6 lg:col-span-3 row-span-2";
+
+    return (
+      <motion.div
+        key={i}
+        variants={fadeUp}
+        whileHover={{
+          y: -8,
+        }}
+        transition={{
+          duration: 0.4,
+        }}
+        onClick={() => {
+          setSelectedImage(img);
+          setSelectedIndex(i);
+        }}
+        className={`group relative overflow-hidden cursor-pointer rounded-[34px]
+        bg-white
+        border border-[#ebe1d4]
+        shadow-[0_18px_45px_rgba(0,0,0,0.08)]
+        hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
+        transition-all duration-500
+        ${spanClass}`}
+      >
+
+        {/* IMAGE */}
+        <img
+          src={img}
+          alt=""
+          className="w-full h-full object-cover transition duration-[1200ms] ease-out group-hover:scale-110"
+        />
+
+        {/* SOFT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+
+        {/* LUXURY SHINE */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+
+        {/* VIEW ICON */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+
+          <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-7 h-7 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 12H9m0 0l3-3m-3 3l3 3"
+              />
+            </svg>
+
           </div>
-        </motion.div>
+        </div>
+
+      </motion.div>
+    );
+  })}
+</div>
+          </div>
+        </div>
       </div>
     </motion.section>
 
-    {/* ================= FULLSCREEN IMAGE MODAL ================= */}
-    {showGalleryModal && selectedImage && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+    {/* ================= FULLSCREEN GALLERY ================= */}
+<AnimatePresence>
+  {selectedImage && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center"
+    >
+
+      {/* CLOSE */}
+      <button
+        onClick={() => setSelectedImage(null)}
+        className="absolute top-6 right-6 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
       >
+        ✕
+      </button>
 
-        {/* CLOSE BUTTON */}
-        <button
-          onClick={() => {
-            setShowGalleryModal(false);
-            setSelectedImage(null);
-          }}
-          className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition"
-        >
-          ✕
-        </button>
+      {/* LEFT */}
+      <button
+        onClick={() => {
+          const newIndex =
+            selectedIndex === 0
+              ? gallery.length - 1
+              : selectedIndex - 1;
 
-        {/* IMAGE */}
-        <motion.img
-          initial={{
-            opacity: 0,
-            scale: 0.9,
-          }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-          }}
-          transition={{
-            duration: 0.4,
-          }}
-          src={selectedImage}
-          alt="Full View"
-          className="max-w-[95vw] max-h-[92vh] object-contain rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
-        />
-      </motion.div>
-    )}
+          setSelectedIndex(newIndex);
+          setSelectedImage(gallery[newIndex]);
+        }}
+        className="absolute left-5 md:left-10 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
+      >
+        ←
+      </button>
+
+      {/* IMAGE */}
+      <motion.img
+        key={selectedImage}
+        initial={{
+          opacity: 0,
+          scale: 0.92,
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+        }}
+        exit={{
+          opacity: 0,
+          scale: 0.92,
+        }}
+        transition={{
+          duration: 0.35,
+        }}
+        src={selectedImage}
+        alt=""
+        className="max-w-[94vw] max-h-[90vh] object-contain rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.5)]"
+      />
+
+      {/* RIGHT */}
+      <button
+        onClick={() => {
+          const newIndex =
+            selectedIndex === gallery.length - 1
+              ? 0
+              : selectedIndex + 1;
+
+          setSelectedIndex(newIndex);
+          setSelectedImage(gallery[newIndex]);
+        }}
+        className="absolute right-5 md:right-10 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
+      >
+        →
+      </button>
+
+    </motion.div>
+  )}
+</AnimatePresence>
   </>
 )}
 
