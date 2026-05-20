@@ -231,9 +231,8 @@ const featureBar =
   const [leadPhone, setLeadPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const developerLogo = getDeveloperLogo(); // ✅ ADD THIS LINE
-
-  
-  
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleLeadSubmit = async () => {
   if (!leadName.trim() || !leadPhone.trim()) {
@@ -2403,302 +2402,177 @@ const locationName = getLocationName();
   </motion.section>
 )}
 
-     {/* ================= PREMIUM GALLERY SECTION ================= */}
+{/* ================= PREMIUM GALLERY SECTION ================= */}
 {media.gallery?.filter(Boolean).length > 0 && (
-  <motion.section
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, amount: 0.12 }}
-    variants={staggerContainer}
-    className="relative bg-[#f7f3ee] py-24 overflow-hidden"
-  >
+  <>
+    <motion.section
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.12 }}
+      variants={staggerContainer}
+      className="relative bg-[#f7f3ee] py-24 overflow-hidden"
+    >
 
-    {/* SOFT BACKGROUND PATTERN */}
-    <div
-      className="absolute inset-0 opacity-[0.03]"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, #17342d 1px, transparent 1px)",
-        backgroundSize: "28px 28px",
-      }}
-    />
+      {/* SOFT BACKGROUND PATTERN */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, #17342d 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
 
-    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+      <div className="relative z-10 max-w-[1450px] mx-auto px-5">
 
-      {/* ================= HEADING ================= */}
-      <motion.div
-        variants={fadeUp}
-        className="text-center mb-16"
-      >
-        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          06 | GALLERY
-        </p>
-
-        <h2
-          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-          }}
-        >
-          A Glimpse Into
-          <span className="text-[#b58b47]">
-            {" "}Elevated Living.
-          </span>
-        </h2>
-
-        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
-        </div>
-
-        <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
-          Discover elegant architecture, luxurious interiors, lush landscapes,
-          and thoughtfully curated experiences designed for a timeless lifestyle.
-        </p>
-      </motion.div>
-
-      {/* ================= MAIN GALLERY ================= */}
-      <div className="relative max-w-7xl mx-auto">
-
-        {/* SIDE DECOR STRIPS */}
-        <div className="absolute left-0 top-24 bottom-24 w-[18%] rounded-l-[40px] bg-gradient-to-b from-[#08211c] to-[#0f3a30]" />
-
-        <div className="absolute right-0 top-24 bottom-24 w-[18%] rounded-r-[40px] bg-gradient-to-b from-[#b58b47] to-[#d6b16f]" />
-
-        {/* GALLERY CARD */}
+        {/* ================= HEADING ================= */}
         <motion.div
           variants={fadeUp}
-          className="relative z-10 rounded-[34px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)] p-5 md:p-7"
+          className="text-center mb-16"
         >
+          <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+            06 | GALLERY
+          </p>
 
-          {/* TOP LABEL */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <h2
+            className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+            style={{
+              fontFamily: "Cormorant Garamond, serif",
+            }}
+          >
+            A Glimpse Into
+            <span className="text-[#b58b47]">
+              {" "}Elevated Living.
+            </span>
+          </h2>
 
-            <div>
-              <p className="uppercase tracking-[4px] text-[#b58b47] text-xs font-semibold mb-3">
-                Premium Lifestyle Showcase
-              </p>
-
-              <h3
-                className="text-3xl md:text-5xl text-[#17342d] font-light"
-                style={{
-                  fontFamily: "Cormorant Garamond, serif",
-                }}
-              >
-                Curated Spaces & Experiences
-              </h3>
-            </div>
-
-            {/* CTA */}
-            <motion.button
-              whileHover={{
-                scale: 1.04,
-              }}
-              whileTap={{
-                scale: 0.98,
-              }}
-              onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-8 py-4 rounded-2xl flex items-center gap-4 uppercase tracking-[2px] text-sm font-semibold shadow-lg hover:shadow-[0_0_30px_rgba(212,176,113,0.25)] transition-all duration-300"
-            >
-
-              {/* ICON */}
-              <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center">
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                  />
-                </svg>
-              </div>
-
-              View Brochure
-
-              {/* ARROW */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </motion.button>
+          <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
           </div>
 
-          {/* ================= GRID ================= */}
-          <div className="grid grid-cols-12 gap-5 auto-rows-[140px] md:auto-rows-[170px]">
+          <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
+            Discover elegant architecture, luxurious interiors, lush landscapes,
+            and thoughtfully curated experiences designed for a timeless lifestyle.
+          </p>
+        </motion.div>
+
+        {/* ================= GALLERY WRAPPER ================= */}
+        <motion.div
+          variants={fadeUp}
+          className="relative rounded-[40px] border border-[#e6dacb] bg-white/70 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.08)] overflow-hidden p-4 md:p-6"
+        >
+
+          {/* TOP GLOW */}
+          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#d8bc8c]/10 to-transparent pointer-events-none" />
+
+          {/* ================= MASONRY GRID ================= */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
 
             {media.gallery
               .filter((img) => img && img.trim())
-              .map((img, i) => {
-
-                /* PREMIUM MOSAIC LAYOUT */
-                let spanClass =
-                  "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
-
-                if (i === 0)
-                  spanClass =
-                    "col-span-12 lg:col-span-6 row-span-2";
-
-                if (i === 1)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
-
-                if (i === 2)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
-
-                if (i === 3)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-2";
-
-                if (i === 4)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
-
-                if (i === 5)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
-
-                if (i === 6)
-                  spanClass =
-                    "col-span-12 lg:col-span-6 row-span-2";
-
-                return (
-                  <motion.div
-                    key={i}
-                    variants={fadeUp}
-                    whileHover={{
-                      y: -8,
-                    }}
-                    transition={{
-                      duration: 0.35,
-                    }}
-                    className={`group relative overflow-hidden rounded-[28px] border border-[#e4d9cb] shadow-[0_10px_30px_rgba(0,0,0,0.08)] ${spanClass}`}
-                  >
-
-                    {/* IMAGE */}
-                    <img
-                      src={img}
-                      alt=""
-                      className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
-                    />
-
-                    {/* OVERLAY */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
-
-                    {/* GOLD SHINE */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.15),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
-
-                    {/* CONTENT */}
-                    <div className="absolute bottom-0 left-0 w-full p-6 z-10">
-
-                      {/* ICON */}
-                      <div className="w-12 h-12 rounded-full border border-[#d4b071] bg-[#08211c]/70 backdrop-blur-md flex items-center justify-center text-[#d4b071] mb-4 shadow-lg">
-                        ✦
-                      </div>
-
-                      {/* TITLE */}
-                      <h4
-                        className="text-white text-2xl md:text-3xl font-light"
-                        style={{
-                          fontFamily: "Cormorant Garamond, serif",
-                        }}
-                      >
-                        Luxury Living
-                      </h4>
-
-                      <p className="text-white/70 text-sm mt-2 leading-relaxed">
-                        Thoughtfully curated spaces crafted for timeless elegance.
-                      </p>
-                    </div>
-
-                    {/* TOP BADGE */}
-                    <div className="absolute top-5 left-5 z-10">
-                      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
-
-                        <div className="w-2 h-2 rounded-full bg-[#d4b071]" />
-
-                        <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
-                          Premium Gallery
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-          </div>
-
-          {/* ================= BOTTOM STRIP ================= */}
-          <div className="mt-7 rounded-[24px] overflow-hidden border border-[#e5d9cb] bg-gradient-to-r from-[#08211c] to-[#0f3a30]">
-
-            <div className="grid md:grid-cols-4">
-
-              {[
-                {
-                  title: "Elegant Interiors",
-                  desc: "Luxury crafted living spaces",
-                },
-                {
-                  title: "Premium Amenities",
-                  desc: "World-class lifestyle experiences",
-                },
-                {
-                  title: "Architectural Excellence",
-                  desc: "Timeless modern design language",
-                },
-                {
-                  title: "Landscape Serenity",
-                  desc: "Green spaces with tranquil living",
-                },
-              ].map((item, i) => (
+              .map((img, i) => (
                 <motion.div
                   key={i}
+                  variants={fadeUp}
                   whileHover={{
-                    y: -4,
+                    y: -6,
                   }}
-                  className="p-7 border-r border-white/10 last:border-r-0"
+                  transition={{
+                    duration: 0.35,
+                  }}
+                  onClick={() => {
+                    setSelectedImage(img);
+                    setShowGalleryModal(true);
+                  }}
+                  className="group relative overflow-hidden rounded-[28px] cursor-pointer break-inside-avoid border border-white/40 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
                 >
-                  <div className="flex items-start gap-4">
 
-                    {/* ICON */}
-                    <div className="w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] flex-shrink-0">
-                      ✦
-                    </div>
+                  {/* IMAGE */}
+                  <div className="overflow-hidden rounded-[28px]">
+                    <img
+                      src={img}
+                      alt={`gallery-${i}`}
+                      className="w-full h-auto object-cover transition duration-700 ease-out group-hover:scale-110"
+                    />
+                  </div>
 
-                    {/* TEXT */}
-                    <div>
-                      <h4 className="text-[#d4b071] uppercase tracking-wide text-sm font-semibold">
-                        {item.title}
-                      </h4>
+                  {/* DARK OVERLAY */}
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-500" />
 
-                      <p className="text-white/70 text-sm mt-2 leading-relaxed">
-                        {item.desc}
-                      </p>
+                  {/* GOLD SHINE EFFECT */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.25),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+
+                  {/* VIEW ICON */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+
+                    <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-2xl">
+
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-7 h-7 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.7}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12H9m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
                     </div>
                   </div>
+
+                  {/* BOTTOM GRADIENT */}
+                  <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-90 transition duration-500" />
                 </motion.div>
               ))}
-            </div>
           </div>
         </motion.div>
       </div>
-    </div>
-  </motion.section>
+    </motion.section>
+
+    {/* ================= FULLSCREEN IMAGE MODAL ================= */}
+    {showGalleryModal && selectedImage && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+      >
+
+        {/* CLOSE BUTTON */}
+        <button
+          onClick={() => {
+            setShowGalleryModal(false);
+            setSelectedImage(null);
+          }}
+          className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition"
+        >
+          ✕
+        </button>
+
+        {/* IMAGE */}
+        <motion.img
+          initial={{
+            opacity: 0,
+            scale: 0.9,
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+          }}
+          transition={{
+            duration: 0.4,
+          }}
+          src={selectedImage}
+          alt="Full View"
+          className="max-w-[95vw] max-h-[92vh] object-contain rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+        />
+      </motion.div>
+    )}
+  </>
 )}
 
 {/* ================= LOCATION ADVANTAGES PREMIUM SECTION ================= */}
@@ -2737,245 +2611,216 @@ const locationName = getLocationName();
       </p>
     </motion.div>
 
-    {/* MAIN GRID */}
-    <div className="grid lg:grid-cols-[280px_1fr_280px] gap-0 rounded-[28px] overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-[#d7c6aa]">
+    {/* ================= MAIN GRID ================= */}
+<div className="grid lg:grid-cols-[360px_1fr] gap-6">
 
-      {/* LEFT ADVANTAGES */}
-      <motion.div
-        variants={fadeLeft}
-        className="bg-[#faf7f2] p-8 border-r border-[#e6d7be]"
-      >
-        <h3 className="text-[#b58b47] uppercase tracking-wide text-sm font-semibold mb-8">
-          Close To Everything That Matters
+  {/* ================= LEFT SIDE LOCATION CARDS ================= */}
+  <motion.div
+    variants={fadeLeft}
+    className="rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
+  >
+
+    {/* TOP HEADER */}
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#08211c] via-[#0f3a30] to-[#123f34] px-8 py-10">
+
+      {/* GLOW */}
+      <div className="absolute -top-20 -right-20 w-52 h-52 bg-[#d4b071]/20 blur-3xl rounded-full" />
+
+      <div className="relative z-10">
+        <p className="uppercase tracking-[4px] text-[#d4b071] text-xs font-semibold mb-4">
+          Prime Connectivity
+        </p>
+
+        <h3
+          className="text-4xl text-white leading-tight font-light"
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
+          }}
+        >
+          Everything <br />
+          Within Reach
         </h3>
 
-        <div className="space-y-7">
+        <p className="text-white/70 mt-5 leading-relaxed text-sm">
+          Strategically positioned near major business hubs,
+          expressways, hospitals, schools and premium lifestyle destinations.
+        </p>
+      </div>
+    </div>
 
-          {locationData.landmarks?.map((l, i) => (
-            l.name && (
-              <motion.div
-                key={i}
-                variants={fadeUp}
-                whileHover={{ x: 6 }}
-                className="flex items-start justify-between gap-5 border-b border-[#e8dfd1] pb-5"
-              >
+    {/* LOCATION LIST */}
+    <div className="p-5 space-y-4 bg-[#fcfaf7]">
 
-                {/* LEFT */}
-                <div className="flex gap-4">
+      {locationData.landmarks?.map((l, i) => (
+        l.name && (
+          <motion.div
+            key={i}
+            whileHover={{
+              y: -3,
+              scale: 1.01,
+            }}
+            transition={{
+              duration: 0.3,
+            }}
+            className="group relative overflow-hidden rounded-[22px] border border-[#eadfce] bg-white p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
+          >
 
-                  {/* ICON */}
-                  <div className="w-11 h-11 rounded-full border border-[#c9a96a] flex items-center justify-center text-[#b58b47] flex-shrink-0">
-                    {i === 0 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4 19L10 5m4 14l6-14"
-                        />
-                      </svg>
-                    )}
+            {/* GOLD HOVER */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-[linear-gradient(120deg,transparent,rgba(212,176,113,0.08),transparent)] translate-x-[-100%] group-hover:translate-x-[100%]" />
 
-                    {i === 1 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 21h18M5 21V8l7-5 7 5v13"
-                        />
-                      </svg>
-                    )}
+            <div className="relative z-10 flex items-center justify-between gap-4">
 
-                    {i === 2 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.055a12.083 12.083 0 01-6.16-9.477L12 14z"
-                        />
-                      </svg>
-                    )}
+              {/* LEFT */}
+              <div className="flex items-center gap-4">
 
-                    {i === 3 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4.318 6.318A4.5 4.5 0 008.5 13h7a4.5 4.5 0 10-.182-8.996A5.002 5.002 0 005.605 5.5"
-                        />
-                      </svg>
-                    )}
+                {/* ICON */}
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0">
 
-                    {i === 4 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 3h18v18H3V3zm4 4h10v10H7V7z"
-                        />
-                      </svg>
-                    )}
+                  {i === 0 && "✚"}
+                  {i === 1 && "⌂"}
+                  {i === 2 && "✦"}
+                  {i === 3 && "☁"}
+                  {i === 4 && "▣"}
+                  {i === 5 && "➜"}
 
-                    {i === 5 && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.7}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.5 19l19-7-19-7v5l13 2-13 2v5z"
-                        />
-                      </svg>
-                    )}
-                  </div>
-
-                  {/* TEXT */}
-                  <div>
-                    <h4 className="text-[#1c2d28] font-semibold text-[15px] uppercase">
-                      {l.name}
-                    </h4>
-
-                    <p className="text-[#777] text-sm mt-1">
-                      Premium Connectivity
-                    </p>
-                  </div>
                 </div>
 
-                {/* TIME */}
-                <div className="text-right flex-shrink-0">
-                  <p className="text-[#b58b47] font-semibold text-lg leading-none">
-                    {l.distance}
+                {/* TEXT */}
+                <div>
+                  <h4 className="text-[#17342d] font-semibold text-[15px] uppercase tracking-wide">
+                    {l.name}
+                  </h4>
+
+                  <p className="text-[#777] text-sm mt-1">
+                    Premium Connectivity
                   </p>
-
-                  <span className="text-[#999] uppercase text-[11px] tracking-wide">
-                    Mins
-                  </span>
                 </div>
-              </motion.div>
-            )
-          ))}
-        </div>
-      </motion.div>
-
-      {/* CENTER MAP */}
-      <motion.div
-        variants={fadeUp}
-        whileHover={{
-          scale: 1.01,
-        }}
-        className="relative bg-black overflow-hidden"
-      >
-
-        {/* DARK OVERLAY */}
-        <div className="absolute inset-0 bg-black/30 z-10" />
-
-        {/* MAP */}
-        {locationData.mapEmbedUrl ? (
-          <iframe
-            src={locationData.mapEmbedUrl}
-            className="w-full h-[700px] grayscale contrast-125 brightness-[0.7]"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allowFullScreen
-          />
-        ) : (
-          <div className="h-[700px] flex items-center justify-center text-white">
-            Map Not Available
-          </div>
-        )}
-
-        {/* CENTER BADGE */}
-        <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="w-40 h-40 rounded-full bg-[#0d241f]/90 border border-[#c6a56b] shadow-[0_0_40px_rgba(181,139,71,0.5)] flex flex-col items-center justify-center text-center p-4">
-
-            <div className="w-14 h-14 rounded-full border border-[#c6a56b] flex items-center justify-center mb-3">
-              <span className="text-[#d8b06b] text-xl">✦</span>
-            </div>
-
-            <p className="text-[#d8b06b] uppercase tracking-[3px] text-xs">
-              Prime
-            </p>
-
-            <h4 className="text-white text-xl mt-1 font-semibold">
-              Location
-            </h4>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* RIGHT SIDE */}
-      <motion.div
-        variants={fadeRight}
-        className="bg-gradient-to-b from-[#07211c] to-[#0d352b] text-white p-8"
-      >
-        <h3 className="text-[#d8b06b] text-3xl leading-tight font-light mb-10">
-          The Best <br /> Of Both Worlds
-        </h3>
-
-        <div className="space-y-9">
-
-          {[
-            "Peaceful low-density environment",
-            "Excellent connectivity to NCR",
-            "High growth potential & investment value",
-            "Secure well-planned infrastructure",
-          ].map((item, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ x: 5 }}
-              className="flex gap-4 items-start border-b border-white/10 pb-6"
-            >
-              <div className="w-12 h-12 rounded-full border border-[#c6a56b] flex items-center justify-center text-[#d8b06b] flex-shrink-0">
-                ✦
               </div>
 
-              <p className="text-white/80 leading-relaxed text-sm">
-                {item}
-              </p>
-            </motion.div>
-          ))}
+              {/* DISTANCE */}
+              <div className="text-right flex-shrink-0">
+
+                <p className="text-2xl font-light text-[#b58b47] leading-none">
+                  {l.distance}
+                </p>
+
+                <span className="uppercase tracking-[2px] text-[10px] text-[#999]">
+                  Away
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )
+      ))}
+    </div>
+  </motion.div>
+
+  {/* ================= MAP SECTION ================= */}
+  <motion.div
+    variants={fadeUp}
+    className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white"
+  >
+
+    {/* MAP TOP BAR */}
+    <div className="relative z-20 flex items-center justify-between px-7 py-5 border-b border-[#ece2d3] bg-white">
+
+      <div>
+        <p className="uppercase tracking-[3px] text-[#b58b47] text-xs font-semibold mb-2">
+          Interactive Location Map
+        </p>
+
+        <h3
+          className="text-3xl text-[#17342d] font-light"
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
+          }}
+        >
+          Discover The Neighborhood
+        </h3>
+      </div>
+
+      {/* BADGE */}
+      <div className="hidden md:flex items-center gap-3 bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d4b071] px-5 py-3 rounded-2xl border border-[#d4b071]/30 shadow-lg">
+
+        <div className="w-10 h-10 rounded-full border border-[#d4b071] flex items-center justify-center">
+          ✦
+        </div>
+
+        <div>
+          <p className="uppercase tracking-[2px] text-[10px]">
+            Prime
+          </p>
+
+          <p className="text-sm text-white">
+            Location Advantage
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* MAP */}
+    <div className="relative">
+
+      {locationData.mapEmbedUrl ? (
+        <iframe
+          src={locationData.mapEmbedUrl}
+          className="w-full h-[750px]"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+          style={{
+            border: 0,
+            filter:
+              "grayscale(0.15) contrast(1.05) brightness(0.98)",
+            pointerEvents: "auto",
+          }}
+        />
+      ) : (
+        <div className="h-[750px] flex items-center justify-center bg-[#08211c] text-white">
+          Map Not Available
+        </div>
+      )}
+
+      {/* FLOATING INFO CARD */}
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.7,
+        }}
+        className="absolute left-6 bottom-6 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
+      >
+
+        <div className="flex items-start gap-4">
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-xl">
+            ✦
+          </div>
+
+          <div>
+            <p className="uppercase tracking-[3px] text-[#b58b47] text-[11px] font-semibold mb-2">
+              Signature Address
+            </p>
+
+            <h4 className="text-[#17342d] text-xl font-semibold leading-tight">
+              Prime Sector Connectivity
+            </h4>
+
+            <p className="text-[#666] text-sm mt-3 leading-relaxed">
+              Positioned in one of the fastest growing luxury corridors with seamless access to major destinations.
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
+  </motion.div>
+</div>
 
     {/* BOTTOM STRIP */}
     <motion.div
