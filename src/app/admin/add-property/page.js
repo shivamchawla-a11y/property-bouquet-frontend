@@ -423,411 +423,535 @@ const buildOptions = (nodes, prefix = "") => {
     <div className="space-y-8">
 
         {/* ================= STEP 1 ================= */}
-        {step === 1 && (
-          <div className="section">
-            <h2 className="section-title">Core Details</h2>
+{step === 1 && (
+  <div className="section">
+    <h2 className="section-title">Core Details</h2>
 
-            <input className="input" placeholder="Slug"
-              value={form.slug}
-              onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))}
-            />
-
-            <input className="input" placeholder="Title"
-              value={form.coreDetails.title}
-              onChange={(e) => handleChange("coreDetails", "title", e.target.value)}
-            />
-
-            <div className="space-y-2">
-  <label className="text-sm text-gray-500">Developer</label>
-
-  {!useCustomDeveloper ? (
-    <select
-  className="input"
-  value={form.coreDetails.developerRef || ""}
-  onChange={(e) => {
-  if (e.target.value === "OTHER") {
-    setUseCustomDeveloper(true);
-
-    setForm(prev => ({
-      ...prev,
-      coreDetails: {
-        ...prev.coreDetails,
-        developerRef: "",
-        developerName: "",
-        developerLogo: "", // ✅ ADD THIS
+    <input
+      className="input"
+      placeholder="Slug"
+      value={form.slug}
+      onChange={(e) =>
+        setForm((prev) => ({
+          ...prev,
+          slug: e.target.value,
+        }))
       }
-    }));
+    />
 
-  } else {
-    const selectedDev = developers.find(
-      d => d._id === e.target.value
-    );
-
-    setUseCustomDeveloper(false);
-
-    setForm(prev => ({
-      ...prev,
-      coreDetails: {
-        ...prev.coreDetails,
-        developerRef: selectedDev?._id || "",
-        developerName: selectedDev?.name || "",
-        developerLogo: selectedDev?.logo || "", // ✅ IMPORTANT
+    <input
+      className="input"
+      placeholder="Title"
+      value={form.coreDetails.title}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "title",
+          e.target.value
+        )
       }
-    }));
-  }
-}}
->
-  <option value="">Select Developer</option>
+    />
 
-  {developers.map((dev) => (
-    <option key={dev._id} value={dev._id}>
-      {dev.name}
-    </option>
-  ))}
+    {/* ================= DEVELOPER ================= */}
+    <div className="space-y-2">
+      <label className="text-sm text-white/70 font-medium">
+        Developer
+      </label>
 
-  <option value="OTHER">+ Add Custom Developer</option>
-</select>
-  ) : (
-    <div className="flex gap-2">
-      <input
-  className="input flex-1"
-  placeholder="Enter developer name"
-  value={form.coreDetails.developerName}
-  onChange={(e) =>
-    handleChange("coreDetails", "developerName", e.target.value)
-  }
-/>
+      {!useCustomDeveloper ? (
+        <select
+          className="input"
+          value={form.coreDetails.developerRef || ""}
+          onChange={(e) => {
+            if (e.target.value === "OTHER") {
+              setUseCustomDeveloper(true);
 
-      <button
-        type="button"
-       onClick={() => {
-  setUseCustomDeveloper(false);
+              setForm((prev) => ({
+                ...prev,
+                coreDetails: {
+                  ...prev.coreDetails,
+                  developerRef: "",
+                  developerName: "",
+                  developerLogo: "",
+                },
+              }));
+            } else {
+              const selectedDev = developers.find(
+                (d) => d._id === e.target.value
+              );
 
-  setForm(prev => ({
-    ...prev,
-    coreDetails: {
-      ...prev.coreDetails,
-      developerRef: "",
-      developerName: "",
-    }
-  }));
-}}
-        className="px-3 rounded bg-gray-200 hover:bg-gray-300"
-      >
-        Cancel
-      </button>
+              setUseCustomDeveloper(false);
+
+              setForm((prev) => ({
+                ...prev,
+                coreDetails: {
+                  ...prev.coreDetails,
+                  developerRef:
+                    selectedDev?._id || "",
+                  developerName:
+                    selectedDev?.name || "",
+                  developerLogo:
+                    selectedDev?.logo || "",
+                },
+              }));
+            }
+          }}
+        >
+          <option value="">
+            Select Developer
+          </option>
+
+          {developers.map((dev) => (
+            <option
+              key={dev._id}
+              value={dev._id}
+            >
+              {dev.name}
+            </option>
+          ))}
+
+          <option value="OTHER">
+            + Add Custom Developer
+          </option>
+        </select>
+      ) : (
+        <div className="flex gap-2">
+          <input
+            className="input flex-1"
+            placeholder="Enter developer name"
+            value={
+              form.coreDetails.developerName
+            }
+            onChange={(e) =>
+              handleChange(
+                "coreDetails",
+                "developerName",
+                e.target.value
+              )
+            }
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              setUseCustomDeveloper(false);
+
+              setForm((prev) => ({
+                ...prev,
+                coreDetails: {
+                  ...prev.coreDetails,
+                  developerRef: "",
+                  developerName: "",
+                },
+              }));
+            }}
+            className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
-  )}
-            </div>
 
-              {/* ================= CATEGORY ================= */}
-<div className="space-y-2">
-  <label className="text-sm text-gray-500">Category</label>
+    {/* ================= CATEGORY ================= */}
+    <div className="space-y-2">
+      <label className="text-sm text-white/70 font-medium">
+        Category
+      </label>
 
-  {!useCustomCategory ? (
-    <select
-      className="input"
-      value={form.categoryData.categoryRef || ""}
-      onChange={(e) => {
-        if (e.target.value === "OTHER") {
-          setUseCustomCategory(true);
+      {!useCustomCategory ? (
+        <select
+          className="input"
+          value={form.categoryData.categoryRef || ""}
+          onChange={(e) => {
+            if (e.target.value === "OTHER") {
+              setUseCustomCategory(true);
 
-          setForm(prev => ({
-            ...prev,
-            categoryData: {
-              categoryRef: "",
-              categoryName: "",
-              customCategory: "",
+              setForm((prev) => ({
+                ...prev,
+                categoryData: {
+                  categoryRef: "",
+                  categoryName: "",
+                  customCategory: "",
+                },
+              }));
+            } else {
+              const selected = categories.find(
+                (c) => c._id === e.target.value
+              );
+
+              setUseCustomCategory(false);
+
+              setForm((prev) => ({
+                ...prev,
+                categoryData: {
+                  categoryRef:
+                    selected?._id || "",
+                  categoryName:
+                    selected?.name || "",
+                  customCategory: "",
+                },
+              }));
             }
-          }));
-        } else {
-          const selected = categories.find(
-            c => c._id === e.target.value
-          );
+          }}
+        >
+          <option value="">
+            Select Category
+          </option>
 
-          setUseCustomCategory(false);
+          {categories.map((cat) => (
+            <option
+              key={cat._id}
+              value={cat._id}
+            >
+              {cat.name}
+            </option>
+          ))}
 
-          setForm(prev => ({
-            ...prev,
-            categoryData: {
-              categoryRef: selected?._id || "",
-              categoryName: selected?.name || "",
-              customCategory: "",
+          <option value="OTHER">
+            + Add Custom Category
+          </option>
+        </select>
+      ) : (
+        <div className="flex gap-2">
+          <input
+            className="input flex-1"
+            placeholder="Enter custom category"
+            value={
+              form.categoryData.customCategory
             }
-          }));
-        }
-      }}
-    >
-      <option value="">Select Category</option>
-
-      {categories.map((cat) => (
-        <option key={cat._id} value={cat._id}>
-          {cat.name}
-        </option>
-      ))}
-
-      <option value="OTHER">+ Add Custom Category</option>
-    </select>
-  ) : (
-    <div className="flex gap-2">
-      <input
-        className="input flex-1"
-        placeholder="Enter custom category"
-        value={form.categoryData.customCategory}
-        onChange={(e) =>
-          setForm(prev => ({
-            ...prev,
-            categoryData: {
-              ...prev.categoryData,
-              customCategory: e.target.value,
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                categoryData: {
+                  ...prev.categoryData,
+                  customCategory:
+                    e.target.value,
+                },
+              }))
             }
-          }))
-        }
-      />
+          />
 
-      <button
-        type="button"
-        onClick={() => {
-          setUseCustomCategory(false);
+          <button
+            type="button"
+            onClick={() => {
+              setUseCustomCategory(false);
 
-          setForm(prev => ({
-            ...prev,
-            categoryData: {
-              categoryRef: "",
-              categoryName: "",
-              customCategory: "",
-            }
-          }));
-        }}
-        className="px-3 rounded bg-gray-200 hover:bg-gray-300"
-      >
-        Cancel
-      </button>
+              setForm((prev) => ({
+                ...prev,
+                categoryData: {
+                  categoryRef: "",
+                  categoryName: "",
+                  customCategory: "",
+                },
+              }));
+            }}
+            className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
-  )}
-</div>
 
-              <input className="input" placeholder="Starting Price"
-              value={form.coreDetails.startingPrice}
-              onChange={(e) => handleChange("coreDetails", "startingPrice", e.target.value)}
+    <input
+      className="input"
+      placeholder="Starting Price"
+      value={form.coreDetails.startingPrice}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "startingPrice",
+          e.target.value
+        )
+      }
+    />
+
+    <input
+      className="input"
+      placeholder="Max Price"
+      value={form.coreDetails.maxPrice}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "maxPrice",
+          e.target.value
+        )
+      }
+    />
+
+    {/* ================= HERO SECTION ================= */}
+    <div className="mt-8">
+      <h3 className="font-semibold mb-4 text-white">
+        Hero Section
+      </h3>
+
+      <div className="grid grid-cols-1 gap-4">
+        <input
+          className="input"
+          placeholder="propertyStatus Text"
+          value={
+            form.heroSection
+              ?.propertyStatus || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "propertyStatus",
+              e.target.value
+            )
+          }
+        />
+
+        <textarea
+          className="input min-h-[120px]"
+          placeholder="Hero Description"
+          value={
+            form.heroSection
+              ?.heroDescription || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "heroDescription",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Brochure Button Text"
+          value={
+            form.heroSection
+              ?.brochureButtonText || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "brochureButtonText",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Video Button Text"
+          value={
+            form.heroSection
+              ?.videoButtonText || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "videoButtonText",
+              e.target.value
+            )
+          }
+        />
+      </div>
+    </div>
+
+    {/* ================= TAGLINES ================= */}
+    <div className="mt-6">
+      <h4 className="font-medium mb-3 text-white">
+        Tagline Items
+      </h4>
+
+      {form.heroSection?.taglineItems?.map(
+        (item, index) => (
+          <div
+            key={index}
+            className="flex gap-2 mb-2"
+          >
+            <input
+              className="input flex-1"
+              placeholder={`Tagline ${
+                index + 1
+              }`}
+              value={item}
+              onChange={(e) => {
+                const updated = [
+                  ...form.heroSection
+                    .taglineItems,
+                ];
+
+                updated[index] =
+                  e.target.value;
+
+                setForm((prev) => ({
+                  ...prev,
+                  heroSection: {
+                    ...prev.heroSection,
+                    taglineItems: updated,
+                  },
+                }));
+              }}
             />
 
-            <input className="input" placeholder="Max Price"
-              value={form.coreDetails.maxPrice}
-              onChange={(e) => handleChange("coreDetails", "maxPrice", e.target.value)}
-            />
+            <button
+              type="button"
+              onClick={() => {
+                const updated =
+                  form.heroSection.taglineItems.filter(
+                    (_, i) => i !== index
+                  );
 
-
-      {/* ================= HERO SECTION ================= */}
-<div className="mt-8">
-  <h3 className="font-semibold mb-4">
-    Hero Section
-  </h3>
-
-  <div className="grid grid-cols-1 gap-4">
-
-    <input
-      className="input"
-      placeholder="propertyStatus Text"
-      value={form.heroSection?.propertyStatus || ""}
-      onChange={(e) =>
-        handleChange(
-          "heroSection",
-          "propertyStatus",
-          e.target.value
-        )
-      }
-    />
-
-    <textarea
-      className="input min-h-[120px]"
-      placeholder="Hero Description"
-      value={form.heroSection?.heroDescription || ""}
-      onChange={(e) =>
-        handleChange(
-          "heroSection",
-          "heroDescription",
-          e.target.value
-        )
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Brochure Button Text"
-      value={form.heroSection?.brochureButtonText || ""}
-      onChange={(e) =>
-        handleChange(
-          "heroSection",
-          "brochureButtonText",
-          e.target.value
-        )
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Video Button Text"
-      value={form.heroSection?.videoButtonText || ""}
-      onChange={(e) =>
-        handleChange(
-          "heroSection",
-          "videoButtonText",
-          e.target.value
-        )
-      }
-    />
-  </div>
-</div>
-
-<div className="mt-6">
-  <h4 className="font-medium mb-3">
-    Tagline Items
-  </h4>
-
-  {form.heroSection?.taglineItems?.map((item, index) => (
-    <div key={index} className="flex gap-2 mb-2">
-
-      <input
-        className="input flex-1"
-        placeholder={`Tagline ${index + 1}`}
-        value={item}
-        onChange={(e) => {
-          const updated =
-            [...form.heroSection.taglineItems];
-
-          updated[index] = e.target.value;
-
-          setForm(prev => ({
-            ...prev,
-            heroSection: {
-              ...prev.heroSection,
-              taglineItems: updated,
-            }
-          }));
-        }}
-      />
-
-      <button
-        type="button"
-        onClick={() => {
-          const updated =
-            form.heroSection.taglineItems.filter(
-              (_, i) => i !== index
-            );
-
-          setForm(prev => ({
-            ...prev,
-            heroSection: {
-              ...prev.heroSection,
-              taglineItems: updated,
-            }
-          }));
-        }}
-        className="px-4 bg-red-500 text-white rounded"
-      >
-        X
-      </button>
-    </div>
-  ))}
-
-  <button
-    type="button"
-    onClick={() => {
-      setForm(prev => ({
-        ...prev,
-        heroSection: {
-          ...prev.heroSection,
-          taglineItems: [
-            ...prev.heroSection.taglineItems,
-            "",
-          ],
-        }
-      }));
-    }}
-    className="mt-2 px-4 py-2 bg-gold text-black rounded"
-  >
-    + Add Tagline
-  </button>
-</div>
-            <div className="mt-6">
-  <h3 className="font-semibold mb-2">Key Metrics</h3>
-
-  <div className="grid grid-cols-2 gap-4">
-
-    <input
-      className="input"
-      placeholder="Status (e.g. New Launch)"
-      value={form.keyMetrics.status}
-      onChange={(e) =>
-        handleChange("keyMetrics", "status", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Possession (e.g. 2028)"
-      value={form.keyMetrics.possession}
-      onChange={(e) =>
-        handleChange("keyMetrics", "possession", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Land Area (e.g. 10 Acres)"
-      value={form.keyMetrics.landArea}
-      onChange={(e) =>
-        handleChange("keyMetrics", "landArea", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Total Units"
-      value={form.keyMetrics.totalUnits || ""}
-      onChange={(e) =>
-        handleChange("keyMetrics", "totalUnits", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Total Towers"
-      value={form.keyMetrics.totalTowers || ""}
-      onChange={(e) =>
-        handleChange("keyMetrics", "totalTowers", e.target.value)
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Floors"
-      value={form.keyMetrics.floors || ""}
-      onChange={(e) =>
-        handleChange("keyMetrics", "floors", e.target.value)
-      }
-    />
-
-    <input
-      className="input col-span-2"
-      placeholder="RERA Number"
-      value={form.keyMetrics.reraNumber || ""}
-      onChange={(e) =>
-        handleChange("keyMetrics", "reraNumber", e.target.value)
-      }
-    />
-
-  </div>
-</div>
+                setForm((prev) => ({
+                  ...prev,
+                  heroSection: {
+                    ...prev.heroSection,
+                    taglineItems: updated,
+                  },
+                }));
+              }}
+              className="px-4 bg-red-500 text-white rounded-xl"
+            >
+              X
+            </button>
           </div>
-          
-        )}
+        )
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          setForm((prev) => ({
+            ...prev,
+            heroSection: {
+              ...prev.heroSection,
+              taglineItems: [
+                ...prev.heroSection
+                  .taglineItems,
+                "",
+              ],
+            },
+          }));
+        }}
+        className="mt-2 px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+      >
+        + Add Tagline
+      </button>
+    </div>
+
+    {/* ================= KEY METRICS ================= */}
+    <div className="mt-6">
+      <h3 className="font-semibold mb-2 text-white">
+        Key Metrics
+      </h3>
+
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          className="input"
+          placeholder="Status (e.g. New Launch)"
+          value={form.keyMetrics.status}
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "status",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Possession (e.g. 2028)"
+          value={form.keyMetrics.possession}
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "possession",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Land Area (e.g. 10 Acres)"
+          value={form.keyMetrics.landArea}
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "landArea",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Total Units"
+          value={
+            form.keyMetrics.totalUnits ||
+            ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "totalUnits",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Total Towers"
+          value={
+            form.keyMetrics.totalTowers ||
+            ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "totalTowers",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Floors"
+          value={
+            form.keyMetrics.floors || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "floors",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input col-span-2"
+          placeholder="RERA Number"
+          value={
+            form.keyMetrics.reraNumber ||
+            ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "keyMetrics",
+              "reraNumber",
+              e.target.value
+            )
+          }
+        />
+      </div>
+    </div>
+  </div>
+)}
 
         
 
         {/* ================= STEP 2 ================= */}
-        {/* ================= STEP 2 ================= */}
+{/* ================= STEP 2 ================= */}
 {step === 2 && (
   <div className="section">
 
@@ -836,9 +960,9 @@ const buildOptions = (nodes, prefix = "") => {
     </h2>
 
     {/* ================= ABOUT SECTION ================= */}
-    <div className="bg-white rounded-2xl p-6 border mb-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-      <h3 className="font-semibold text-xl mb-5">
+      <h3 className="font-semibold text-xl mb-5 text-white">
         About Section
       </h3>
 
@@ -870,31 +994,35 @@ const buildOptions = (nodes, prefix = "") => {
         }
       />
 
-      {/* TITLE LINE 1 */}
+      {/* ABOUT TITLE LINE 1 */}
       <input
         className="input mb-4"
         placeholder="About Title Line 1"
         value={form.overview.aboutTitleLine1 || ""}
         onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutTitleLine1",
-            e.target.value
-          )
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              aboutTitleLine1: e.target.value,
+            },
+          }))
         }
       />
 
-      {/* TITLE LINE 2 */}
+      {/* ABOUT TITLE LINE 2 */}
       <input
         className="input mb-4"
         placeholder="About Title Line 2"
         value={form.overview.aboutTitleLine2 || ""}
         onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutTitleLine2",
-            e.target.value
-          )
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              aboutTitleLine2: e.target.value,
+            },
+          }))
         }
       />
 
@@ -942,11 +1070,11 @@ const buildOptions = (nodes, prefix = "") => {
     </div>
 
     {/* ================= FEATURE BAR ================= */}
-    <div className="bg-white rounded-2xl p-6 border mb-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
       <div className="flex items-center justify-between mb-5">
 
-        <h3 className="font-semibold text-xl">
+        <h3 className="font-semibold text-xl text-white">
           Feature Bar
         </h3>
 
@@ -969,7 +1097,7 @@ const buildOptions = (nodes, prefix = "") => {
               updated
             );
           }}
-          className="bg-black text-white px-4 py-2 rounded-xl"
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
         >
           + Add Feature
         </button>
@@ -979,13 +1107,13 @@ const buildOptions = (nodes, prefix = "") => {
         (item, index) => (
           <div
             key={index}
-            className="border rounded-2xl p-5 mb-5 bg-[#fafafa]"
+            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
           >
 
             {/* TOP */}
             <div className="flex items-center justify-between mb-4">
 
-              <h4 className="font-semibold">
+              <h4 className="font-semibold text-white">
                 Feature #{index + 1}
               </h4>
 
@@ -1081,45 +1209,51 @@ const buildOptions = (nodes, prefix = "") => {
     </div>
 
     {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
-    <div className="bg-white rounded-2xl p-6 border mb-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-      <h3 className="font-semibold text-xl mb-5">
+      <h3 className="font-semibold text-xl mb-5 text-white">
         Property Highlights Header
       </h3>
 
+      {/* FIXED ISSUE */}
       <input
         className="input mb-4"
         placeholder="Highlights Heading"
         value={form.overview.highlightsHeading || ""}
         onChange={(e) =>
-          handleChange(
-            "overview",
-            "highlightsHeading",
-            e.target.value
-          )
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              highlightsHeading: e.target.value,
+            },
+          }))
         }
       />
 
+      {/* FIXED ISSUE */}
       <input
         className="input"
         placeholder="Highlights Subheading"
         value={form.overview.highlightsSubheading || ""}
         onChange={(e) =>
-          handleChange(
-            "overview",
-            "highlightsSubheading",
-            e.target.value
-          )
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              highlightsSubheading: e.target.value,
+            },
+          }))
         }
       />
     </div>
 
     {/* ================= HIGHLIGHTS CARDS ================= */}
-    <div className="bg-white rounded-2xl p-6 border mb-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
       <div className="flex items-center justify-between mb-5">
 
-        <h3 className="font-semibold text-xl">
+        <h3 className="font-semibold text-xl text-white">
           Highlight Cards
         </h3>
 
@@ -1142,7 +1276,7 @@ const buildOptions = (nodes, prefix = "") => {
               updated
             );
           }}
-          className="bg-black text-white px-4 py-2 rounded-xl"
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
         >
           + Add Highlight
         </button>
@@ -1152,13 +1286,13 @@ const buildOptions = (nodes, prefix = "") => {
         (item, index) => (
           <div
             key={index}
-            className="border rounded-2xl p-5 mb-5 bg-[#fafafa]"
+            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
           >
 
             {/* TOP */}
             <div className="flex items-center justify-between mb-4">
 
-              <h4 className="font-semibold">
+              <h4 className="font-semibold text-white">
                 Highlight #{index + 1}
               </h4>
 
@@ -1254,9 +1388,9 @@ const buildOptions = (nodes, prefix = "") => {
     </div>
 
     {/* ================= QUOTE SECTION ================= */}
-    <div className="bg-white rounded-2xl p-6 border">
+    <div className="glass p-6 rounded-2xl border border-white/10">
 
-      <h3 className="font-semibold text-xl mb-5">
+      <h3 className="font-semibold text-xl mb-5 text-white">
         Quote Section
       </h3>
 
@@ -1277,77 +1411,433 @@ const buildOptions = (nodes, prefix = "") => {
 )}
 
         {/* ================= STEP 3 ================= */}
-        {step === 3 && (
+{step === 3 && (
   <div className="section">
-    <h2>Configurations</h2>
 
-    {form.unitConfigurations.map((u, i) => (
-      <div key={i} className="grid grid-cols-5 gap-2">
-        
-        <input
-          className="input"
-          value={u.unitType}
-          placeholder="Type"
-          onChange={(e) => {
-            const arr = [...form.unitConfigurations];
-            arr[i].unitType = e.target.value;
-            setForm(prev => ({ ...prev, unitConfigurations: arr }));
-          }}
-        />
+    {/* ================= AMENITIES HEADER ================= */}
+<div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-        <input
-          className="input"
-          value={u.area}
-          placeholder="Area"
-          onChange={(e) => {
-            const arr = [...form.unitConfigurations];
-            arr[i].area = e.target.value;
-            setForm(prev => ({ ...prev, unitConfigurations: arr }));
-          }}
-        />
+  <h3 className="font-semibold text-xl text-white mb-5">
+    Amenities Section Content
+  </h3>
 
-        <input
-          className="input"
-          value={u.price}
-          placeholder="Price (e.g. 5 Cr)"
-          onChange={(e) => {
-            const arr = [...form.unitConfigurations];
-            arr[i].price = e.target.value; // ✅ STRING
-            setForm(prev => ({ ...prev, unitConfigurations: arr }));
-          }}
-        />
+  {/* SECTION NUMBER */}
+  <input
+    className="input mb-4"
+    placeholder="Section Number (Example: 04)"
+    value={form.overview.amenitiesSectionNumber || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesSectionNumber",
+        e.target.value
+      )
+    }
+  />
 
-        <input
-          className="input"
-          value={u.paymentPlan}
-          placeholder="Plan"
-          onChange={(e) => {
-            const arr = [...form.unitConfigurations];
-            arr[i].paymentPlan = e.target.value;
-            setForm(prev => ({ ...prev, unitConfigurations: arr }));
-          }}
-        />
+  {/* SECTION LABEL */}
+  <input
+    className="input mb-4"
+    placeholder="Section Label"
+    value={form.overview.amenitiesSectionLabel || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesSectionLabel",
+        e.target.value
+      )
+    }
+  />
 
-        <button onClick={() => {
-          const arr = form.unitConfigurations.filter((_, idx) => idx !== i);
-          setForm(prev => ({ ...prev, unitConfigurations: arr }));
-        }}>
-          ❌
-        </button>
+  {/* HEADING LINE 1 */}
+  <input
+    className="input mb-4"
+    placeholder="Heading Line 1"
+    value={form.overview.amenitiesHeadingLine1 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesHeadingLine1",
+        e.target.value
+      )
+    }
+  />
+
+  {/* HEADING LINE 2 (GOLD) */}
+  <input
+    className="input mb-4"
+    placeholder="Heading Line 2 (Gold Text)"
+    value={form.overview.amenitiesHeadingLine2 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesHeadingLine2",
+        e.target.value
+      )
+    }
+  />
+
+  {/* HEADING LINE 3 */}
+  <input
+    className="input mb-4"
+    placeholder="Heading Line 3"
+    value={form.overview.amenitiesHeadingLine3 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesHeadingLine3",
+        e.target.value
+      )
+    }
+  />
+
+  {/* SUBHEADING */}
+  <textarea
+    className="input min-h-[120px]"
+    placeholder="Amenities Subheading"
+    value={form.overview.amenitiesSubheading || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "amenitiesSubheading",
+        e.target.value
+      )
+    }
+  />
+</div>
+
+    <h2 className="section-title">
+      Amenities
+    </h2>
+
+    {/* ================= SELECT AMENITIES ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl text-white mb-5">
+        Select Amenities
+      </h3>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+        {AMENITIES.map((item) => {
+
+          const selected =
+            form.overview.highlights.some((h) => {
+
+              const name =
+                typeof h === "string"
+                  ? h
+                  : h.name;
+
+              return name === item.name;
+            });
+
+          const Icon = item.icon;
+
+          return (
+            <label
+              key={item.name}
+              className={`
+                flex items-center gap-3 cursor-pointer
+                p-4 rounded-2xl border transition-all
+                ${
+                  selected
+                    ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
+                    : "bg-white/5 border-white/10 text-white/70"
+                }
+              `}
+            >
+
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={() => {
+
+                  let updated;
+
+                  if (selected) {
+
+                    updated =
+                      form.overview.highlights.filter(
+                        (h) => {
+
+                          const name =
+                            typeof h === "string"
+                              ? h
+                              : h.name;
+
+                          return name !== item.name;
+                        }
+                      );
+
+                  } else {
+
+                    updated = [
+                      ...form.overview.highlights,
+                      {
+                        name: item.name,
+                        icon: item.name,
+                      },
+                    ];
+                  }
+
+                  handleChange(
+                    "overview",
+                    "highlights",
+                    updated
+                  );
+                }}
+              />
+
+              <Icon
+                size={18}
+                className="text-[#D4AF37]"
+              />
+
+              <span className="text-sm font-medium">
+                {item.name}
+              </span>
+            </label>
+          );
+        })}
       </div>
-    ))}
+    </div>
 
-    <button onClick={() =>
-      setForm(prev => ({
-        ...prev,
-        unitConfigurations: [
-          ...prev.unitConfigurations,
-          { unitType: "", area: "", price: "", paymentPlan: "" }
-        ]
-      }))
-    }>
-      + Add Configuration
-    </button>
+    {/* ================= CUSTOM AMENITY ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl text-white mb-5">
+        Add Custom Amenity
+      </h3>
+
+      {/* INPUT */}
+      <input
+        className="input w-full"
+        placeholder="Enter amenity name"
+        value={customAmenity}
+        onChange={(e) =>
+          setCustomAmenity(e.target.value)
+        }
+      />
+
+      {/* ICON SELECTOR */}
+      <div className="mt-6">
+
+        <p className="text-sm text-white/60 mb-4">
+          Select Icon
+        </p>
+
+        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+
+          {CUSTOM_ICONS.map((item) => {
+
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.name}
+                type="button"
+                onClick={() =>
+                  setSelectedCustomIcon(
+                    item.name
+                  )
+                }
+                className={`
+                  p-4 rounded-2xl border
+                  flex flex-col items-center gap-2
+                  transition-all
+                  ${
+                    selectedCustomIcon ===
+                    item.name
+                      ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
+                      : "bg-white/5 border-white/10 text-white/70"
+                  }
+                `}
+              >
+
+                <Icon size={22} />
+
+                <span className="text-xs">
+                  {item.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ADD BUTTON */}
+      <button
+        type="button"
+        className="
+          mt-6 px-5 py-3 rounded-xl
+          bg-[#D4AF37]
+          text-black font-semibold
+          hover:opacity-90 transition
+        "
+        onClick={() => {
+
+          if (!customAmenity.trim())
+            return;
+
+          const amenityObject = {
+            name: customAmenity,
+            icon: selectedCustomIcon,
+          };
+
+          handleChange(
+            "overview",
+            "highlights",
+            [
+              ...form.overview.highlights,
+              amenityObject,
+            ]
+          );
+
+          setCustomAmenity("");
+          setSelectedCustomIcon("Home");
+        }}
+      >
+        + Add Custom Amenity
+      </button>
+    </div>
+
+    {/* ================= SELECTED AMENITIES ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
+
+      <h3 className="font-semibold text-xl text-white mb-5">
+        Selected Amenities
+      </h3>
+
+      <div className="flex flex-wrap gap-3">
+
+        {form.overview.highlights.map(
+          (item, i) => {
+
+            const itemName =
+              typeof item === "string"
+                ? item
+                : item.name;
+
+            return (
+              <div
+                key={i}
+                className="
+                  bg-[#D4AF37]
+                  text-black
+                  px-4 py-2
+                  rounded-full
+                  flex items-center gap-2
+                  font-medium
+                "
+              >
+
+                {itemName}
+
+                <button
+                  type="button"
+                  onClick={() => {
+
+                    const updated =
+                      form.overview.highlights.filter(
+                        (_, idx) =>
+                          idx !== i
+                      );
+
+                    handleChange(
+                      "overview",
+                      "highlights",
+                      updated
+                    );
+                  }}
+                  className="text-black"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          }
+        )}
+      </div>
+    </div>
+
+    {/* ================= BOTTOM STRIP ================= */}
+<div className="glass p-6 rounded-2xl border border-white/10 mt-8">
+
+  <h3 className="font-semibold text-xl text-white mb-5">
+    Bottom Strip Content
+  </h3>
+
+  {/* LEFT TITLE 1 */}
+  <input
+    className="input mb-4"
+    placeholder="Left Title Line 1"
+    value={form.overview.bottomStripTitle1 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "bottomStripTitle1",
+        e.target.value
+      )
+    }
+  />
+
+  {/* LEFT TITLE 2 */}
+  <input
+    className="input mb-4"
+    placeholder="Left Title Line 2"
+    value={form.overview.bottomStripTitle2 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "bottomStripTitle2",
+        e.target.value
+      )
+    }
+  />
+
+  {/* FEATURE 1 */}
+  <input
+    className="input mb-4"
+    placeholder="Feature 1"
+    value={form.overview.bottomStripFeature1 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "bottomStripFeature1",
+        e.target.value
+      )
+    }
+  />
+
+  {/* FEATURE 2 */}
+  <input
+    className="input mb-4"
+    placeholder="Feature 2"
+    value={form.overview.bottomStripFeature2 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "bottomStripFeature2",
+        e.target.value
+      )
+    }
+  />
+
+  {/* FEATURE 3 */}
+  <input
+    className="input"
+    placeholder="Feature 3"
+    value={form.overview.bottomStripFeature3 || ""}
+    onChange={(e) =>
+      handleChange(
+        "overview",
+        "bottomStripFeature3",
+        e.target.value
+      )
+    }
+  />
+</div>
   </div>
 )}
 

@@ -1354,38 +1354,40 @@ const locationName = getLocationName();
           <div className="w-8 h-[1px] bg-[#c9a64b]" />
 
           {/* SECTION LABEL */}
-          <p
-            className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 500,
-            }}
-          >
-            {aboutSectionLabel}
-          </p>
+<p
+  className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
+  style={{
+    fontFamily: "Inter, sans-serif",
+    fontWeight: 500,
+  }}
+>
+  {overview?.aboutLabel || "Luxury Living"}
+</p>
         </div>
 
         {/* ================= TITLE ================= */}
         <h2
-          className="
-            text-[#183126]
-            text-[38px]
-            md:text-[62px]
-            leading-[0.98]
-            tracking-[-2.5px]
-            max-w-[620px]
-          "
-          style={{
-            fontFamily: "Georgia, Times New Roman, serif",
-            fontWeight: 400,
-          }}
-        >
-          {aboutHeadingLine1}
+  className="
+    text-[#183126]
+    text-[38px]
+    md:text-[62px]
+    leading-[0.98]
+    tracking-[-2.5px]
+    max-w-[620px]
+  "
+  style={{
+    fontFamily: "Georgia, Times New Roman, serif",
+    fontWeight: 400,
+  }}
+>
+  {overview?.aboutTitleLine1 ||
+    "Crafted For Elevated"}
 
-          <br />
+  <br />
 
-          {aboutHeadingLine2}
-        </h2>
+  {overview?.aboutTitleLine2 ||
+    "Luxury Living"}
+</h2>
 
         {/* ================= GOLD DIVIDER ================= */}
         <div className="flex items-center gap-3 mt-6 mb-7">
@@ -1911,7 +1913,7 @@ id="amenities"
           fontWeight: 600,
         }}
       >
-        04
+        {overview?.amenitiesSectionNumber || "04"}
       </p>
 
       <div className="w-8 h-[1px] bg-[#c9a64b]" />
@@ -1922,7 +1924,8 @@ id="amenities"
           fontFamily: "Inter, sans-serif",
         }}
       >
-        Project Amenities
+        {overview?.amenitiesSectionLabel ||
+  "Project Amenities"}
       </p>
     </motion.div>
 
@@ -1944,12 +1947,17 @@ id="amenities"
         fontWeight: 400,
       }}
     >
-      Every Detail.
-      <span className="text-[#d7b367]">
-        {" "}
-        Elevated{" "}
-      </span>
-      Beyond Expectation.
+      {overview?.amenitiesHeadingLine1 ||
+  "Every Detail."}
+
+<span className="text-[#d7b367]">
+  {" "}
+  {overview?.amenitiesHeadingLine2 ||
+    "Elevated"}{" "}
+</span>
+
+{overview?.amenitiesHeadingLine3 ||
+  "Beyond Expectation."}
     </motion.h2>
 
     {/* GOLD DIVIDER */}
@@ -1982,9 +1990,8 @@ id="amenities"
         fontWeight: 300,
       }}
     >
-      Eldeco Camelot is a seamless blend of thoughtful design,
-      cutting-edge technology and world-class amenities curated
-      for an extraordinary lifestyle.
+      {overview?.amenitiesSubheading ||
+  "Eldeco Camelot is a seamless blend of thoughtful design, cutting-edge technology and world-class amenities curated for an extraordinary lifestyle."}
     </motion.p>
 
     {/* ================= PREMIUM GRID ================= */}
@@ -2165,7 +2172,8 @@ id="amenities"
                 fontWeight: 400,
               }}
             >
-              Thoughtfully by Design.
+              {overview?.bottomStripTitle1 ||
+  "Thoughtfully by Design."}
             </p>
 
             <p
@@ -2180,7 +2188,8 @@ id="amenities"
                 fontWeight: 400,
               }}
             >
-              Crafted for the Exceptional.
+              {overview?.bottomStripTitle2 ||
+  "Crafted for the Exceptional."}
             </p>
           </div>
         </div>
@@ -2189,10 +2198,15 @@ id="amenities"
         <div className="grid grid-cols-1 md:grid-cols-3 md:col-span-3">
 
           {[
-            "Premium Specifications",
-            "Finest Quality Materials",
-            "Curated for Discerning Families",
-          ].map((item, index) => (
+  overview?.bottomStripFeature1 ||
+    "Premium Specifications",
+
+  overview?.bottomStripFeature2 ||
+    "Finest Quality Materials",
+
+  overview?.bottomStripFeature3 ||
+    "Curated for Discerning Families",
+].map((item, index) => (
             <div
               key={index}
               className="

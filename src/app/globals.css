@@ -36,25 +36,42 @@ body {
 
 /* 🧾 INPUT (ELITE STYLE) */
 .input {
-  @apply w-full p-3 rounded-xl 
-         bg-white/80 backdrop-blur 
-         border border-gray-200 
-         focus:ring-2 focus:ring-primary 
-         outline-none transition duration-200;
+  @apply w-full p-4 rounded-2xl
+         bg-white/10 text-white
+         backdrop-blur-xl
+         border border-white/15
+         outline-none transition duration-200
+         placeholder:text-white/50
+         focus:border-[#D4AF37]
+         focus:ring-2 focus:ring-[#D4AF37]/40;
 }
 
-/* ✨ FLOAT LABEL WRAPPER */
-.input-group {
-  @apply relative;
+/* Placeholder */
+.input::placeholder {
+  color: rgba(255,255,255,0.55);
 }
 
+/* Select Dropdown */
+select.input {
+  @apply text-white bg-white/10;
+}
+
+/* Dropdown Options */
+select.input option {
+  background: #17352c;
+  color: white;
+}
+
+/* 🌟 FLOAT LABEL */
 .input-label {
-  @apply absolute left-3 top-3 text-gray-500 text-sm transition-all;
+  @apply absolute left-4 top-4
+         text-white/60 text-sm transition-all;
 }
 
 .input:focus + .input-label,
 .input:not(:placeholder-shown) + .input-label {
-  @apply -top-2 text-xs text-primary bg-white px-1;
+  @apply -top-2 text-xs text-[#D4AF37]
+         bg-[#17352c] px-2 rounded;
 }
 
 /* 💎 BUTTON */
