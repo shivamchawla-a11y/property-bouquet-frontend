@@ -2612,7 +2612,7 @@ const locationName = getLocationName();
     </motion.div>
 
     {/* ================= MAIN GRID ================= */}
-<div className="grid lg:grid-cols-[360px_1fr] gap-6">
+<div className="grid lg:grid-cols-[360px_1fr] gap-6 items-stretch">
 
   {/* ================= LEFT SIDE LOCATION CARDS ================= */}
   <motion.div
@@ -2649,7 +2649,7 @@ const locationName = getLocationName();
     </div>
 
     {/* LOCATION LIST */}
-    <div className="p-5 space-y-4 bg-[#fcfaf7]">
+    <div className="p-5 space-y-4 bg-[#fcfaf7] h-full">
 
       {locationData.landmarks?.map((l, i) => (
         l.name && (
@@ -2718,7 +2718,7 @@ const locationName = getLocationName();
   {/* ================= MAP SECTION ================= */}
   <motion.div
     variants={fadeUp}
-    className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white"
+    className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
   >
 
     {/* MAP TOP BAR */}
@@ -2759,12 +2759,12 @@ const locationName = getLocationName();
     </div>
 
     {/* MAP */}
-    <div className="relative">
+    <div className="relative flex-1 min-h-[720px]">
 
-      {locationData.mapEmbedUrl ? (
-        <iframe
-          src={locationData.mapEmbedUrl}
-          className="w-full h-[750px]"
+  {locationData.mapEmbedUrl ? (
+    <iframe
+      src={locationData.mapEmbedUrl}
+      className="absolute inset-0 w-full h-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           allowFullScreen
@@ -2794,7 +2794,7 @@ const locationName = getLocationName();
         transition={{
           duration: 0.7,
         }}
-        className="absolute left-6 bottom-6 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
+       className="absolute left-6 bottom-8 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
       >
 
         <div className="flex items-start gap-4">
