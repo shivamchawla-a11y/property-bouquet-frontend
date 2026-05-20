@@ -131,9 +131,33 @@ heroSection: {
   highlights: [],
 },
 
+configurationSection: {
+  sectionNumber: "05",
+  sectionLabel: "Residence Configurations",
+
+  titleLine1: "Residences Tailored",
+
+  titleLine2: "to Your Lifestyle",
+
+  subheading:
+    "Thoughtfully designed layouts that redefine space, privacy and luxury.",
+
+  features: [],
+
+  buttonText: "View Details",
+},
+
     unitConfigurations: [
-      { unitType: "", area: "", price: "", paymentPlan: "" }
-    ],
+  {
+    unitType: "",
+    area: "",
+    price: "",
+    paymentPlan: "",
+    bedrooms: "",
+    bathrooms: "",
+    balconies: "",
+  },
+],
 
     media: {
       heroImageUrl: "",
@@ -151,9 +175,22 @@ heroSection: {
 },
 
     gatedContent: {
-      brochurePdfUrl: "",
-      floorPlans: [{ title: "", image: "" }],
+  brochurePdfUrl: "",
+  requireLogin: true,
+
+  floorPlans: [
+    {
+      unitType: "",
+      area: "",
+      price: "",
+      paymentPlan: "",
+      bedrooms: "",
+      bathrooms: "",
+      balconies: "",
+      image: "",
     },
+  ],
+},
 
     categoryData: {
   categoryRef: "",
@@ -269,17 +306,19 @@ heroSection: {
     }
 
     // 🔥 CLEAN CONFIGS
-    const cleanedConfigurations = form.unitConfigurations.filter(
-      (u) =>
-        u.unitType?.trim() ||
-        u.area?.trim() ||
-        u.price?.trim() ||
-        u.paymentPlan?.trim()
-    );
+    const cleanedConfigurations =
+  form.unitConfigurations.filter(
+    (u) =>
+      u.unitType?.trim() ||
+      u.area?.trim() ||
+      u.price?.trim() ||
+      u.paymentPlan?.trim() ||
+      u.bedrooms?.trim() ||
+      u.bathrooms?.trim() ||
+      u.balconies?.trim()
+  );
 
-    const validConfigurations = cleanedConfigurations.filter(
-      (u) => u.price && u.price.trim() !== ""
-    );
+    const validConfigurations = cleanedConfigurations;
 
     const cleanedForm = {
   ...form,
@@ -315,6 +354,10 @@ heroSection: {
   ...form.keyMetrics,
   totalUnits: Number(form.keyMetrics.totalUnits) || 0,
   totalTowers: Number(form.keyMetrics.totalTowers) || 0,
+},
+
+  configurationSection: {
+  ...form.configurationSection,
 },
 
   unitConfigurations: validConfigurations,
@@ -369,57 +412,91 @@ const buildOptions = (nodes, prefix = "") => {
   return options;
 };
 
-  return (
-    <div className="app-bg p-10">
+ return (
+  <div className="app-bg p-4 md:p-6 lg:p-10 overflow-x-hidden min-h-screen">
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-10">
-  <div>
-    <h1 className="text-4xl font-bold text-white">Add Property</h1>
-    <p className="text-gray-300">Step {step} of 6</p>
-  </div>
+    {/* HEADER */}
+    <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10">
 
-  <div className="flex items-center gap-4">
-    {/* PREVIEW TOGGLE */}
-    <button
-      onClick={() => setPreviewMode(!previewMode)}
-      className="bg-white text-black px-4 py-2 rounded-lg font-semibold"
-    >
-      {previewMode ? "← Back to Edit" : "👁 Full Preview"}
-    </button>
+      {/* LEFT */}
+      <div>
+        <h1 className="text-4xl font-bold text-white">
+          Add Property
+        </h1>
 
-    <button
-  onClick={() => setFullFormMode(!fullFormMode)}
-  className="bg-white text-black px-4 py-2 rounded-lg font-semibold"
->
-  {fullFormMode ? "↔ Split View" : "📝 Full Form"}
-</button>
+        <p className="text-gray-300">
+          Step {step} of 6
+        </p>
+      </div>
 
-    {/* PROGRESS BAR */}
-    <div className="w-64 bg-white/20 rounded-full h-2">
-      <div
-        className="bg-gold h-2 rounded-full transition-all"
-        style={{ width: `${(step / 6) * 100}%` }}
-      />
+      {/* RIGHT */}
+      <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
+
+        {/* BUTTONS */}
+        <div className="flex flex-wrap gap-3">
+
+          {/* PREVIEW BUTTON */}
+          <button
+            onClick={() =>
+              setPreviewMode(!previewMode)
+            }
+            className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
+          >
+            {previewMode
+              ? "← Back to Edit"
+              : "👁 Full Preview"}
+          </button>
+
+          {/* FORM MODE BUTTON */}
+          <button
+            onClick={() =>
+              setFullFormMode(!fullFormMode)
+            }
+            className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
+          >
+            {fullFormMode
+              ? "↔ Split View"
+              : "📝 Full Form"}
+          </button>
+        </div>
+
+        {/* PROGRESS */}
+        <div className="w-full md:w-64 bg-white/20 rounded-full h-2 overflow-hidden">
+          <div
+            className="bg-gold h-2 rounded-full transition-all"
+            style={{
+              width: `${(step / 6) * 100}%`,
+            }}
+          />
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-      {previewMode ? (
-  // ================= FULL PREVIEW MODE =================
-  <div className="w-full h-[80vh] overflow-y-auto bg-white rounded-xl p-4">
-    <PropertyPreview form={previewData} />
-  </div>
-) : (
-  // ================= EDIT MODE =================
-  <div className="flex gap-6">
+    {previewMode ? (
 
-  {/* LEFT SIDE — FORM */}
-  <div
-  className={`${
-    fullFormMode ? "w-full" : "w-1/2"
-  } overflow-y-auto h-[80vh] pr-4`}
->
+      // ================= FULL PREVIEW =================
+      <div className="w-full max-w-full h-[80vh] overflow-y-auto overflow-x-hidden bg-white rounded-xl p-2 md:p-4">
+
+        <div className="w-full overflow-x-hidden">
+          <PropertyPreview form={previewData} />
+        </div>
+
+      </div>
+
+    ) : (
+
+      // ================= EDIT MODE =================
+      <div className="flex flex-col xl:flex-row gap-6 w-full overflow-hidden">
+
+        {/* ================= LEFT SIDE ================= */}
+        <div
+          className={`${
+            fullFormMode
+              ? "w-full"
+              : "xl:w-1/2 w-full"
+          } overflow-y-auto overflow-x-hidden h-[80vh] pr-2 min-w-0`}
+        >
+
     <div className="space-y-8">
 
         {/* ================= STEP 1 ================= */}

@@ -2248,473 +2248,460 @@ id="amenities"
 </motion.section>
 
       {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
-{unitConfigurations.length > 0 && (
-  <motion.section
-    id="configuration"
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, amount: 0.15 }}
-    variants={staggerContainer}
-    className="
-      relative
-      py-16
-      md:py-24
-      bg-[#f7f3ec]
-      overflow-hidden
-    "
-  >
+{unitConfigurations?.length > 0 && (() => {
 
-    {/* SOFT GLOW */}
-    <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
+  // ✅ SAFE ACTIVE CONFIG
+  const activeConfig =
+    unitConfigurations?.[activePlan] || {};
 
-    <div className="relative z-10 max-w-[1400px] mx-auto px-4 lg:px-6">
+  // ✅ MATCH FLOOR PLAN BY INDEX
+  const activeFloorPlan =
+    gatedContent?.floorPlans?.[activePlan] || {};
 
-      {/* ================= SECTION LABEL ================= */}
-      <motion.div
-        variants={fadeUp}
-        className="flex items-center justify-center gap-3 mb-4"
-      >
-        <p
-          className="text-[#b89149] text-[11px] tracking-[3px] uppercase"
+  return (
+    <motion.section
+      id="configuration"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
+      variants={staggerContainer}
+      className="
+        relative
+        py-16
+        md:py-24
+        bg-[#f7f3ec]
+        overflow-hidden
+      "
+    >
+
+      {/* SOFT GLOW */}
+      <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
+
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 lg:px-6">
+
+        {/* ================= SECTION LABEL ================= */}
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center justify-center gap-3 mb-4"
+        >
+          <p
+            className="text-[#b89149] text-[11px] tracking-[3px] uppercase"
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            {configurationSection?.sectionNumber || "05"}
+          </p>
+
+          <div className="w-8 h-[1px] bg-[#c9a64b]" />
+
+          <p
+            className="text-[#2d4137] text-[11px] tracking-[3px] uppercase"
+            style={{
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            {configurationSection?.sectionLabel ||
+              "Residence Configurations"}
+          </p>
+        </motion.div>
+
+        {/* ================= TITLE ================= */}
+        <motion.h2
+          variants={fadeUp}
+          className="
+            text-center
+            text-[#183126]
+            text-[38px]
+            md:text-[72px]
+            leading-[1]
+            tracking-[-2px]
+            max-w-[1100px]
+            mx-auto
+          "
           style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 600,
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+            fontWeight: 400,
           }}
         >
-          {configurationSection?.sectionNumber || "05"}
-        </p>
+          <span className="block">
+            {configurationSection?.titleLine1 ||
+              "Residences Tailored"}
+          </span>
 
-        <div className="w-8 h-[1px] bg-[#c9a64b]" />
+          <span className="block text-[#b89149]">
+            {configurationSection?.titleLine2 ||
+              "to Your Lifestyle"}
+          </span>
+        </motion.h2>
 
-        <p
-          className="text-[#2d4137] text-[11px] tracking-[3px] uppercase"
+        {/* GOLD DIVIDER */}
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center justify-center gap-3 mt-6"
+        >
+          <div className="w-14 h-[1px] bg-[#c9a64b]" />
+
+          <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
+
+          <div className="w-14 h-[1px] bg-[#c9a64b]" />
+        </motion.div>
+
+        {/* SUBTEXT */}
+        <motion.p
+          variants={fadeUp}
+          className="
+            mt-6
+            text-center
+            text-[#5d5d5d]
+            text-[14px]
+            md:text-[18px]
+            leading-[1.9]
+            max-w-[780px]
+            mx-auto
+          "
           style={{
             fontFamily: "Inter, sans-serif",
+            fontWeight: 300,
           }}
         >
-          {configurationSection?.sectionLabel ||
-            "Residence Configurations"}
-        </p>
-      </motion.div>
+          {configurationSection?.subheading ||
+            "Thoughtfully designed layouts that redefine space, privacy and luxury."}
+        </motion.p>
 
-      {/* ================= TITLE ================= */}
-      <motion.h2
-        variants={fadeUp}
-        className="
-          text-center
-          text-[#183126]
-          text-[38px]
-          md:text-[72px]
-          leading-[1]
-          tracking-[-2px]
-          max-w-[1100px]
-          mx-auto
-        "
-        style={{
-          fontFamily: "Georgia, Times New Roman, serif",
-          fontWeight: 400,
-        }}
-      >
-        <span className="block">
-          {configurationSection?.titleLine1 ||
-            "Residences Tailored"}
-        </span>
+        {/* ================= MAIN CARD ================= */}
+        <motion.div
+          variants={fadeUp}
+          className="
+            mt-14
+            bg-[#f9f7f3]
+            border
+            border-[#e4dac8]
+            rounded-[22px]
+            shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+            overflow-hidden
+          "
+        >
 
-        <span className="block text-[#b89149]">
-          {configurationSection?.titleLine2 ||
-            "to Your Lifestyle"}
-        </span>
-      </motion.h2>
+          <div className="grid lg:grid-cols-[280px_1fr]">
 
-      {/* GOLD DIVIDER */}
-      <motion.div
-        variants={fadeUp}
-        className="flex items-center justify-center gap-3 mt-6"
-      >
-        <div className="w-14 h-[1px] bg-[#c9a64b]" />
+            {/* ================= LEFT TABS ================= */}
+            <div className="border-r border-[#e6dccb] bg-[#f5f0e7]">
 
-        <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
-
-        <div className="w-14 h-[1px] bg-[#c9a64b]" />
-      </motion.div>
-
-      {/* SUBTEXT */}
-      <motion.p
-        variants={fadeUp}
-        className="
-          mt-6
-          text-center
-          text-[#5d5d5d]
-          text-[14px]
-          md:text-[18px]
-          leading-[1.9]
-          max-w-[780px]
-          mx-auto
-        "
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 300,
-        }}
-      >
-        {configurationSection?.subheading ||
-          "Thoughtfully designed layouts that redefine space, privacy and luxury."}
-      </motion.p>
-
-      {/* ================= MAIN PREMIUM CARD ================= */}
-      <motion.div
-        variants={fadeUp}
-        className="
-          mt-14
-          bg-[#f9f7f3]
-          border
-          border-[#e4dac8]
-          rounded-[22px]
-          shadow-[0_20px_60px_rgba(0,0,0,0.08)]
-          overflow-hidden
-        "
-      >
-
-        <div className="grid lg:grid-cols-[280px_1fr]">
-
-          {/* ================= LEFT CONFIG TABS ================= */}
-          <div className="border-r border-[#e6dccb] bg-[#f5f0e7]">
-
-            {unitConfigurations.map((u, i) => (
-              <button
-                key={i}
-                onClick={() => setActivePlan(i)}
-                className={`
-                  group
-                  relative
-                  w-full
-                  text-left
-                  px-7
-                  py-6
-                  border-b
-                  border-[#e6dccb]
-                  transition-all
-                  duration-300
-                  ${
-                    activePlan === i
-                      ? "bg-[#03261d] text-white"
-                      : "hover:bg-[#f1eadf]"
-                  }
-                `}
-              >
-
-                {/* ACTIVE GOLD BAR */}
-                {activePlan === i && (
-                  <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
-                )}
-
-                <div className="flex items-center justify-between">
-
-                  <div>
-
-                    {/* TITLE */}
-                    <h3
-                      className={`
-                        text-[22px]
-                        leading-none
-                        mb-2
-                        ${
-                          activePlan === i
-                            ? "text-white"
-                            : "text-[#1e352b]"
-                        }
-                      `}
-                      style={{
-                        fontFamily:
-                          "Georgia, Times New Roman, serif",
-                        fontWeight: 400,
-                      }}
-                    >
-                      {u.unitType}
-                    </h3>
-
-                    {/* SUBTEXT */}
-                    <p
-                      className={`
-                        text-[13px]
-                        ${
-                          activePlan === i
-                            ? "text-[#d7b367]"
-                            : "text-[#666]"
-                        }
-                      `}
-                      style={{
-                        fontFamily: "Inter, sans-serif",
-                      }}
-                    >
-                      Luxury Residences
-                    </p>
-                  </div>
-
-                  {/* ARROW */}
-                  <div
-                    className={`
-                      text-[20px]
-                      transition-all
-                      duration-300
-                      ${
-                        activePlan === i
-                          ? "text-[#d7b367] translate-x-1"
-                          : "text-[#b89149]"
-                      }
-                    `}
-                  >
-                    →
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* ================= RIGHT CONTENT ================= */}
-          <div className="p-7 lg:p-8">
-
-            <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
-
-              {/* ================= LEFT DETAILS ================= */}
-              <div>
-
-                {/* TITLE */}
-                <h3
-                  className="
-                    text-[#1b3127]
-                    text-[42px]
-                    leading-none
-                  "
-                  style={{
-                    fontFamily:
-                      "Georgia, Times New Roman, serif",
-                    fontWeight: 400,
-                  }}
+              {unitConfigurations.map((u, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActivePlan(i)}
+                  className={`
+                    group
+                    relative
+                    w-full
+                    text-left
+                    px-7
+                    py-6
+                    border-b
+                    border-[#e6dccb]
+                    transition-all
+                    duration-300
+                    ${
+                      activePlan === i
+                        ? "bg-[#03261d] text-white"
+                        : "hover:bg-[#f1eadf]"
+                    }
+                  `}
                 >
-                  {unitConfigurations[activePlan]?.unitType}
-                </h3>
 
-                {/* SUBTEXT */}
-                <p
-                  className="
-                    mt-3
-                    text-[#b89149]
-                    text-[18px]
-                  "
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 400,
-                  }}
-                >
-                  Luxury Residences
-                </p>
+                  {/* ACTIVE BAR */}
+                  {activePlan === i && (
+                    <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
+                  )}
 
-                {/* GOLD LINE */}
-                <div className="w-14 h-[1px] bg-[#c9a64b] mt-7 mb-7" />
+                  <div className="flex items-center justify-between">
 
-                {/* ================= METRICS ================= */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
 
-                  {[
-  {
-    label: "Super Area",
-    value:
-      unitConfigurations[activePlan]?.area ||
-      "2450 Sq.ft.",
-    icon: "◫",
-  },
-  {
-    label: "Bedrooms",
-    value:
-      unitConfigurations[activePlan]
-        ?.bedrooms || "3",
-    icon: "⌂",
-  },
-  {
-    label: "Bathrooms",
-    value:
-      unitConfigurations[activePlan]
-        ?.bathrooms || "3",
-    icon: "◉",
-  },
-  {
-    label: "Balconies",
-    value:
-      unitConfigurations[activePlan]
-        ?.balconies || "2",
-    icon: "▤",
-  },
-  {
-    label: "Price",
-    value:
-      unitConfigurations[activePlan]
-        ?.price || "On Request",
-    icon: "₹",
-  },
-  {
-    label: "Payment Plan",
-    value:
-      unitConfigurations[activePlan]
-        ?.paymentPlan || "Flexible",
-    icon: "◌",
-  },
-].map((item, index) => (
-                    <div
-                      key={index}
-                      className="
-                        border-r
-                        last:border-r-0
-                        border-[#e2d6c2]
-                        pr-2
-                      "
-                    >
-
-                      {/* ICON */}
-                      <div className="text-[#c9a64b] text-[20px] mb-2">
-                        {item.icon}
-                      </div>
-
-                      {/* VALUE */}
-                      <p
-                        className="
-                          text-[#1f352c]
-                          text-[18px]
+                      <h3
+                        className={`
+                          text-[22px]
                           leading-none
-                        "
+                          mb-2
+                          ${
+                            activePlan === i
+                              ? "text-white"
+                              : "text-[#1e352b]"
+                          }
+                        `}
                         style={{
                           fontFamily:
                             "Georgia, Times New Roman, serif",
                           fontWeight: 400,
                         }}
                       >
-                        {item.value}
-                      </p>
+                        {u?.unitType || "Luxury Unit"}
+                      </h3>
 
-                      {/* LABEL */}
                       <p
-                        className="
-                          mt-2
-                          text-[#6a6a6a]
-                          text-[11px]
-                          leading-[1.7]
-                        "
-                        style={{
-                          fontFamily: "Inter, sans-serif",
-                        }}
+                        className={`
+                          text-[13px]
+                          ${
+                            activePlan === i
+                              ? "text-[#d7b367]"
+                              : "text-[#666]"
+                          }
+                        `}
                       >
-                        {item.label}
+                        Luxury Residences
                       </p>
                     </div>
-                  ))}
-                </div>
 
-                {/* ================= FEATURES ================= */}
-                <div className="mt-10 space-y-4">
-
-                  {(configurationSection?.features?.length > 0
-                    ? configurationSection.features
-                    : [
-                        "Spacious living & dining area",
-                        "Wide balconies for natural light & ventilation",
-                        "Master suite with walk-in wardrobe",
-                        "Dedicated utility area",
-                        "2–3 car parking",
-                      ]
-                  ).map((item, index) => (
                     <div
-                      key={index}
-                      className="flex items-start gap-3"
+                      className={`
+                        text-[20px]
+                        ${
+                          activePlan === i
+                            ? "text-[#d7b367] translate-x-1"
+                            : "text-[#b89149]"
+                        }
+                      `}
                     >
-
-                      <div className="mt-[5px] text-[#c9a64b]">
-                        ⊚
-                      </div>
-
-                      <p
-                        className="
-                          text-[#4f4f4f]
-                          text-[14px]
-                          leading-[1.9]
-                        "
-                        style={{
-                          fontFamily: "Inter, sans-serif",
-                        }}
-                      >
-                        {item}
-                      </p>
+                      →
                     </div>
-                  ))}
-                </div>
-
-                {/* BUTTON */}
-                <button
-                  className="
-                    mt-10
-                    h-[52px]
-                    px-8
-                    rounded-[8px]
-                    bg-[#03261d]
-                    hover:bg-[#0a3328]
-                    transition-all
-                    duration-300
-                    text-white
-                    flex
-                    items-center
-                    gap-3
-                    shadow-[0_10px_30px_rgba(3,38,29,0.18)]
-                  "
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {configurationSection?.buttonText ||
-                    "View Details"}
-
-                  <span className="text-[#d7b367] text-[18px]">
-                    →
-                  </span>
+                  </div>
                 </button>
-              </div>
+              ))}
+            </div>
 
-              {/* ================= FLOOR PLAN IMAGE ================= */}
-              <div className="relative">
+            {/* ================= RIGHT CONTENT ================= */}
+            <div className="p-7 lg:p-8">
 
-                <div
-                  className="
-                    relative
-                    rounded-[18px]
-                    border
-                    border-[#e3d7c5]
-                    bg-[#f6f2eb]
-                    p-5
-                    shadow-[0_12px_35px_rgba(0,0,0,0.06)]
-                  "
-                >
+              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
 
-                  {/* IMAGE */}
-                  {floorPlans.filter((fp) => fp.image).length > 0 && (
-                    <img
-                      src={floorPlans[activePlan]?.image}
-                      alt="floor-plan"
-                      className="
-                        w-full
-                        h-[320px]
-                        md:h-[500px]
-                        object-contain
-                      "
-                    />
-                  )}
+                {/* ================= DETAILS ================= */}
+                <div>
+
+                  <h3
+                    className="
+                      text-[#1b3127]
+                      text-[42px]
+                      leading-none
+                    "
+                    style={{
+                      fontFamily:
+                        "Georgia, Times New Roman, serif",
+                    }}
+                  >
+                    {activeConfig?.unitType || "Luxury Unit"}
+                  </h3>
+
+                  <p
+                    className="
+                      mt-3
+                      text-[#b89149]
+                      text-[18px]
+                    "
+                  >
+                    Luxury Residences
+                  </p>
+
+                  <div className="w-14 h-[1px] bg-[#c9a64b] mt-7 mb-7" />
+
+                  {/* ================= METRICS ================= */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+                    {[
+                      {
+                        label: "Super Area",
+                        value:
+                          activeConfig?.area ||
+                          "2450 Sq.ft.",
+                        icon: "◫",
+                      },
+                      {
+                        label: "Bedrooms",
+                        value:
+                          activeConfig?.bedrooms ||
+                          activeFloorPlan?.bedrooms ||
+                          "3",
+                        icon: "⌂",
+                      },
+                      {
+                        label: "Bathrooms",
+                        value:
+                          activeConfig?.bathrooms ||
+                          activeFloorPlan?.bathrooms ||
+                          "3",
+                        icon: "◉",
+                      },
+                      {
+                        label: "Balconies",
+                        value:
+                          activeConfig?.balconies ||
+                          activeFloorPlan?.balconies ||
+                          "2",
+                        icon: "▤",
+                      },
+                      {
+                        label: "Price",
+                        value:
+                          activeConfig?.price ||
+                          "On Request",
+                        icon: "₹",
+                      },
+                      {
+                        label: "Payment Plan",
+                        value:
+                          activeConfig?.paymentPlan ||
+                          "Flexible",
+                        icon: "◌",
+                      },
+                    ].map((item, index) => (
+                      <div
+                        key={index}
+                        className="
+                          border-r
+                          last:border-r-0
+                          border-[#e2d6c2]
+                          pr-2
+                        "
+                      >
+
+                        <div className="text-[#c9a64b] text-[20px] mb-2">
+                          {item.icon}
+                        </div>
+
+                        <p
+                          className="
+                            text-[#1f352c]
+                            text-[18px]
+                            leading-none
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                          }}
+                        >
+                          {item.value}
+                        </p>
+
+                        <p
+                          className="
+                            mt-2
+                            text-[#6a6a6a]
+                            text-[11px]
+                            leading-[1.7]
+                          "
+                        >
+                          {item.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* ================= FEATURES ================= */}
+                  <div className="mt-10 space-y-4">
+
+                    {(configurationSection?.features?.length > 0
+                      ? configurationSection.features
+                      : [
+                          "Spacious living & dining area",
+                          "Wide balconies for natural light & ventilation",
+                          "Master suite with walk-in wardrobe",
+                          "Dedicated utility area",
+                          "2–3 car parking",
+                        ]
+                    ).map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-3"
+                      >
+
+                        <div className="mt-[5px] text-[#c9a64b]">
+                          ⊚
+                        </div>
+
+                        <p
+                          className="
+                            text-[#4f4f4f]
+                            text-[14px]
+                            leading-[1.9]
+                          "
+                        >
+                          {item}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* BUTTON */}
+                  <button
+                    className="
+                      mt-10
+                      h-[52px]
+                      px-8
+                      rounded-[8px]
+                      bg-[#03261d]
+                      hover:bg-[#0a3328]
+                      transition-all
+                      duration-300
+                      text-white
+                      flex
+                      items-center
+                      gap-3
+                    "
+                  >
+                    {configurationSection?.buttonText ||
+                      "View Details"}
+
+                    <span className="text-[#d7b367] text-[18px]">
+                      →
+                    </span>
+                  </button>
                 </div>
+
+                {/* ================= FLOOR PLAN ================= */}
+                <div className="relative">
+
+                  <div
+                    className="
+                      relative
+                      rounded-[18px]
+                      border
+                      border-[#e3d7c5]
+                      bg-[#f6f2eb]
+                      p-5
+                      shadow-[0_12px_35px_rgba(0,0,0,0.06)]
+                    "
+                  >
+
+                    {activeFloorPlan?.image ? (
+                      <img
+                        src={activeFloorPlan.image}
+                        alt="floor-plan"
+                        className="
+                          w-full
+                          h-[320px]
+                          md:h-[500px]
+                          object-contain
+                        "
+                      />
+                    ) : (
+                      <div className="h-[320px] md:h-[500px] flex items-center justify-center text-[#999]">
+                        Floor Plan Coming Soon
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
-        </div>
-      </motion.div>
-    </div>
-  </motion.section>
-)}
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+})()}
 
 {/* ================= PREMIUM GALLERY SECTION ================= */}
 {media.gallery?.filter(Boolean).length > 0 && (
