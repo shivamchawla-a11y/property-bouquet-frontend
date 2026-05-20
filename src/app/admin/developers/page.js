@@ -22,6 +22,18 @@ export default function DevelopersPage() {
   const [name, setName] = useState("");
   const [logo, setLogo] = useState("");
 
+  // NEW
+  const [
+    developerImage,
+    setDeveloperImage,
+  ] = useState("");
+
+  // EDIT MODE
+  const [
+    editingDeveloper,
+    setEditingDeveloper,
+  ] = useState(null);
+
   const [loading, setLoading] =
     useState(true);
 
@@ -66,25 +78,33 @@ export default function DevelopersPage() {
     setCurrentPage(1);
   }, [search]);
 
-  // ================= ADD =================
+  // ================= ADD / EDIT =================
   const addDeveloper = async () => {
     if (!name.trim()) return;
 
     try {
-      const res = await fetch(
-        `${API}/developers`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            logo,
-          }),
-        }
-      );
+      const payload = {
+        name,
+        logo,
+        image: developerImage,
+      };
+
+      const url = editingDeveloper
+        ? `${API}/developers/${editingDeveloper._id}`
+        : `${API}/developers`;
+
+      const method = editingDeveloper
+        ? "PUT"
+        : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 
@@ -97,11 +117,15 @@ export default function DevelopersPage() {
       }
 
       toast.success(
-        "Developer added ✅"
+        editingDeveloper
+          ? "Developer updated ✅"
+          : "Developer added ✅"
       );
 
       setName("");
       setLogo("");
+      setDeveloperImage("");
+      setEditingDeveloper(null);
 
       fetchDevelopers();
     } catch (err) {
@@ -142,6 +166,23 @@ export default function DevelopersPage() {
 
       toast.error("Server error ❌");
     }
+  };
+
+  // ================= EDIT =================
+  const editDeveloper = (dev) => {
+    setEditingDeveloper(dev);
+
+    setName(dev.name || "");
+    setLogo(dev.logo || "");
+
+    setDeveloperImage(
+      dev.image || ""
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   // ================= SEARCH =================
@@ -224,21 +265,45 @@ export default function DevelopersPage() {
         />
       </div>
 
-      {/* ================= ADD FORM ================= */}
+      {/* ================= ADD / EDIT FORM ================= */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
 
-        <div className="flex items-center gap-2 mb-4">
-          <Plus
-            size={18}
-            className="text-[#0f3b2e]"
-          />
+        <div className="flex items-center justify-between mb-4">
 
-          <h2 className="font-bold text-[#0f3b2e] text-lg">
-            Add Developer
-          </h2>
+          <div className="flex items-center gap-2">
+            <Plus
+              size={18}
+              className="text-[#0f3b2e]"
+            />
+
+            <h2 className="font-bold text-[#0f3b2e] text-lg">
+              {editingDeveloper
+                ? "Edit Developer"
+                : "Add Developer"}
+            </h2>
+          </div>
+
+          {editingDeveloper && (
+            <button
+              onClick={() => {
+                setEditingDeveloper(
+                  null
+                );
+
+                setName("");
+                setLogo("");
+                setDeveloperImage(
+                  ""
+                );
+              }}
+              className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition font-semibold"
+            >
+              Cancel Edit
+            </button>
+          )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-3">
+        <div className="grid lg:grid-cols-4 gap-3">
 
           {/* NAME */}
           <input
@@ -260,7 +325,19 @@ export default function DevelopersPage() {
                 e.target.value
               )
             }
-            placeholder="Logo URL (optional)"
+            placeholder="Logo URL"
+            className="border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+          />
+
+          {/* IMAGE */}
+          <input
+            value={developerImage}
+            onChange={(e) =>
+              setDeveloperImage(
+                e.target.value
+              )
+            }
+            placeholder="Developer Image URL"
             className="border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#0f3b2e]"
           />
 
@@ -269,30 +346,63 @@ export default function DevelopersPage() {
             onClick={addDeveloper}
             className="bg-[#0f3b2e] hover:bg-[#145240] text-white rounded-xl text-sm font-semibold transition shadow-sm"
           >
-            Add Developer
+            {editingDeveloper
+              ? "Update Developer"
+              : "Add Developer"}
           </button>
         </div>
 
-        {/* LOGO PREVIEW */}
-        {logo && (
-          <div className="flex items-center gap-3 mt-4 bg-gray-50 border border-gray-200 rounded-xl p-3">
+        {/* PREVIEW */}
+        {(logo ||
+          developerImage) && (
+          <div className="mt-5 grid md:grid-cols-2 gap-4">
 
-            <img
-              src={logo}
-              className="h-10 w-10 object-contain rounded-lg bg-white border"
-              alt="logo preview"
-            />
+            {/* LOGO */}
+            {logo && (
+              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
 
-            <div>
-              <p className="text-sm font-semibold text-gray-700">
-                Logo Preview
-              </p>
+                <img
+                  src={logo}
+                  className="h-12 w-12 object-contain rounded-lg bg-white border"
+                  alt="logo preview"
+                />
 
-              <p className="text-xs text-gray-500">
-                Preview of uploaded
-                developer logo
-              </p>
-            </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">
+                    Logo Preview
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Developer Logo
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* IMAGE */}
+            {developerImage && (
+              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
+
+                <img
+                  src={
+                    developerImage
+                  }
+                  className="h-14 w-20 object-cover rounded-lg border"
+                  alt="developer preview"
+                />
+
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">
+                    Developer Image
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Cover / Banner
+                    Image
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -302,7 +412,7 @@ export default function DevelopersPage() {
 
         <div className="overflow-x-auto">
 
-          <table className="w-full min-w-[850px]">
+          <table className="w-full min-w-[950px]">
 
             {/* HEAD */}
             <thead className="bg-[#f5f7f6] text-gray-700 text-[11px] uppercase tracking-wider sticky top-0 z-10">
@@ -310,6 +420,10 @@ export default function DevelopersPage() {
               <tr>
                 <th className="p-3 text-left font-bold w-[60px]">
                   Sr.
+                </th>
+
+                <th className="p-3 text-left font-bold">
+                  Image
                 </th>
 
                 <th className="p-3 text-left font-bold">
@@ -357,26 +471,57 @@ export default function DevelopersPage() {
                           1}
                       </td>
 
+                      {/* IMAGE */}
+                      <td className="p-3">
+                        <div className="h-14 w-24 rounded-xl overflow-hidden border border-gray-200 bg-gray-100">
+
+                         {dev.image ? (
+  <img
+    src={dev.image}
+    className="h-full w-full object-cover"
+    alt={dev.name}
+  />
+) : (
+  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-400">
+    No Image
+  </div>
+)}{dev.image ? (
+  <img
+    src={dev.image}
+    className="h-full w-full object-cover"
+    alt={dev.name}
+  />
+) : (
+  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-400">
+    No Image
+  </div>
+)}
+                        </div>
+                      </td>
+
                       {/* LOGO */}
                       <td className="p-3">
                         <div className="h-10 w-10 rounded-xl overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
 
-                          <img
-                            src={
-                              dev.logo
-                            }
-                            className="h-8 w-8 object-contain"
-                            alt={
-                              dev.name
-                            }
-                          />
+                          {dev.logo ? (
+  <img
+    src={dev.logo}
+    className="h-8 w-8 object-contain"
+    alt={dev.name}
+  />
+) : (
+  <div className="text-[10px] text-gray-400">
+    No Logo
+  </div>
+)}
+
                         </div>
                       </td>
 
                       {/* NAME */}
                       <td className="p-3">
 
-                        <div className="max-w-[200px] truncate">
+                        <div className="max-w-[220px] truncate">
 
                           <p className="text-sm font-semibold text-gray-800 truncate">
                             {
@@ -422,6 +567,18 @@ export default function DevelopersPage() {
                             />
                           </Link>
 
+                          {/* EDIT */}
+                          <button
+                            onClick={() =>
+                              editDeveloper(
+                                dev
+                              )
+                            }
+                            className="h-9 w-9 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition"
+                          >
+                            ✎
+                          </button>
+
                           {/* DELETE */}
                           <button
                             onClick={() =>
@@ -445,7 +602,7 @@ export default function DevelopersPage() {
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="p-8 text-center text-sm text-gray-500 font-medium"
                   >
                     No developers

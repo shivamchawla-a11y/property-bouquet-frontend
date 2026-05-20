@@ -1,351 +1,257 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import StepMedia from "./StepMedia";
-import { useRouter } from "next/navigation";
-import PropertyPreview from "./PropertyPreview";
-
-export default function AddProperty() {
-  const [step, setStep] = useState(1);
-  const router = useRouter();
-
-
-  const [form, setForm] = useState({
-    slug: "",
-    marketType: "Primary",
-
-    coreDetails: {
-      title: "",
-      developerRef: "",
-      startingPrice: "",
-      maxPrice: "",
-    },
-
-    keyMetrics: {
-      landArea: "",
-      possession: "",
-      status: "",
-    },
-
-    overview: {
-      description: "",
-      aboutImageUrl: "",
-      highlights: [""],
-    },
-
-    unitConfigurations: [
-      { unitType: "", area: "", price: "", paymentPlan: "" }
-    ],
-
-    media: {
-      heroImageUrl: "",
-      gallery: [""],
-      walkthroughUrl: "",
-    },
-
-    locationData: {
-      address: "",
-      mapEmbedUrl: "",
-      landmarks: [{ name: "", distance: "" }],
-    },
-
-    gatedContent: {
-      brochurePdfUrl: "",
-      floorPlans: [{ title: "", image: "" }],
-    },
-
-    seoEngine: {
-      metaTitle: "",
-      metaDescription: "",
-    },
-
-    faqs: [{ question: "", answer: "" }],
-  });
-
-  const [previewData, setPreviewData] = useState(form);
-
-  useEffect(() => {
-  const t = setTimeout(() => {
-    setPreviewData(form);
-  }, 200);
-
-  return () => clearTimeout(t);
-}, [form]);
-
-  const next = () => setStep((prev) => prev + 1);
-  const prev = () => setStep((prev) => prev - 1);
-
-  const handleChange = (section, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      console.log("Sending form:", form);
-
-      const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/properties",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(form),
-        }
-      );
-
-      const data = await res.json();
-      console.log("Response:", data);
-
-      if (res.ok) {
-        alert("Property Added ✅");
-      } else {
-        alert(data.message || "Error ❌");
-      }
-
-    } catch (err) {
-      console.error("Submit error:", err);
-      alert("Server error ❌");
+{/* ================= ULTRA PREMIUM FLOATING NAVBAR ================= */}
+<div
+  className={`
+    fixed
+    top-0
+    left-0
+    w-full
+    z-[999]
+    transition-all
+    duration-500
+    px-3
+    md:px-5
+    lg:px-8
+    flex
+    justify-center
+    ${
+      scrolled
+        ? "pt-2"
+        : "pt-4"
     }
-  };
+  `}
+>
 
-  return (
-    <div className="app-bg p-10">
+  <div className="w-full max-w-[1600px]">
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-10">
-        <div>
-          <h1 className="text-4xl font-bold text-white">Add Property</h1>
-          <p className="text-gray-300">Step {step} of 6</p>
+    <div
+      className={`
+        relative
+        overflow-hidden
+        border
+        border-white/10
+        backdrop-blur-3xl
+        transition-all
+        duration-500
+        ${
+          scrolled
+            ? `
+              rounded-[14px]
+              bg-[rgba(4,7,7,0.78)]
+              shadow-[0_10px_40px_rgba(0,0,0,0.38)]
+            `
+            : `
+              rounded-[24px]
+              bg-[rgba(7,10,10,0.35)]
+              shadow-[0_20px_80px_rgba(0,0,0,0.48)]
+            `
+        }
+      `}
+    >
+
+      {/* PREMIUM GLOW */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(201,166,75,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,166,75,0.10),transparent_30%)]" />
+
+      {/* BORDER SHINE */}
+      <div className="absolute inset-0 rounded-[24px] border border-white/5" />
+
+      <div
+        className={`
+          relative
+          z-10
+          px-4
+          md:px-6
+          lg:px-7
+          flex
+          items-center
+          justify-between
+          transition-all
+          duration-500
+          ${
+            scrolled
+              ? "h-[52px]"
+              : "h-[62px] lg:h-[66px]"
+          }
+        `}
+      >
+
+        {/* ================= LEFT ================= */}
+        <div className="flex items-center gap-4 min-w-fit">
+
+          {developerLogo &&
+          developerLogo.trim() !== "" ? (
+            <img
+              src={developerLogo}
+              alt={developerName}
+              className="
+                h-7
+                md:h-8
+                max-w-[120px]
+                object-contain
+                opacity-95
+                transition-all
+                duration-500
+              "
+              onError={(e) =>
+                (e.target.style.display =
+                  "none")
+              }
+            />
+          ) : (
+            <h2
+              className="
+                text-white
+                text-[15px]
+                tracking-[3px]
+                whitespace-nowrap
+              "
+              style={{
+                fontFamily:
+                  "Georgia, Times New Roman, serif",
+              }}
+            >
+              {developerName}
+            </h2>
+          )}
         </div>
 
-        <div className="w-64 bg-white/20 rounded-full h-2">
-          <div
-            className="bg-gold h-2 rounded-full transition-all"
-            style={{ width: `${(step / 6) * 100}%` }}
-          />
+        {/* ================= CENTER NAV ================= */}
+        <div className="hidden xl:flex items-center gap-4 2xl:gap-6">
+
+          {[
+            {
+              label: "OVERVIEW",
+              id: "overview",
+            },
+            {
+              label: "ABOUT PROJECT",
+              id: "about",
+            },
+            {
+              label: "HIGHLIGHTS",
+              id: "highlights",
+            },
+            {
+              label: "AMENITIES",
+              id: "amenities",
+            },
+            {
+              label: "FLOOR PLAN",
+              id: "configuration",
+            },
+            {
+              label: "GALLERY",
+              id: "gallery",
+            },
+            {
+              label: "LOCATION",
+              id: "location",
+            },
+            {
+              label: "CONTACT",
+              id: "contact",
+            },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                const section =
+                  document.getElementById(
+                    item.id
+                  );
+
+                if (section) {
+                  section.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+              className={`
+                relative
+                text-[9px]
+                tracking-[1.7px]
+                uppercase
+                whitespace-nowrap
+                transition-all
+                duration-300
+                ${
+                  activeSection === item.id
+                    ? "text-[#d8b46b]"
+                    : "text-white/55 hover:text-white"
+                }
+              `}
+              style={{
+                fontFamily:
+                  "Inter, sans-serif",
+              }}
+            >
+              {item.label}
+
+              {activeSection ===
+                item.id && (
+                <div
+                  className="
+                    absolute
+                    left-1/2
+                    -translate-x-1/2
+                    bottom-[-8px]
+                    w-6
+                    h-[1px]
+                    bg-[#d8b46b]
+                    transition-all
+                    duration-300
+                  "
+                />
+              )}
+            </button>
+          ))}
         </div>
+
+        {/* ================= RIGHT CTA ================= */}
+        <button
+          onClick={() => setShowModal(true)}
+          className="
+            group
+            relative
+            overflow-hidden
+            h-[34px]
+            md:h-[36px]
+            px-4
+            md:px-5
+            rounded-[4px]
+            bg-[#c9a64b]
+            text-[#111]
+            text-[9px]
+            tracking-[1.1px]
+            font-[600]
+            transition-all
+            duration-300
+            hover:brightness-110
+            shadow-[0_8px_24px_rgba(201,166,75,0.18)]
+            whitespace-nowrap
+          "
+          style={{
+            fontFamily:
+              "Inter, sans-serif",
+          }}
+        >
+
+          {/* BUTTON SHINE */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+
+          <div className="relative flex items-center gap-2">
+
+            <Download
+              size={12}
+              strokeWidth={2.2}
+            />
+
+            DOWNLOAD BROCHURE
+          </div>
+        </button>
       </div>
-
-
-      <div className="flex gap-6">
-
-  {/* LEFT SIDE — FORM */}
-  <div className="w-1/2 overflow-y-auto h-[80vh] pr-4">
-    <div className="space-y-8">
-       {/* STEP 1 */}
-        {step === 1 && (
-          <div className="section">
-            <h2 className="section-title">Core Details</h2>
-
-            <input className="input" placeholder="Slug"
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            />
-
-            <input className="input" placeholder="Title"
-              onChange={(e) => handleChange("coreDetails", "title", e.target.value)}
-            />
-
-            <input className="input" placeholder="Developer"
-              onChange={(e) => handleChange("coreDetails", "developerRef", e.target.value)}
-            />
-
-            <input className="input" placeholder="Starting Price"
-              onChange={(e) => handleChange("coreDetails", "startingPrice", Number(e.target.value))}
-            />
-
-            <input className="input" placeholder="Max Price"
-              onChange={(e) => handleChange("coreDetails", "maxPrice", Number(e.target.value))}
-            />
-          </div>
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <div className="section">
-            <h2>Overview</h2>
-
-            <textarea className="input" placeholder="Description"
-              onChange={(e) => handleChange("overview", "description", e.target.value)}
-            />
-
-            <input className="input" placeholder="About Image URL"
-              onChange={(e) => handleChange("overview", "aboutImageUrl", e.target.value)}
-            />
-
-            <h3>Highlights</h3>
-            {form.overview.highlights.map((h, i) => (
-              <input key={i} className="input" value={h}
-                onChange={(e) => {
-                  const arr = [...form.overview.highlights];
-                  arr[i] = e.target.value;
-                  handleChange("overview", "highlights", arr);
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div className="section">
-            <h2>Configurations</h2>
-
-            {form.unitConfigurations.map((u, i) => (
-              <div key={i} className="grid grid-cols-4 gap-2">
-                <input placeholder="Type" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.unitConfigurations];
-                    arr[i].unitType = e.target.value;
-                    setForm({ ...form, unitConfigurations: arr });
-                  }}
-                />
-                <input placeholder="Area" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.unitConfigurations];
-                    arr[i].area = e.target.value;
-                    setForm({ ...form, unitConfigurations: arr });
-                  }}
-                />
-                <input placeholder="Price" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.unitConfigurations];
-                    arr[i].price = e.target.value;
-                    setForm({ ...form, unitConfigurations: arr });
-                  }}
-                />
-                <input placeholder="Plan" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.unitConfigurations];
-                    arr[i].paymentPlan = e.target.value;
-                    setForm({ ...form, unitConfigurations: arr });
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* STEP 4 */}
-        {step === 4 && (
-          <div className="section">
-            <h2>Media</h2>
-
-            <input className="input" placeholder="Hero Image URL"
-              onChange={(e) => handleChange("media", "heroImageUrl", e.target.value)}
-            />
-
-            {form.media.gallery.map((g, i) => (
-              <input key={i} className="input" placeholder="Gallery URL"
-                onChange={(e) => {
-                  const arr = [...form.media.gallery];
-                  arr[i] = e.target.value;
-                  handleChange("media", "gallery", arr);
-                }}
-              />
-            ))}
-
-            <input className="input" placeholder="Walkthrough URL"
-              onChange={(e) => handleChange("media", "walkthroughUrl", e.target.value)}
-            />
-          </div>
-        )}
-
-        {/* STEP 5 */}
-        {step === 5 && (
-          <div className="section">
-            <h2>Location</h2>
-
-            <input className="input" placeholder="Address"
-              onChange={(e) => handleChange("locationData", "address", e.target.value)}
-            />
-
-            <input className="input" placeholder="Map Embed URL"
-              onChange={(e) => handleChange("locationData", "mapEmbedUrl", e.target.value)}
-            />
-
-            {form.locationData.landmarks.map((l, i) => (
-              <div key={i} className="grid grid-cols-2 gap-2">
-                <input placeholder="Name" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.locationData.landmarks];
-                    arr[i].name = e.target.value;
-                    setForm({ ...form, locationData: { ...form.locationData, landmarks: arr } });
-                  }}
-                />
-                <input placeholder="Distance" className="input"
-                  onChange={(e) => {
-                    const arr = [...form.locationData.landmarks];
-                    arr[i].distance = e.target.value;
-                    setForm({ ...form, locationData: { ...form.locationData, landmarks: arr } });
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* STEP 6 */}
-        {step === 6 && (
-          <div className="section">
-            <h2>FAQ + SEO</h2>
-
-            {form.faqs.map((f, i) => (
-              <div key={i}>
-                <input className="input" placeholder="Question"
-                  onChange={(e) => {
-                    const arr = [...form.faqs];
-                    arr[i].question = e.target.value;
-                    setForm({ ...form, faqs: arr });
-                  }}
-                />
-                <input className="input" placeholder="Answer"
-                  onChange={(e) => {
-                    const arr = [...form.faqs];
-                    arr[i].answer = e.target.value;
-                    setForm({ ...form, faqs: arr });
-                  }}
-                />
-              </div>
-            ))}
-
-            <input className="input" placeholder="Meta Title"
-              onChange={(e) => handleChange("seoEngine", "metaTitle", e.target.value)}
-            />
-
-            <textarea className="input" placeholder="Meta Description"
-              onChange={(e) => handleChange("seoEngine", "metaDescription", e.target.value)}
-            />
-          </div>
-        )}
-
-      </div>
-
-      <div className="flex justify-between mt-10 max-w-4xl mx-auto">
-        {step > 1 && <button onClick={prev}>Back</button>}
-
-        {step < 6 ? (
-          <button onClick={next}>Next</button>
-        ) : (
-          <button onClick={handleSubmit}>🚀 Publish</button>
-        )}
     </div>
   </div>
-
-  {/* RIGHT SIDE — LIVE PREVIEW */}
-  <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
-    <PropertyPreview form={previewData} />
-  </div>
-
 </div>
 
-    </div>
-  );
-}
+

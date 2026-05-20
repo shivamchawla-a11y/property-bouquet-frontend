@@ -223,6 +223,33 @@ const featureBar =
   return "";
 }
 
+  // ================= DEVELOPER IMAGE RESOLVER =================
+function getDeveloperImage() {
+
+  // ✅ Direct custom image
+  if (coreDetails?.developerImage) {
+    return coreDetails.developerImage;
+  }
+
+  // ✅ If populated object from backend
+  if (
+    coreDetails?.developerRef &&
+    typeof coreDetails.developerRef === "object"
+  ) {
+    return coreDetails.developerRef.image || "";
+  }
+
+  // ✅ If only ID exists
+  if (coreDetails?.developerRef) {
+    const dev = developers.find(
+      (d) => d._id === coreDetails.developerRef
+    );
+
+    return dev?.image || "";
+  }
+
+  return "";
+}
 
   const floorPlans = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
@@ -231,8 +258,22 @@ const featureBar =
   const [leadPhone, setLeadPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const developerLogo = getDeveloperLogo(); // ✅ ADD THIS LINE
+  const developerImage = getDeveloperImage();
   const [selectedImage, setSelectedImage] = useState(null);
 const [selectedIndex, setSelectedIndex] = useState(0);
+const [scrolled, setScrolled] = useState(false);
+const [activeSection, setActiveSection] = useState("overview");
+
+useEffect(() => {
+  const handleScroll = () => {
+    setScrolled(window.scrollY > 80);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () =>
+    window.removeEventListener("scroll", handleScroll);
+}, []);
 
 const gallery =
   media.gallery?.filter((img) => img && img.trim()) || [];
@@ -272,6 +313,52 @@ useEffect(() => {
   return () =>
     window.removeEventListener("keydown", handleKeyDown);
 }, [selectedImage, selectedIndex, gallery]);
+
+useEffect(() => {
+  const sections = [
+    "overview",
+    "about",
+    "highlights",
+    "amenities",
+    "configuration",
+    "gallery",
+    "location",
+    "contact",
+  ];
+
+  const handleScrollSpy = () => {
+    const scrollPosition = window.scrollY + 140;
+
+    sections.forEach((sectionId) => {
+      const section =
+        document.getElementById(sectionId);
+
+      if (section) {
+        const offsetTop = section.offsetTop;
+        const offsetHeight = section.offsetHeight;
+
+        if (
+          scrollPosition >= offsetTop &&
+          scrollPosition <
+            offsetTop + offsetHeight
+        ) {
+          setActiveSection(sectionId);
+        }
+      }
+    });
+  };
+
+  window.addEventListener(
+    "scroll",
+    handleScrollSpy
+  );
+
+  return () =>
+    window.removeEventListener(
+      "scroll",
+      handleScrollSpy
+    );
+}, []);
 
   const handleLeadSubmit = async () => {
   if (!leadName.trim() || !leadPhone.trim()) {
@@ -395,118 +482,265 @@ const locationName = getLocationName();
   return (
     <div className="relative overflow-hidden bg-black">
 
-    {/* ================= ULTRA PREMIUM FLOATING NAVBAR ================= */}
-    <div className="absolute top-0 left-0 w-full z-50 px-3 md:px-5 lg:px-8 pt-4">
-
-      <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[rgba(7,10,10,0.52)] backdrop-blur-3xl shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-
-        {/* PREMIUM GLOW */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(201,166,75,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,166,75,0.12),transparent_30%)]" />
-
-        {/* BORDER SHINE */}
-        <div className="absolute inset-0 rounded-[24px] border border-white/5" />
-
-        <div className="relative z-10 h-[68px] lg:h-[74px] px-4 md:px-6 lg:px-8 flex items-center justify-between">
-
-          {/* LEFT */}
-          <div className="flex items-center gap-4">
-
-            {developerLogo &&
-            developerLogo.trim() !== "" ? (
-              <img
-                src={developerLogo}
-                alt={developerName}
-                className="h-9 md:h-10 max-w-[150px] object-contain opacity-95"
-                onError={(e) =>
-                  (e.target.style.display =
-                    "none")
-                }
-              />
-            ) : (
-              <h2
-                className="text-white text-[17px] tracking-[4px]"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                {developerName}
-              </h2>
-            )}
-          </div>
-
-          {/* CENTER NAV */}
-          <div className="hidden xl:flex items-center gap-7 2xl:gap-9">
-
-            {[
-              "OVERVIEW",
-              "CONFIGURATION",
-              "AMENITIES",
-              "LOCATION",
-              "GALLERY",
-              "INVESTMENT",
-              "CONTACT",
-            ].map((item, index) => (
-              <button
-                key={index}
-                className={`relative text-[10px] tracking-[2.5px] transition-all duration-300 ${
-                  index === 0
-                    ? "text-[#d8b46b]"
-                    : "text-white/65 hover:text-[#d8b46b]"
-                }`}
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
-                {item}
-
-                {index === 0 && (
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-8px] w-6 h-[1px] bg-[#d8b46b]" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* RIGHT BUTTON */}
-<button
-  onClick={() => setShowModal(true)}
-  className="
-    group
-    relative
-    overflow-hidden
-    h-[36px]
-    md:h-[38px]
-    px-5
-    md:px-6
-    rounded-[4px]
-    bg-[#c9a64b]
-    text-[#111]
-    text-[10px]
-    tracking-[1.3px]
-    font-[600]
+   {/* ================= ULTRA PREMIUM FLOATING NAVBAR ================= */}
+<div
+  className={`
+    fixed
+    top-0
+    left-0
+    w-full
+    z-[999]
     transition-all
-    duration-300
-    hover:brightness-110
-    shadow-[0_8px_24px_rgba(201,166,75,0.22)]
-  "
-  style={{
-    fontFamily: "Inter, sans-serif",
-  }}
+    duration-500
+    px-3
+    md:px-5
+    lg:px-8
+    flex
+    justify-center
+    ${
+      scrolled
+        ? "pt-2"
+        : "pt-4"
+    }
+  `}
 >
-  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-  <div className="relative flex items-center gap-2">
-    <Download size={13} strokeWidth={2.2} />
-    DOWNLOAD BROCHURE
-  </div>
-</button>
+  <div className="w-full max-w-[1600px]">
+
+    <div
+      className={`
+        relative
+        overflow-hidden
+        border
+        border-white/10
+        backdrop-blur-3xl
+        transition-all
+        duration-500
+        ${
+          scrolled
+            ? `
+              rounded-[14px]
+              bg-[rgba(4,7,7,0.78)]
+              shadow-[0_10px_40px_rgba(0,0,0,0.38)]
+            `
+            : `
+              rounded-[24px]
+              bg-[rgba(7,10,10,0.35)]
+              shadow-[0_20px_80px_rgba(0,0,0,0.48)]
+            `
+        }
+      `}
+    >
+
+      {/* PREMIUM GLOW */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(201,166,75,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,166,75,0.10),transparent_30%)]" />
+
+      {/* BORDER SHINE */}
+      <div className="absolute inset-0 rounded-[24px] border border-white/5" />
+
+      <div
+        className={`
+          relative
+          z-10
+          px-4
+          md:px-6
+          lg:px-7
+          flex
+          items-center
+          justify-between
+          transition-all
+          duration-500
+          ${
+            scrolled
+              ? "h-[52px]"
+              : "h-[62px] lg:h-[66px]"
+          }
+        `}
+      >
+
+        {/* ================= LEFT ================= */}
+        <div className="flex items-center gap-4 min-w-fit">
+
+          {developerLogo &&
+          developerLogo.trim() !== "" ? (
+            <img
+              src={developerLogo}
+              alt={developerName}
+              className="
+                h-7
+                md:h-8
+                max-w-[120px]
+                object-contain
+                opacity-95
+                transition-all
+                duration-500
+              "
+              onError={(e) =>
+                (e.target.style.display =
+                  "none")
+              }
+            />
+          ) : (
+            <h2
+              className="
+                text-white
+                text-[15px]
+                tracking-[3px]
+                whitespace-nowrap
+              "
+              style={{
+                fontFamily:
+                  "Georgia, Times New Roman, serif",
+              }}
+            >
+              {developerName}
+            </h2>
+          )}
         </div>
+
+        {/* ================= CENTER NAV ================= */}
+        <div className="hidden xl:flex items-center gap-4 2xl:gap-6">
+
+          {[
+            {
+              label: "OVERVIEW",
+              id: "overview",
+            },
+            {
+              label: "ABOUT PROJECT",
+              id: "about",
+            },
+            {
+              label: "HIGHLIGHTS",
+              id: "highlights",
+            },
+            {
+              label: "AMENITIES",
+              id: "amenities",
+            },
+            {
+              label: "FLOOR PLAN",
+              id: "configuration",
+            },
+            {
+              label: "GALLERY",
+              id: "gallery",
+            },
+            {
+              label: "LOCATION",
+              id: "location",
+            },
+            {
+              label: "CONTACT",
+              id: "contact",
+            },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                const section =
+                  document.getElementById(
+                    item.id
+                  );
+
+                if (section) {
+                  section.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+              className={`
+                relative
+                text-[9px]
+                tracking-[1.7px]
+                uppercase
+                whitespace-nowrap
+                transition-all
+                duration-300
+                ${
+                  activeSection === item.id
+                    ? "text-[#d8b46b]"
+                    : "text-white/55 hover:text-white"
+                }
+              `}
+              style={{
+                fontFamily:
+                  "Inter, sans-serif",
+              }}
+            >
+              {item.label}
+
+              {activeSection ===
+                item.id && (
+                <div
+                  className="
+                    absolute
+                    left-1/2
+                    -translate-x-1/2
+                    bottom-[-8px]
+                    w-6
+                    h-[1px]
+                    bg-[#d8b46b]
+                    transition-all
+                    duration-300
+                  "
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* ================= RIGHT CTA ================= */}
+        <button
+          onClick={() => setShowModal(true)}
+          className="
+            group
+            relative
+            overflow-hidden
+            h-[34px]
+            md:h-[36px]
+            px-4
+            md:px-5
+            rounded-[4px]
+            bg-[#c9a64b]
+            text-[#111]
+            text-[9px]
+            tracking-[1.1px]
+            font-[600]
+            transition-all
+            duration-300
+            hover:brightness-110
+            shadow-[0_8px_24px_rgba(201,166,75,0.18)]
+            whitespace-nowrap
+          "
+          style={{
+            fontFamily:
+              "Inter, sans-serif",
+          }}
+        >
+
+          {/* BUTTON SHINE */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+
+          <div className="relative flex items-center gap-2">
+
+            <Download
+              size={12}
+              strokeWidth={2.2}
+            />
+
+            DOWNLOAD BROCHURE
+          </div>
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
     {/* ================= CINEMATIC HERO ================= */}
 <motion.div
+  id="overview"
   initial={{
     scale: 1.05,
     opacity: 0,
@@ -1051,6 +1285,7 @@ const locationName = getLocationName();
 
 {/* ================= REFINED ULTRA PREMIUM ABOUT SECTION ================= */}
 <motion.section
+  id="about"
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
@@ -1301,11 +1536,18 @@ const locationName = getLocationName();
 
 {/* ================= PROPERTY HIGHLIGHTS SECTION ================= */}
 <motion.section
+  id="highlights"
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
   variants={fadeUp}
-  className="relative bg-[#f8f5ef] pb-16 md:pb-24 overflow-hidden"
+  className="
+    relative
+    bg-[#f7f3ec]
+    py-14
+    md:py-20
+    overflow-hidden
+  "
 >
 
   {/* AMBIENT GLOW */}
@@ -1314,7 +1556,7 @@ const locationName = getLocationName();
   <div className="relative z-10 max-w-[1320px] mx-auto px-4 lg:px-6">
 
     {/* ================= SECTION HEADER ================= */}
-    <div className="text-center mb-14">
+    <div className="text-center mb-16">
 
       <div className="flex items-center justify-center gap-3 mb-4">
 
@@ -1343,10 +1585,10 @@ const locationName = getLocationName();
       <h2
         className="
           text-[#183126]
-          text-[36px]
+          text-[38px]
           md:text-[62px]
-          leading-[1]
-          tracking-[-2px]
+          leading-[0.98]
+          tracking-[-2.5px]
         "
         style={{
           fontFamily: "Georgia, Times New Roman, serif",
@@ -1355,200 +1597,190 @@ const locationName = getLocationName();
       >
         {overview?.highlightsHeading ||
           "Crafted for Elevated"}
+
         <br />
+
         {overview?.highlightsSubheading ||
           "Modern Living"}
       </h2>
 
-      <div className="flex items-center justify-center gap-3 mt-6">
+      {/* GOLD DIVIDER */}
+      <div className="flex items-center justify-center gap-3 mt-6 mb-7">
 
         <div className="w-14 h-[1px] bg-[#c9a64b]" />
 
         <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
       </div>
+
+      {/* DESCRIPTION */}
+      <p
+        className="
+          text-[#5a5a5a]
+          text-[14px]
+          md:text-[15px]
+          leading-[2]
+          max-w-[620px]
+          mx-auto
+        "
+        style={{
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        Thoughtfully curated spaces, timeless architecture and refined
+        lifestyle experiences crafted for those who seek exclusivity,
+        elegance and long-term value.
+      </p>
     </div>
 
     {/* ================= HIGHLIGHTS GRID ================= */}
-<div
-  className={`
-    grid
-    gap-5
-    ${
-      (overview?.highlights?.length || 0) <= 2
-        ? "md:grid-cols-2"
-        : (overview?.highlights?.length || 0) <= 4
-        ? "md:grid-cols-2 xl:grid-cols-4"
-        : "md:grid-cols-2 xl:grid-cols-4"
-    }
-  `}
->
+    <div
+      className="
+        grid
+        md:grid-cols-2
+        xl:grid-cols-4
+        gap-5
+      "
+    >
 
-  {(
-    overview?.highlights?.some(
-      (item) => item?.heading || item?.subheading
-    )
-      ? overview.highlights
-      : [
-          {
-            heading: "A Landmark in Dwarka",
-            subheading:
-              "An iconic address in one of Delhi’s most prestigious and fastest-growing neighbourhoods.",
-            icon: "▥",
-          },
-          {
-            heading: "Crafted for Generations",
-            subheading:
-              "Built with the finest materials and global standards to stand the test of time.",
-            icon: "⌘",
-          },
-          {
-            heading: "An Elevated Lifestyle",
-            subheading:
-              "World-class amenities curated for wellness, comfort and celebration.",
-            icon: "✿",
-          },
-          {
-            heading: "A Smart Investment",
-            subheading:
-              "A rare combination of luxury living and strong long-term value appreciation.",
-            icon: "↗",
-          },
+      {(
+        overview?.highlights?.some(
+          (item) => item?.heading || item?.subheading
+        )
+          ? overview.highlights
+          : [
+              {
+                heading: "A Landmark Address",
+                subheading:
+                  "Positioned within one of the city’s most prestigious and fast-growing locations.",
+                icon: "▥",
+              },
+              {
+                heading: "Private Low-Density Living",
+                subheading:
+                  "Expansive residences designed for privacy, openness and peace.",
+                icon: "◈",
+              },
+              {
+                heading: "Luxury Lifestyle Amenities",
+                subheading:
+                  "Curated wellness, leisure and social experiences for elevated living.",
+                icon: "✦",
+              },
+              {
+                heading: "Future-Ready Investment",
+                subheading:
+                  "A rare blend of refined living and long-term appreciation potential.",
+                icon: "↗",
+              },
+            ]
+      )
+        .slice(0, 8)
+        .map((item, index) => (
+          <motion.div
+            key={index}
+            whileHover={{
+              y: -6,
+            }}
+            transition={{
+              duration: 0.35,
+            }}
+            className="
+              relative
+              overflow-hidden
+              rounded-[16px]
+              border
+              border-[#dfd3c0]
+              bg-[#fbf8f2]
+              px-6
+              py-8
+              shadow-[0_12px_30px_rgba(0,0,0,0.05)]
+            "
+          >
 
-          /* ================= EXTRA STATIC FALLBACK CARDS ================= */
+            {/* GOLD GLOW */}
+            <div className="absolute top-[-40px] right-[-40px] w-[120px] h-[120px] bg-[#c9a64b]/10 blur-[50px] rounded-full" />
 
-          {
-            heading: "Private Low-Density Living",
-            subheading:
-              "Exclusively planned residences offering privacy, peace and expansive open spaces.",
-            icon: "◈",
-          },
-          {
-            heading: "World-Class Amenities",
-            subheading:
-              "Curated wellness, leisure and lifestyle experiences designed for refined living.",
-            icon: "✦",
-          },
-          {
-            heading: "Prime Urban Connectivity",
-            subheading:
-              "Seamless access to business districts, airports and premium social infrastructure.",
-            icon: "⌂",
-          },
-          {
-            heading: "Legacy Address",
-            subheading:
-              "A timeless destination crafted to elevate status, comfort and future value.",
-            icon: "▣",
-          },
-        ]
-  )
-    .slice(0, 8)
-    .map((item, index) => (
-      <motion.div
-        key={index}
-        whileHover={{
-          y: -6,
-        }}
-        transition={{
-          duration: 0.35,
-        }}
-        className="
-          relative
-          overflow-hidden
-          rounded-[16px]
-          border
-          border-[#dfd3c0]
-          bg-[#fbf8f2]
-          px-6
-          py-7
-          shadow-[0_12px_30px_rgba(0,0,0,0.05)]
-        "
-      >
+            {/* NUMBER */}
+            <p
+              className="
+                relative
+                z-10
+                text-[#bc924c]
+                text-[11px]
+                tracking-[2px]
+                uppercase
+                mb-5
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </p>
 
-        {/* GOLD GLOW */}
-        <div className="absolute top-[-40px] right-[-40px] w-[120px] h-[120px] bg-[#c9a64b]/10 blur-[50px] rounded-full" />
+            {/* ICON */}
+            <div
+              className="
+                absolute
+                right-5
+                top-5
+                text-[#d6bc88]/30
+                text-[54px]
+                leading-none
+              "
+              style={{
+                fontFamily: "Georgia, serif",
+              }}
+            >
+              {item.icon || "✦"}
+            </div>
 
-        {/* NUMBER */}
-        <p
-          className="
-            relative
-            z-10
-            text-[#bc924c]
-            text-[11px]
-            tracking-[2px]
-            uppercase
-            mb-4
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 600,
-          }}
-        >
-          {String(index + 1).padStart(2, "0")}
-        </p>
+            {/* TITLE */}
+            <h3
+              className="
+                relative
+                z-10
+                text-[#21392f]
+                text-[24px]
+                leading-[1.15]
+                mb-4
+                max-w-[240px]
+              "
+              style={{
+                fontFamily: "Georgia, Times New Roman, serif",
+                fontWeight: 400,
+              }}
+            >
+              {item.heading || item.name}
+            </h3>
 
-        {/* ICON */}
-        <div
-          className="
-            absolute
-            right-5
-            top-5
-            text-[#d6bc88]/35
-            text-[52px]
-            leading-none
-          "
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          {item.icon || "✦"}
-        </div>
+            {/* DESCRIPTION */}
+            <p
+              className="
+                relative
+                z-10
+                text-[#5c5c5c]
+                text-[13px]
+                leading-[1.9]
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              {item.subheading || item.desc}
+            </p>
 
-        {/* TITLE */}
-        <h3
-          className="
-            relative
-            z-10
-            text-[#21392f]
-            text-[24px]
-            leading-[1.15]
-            mb-4
-            max-w-[240px]
-          "
-          style={{
-            fontFamily: "Georgia, Times New Roman, serif",
-            fontWeight: 400,
-          }}
-        >
-          {item.heading || item.name}
-        </h3>
-
-        {/* DESCRIPTION */}
-        <p
-          className="
-            relative
-            z-10
-            text-[#5c5c5c]
-            text-[13px]
-            leading-[1.9]
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          {item.subheading || item.desc}
-        </p>
-
-        {/* BOTTOM GOLD LINE */}
-        <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-6" />
-      </motion.div>
-    ))}
-</div>
+            {/* BOTTOM GOLD LINE */}
+            <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-7" />
+          </motion.div>
+        ))}
+    </div>
 
     {/* ================= QUOTE SECTION ================= */}
     <div
       className="
-        mt-12
+        mt-14
         rounded-[12px]
         bg-[#efe9de]
         border
@@ -1623,6 +1855,7 @@ const locationName = getLocationName();
 
 {/* ================= ULTRA PREMIUM HIGHLIGHTS SECTION ================= */}
 <motion.section
+id="amenities"
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
@@ -1689,7 +1922,7 @@ const locationName = getLocationName();
           fontFamily: "Inter, sans-serif",
         }}
       >
-        Project Highlights
+        Project Amenities
       </p>
     </motion.div>
 
@@ -2002,6 +2235,7 @@ const locationName = getLocationName();
       {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
 {unitConfigurations.length > 0 && (
   <motion.section
+  id="configuration"
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true, amount: 0.15 }}
@@ -2444,7 +2678,8 @@ const locationName = getLocationName();
 {/* ================= PREMIUM GALLERY SECTION ================= */}
 {media.gallery?.filter(Boolean).length > 0 && (
   <>
-    <motion.section
+    <motion.section 
+    id="gallery"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.12 }}
@@ -2727,6 +2962,7 @@ const locationName = getLocationName();
 
 {/* ================= LOCATION ADVANTAGES PREMIUM SECTION ================= */}
 <motion.section
+id="location"
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
@@ -3283,7 +3519,7 @@ const locationName = getLocationName();
 
 {/* ================= PREMIUM FAQ SECTION ================= */}
 {faqs.filter((f) => f.question).length > 0 && (
-  <section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+  <section id="contact" className="relative bg-[#f7f3ee] py-24 overflow-hidden">
 
     {/* SOFT BACKGROUND */}
     <div
@@ -3331,104 +3567,155 @@ const locationName = getLocationName();
       {/* ================= MAIN GRID ================= */}
       <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
 
-        {/* ================= LEFT CARD ================= */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeLeft}
-          className="rounded-[20px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
-        >
+   {/* ================= LEFT CARD ================= */}
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true }}
+  variants={fadeLeft}
+  className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
+>
 
-          {/* IMAGE */}
-          <div className="relative h-[340px] overflow-hidden">
+  {/* IMAGE */}
+  <div className="relative h-[380px] overflow-hidden group">
+
+    {/* DEVELOPER IMAGE */}
+    <img
+      src={
+        developerImage ||
+        "/location6.webp"
+      }
+      alt={developerName}
+      className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+    />
+
+    {/* PREMIUM OVERLAY */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
+
+    {/* GOLDEN GLOW */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
+
+    {/* CONTENT */}
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+
+      {/* LOGO */}
+      {developerLogo && (
+        <div className="relative mb-6">
+
+          {/* OUTER RING */}
+          <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
+
+          {/* LOGO HOLDER */}
+          <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+
             <img
-              src="/location6.webp"
-              alt="faq"
-              className="w-full h-full object-cover"
+              src={developerLogo}
+              alt={developerName}
+              className="w-16 h-16 object-contain"
             />
+          </div>
+        </div>
+      )}
 
-            {/* DARK OVERLAY */}
-            <div className="absolute inset-0 bg-black/10" />
+      {/* DEVELOPER NAME */}
+      <h3
+        className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
+        style={{
+          fontFamily:
+            "Cormorant Garamond, serif",
+        }}
+      >
+        {developerName}
+      </h3>
 
-            {/* LOGO */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-white">
+      {/* GOLD LINE */}
+      <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
 
-                <div className="w-20 h-20 mx-auto rounded-full border border-[#d6b16f] flex items-center justify-center mb-4 backdrop-blur-sm bg-white/10">
-                  <span className="text-4xl text-[#e0ba74]">✦</span>
-                </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
+      </div>
 
-                <h3
-                  className="text-4xl font-light"
-                  style={{
-                    fontFamily: "Cormorant Garamond, serif",
-                  }}
-                >
-                  SIGNATURE
-                </h3>
+      {/* SUBTEXT */}
+      <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
+        Luxury Developer
+      </p>
+    </div>
+  </div>
 
-                <p className="uppercase tracking-[4px] text-sm mt-1">
-                  GLOBAL
-                </p>
-              </div>
+  {/* CONTACT BOX */}
+  <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+
+    {/* BACKGROUND GLOW */}
+    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+
+    <div className="relative z-10 flex items-start gap-5">
+
+      {/* ICON */}
+      <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-7 h-7"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.7}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      </div>
+
+      {/* TEXT */}
+      <div className="flex-1">
+
+        <h4
+          className="text-3xl font-light"
+          style={{
+            fontFamily:
+              "Cormorant Garamond, serif",
+          }}
+        >
+          Still have questions?
+        </h4>
+
+        <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
+          Connect with our luxury property specialists and
+          discover every detail crafted for elevated living.
+        </p>
+
+        {/* CONTACT DETAILS */}
+        <div className="mt-6 space-y-4">
+
+          <div className="flex items-center gap-3 text-sm">
+
+            <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+              ✦
             </div>
+
+            <span className="text-white/90">
+              +91 99999 99999
+            </span>
           </div>
 
-          {/* CONTACT BOX */}
-          <div className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] p-7 text-white">
+          <div className="flex items-center gap-3 text-sm">
 
-            <div className="flex items-start gap-4">
-
-              {/* ICON */}
-              <div className="w-14 h-14 rounded-full border border-[#c8a66a] flex items-center justify-center text-[#d6b16f] flex-shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-7 h-7"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-
-              {/* TEXT */}
-              <div>
-                <h4
-                  className="text-2xl font-light"
-                  style={{
-                    fontFamily: "Cormorant Garamond, serif",
-                  }}
-                >
-                  Still have questions?
-                </h4>
-
-                <p className="text-white/70 text-sm leading-relaxed mt-2">
-                  Our experts are just a call away.
-                </p>
-
-                <div className="mt-5 space-y-3">
-
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="text-[#d6b16f]">✦</span>
-                    <span>+91 99999 99999</span>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="text-[#d6b16f]">✦</span>
-                    <span>Monday — Sunday | 10 AM — 7 PM</span>
-                  </div>
-                </div>
-              </div>
+            <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+              ✦
             </div>
+
+            <span className="text-white/90">
+              Monday — Sunday | 10 AM — 7 PM
+            </span>
           </div>
-        </motion.div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</motion.div>
 
         {/* ================= FAQ ACCORDION ================= */}
         <motion.div
@@ -3697,79 +3984,336 @@ const locationName = getLocationName();
   </section>
 )}
 
-        {/* ================= PREMIUM LEAD MODAL ================= */}
+      {/* ================= PREMIUM LEAD MODAL ================= */}
 {showModal && (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
 
-    <div className="w-[92%] max-w-md rounded-2xl overflow-hidden shadow-2xl bg-white">
+    {/* BACKDROP */}
+    <div
+      className="
+        absolute
+        inset-0
+        bg-black/65
+        backdrop-blur-sm
+      "
+      onClick={() => setShowModal(false)}
+    />
 
-      {/* HEADER */}
-      <div className="bg-gradient-to-r from-[#c9a64b] to-[#1f3d2b] px-6 py-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-white">
-          Get Instant Access
-        </h2>
+    {/* MODAL */}
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 20,
+        scale: 0.98,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: 1,
+      }}
+      transition={{
+        duration: 0.4,
+      }}
+      className="
+        relative
+        w-[92%]
+        max-w-md
+        overflow-hidden
+        rounded-[24px]
+        border
+        border-white/10
+        bg-[rgba(7,10,10,0.58)]
+        backdrop-blur-3xl
+        shadow-[0_20px_80px_rgba(0,0,0,0.55)]
+      "
+    >
 
+      {/* PREMIUM GLOW */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(201,166,75,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,166,75,0.10),transparent_30%)]" />
+
+      {/* BORDER SHINE */}
+      <div className="absolute inset-0 rounded-[24px] border border-white/5" />
+
+      {/* ================= HEADER ================= */}
+      <div className="relative z-10 px-6 pt-6 pb-5 border-b border-white/10">
+
+        {/* CLOSE BUTTON */}
         <button
           onClick={() => setShowModal(false)}
-          className="text-white text-xl"
+          className="
+            absolute
+            right-5
+            top-5
+            w-8
+            h-8
+            rounded-full
+            bg-white/5
+            border
+            border-white/10
+            flex
+            items-center
+            justify-center
+            text-white/70
+            hover:text-white
+            hover:bg-white/10
+            transition-all
+            duration-300
+          "
         >
           ✕
         </button>
+
+        {/* TOP LABEL */}
+        <div className="flex items-center gap-3 mb-4">
+
+          <div className="w-10 h-[1px] bg-[#d8b46b]" />
+
+          <p
+            className="
+              text-[#d8b46b]
+              text-[10px]
+              tracking-[3px]
+              uppercase
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Private Access
+          </p>
+        </div>
+
+        {/* TITLE */}
+        <h2
+          className="
+            text-white
+            text-[34px]
+            leading-[1]
+            tracking-[-1.5px]
+          "
+          style={{
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+            fontWeight: 400,
+          }}
+        >
+          Download
+          <br />
+          Brochure
+        </h2>
+
+        {/* DESCRIPTION */}
+        <p
+          className="
+            mt-4
+            text-white/60
+            text-[13px]
+            leading-[1.9]
+            max-w-[320px]
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Get instant access to pricing, floor plans,
+          payment details and exclusive inventory.
+        </p>
       </div>
 
-      {/* BODY */}
-      <div className="p-6 space-y-4">
-
-        <p className="text-sm text-gray-600 text-center">
-          Fill details to download brochure instantly
-        </p>
+      {/* ================= FORM ================= */}
+      <div className="relative z-10 px-6 py-6 space-y-5">
 
         {/* NAME FIELD */}
-        <div className="relative">
+        <div>
+
+          <label
+            className="
+              block
+              mb-2
+              text-[10px]
+              tracking-[2px]
+              uppercase
+              text-[#d8b46b]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Full Name
+          </label>
+
           <input
             type="text"
             value={leadName}
-            onChange={(e) => setLeadName(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 pt-5 pb-2 focus:outline-none focus:ring-2 focus:ring-[#1f3d2b]"
-            placeholder=" "
+            onChange={(e) =>
+              setLeadName(e.target.value)
+            }
+            placeholder="Enter your full name"
+            className="
+              w-full
+              h-[52px]
+              px-4
+              rounded-[12px]
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              text-white
+              placeholder:text-white/30
+              outline-none
+              transition-all
+              duration-300
+              focus:border-[#d8b46b]
+              focus:bg-white/[0.07]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+            }}
           />
-          <label className="absolute left-4 top-2 text-xs text-gray-500">
-            Full Name *
-          </label>
         </div>
 
         {/* PHONE FIELD */}
-        <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1f3d2b]">
+        <div>
 
-          <div className="px-3 flex items-center bg-gray-50 text-sm">
-            🇮🇳 +91
+          <label
+            className="
+              block
+              mb-2
+              text-[10px]
+              tracking-[2px]
+              uppercase
+              text-[#d8b46b]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Mobile Number
+          </label>
+
+          <div
+            className="
+              flex
+              items-center
+              h-[52px]
+              rounded-[12px]
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              overflow-hidden
+              transition-all
+              duration-300
+              focus-within:border-[#d8b46b]
+            "
+          >
+
+            {/* COUNTRY CODE */}
+            <div
+              className="
+                h-full
+                px-4
+                flex
+                items-center
+                border-r
+                border-white/10
+                text-white/70
+                text-sm
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              🇮🇳 +91
+            </div>
+
+            {/* INPUT */}
+            <input
+              type="tel"
+              value={leadPhone}
+              onChange={(e) =>
+                setLeadPhone(e.target.value)
+              }
+              placeholder="Enter mobile number"
+              className="
+                flex-1
+                h-full
+                bg-transparent
+                px-4
+                text-white
+                placeholder:text-white/30
+                outline-none
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            />
           </div>
-
-          <input
-            type="tel"
-            value={leadPhone}
-            onChange={(e) => setLeadPhone(e.target.value)}
-            className="flex-1 px-4 py-3 outline-none"
-            placeholder="Enter phone number"
-          />
         </div>
 
         {/* CTA BUTTON */}
         <button
           onClick={handleLeadSubmit}
           disabled={submitting}
-          className="w-full bg-gradient-to-r from-[#c9a64b] to-[#1f3d2b] text-white py-3 rounded-lg font-semibold hover:scale-[1.02] transition"
+          className="
+            group
+            relative
+            overflow-hidden
+            w-full
+            h-[52px]
+            rounded-[12px]
+            bg-[#c9a64b]
+            text-[#111]
+            text-[10px]
+            tracking-[2px]
+            uppercase
+            font-semibold
+            transition-all
+            duration-300
+            hover:brightness-110
+            shadow-[0_10px_30px_rgba(201,166,75,0.28)]
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
         >
-          {submitting ? "Processing..." : "Download Brochure →"}
+
+          {/* HOVER SHINE */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+
+          <div className="relative flex items-center justify-center gap-2">
+
+            {submitting ? (
+              "Processing..."
+            ) : (
+              <>
+                DOWNLOAD BROCHURE
+                <span>→</span>
+              </>
+            )}
+          </div>
         </button>
 
         {/* TRUST TEXT */}
-        <p className="text-xs text-gray-500 text-center">
-          🔒 Your details are safe & never shared
+        <p
+          className="
+            text-center
+            text-white/40
+            text-[11px]
+            tracking-[1px]
+            pt-1
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Your information remains completely private.
         </p>
-
       </div>
-    </div>
+    </motion.div>
   </div>
 )}
 
