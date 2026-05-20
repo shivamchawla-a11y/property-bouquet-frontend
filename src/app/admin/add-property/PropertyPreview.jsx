@@ -154,6 +154,7 @@ const {
   gatedContent = {},
   heroSection = {},
   categoryData = {},
+  configurationSection = {}, // ADD THIS
 } = form;
 
 const aboutSectionNumber =
@@ -2249,7 +2250,7 @@ id="amenities"
       {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
 {unitConfigurations.length > 0 && (
   <motion.section
-  id="configuration"
+    id="configuration"
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true, amount: 0.15 }}
@@ -2280,7 +2281,7 @@ id="amenities"
             fontWeight: 600,
           }}
         >
-          05
+          {configurationSection?.sectionNumber || "05"}
         </p>
 
         <div className="w-8 h-[1px] bg-[#c9a64b]" />
@@ -2291,7 +2292,8 @@ id="amenities"
             fontFamily: "Inter, sans-serif",
           }}
         >
-          Residence Configurations
+          {configurationSection?.sectionLabel ||
+            "Residence Configurations"}
         </p>
       </motion.div>
 
@@ -2313,7 +2315,15 @@ id="amenities"
           fontWeight: 400,
         }}
       >
-        Residences Tailored to Your Lifestyle
+        <span className="block">
+          {configurationSection?.titleLine1 ||
+            "Residences Tailored"}
+        </span>
+
+        <span className="block text-[#b89149]">
+          {configurationSection?.titleLine2 ||
+            "to Your Lifestyle"}
+        </span>
       </motion.h2>
 
       {/* GOLD DIVIDER */}
@@ -2346,9 +2356,8 @@ id="amenities"
           fontWeight: 300,
         }}
       >
-        Thoughtfully designed layouts that redefine space,
-        privacy and luxury. Choose the perfect home that
-        complements your life today and tomorrow.
+        {configurationSection?.subheading ||
+          "Thoughtfully designed layouts that redefine space, privacy and luxury."}
       </motion.p>
 
       {/* ================= MAIN PREMIUM CARD ================= */}
@@ -2504,38 +2513,52 @@ id="amenities"
                 <div className="w-14 h-[1px] bg-[#c9a64b] mt-7 mb-7" />
 
                 {/* ================= METRICS ================= */}
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
                   {[
-                    {
-                      label: "Super Area",
-                      value:
-                        unitConfigurations[activePlan]?.area ||
-                        "2450",
-                      icon: "◫",
-                    },
-                    {
-                      label: "Bedrooms",
-                      value:
-                        unitConfigurations[activePlan]
-                          ?.bedrooms || "3",
-                      icon: "⌂",
-                    },
-                    {
-                      label: "Bathrooms",
-                      value:
-                        unitConfigurations[activePlan]
-                          ?.bathrooms || "3",
-                      icon: "◉",
-                    },
-                    {
-                      label: "Balconies",
-                      value:
-                        unitConfigurations[activePlan]
-                          ?.balconies || "2",
-                      icon: "▤",
-                    },
-                  ].map((item, index) => (
+  {
+    label: "Super Area",
+    value:
+      unitConfigurations[activePlan]?.area ||
+      "2450 Sq.ft.",
+    icon: "◫",
+  },
+  {
+    label: "Bedrooms",
+    value:
+      unitConfigurations[activePlan]
+        ?.bedrooms || "3",
+    icon: "⌂",
+  },
+  {
+    label: "Bathrooms",
+    value:
+      unitConfigurations[activePlan]
+        ?.bathrooms || "3",
+    icon: "◉",
+  },
+  {
+    label: "Balconies",
+    value:
+      unitConfigurations[activePlan]
+        ?.balconies || "2",
+    icon: "▤",
+  },
+  {
+    label: "Price",
+    value:
+      unitConfigurations[activePlan]
+        ?.price || "On Request",
+    icon: "₹",
+  },
+  {
+    label: "Payment Plan",
+    value:
+      unitConfigurations[activePlan]
+        ?.paymentPlan || "Flexible",
+    icon: "◌",
+  },
+].map((item, index) => (
                     <div
                       key={index}
                       className="
@@ -2588,13 +2611,16 @@ id="amenities"
                 {/* ================= FEATURES ================= */}
                 <div className="mt-10 space-y-4">
 
-                  {[
-                    "Spacious living & dining area",
-                    "Wide balconies for natural light & ventilation",
-                    "Master suite with walk-in wardrobe",
-                    "Dedicated utility area",
-                    "2–3 car parking",
-                  ].map((item, index) => (
+                  {(configurationSection?.features?.length > 0
+                    ? configurationSection.features
+                    : [
+                        "Spacious living & dining area",
+                        "Wide balconies for natural light & ventilation",
+                        "Master suite with walk-in wardrobe",
+                        "Dedicated utility area",
+                        "2–3 car parking",
+                      ]
+                  ).map((item, index) => (
                     <div
                       key={index}
                       className="flex items-start gap-3"
@@ -2643,7 +2669,8 @@ id="amenities"
                     letterSpacing: "0.5px",
                   }}
                 >
-                  View Details
+                  {configurationSection?.buttonText ||
+                    "View Details"}
 
                   <span className="text-[#d7b367] text-[18px]">
                     →
