@@ -980,7 +980,7 @@ const locationName = getLocationName();
   </div>
 </div>
 
-    {/* ================= CINEMATIC HERO ================= */}
+{/* ================= CINEMATIC HERO ================= */}
 <motion.div
   id="overview"
   initial={{
@@ -1024,10 +1024,10 @@ const locationName = getLocationName();
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
 
     {/* GOLD LIGHT */}
-    <div className="absolute left-[6%] top-[14%] w-[520px] h-[520px] bg-[#c89d58]/10 blur-[140px] rounded-full" />
+    <div className="absolute left-[6%] top-[14%] w-[220px] h-[220px] md:w-[520px] md:h-[520px] bg-[#c89d58]/10 blur-[100px] md:blur-[140px] rounded-full" />
 
     {/* EXTRA AMBIENT LIGHT */}
-    <div className="absolute right-[10%] bottom-[10%] w-[380px] h-[380px] bg-[#d8b46b]/10 blur-[120px] rounded-full" />
+    <div className="absolute right-[10%] bottom-[10%] w-[180px] h-[180px] md:w-[380px] md:h-[380px] bg-[#d8b46b]/10 blur-[80px] md:blur-[120px] rounded-full" />
   </div>
 
   {/* ================= CONTENT ================= */}
@@ -1035,7 +1035,20 @@ const locationName = getLocationName();
     variants={staggerContainer}
     initial="hidden"
     animate="visible"
-    className="relative z-20 w-full px-5 lg:px-10 pb-10 md:pb-14 xl:pb-16 pt-28 md:pt-32"
+    className="
+      relative
+      z-20
+      w-full
+      px-4
+      sm:px-5
+      lg:px-10
+      pb-8
+      sm:pb-10
+      md:pb-14
+      xl:pb-16
+      pt-28
+      sm:pt-32
+    "
   >
 
     <div className="max-w-[1450px] mx-auto w-full">
@@ -1045,12 +1058,20 @@ const locationName = getLocationName();
         {/* LABEL */}
         <motion.div
           variants={fadeUp}
-          className="inline-flex items-center gap-3 mb-6"
+          className="inline-flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6 flex-wrap"
         >
-          <div className="w-10 h-[1px] bg-[#d8b46b]" />
+          <div className="w-8 sm:w-10 h-[1px] bg-[#d8b46b]" />
 
           <p
-            className="text-[#d8b46b] text-[11px] tracking-[4px] uppercase font-semibold"
+            className="
+              text-[#d8b46b]
+              text-[9px]
+              sm:text-[11px]
+              tracking-[2px]
+              sm:tracking-[4px]
+              uppercase
+              font-semibold
+            "
             style={{
               fontFamily:
                 "Inter, sans-serif",
@@ -1067,14 +1088,18 @@ const locationName = getLocationName();
           className="
             text-white
             font-normal
-            leading-[0.92]
-            tracking-[-3px]
-            text-[44px]
-            sm:text-[56px]
+            leading-[0.95]
+            tracking-[-1.5px]
+            sm:tracking-[-2px]
+            md:tracking-[-3px]
+            text-[34px]
+            xs:text-[38px]
+            sm:text-[48px]
             md:text-[72px]
             xl:text-[92px]
             2xl:text-[105px]
             max-w-[950px]
+            break-words
           "
           style={{
             fontFamily:
@@ -1087,19 +1112,47 @@ const locationName = getLocationName();
         {/* LOCATION */}
         <motion.div
           variants={fadeUp}
-          className="mt-7 flex items-center gap-3 text-white/82"
+          className="
+            mt-6
+            sm:mt-7
+            flex
+            items-center
+            gap-3
+            text-white/82
+          "
         >
 
-          <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+          <div className="
+            w-9
+            h-9
+            sm:w-10
+            sm:h-10
+            rounded-full
+            bg-white/10
+            backdrop-blur-xl
+            border
+            border-white/10
+            flex
+            items-center
+            justify-center
+            shrink-0
+          ">
 
             <MapPin
-              size={18}
-              className="text-[#d8b46b]"
+              size={16}
+              className="text-[#d8b46b] sm:w-[18px] sm:h-[18px]"
             />
           </div>
 
           <p
-            className="text-[16px] md:text-[24px] font-light tracking-wide"
+            className="
+              text-[13px]
+              sm:text-[16px]
+              md:text-[24px]
+              font-light
+              tracking-wide
+              break-words
+            "
             style={{
               fontFamily:
                 "Inter, sans-serif",
@@ -1112,18 +1165,21 @@ const locationName = getLocationName();
         {/* DIVIDER */}
         <motion.div
           variants={fadeUp}
-          className="w-[90px] h-[1px] bg-gradient-to-r from-[#c9a64b] to-transparent mt-8"
+          className="w-[70px] sm:w-[90px] h-[1px] bg-gradient-to-r from-[#c9a64b] to-transparent mt-7 sm:mt-8"
         />
 
         {/* DESCRIPTION */}
         <motion.p
           variants={fadeUp}
           className="
-            mt-7
+            mt-6
+            sm:mt-7
             max-w-[620px]
-            text-[15px]
+            text-[13px]
+            sm:text-[15px]
             md:text-[17px]
-            leading-[2]
+            leading-[1.9]
+            sm:leading-[2]
             text-white/72
             font-light
           "
@@ -1139,7 +1195,17 @@ const locationName = getLocationName();
         {/* BUTTONS */}
         <motion.div
           variants={fadeUp}
-          className="flex flex-wrap items-center gap-5 mt-12"
+          className="
+            flex
+            flex-col
+            sm:flex-row
+            sm:flex-wrap
+            items-start
+            sm:items-center
+            gap-5
+            mt-10
+            sm:mt-12
+          "
         >
 
           {/* DOWNLOAD */}
@@ -1149,13 +1215,19 @@ const locationName = getLocationName();
               group
               relative
               overflow-hidden
-              h-[50px]
-              px-7
+              h-[48px]
+              sm:h-[50px]
+              w-full
+              sm:w-auto
+              px-6
+              sm:px-7
               rounded-[5px]
               bg-[#c9a64b]
               text-[#111]
-              text-[11px]
-              tracking-[1.5px]
+              text-[10px]
+              sm:text-[11px]
+              tracking-[1.3px]
+              sm:tracking-[1.5px]
               font-[600]
               transition-all
               duration-300
@@ -1168,7 +1240,7 @@ const locationName = getLocationName();
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-            <div className="relative flex items-center gap-3">
+            <div className="relative flex items-center justify-center gap-3">
               <Download size={15} strokeWidth={2.2} />
 
               {heroSection?.brochureButtonText ||
@@ -1177,125 +1249,141 @@ const locationName = getLocationName();
           </button>
 
           {/* WATCH VIDEO */}
-<a
-  href={
-    media?.walkthroughUrl?.trim()
-      ? media.walkthroughUrl
-      : "#"
-  }
-  target="_blank"
-  rel="noopener noreferrer"
-  onClick={(e) => {
-    if (!media?.walkthroughUrl?.trim()) {
-      e.preventDefault();
-    }
-  }}
-  className="group relative flex items-center gap-4 transition-all duration-500"
-  style={{
-    fontFamily: "Inter, sans-serif",
-    opacity: media?.walkthroughUrl?.trim()
-      ? 1
-      : 0.72,
-  }}
->
+          <a
+            href={
+              media?.walkthroughUrl?.trim()
+                ? media.walkthroughUrl
+                : "#"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              if (!media?.walkthroughUrl?.trim()) {
+                e.preventDefault();
+              }
+            }}
+            className="
+              group
+              relative
+              flex
+              items-center
+              gap-4
+              transition-all
+              duration-500
+              w-full
+              sm:w-auto
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              opacity: media?.walkthroughUrl?.trim()
+                ? 1
+                : 0.72,
+            }}
+          >
 
-  {/* OUTER GLOW */}
-  <div className="relative">
+            {/* OUTER GLOW */}
+            <div className="relative shrink-0">
 
-    {/* GOLD AMBIENT */}
-    <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-2xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+              {/* GOLD AMBIENT */}
+              <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-2xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
 
-    {/* RING GLOW */}
-    <div className="absolute inset-0 rounded-full border border-[#d8b46b]/20 scale-[1.18] opacity-0 group-hover:opacity-100 group-hover:scale-[1.28] transition-all duration-700" />
+              {/* RING GLOW */}
+              <div className="absolute inset-0 rounded-full border border-[#d8b46b]/20 scale-[1.18] opacity-0 group-hover:opacity-100 group-hover:scale-[1.28] transition-all duration-700" />
 
-    {/* MAIN BUTTON */}
-    <div
-      className="
-        relative
-        w-[58px]
-        h-[58px]
-        rounded-full
-        flex
-        items-center
-        justify-center
-        overflow-hidden
-        border
-        border-white/15
-        shadow-[0_10px_40px_rgba(0,0,0,0.35)]
-        backdrop-blur-2xl
-        transition-all
-        duration-500
-        group-hover:scale-105
-        group-hover:border-[#d8b46b]/40
-      "
-      style={{
-        background: `
-          linear-gradient(
-            145deg,
-            rgba(255,255,255,0.10),
-            rgba(255,255,255,0.03)
-          )
-        `,
-      }}
-    >
+              {/* MAIN BUTTON */}
+              <div
+                className="
+                  relative
+                  w-[54px]
+                  h-[54px]
+                  sm:w-[58px]
+                  sm:h-[58px]
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  overflow-hidden
+                  border
+                  border-white/15
+                  shadow-[0_10px_40px_rgba(0,0,0,0.35)]
+                  backdrop-blur-2xl
+                  transition-all
+                  duration-500
+                  group-hover:scale-105
+                  group-hover:border-[#d8b46b]/40
+                "
+                style={{
+                  background: `
+                    linear-gradient(
+                      145deg,
+                      rgba(255,255,255,0.10),
+                      rgba(255,255,255,0.03)
+                    )
+                  `,
+                }}
+              >
 
-      {/* INNER GOLD SHINE */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#d8b46b]/10 via-transparent to-transparent opacity-60" />
+                {/* INNER GOLD SHINE */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#d8b46b]/10 via-transparent to-transparent opacity-60" />
 
-      {/* PLAY ICON */}
-      <Play
-        size={17}
-        fill="currentColor"
-        className="
-          relative
-          z-10
-          ml-[2px]
-          text-white
-          group-hover:text-[#f3d38d]
-          transition-all
-          duration-500
-        "
-      />
-    </div>
-  </div>
+                {/* PLAY ICON */}
+                <Play
+                  size={16}
+                  fill="currentColor"
+                  className="
+                    relative
+                    z-10
+                    ml-[2px]
+                    text-white
+                    group-hover:text-[#f3d38d]
+                    transition-all
+                    duration-500
+                  "
+                />
+              </div>
+            </div>
 
-  {/* TEXT */}
-  <div className="flex flex-col">
+            {/* TEXT */}
+            <div className="flex flex-col min-w-0">
 
-    <span
-      className="
-        text-[11px]
-        tracking-[2.8px]
-        uppercase
-        text-white/78
-        group-hover:text-white
-        transition-all
-        duration-500
-      "
-    >
-      {heroSection?.videoButtonText ||
-        "WATCH PROJECT VIDEO"}
-    </span>
+              <span
+                className="
+                  text-[10px]
+                  sm:text-[11px]
+                  tracking-[2px]
+                  sm:tracking-[2.8px]
+                  uppercase
+                  text-white/78
+                  group-hover:text-white
+                  transition-all
+                  duration-500
+                  break-words
+                "
+              >
+                {heroSection?.videoButtonText ||
+                  "WATCH PROJECT VIDEO"}
+              </span>
 
-    <span className="text-[10px] text-[#d8b46b]/70 tracking-[1.5px] mt-[2px]">
-      Cinematic Walkthrough
-    </span>
-  </div>
-</a>
+              <span className="text-[9px] sm:text-[10px] text-[#d8b46b]/70 tracking-[1.2px] sm:tracking-[1.5px] mt-[2px]">
+                Cinematic Walkthrough
+              </span>
+            </div>
+          </a>
         </motion.div>
       </div>
 
       {/* ================= PREMIUM METRICS ================= */}
       <motion.div
         variants={fadeUp}
-        className="mt-14"
+        className="mt-12 sm:mt-14"
       >
 
         <div
           className="
             relative
             overflow-hidden
-            rounded-[22px]
+            rounded-[18px]
+            sm:rounded-[22px]
             border
             border-white/12
             backdrop-blur-xl
@@ -1328,20 +1416,26 @@ const locationName = getLocationName();
             }}
           />
 
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-5">
+          <div className="
+            relative
+            z-10
+            grid
+            grid-cols-2
+            md:grid-cols-5
+          ">
 
             {/* ACRES */}
-            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-b md:border-b-0 border-white/10">
 
               <div className="flex justify-center mb-2">
                 <LayoutGrid
-                  size={18}
+                  size={16}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
                 style={{
                   fontFamily:
                     "Georgia, Times New Roman, serif",
@@ -1351,7 +1445,7 @@ const locationName = getLocationName();
               </p>
 
               <p
-                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
+                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
                 style={{
                   fontFamily:
                     "Inter, sans-serif",
@@ -1362,17 +1456,17 @@ const locationName = getLocationName();
             </div>
 
             {/* TOWERS */}
-            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-b md:border-b-0 md:border-r border-white/10">
 
               <div className="flex justify-center mb-2">
                 <Building2
-                  size={18}
+                  size={16}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
                 style={{
                   fontFamily:
                     "Georgia, Times New Roman, serif",
@@ -1382,7 +1476,7 @@ const locationName = getLocationName();
               </p>
 
               <p
-                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
+                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
                 style={{
                   fontFamily:
                     "Inter, sans-serif",
@@ -1393,17 +1487,17 @@ const locationName = getLocationName();
             </div>
 
             {/* UNITS */}
-            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-white/10">
 
               <div className="flex justify-center mb-2">
                 <Users
-                  size={18}
+                  size={16}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-[22px] md:text-[28px] leading-none text-white font-light"
+                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
                 style={{
                   fontFamily:
                     "Georgia, Times New Roman, serif",
@@ -1413,7 +1507,7 @@ const locationName = getLocationName();
               </p>
 
               <p
-                className="mt-1 text-white/55 text-[10px] tracking-[2px] uppercase"
+                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
                 style={{
                   fontFamily:
                     "Inter, sans-serif",
@@ -1424,17 +1518,17 @@ const locationName = getLocationName();
             </div>
 
             {/* POSSESSION */}
-            <div className="py-4 lg:py-5 px-4 text-center border-r border-white/10">
+            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-white/10">
 
               <div className="flex justify-center mb-2">
                 <CalendarDays
-                  size={18}
+                  size={16}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
+                className="text-white/60 text-[9px] sm:text-[10px] tracking-[1.2px] sm:tracking-[1.5px] uppercase mb-2"
                 style={{
                   fontFamily: "Inter, sans-serif",
                 }}
@@ -1443,7 +1537,7 @@ const locationName = getLocationName();
               </p>
 
               <p
-                className="text-[20px] md:text-[28px] leading-none text-white font-[400]"
+                className="text-[18px] sm:text-[20px] md:text-[28px] leading-none text-white font-[400]"
                 style={{
                   fontFamily:
                     "Georgia, Times New Roman, serif",
@@ -1454,17 +1548,17 @@ const locationName = getLocationName();
             </div>
 
             {/* PRICE */}
-            <div className="py-4 lg:py-5 px-4 text-center">
+            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center col-span-2 md:col-span-1">
 
               <div className="flex justify-center mb-2">
                 <IndianRupee
-                  size={18}
+                  size={16}
                   className="text-[#d8b46b]"
                 />
               </div>
 
               <p
-                className="text-white/60 text-[10px] tracking-[1.5px] uppercase mb-2"
+                className="text-white/60 text-[9px] sm:text-[10px] tracking-[1.2px] sm:tracking-[1.5px] uppercase mb-2"
                 style={{
                   fontFamily: "Inter, sans-serif",
                 }}
@@ -1473,7 +1567,7 @@ const locationName = getLocationName();
               </p>
 
               <p
-                className="text-[24px] md:text-[34px] leading-none text-[#dfbc67] font-[400]"
+                className="text-[22px] sm:text-[24px] md:text-[34px] leading-none text-[#dfbc67] font-[400]"
                 style={{
                   fontFamily:
                     "Georgia, Times New Roman, serif",
@@ -1487,40 +1581,55 @@ const locationName = getLocationName();
       </motion.div>
 
       {/* ================= TAGLINE ================= */}
-<motion.div
-  variants={fadeUp}
-  className="flex flex-wrap items-center justify-center gap-4 mt-8 text-[#d8b46b]/90 text-[10px] tracking-[4px] uppercase text-center"
-  style={{
-    fontFamily: "Inter, sans-serif",
-  }}
->
+      <motion.div
+        variants={fadeUp}
+        className="
+          flex
+          flex-wrap
+          items-center
+          justify-center
+          gap-2
+          sm:gap-4
+          mt-8
+          text-[#d8b46b]/90
+          text-[8px]
+          sm:text-[10px]
+          tracking-[2px]
+          sm:tracking-[4px]
+          uppercase
+          text-center
+        "
+        style={{
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
 
-  <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
+        <div className="w-8 sm:w-16 h-[1px] bg-[#c9a64b]/40" />
 
-  {(
-    heroSection?.taglineItems?.filter(
-      item => item?.trim() !== ""
-    )?.length > 0
-      ? heroSection.taglineItems.filter(
-          item => item?.trim() !== ""
-        )
-      : [
-          "Ultra-Luxury Residences",
-          "Low-Density Living",
-          "Exclusive Community",
-        ]
-  ).map((item, index, arr) => (
-    <React.Fragment key={index}>
-      <span>{item}</span>
+        {(
+          heroSection?.taglineItems?.filter(
+            item => item?.trim() !== ""
+          )?.length > 0
+            ? heroSection.taglineItems.filter(
+                item => item?.trim() !== ""
+              )
+            : [
+                "Ultra-Luxury Residences",
+                "Low-Density Living",
+                "Exclusive Community",
+              ]
+        ).map((item, index, arr) => (
+          <React.Fragment key={index}>
+            <span>{item}</span>
 
-      {index !== arr.length - 1 && (
-        <span>|</span>
-      )}
-    </React.Fragment>
-  ))}
+            {index !== arr.length - 1 && (
+              <span>|</span>
+            )}
+          </React.Fragment>
+        ))}
 
-  <div className="w-16 h-[1px] bg-[#c9a64b]/40" />
-</motion.div>
+        <div className="w-8 sm:w-16 h-[1px] bg-[#c9a64b]/40" />
+      </motion.div>
     </div>
   </motion.div>
 </motion.div>
@@ -1532,12 +1641,19 @@ const locationName = getLocationName();
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
   variants={fadeUp}
-  className="relative bg-[#f7f3ec] py-14 md:py-20 overflow-hidden"
+  className="
+    relative
+    bg-[#f7f3ec]
+    py-12
+    sm:py-14
+    md:py-20
+    overflow-hidden
+  "
 >
   {/* SOFT AMBIENT GLOW */}
-  <div className="absolute top-[-120px] left-[-120px] w-[420px] h-[420px] bg-[#c9a64b]/8 blur-[120px] rounded-full" />
+  <div className="absolute top-[-120px] left-[-120px] w-[240px] h-[240px] sm:w-[320px] sm:h-[320px] md:w-[420px] md:h-[420px] bg-[#c9a64b]/8 blur-[80px] md:blur-[120px] rounded-full" />
 
-  <div className="relative z-10 max-w-[1320px] mx-auto px-4 lg:px-6">
+  <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-5 lg:px-6">
 
     {/* ================= MAIN GRID ================= */}
     <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 xl:gap-10 items-start">
@@ -1546,7 +1662,7 @@ const locationName = getLocationName();
       <div className="relative">
 
         {/* THIN GOLD FRAME */}
-        <div className="absolute inset-0 border border-[#d7bc88] rounded-[18px] translate-x-3 translate-y-3" />
+        <div className="absolute inset-0 border border-[#d7bc88] rounded-[14px] sm:rounded-[18px] translate-x-2 sm:translate-x-3 translate-y-2 sm:translate-y-3" />
 
         {/* IMAGE WRAPPER */}
         <motion.div
@@ -1556,7 +1672,7 @@ const locationName = getLocationName();
           transition={{
             duration: 0.45,
           }}
-          className="relative overflow-hidden rounded-[14px]"
+          className="relative overflow-hidden rounded-[12px] sm:rounded-[14px]"
         >
           <img
             src={
@@ -1566,7 +1682,8 @@ const locationName = getLocationName();
             alt="About"
             className="
               w-full
-              h-[340px]
+              h-[260px]
+              sm:h-[340px]
               md:h-[500px]
               object-cover
             "
@@ -1581,11 +1698,19 @@ const locationName = getLocationName();
       <div className="pt-2 lg:pt-6">
 
         {/* ================= TOP LABEL ================= */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-wrap">
 
           {/* SECTION NUMBER */}
           <p
-            className="text-[#b89149] text-[11px] tracking-[2.5px] uppercase font-semibold"
+            className="
+              text-[#b89149]
+              text-[9px]
+              sm:text-[11px]
+              tracking-[2px]
+              sm:tracking-[2.5px]
+              uppercase
+              font-semibold
+            "
             style={{
               fontFamily: "Inter, sans-serif",
             }}
@@ -1593,48 +1718,60 @@ const locationName = getLocationName();
             {aboutSectionNumber}
           </p>
 
-          <div className="w-8 h-[1px] bg-[#c9a64b]" />
+          <div className="w-6 sm:w-8 h-[1px] bg-[#c9a64b]" />
 
           {/* SECTION LABEL */}
-<p
-  className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
-  style={{
-    fontFamily: "Inter, sans-serif",
-    fontWeight: 500,
-  }}
->
-  {overview?.aboutLabel || "Luxury Living"}
-</p>
+          <p
+            className="
+              text-[#233c31]
+              text-[9px]
+              sm:text-[11px]
+              tracking-[2px]
+              sm:tracking-[2.5px]
+              uppercase
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 500,
+            }}
+          >
+            {overview?.aboutLabel || "Luxury Living"}
+          </p>
         </div>
 
         {/* ================= TITLE ================= */}
         <h2
-  className="
-    text-[#183126]
-    text-[38px]
-    md:text-[62px]
-    leading-[0.98]
-    tracking-[-2.5px]
-    max-w-[620px]
-  "
-  style={{
-    fontFamily: "Georgia, Times New Roman, serif",
-    fontWeight: 400,
-  }}
->
-  {overview?.aboutTitleLine1 ||
-    "Crafted For Elevated"}
+          className="
+            text-[#183126]
+            text-[30px]
+            sm:text-[38px]
+            md:text-[62px]
+            leading-[1]
+            md:leading-[0.98]
+            tracking-[-1px]
+            sm:tracking-[-2px]
+            md:tracking-[-2.5px]
+            max-w-[620px]
+            break-words
+          "
+          style={{
+            fontFamily: "Georgia, Times New Roman, serif",
+            fontWeight: 400,
+          }}
+        >
+          {overview?.aboutTitleLine1 ||
+            "Crafted For Elevated"}
 
-  <br />
+          <br />
 
-  {overview?.aboutTitleLine2 ||
-    "Luxury Living"}
-</h2>
+          {overview?.aboutTitleLine2 ||
+            "Luxury Living"}
+        </h2>
 
         {/* ================= GOLD DIVIDER ================= */}
-        <div className="flex items-center gap-3 mt-6 mb-7">
+        <div className="flex items-center gap-3 mt-5 sm:mt-6 mb-6 sm:mb-7">
 
-          <div className="w-14 h-[1px] bg-[#c9a64b]" />
+          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
 
           <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
         </div>
@@ -1643,11 +1780,14 @@ const locationName = getLocationName();
         <div
           className="
             text-[#505050]
-            text-[14px]
+            text-[13px]
+            sm:text-[14px]
             md:text-[15px]
-            leading-[2]
+            leading-[1.9]
+            md:leading-[2]
             font-[350]
-            space-y-5
+            space-y-4
+            sm:space-y-5
             max-w-[560px]
           "
           style={{
@@ -1704,23 +1844,29 @@ const locationName = getLocationName();
               key={index}
               className="
                 relative
-                px-5
-                py-7
+                px-3
+                sm:px-5
+                py-5
+                sm:py-7
                 md:py-8
                 text-center
                 border-r
+                border-b
+                md:border-b-0
                 last:border-r-0
                 border-white/10
               "
             >
 
               {/* ICON */}
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-3 sm:mb-4">
 
                 <div
                   className="
-                    w-11
-                    h-11
+                    w-9
+                    h-9
+                    sm:w-11
+                    sm:h-11
                     rounded-full
                     border
                     border-[#c9a64b]/35
@@ -1728,7 +1874,8 @@ const locationName = getLocationName();
                     items-center
                     justify-center
                     text-[#d8b46b]
-                    text-[18px]
+                    text-[15px]
+                    sm:text-[18px]
                   "
                 >
                   {item?.icon || "✦"}
@@ -1739,10 +1886,13 @@ const locationName = getLocationName();
               <h3
                 className="
                   text-[#d7b367]
-                  text-[10px]
+                  text-[9px]
+                  sm:text-[10px]
                   md:text-[11px]
-                  leading-[1.7]
-                  tracking-[1.4px]
+                  leading-[1.6]
+                  sm:leading-[1.7]
+                  tracking-[1px]
+                  sm:tracking-[1.4px]
                   uppercase
                   mb-2
                 "
@@ -1758,9 +1908,11 @@ const locationName = getLocationName();
               <p
                 className="
                   text-white/60
-                  text-[10px]
+                  text-[9px]
+                  sm:text-[10px]
                   md:text-[11px]
-                  leading-[1.8]
+                  leading-[1.7]
+                  sm:leading-[1.8]
                   max-w-[180px]
                   mx-auto
                 "
