@@ -478,7 +478,10 @@ const buildOptions = (nodes, prefix = "") => {
       <div className="w-full max-w-full h-[80vh] overflow-y-auto overflow-x-hidden bg-white rounded-xl p-2 md:p-4">
 
         <div className="w-full overflow-x-hidden">
-          <PropertyPreview form={previewData} />
+          <PropertyPreview
+  form={previewData}
+  insideAdmin={true}
+/>
         </div>
 
       </div>
@@ -2272,8 +2275,11 @@ const buildOptions = (nodes, prefix = "") => {
    {/* RIGHT SIDE — LIVE PREVIEW */}
   {!fullFormMode && (
   <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
-    <PropertyPreview form={previewData} />
-  </div>
+  <PropertyPreview
+    form={previewData}
+    insideAdmin={true}
+  />
+</div>
 )}
 
   

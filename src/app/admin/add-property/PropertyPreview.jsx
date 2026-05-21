@@ -140,7 +140,7 @@ const CUSTOM_ICONS = [
   { name: "Store", icon: Store },
 ];
 
-export default function PropertyPreview({ form, developers = [] }) {
+export default function PropertyPreview({ form, insideAdmin = false, developers = [] }) {
   if (!form) return null;
 
 const {
@@ -487,7 +487,7 @@ const locationName = getLocationName();
   {/* ================= ULTRA PREMIUM RESPONSIVE FLOATING NAVBAR ================= */}
 <div
   className={`
-    fixed
+    ${insideAdmin ? "absolute" : "fixed"}
     top-0
     left-0
     w-full
