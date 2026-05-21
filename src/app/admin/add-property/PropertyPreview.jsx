@@ -147,7 +147,6 @@ const {
   coreDetails = {},
   overview = {},
   media = {},
-  unitConfigurations = [],
   locationData = {},
   faqs = [],
   keyMetrics = {},
@@ -252,7 +251,7 @@ function getDeveloperImage() {
   return "";
 }
 
-  const floorPlans = gatedContent?.floorPlans || [];
+  const unitConfigurations = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [leadName, setLeadName] = useState("");
@@ -264,6 +263,8 @@ function getDeveloperImage() {
 const [selectedIndex, setSelectedIndex] = useState(0);
 const [scrolled, setScrolled] = useState(false);
 const [activeSection, setActiveSection] = useState("overview");
+const [mobileMenuOpen, setMobileMenuOpen] =
+  useState(false);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -483,7 +484,7 @@ const locationName = getLocationName();
   return (
     <div className="relative overflow-hidden bg-black">
 
-   {/* ================= ULTRA PREMIUM FLOATING NAVBAR ================= */}
+  {/* ================= ULTRA PREMIUM RESPONSIVE FLOATING NAVBAR ================= */}
 <div
   className={`
     fixed
@@ -520,13 +521,13 @@ const locationName = getLocationName();
         ${
           scrolled
             ? `
-              rounded-[14px]
-              bg-[rgba(4,7,7,0.78)]
+              rounded-[16px]
+              bg-[rgba(4,7,7,0.82)]
               shadow-[0_10px_40px_rgba(0,0,0,0.38)]
             `
             : `
               rounded-[24px]
-              bg-[rgba(7,10,10,0.35)]
+              bg-[rgba(7,10,10,0.38)]
               shadow-[0_20px_80px_rgba(0,0,0,0.48)]
             `
         }
@@ -539,6 +540,7 @@ const locationName = getLocationName();
       {/* BORDER SHINE */}
       <div className="absolute inset-0 rounded-[24px] border border-white/5" />
 
+      {/* ================= NAV CONTENT ================= */}
       <div
         className={`
           relative
@@ -553,14 +555,14 @@ const locationName = getLocationName();
           duration-500
           ${
             scrolled
-              ? "h-[52px]"
-              : "h-[62px] lg:h-[66px]"
+              ? "h-[58px]"
+              : "h-[64px] lg:h-[68px]"
           }
         `}
       >
 
         {/* ================= LEFT ================= */}
-        <div className="flex items-center gap-4 min-w-fit">
+        <div className="flex items-center gap-3 min-w-fit">
 
           {developerLogo &&
           developerLogo.trim() !== "" ? (
@@ -570,7 +572,8 @@ const locationName = getLocationName();
               className="
                 h-7
                 md:h-8
-                max-w-[120px]
+                max-w-[110px]
+                md:max-w-[130px]
                 object-contain
                 opacity-95
                 transition-all
@@ -585,8 +588,10 @@ const locationName = getLocationName();
             <h2
               className="
                 text-white
-                text-[15px]
-                tracking-[3px]
+                text-[13px]
+                md:text-[15px]
+                tracking-[2px]
+                md:tracking-[3px]
                 whitespace-nowrap
               "
               style={{
@@ -599,7 +604,7 @@ const locationName = getLocationName();
           )}
         </div>
 
-        {/* ================= CENTER NAV ================= */}
+        {/* ================= DESKTOP NAV ================= */}
         <div className="hidden xl:flex items-center gap-4 2xl:gap-6">
 
           {[
@@ -692,49 +697,285 @@ const locationName = getLocationName();
           ))}
         </div>
 
-        {/* ================= RIGHT CTA ================= */}
-        <button
-          onClick={() => setShowModal(true)}
-          className="
-            group
-            relative
-            overflow-hidden
-            h-[34px]
-            md:h-[36px]
-            px-4
-            md:px-5
-            rounded-[4px]
-            bg-[#c9a64b]
-            text-[#111]
-            text-[9px]
-            tracking-[1.1px]
-            font-[600]
-            transition-all
-            duration-300
-            hover:brightness-110
-            shadow-[0_8px_24px_rgba(201,166,75,0.18)]
-            whitespace-nowrap
-          "
-          style={{
-            fontFamily:
-              "Inter, sans-serif",
-          }}
-        >
+        {/* ================= RIGHT ================= */}
+        <div className="flex items-center gap-3">
 
-          {/* BUTTON SHINE */}
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+          {/* DESKTOP CTA */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="
+              hidden
+              md:flex
+              group
+              relative
+              overflow-hidden
+              h-[36px]
+              px-5
+              rounded-[6px]
+              bg-[#c9a64b]
+              text-[#111]
+              text-[9px]
+              tracking-[1.1px]
+              font-[600]
+              transition-all
+              duration-300
+              hover:brightness-110
+              shadow-[0_8px_24px_rgba(201,166,75,0.18)]
+              whitespace-nowrap
+            "
+            style={{
+              fontFamily:
+                "Inter, sans-serif",
+            }}
+          >
 
-          <div className="relative flex items-center gap-2">
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-            <Download
-              size={12}
-              strokeWidth={2.2}
-            />
+            <div className="relative flex items-center gap-2">
 
-            DOWNLOAD BROCHURE
-          </div>
-        </button>
+              <Download
+                size={12}
+                strokeWidth={2.2}
+              />
+
+              DOWNLOAD BROCHURE
+            </div>
+          </button>
+
+          {/* ================= MOBILE MENU BUTTON ================= */}
+          <button
+            onClick={() =>
+              setMobileMenuOpen(
+                !mobileMenuOpen
+              )
+            }
+            className="
+              xl:hidden
+              relative
+              w-[42px]
+              h-[42px]
+              rounded-full
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              flex
+              items-center
+              justify-center
+              transition-all
+              duration-300
+              hover:bg-white/10
+            "
+          >
+
+            <div className="flex flex-col gap-[4px]">
+
+              <span
+                className={`
+                  block
+                  w-[18px]
+                  h-[1.5px]
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    mobileMenuOpen
+                      ? "rotate-45 translate-y-[5px]"
+                      : ""
+                  }
+                `}
+              />
+
+              <span
+                className={`
+                  block
+                  w-[18px]
+                  h-[1.5px]
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    mobileMenuOpen
+                      ? "opacity-0"
+                      : ""
+                  }
+                `}
+              />
+
+              <span
+                className={`
+                  block
+                  w-[18px]
+                  h-[1.5px]
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    mobileMenuOpen
+                      ? "-rotate-45 -translate-y-[6px]"
+                      : ""
+                  }
+                `}
+              />
+            </div>
+          </button>
+        </div>
       </div>
+
+      {/* ================= MOBILE MENU ================= */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: -20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: -20,
+            }}
+            transition={{
+              duration: 0.28,
+            }}
+            className="
+              xl:hidden
+              relative
+              z-20
+              border-t
+              border-white/10
+              bg-[rgba(5,8,8,0.96)]
+              backdrop-blur-3xl
+            "
+          >
+
+            <div className="px-5 py-5 space-y-1">
+
+              {[
+                {
+                  label: "Overview",
+                  id: "overview",
+                },
+                {
+                  label: "About Project",
+                  id: "about",
+                },
+                {
+                  label: "Highlights",
+                  id: "highlights",
+                },
+                {
+                  label: "Amenities",
+                  id: "amenities",
+                },
+                {
+                  label: "Floor Plan",
+                  id: "configuration",
+                },
+                {
+                  label: "Gallery",
+                  id: "gallery",
+                },
+                {
+                  label: "Location",
+                  id: "location",
+                },
+                {
+                  label: "Contact",
+                  id: "contact",
+                },
+              ].map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+
+                    const section =
+                      document.getElementById(
+                        item.id
+                      );
+
+                    if (section) {
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }
+                  }}
+                  className={`
+                    w-full
+                    flex
+                    items-center
+                    justify-between
+                    py-4
+                    border-b
+                    border-white/5
+                    text-left
+                    transition-all
+                    duration-300
+                    ${
+                      activeSection === item.id
+                        ? "text-[#d8b46b]"
+                        : "text-white/75"
+                    }
+                  `}
+                >
+
+                  <span
+                    className="
+                      text-[12px]
+                      tracking-[2px]
+                      uppercase
+                    "
+                    style={{
+                      fontFamily:
+                        "Inter, sans-serif",
+                    }}
+                  >
+                    {item.label}
+                  </span>
+
+                  <span className="text-[#c9a64b] text-[18px]">
+                    →
+                  </span>
+                </button>
+              ))}
+
+              {/* MOBILE CTA */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowModal(true);
+                }}
+                className="
+                  mt-5
+                  w-full
+                  h-[52px]
+                  rounded-[10px]
+                  bg-[#c9a64b]
+                  text-[#111]
+                  text-[11px]
+                  tracking-[1.4px]
+                  font-semibold
+                  flex
+                  items-center
+                  justify-center
+                  gap-3
+                  shadow-[0_10px_30px_rgba(201,166,75,0.25)]
+                "
+              >
+
+                <Download size={15} />
+
+                DOWNLOAD BROCHURE
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   </div>
 </div>
@@ -2247,16 +2488,12 @@ id="amenities"
   </div>
 </motion.section>
 
-      {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
-{unitConfigurations?.length > 0 && (() => {
+{/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
+{gatedContent?.floorPlans?.length > 0 && (() => {
 
-  // ✅ SAFE ACTIVE CONFIG
-  const activeConfig =
-    unitConfigurations?.[activePlan] || {};
-
-  // ✅ MATCH FLOOR PLAN BY INDEX
+  // ✅ ACTIVE FLOOR PLAN
   const activeFloorPlan =
-    gatedContent?.floorPlans?.[activePlan] || {};
+    gatedContent.floorPlans?.[activePlan] || {};
 
   return (
     <motion.section
@@ -2390,7 +2627,7 @@ id="amenities"
             {/* ================= LEFT TABS ================= */}
             <div className="border-r border-[#e6dccb] bg-[#f5f0e7]">
 
-              {unitConfigurations.map((u, i) => (
+              {gatedContent.floorPlans.map((u, i) => (
                 <button
                   key={i}
                   onClick={() => setActivePlan(i)}
@@ -2452,7 +2689,7 @@ id="amenities"
                           }
                         `}
                       >
-                        Luxury Residences
+                        {u?.area || "Luxury Residences"}
                       </p>
                     </div>
 
@@ -2492,7 +2729,7 @@ id="amenities"
                         "Georgia, Times New Roman, serif",
                     }}
                   >
-                    {activeConfig?.unitType || "Luxury Unit"}
+                    {activeFloorPlan?.unitType || "Luxury Unit"}
                   </h3>
 
                   <p
@@ -2502,7 +2739,7 @@ id="amenities"
                       text-[18px]
                     "
                   >
-                    Luxury Residences
+                    {activeFloorPlan?.area || "Luxury Residences"}
                   </p>
 
                   <div className="w-14 h-[1px] bg-[#c9a64b] mt-7 mb-7" />
@@ -2512,48 +2749,29 @@ id="amenities"
 
                     {[
                       {
-                        label: "Super Area",
-                        value:
-                          activeConfig?.area ||
-                          "2450 Sq.ft.",
-                        icon: "◫",
-                      },
-                      {
                         label: "Bedrooms",
-                        value:
-                          activeConfig?.bedrooms ||
-                          activeFloorPlan?.bedrooms ||
-                          "3",
+                        value: activeFloorPlan?.bedrooms || "3",
                         icon: "⌂",
                       },
                       {
                         label: "Bathrooms",
-                        value:
-                          activeConfig?.bathrooms ||
-                          activeFloorPlan?.bathrooms ||
-                          "3",
+                        value: activeFloorPlan?.bathrooms || "3",
                         icon: "◉",
                       },
                       {
                         label: "Balconies",
-                        value:
-                          activeConfig?.balconies ||
-                          activeFloorPlan?.balconies ||
-                          "2",
+                        value: activeFloorPlan?.balconies || "2",
                         icon: "▤",
                       },
                       {
                         label: "Price",
-                        value:
-                          activeConfig?.price ||
-                          "On Request",
+                        value: activeFloorPlan?.price || "On Request",
                         icon: "₹",
                       },
                       {
                         label: "Payment Plan",
                         value:
-                          activeConfig?.paymentPlan ||
-                          "Flexible",
+                          activeFloorPlan?.paymentPlan || "Flexible",
                         icon: "◌",
                       },
                     ].map((item, index) => (
