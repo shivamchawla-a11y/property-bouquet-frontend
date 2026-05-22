@@ -148,12 +148,14 @@ const {
   overview = {},
   media = {},
   locationData = {},
+  masterPlanData = {}, // ✅ ADD THIS
   faqs = [],
+  faqSection = {}, // ADD THIS
   keyMetrics = {},
   gatedContent = {},
   heroSection = {},
   categoryData = {},
-  configurationSection = {}, // ADD THIS
+  configurationSection = {},
 } = form;
 
 const aboutSectionNumber =
@@ -1940,7 +1942,8 @@ const locationName = getLocationName();
   className="
     relative
     bg-[#f7f3ec]
-    py-14
+    py-12
+    sm:py-14
     md:py-20
     overflow-hidden
   "
@@ -1949,15 +1952,15 @@ const locationName = getLocationName();
   {/* AMBIENT GLOW */}
   <div className="absolute right-[-120px] top-[120px] w-[320px] h-[320px] bg-[#c9a64b]/10 blur-[120px] rounded-full" />
 
-  <div className="relative z-10 max-w-[1320px] mx-auto px-4 lg:px-6">
+  <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-5 lg:px-6">
 
     {/* ================= SECTION HEADER ================= */}
-    <div className="text-center mb-16">
+    <div className="text-center mb-12 md:mb-16">
 
-      <div className="flex items-center justify-center gap-3 mb-4">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 flex-wrap">
 
         <p
-          className="text-[#b89149] text-[11px] tracking-[2.5px] uppercase font-semibold"
+          className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[2.5px] uppercase font-semibold"
           style={{
             fontFamily: "Inter, sans-serif",
           }}
@@ -1965,10 +1968,10 @@ const locationName = getLocationName();
           03
         </p>
 
-        <div className="w-10 h-[1px] bg-[#c9a64b]" />
+        <div className="w-8 sm:w-10 h-[1px] bg-[#c9a64b]" />
 
         <p
-          className="text-[#233c31] text-[11px] tracking-[2.5px] uppercase"
+          className="text-[#233c31] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[2.5px] uppercase text-center"
           style={{
             fontFamily: "Inter, sans-serif",
             fontWeight: 500,
@@ -1981,10 +1984,14 @@ const locationName = getLocationName();
       <h2
         className="
           text-[#183126]
-          text-[38px]
+          text-[30px]
+          sm:text-[40px]
           md:text-[62px]
-          leading-[0.98]
-          tracking-[-2.5px]
+          leading-[1.02]
+          md:leading-[0.98]
+          tracking-[-1.2px]
+          md:tracking-[-2.5px]
+          px-1
         "
         style={{
           fontFamily: "Georgia, Times New Roman, serif",
@@ -2001,9 +2008,9 @@ const locationName = getLocationName();
       </h2>
 
       {/* GOLD DIVIDER */}
-      <div className="flex items-center justify-center gap-3 mt-6 mb-7">
+      <div className="flex items-center justify-center gap-3 mt-5 md:mt-6 mb-6 md:mb-7">
 
-        <div className="w-14 h-[1px] bg-[#c9a64b]" />
+        <div className="w-12 md:w-14 h-[1px] bg-[#c9a64b]" />
 
         <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
       </div>
@@ -2012,11 +2019,14 @@ const locationName = getLocationName();
       <p
         className="
           text-[#5a5a5a]
-          text-[14px]
+          text-[13px]
+          sm:text-[14px]
           md:text-[15px]
-          leading-[2]
+          leading-[1.9]
+          md:leading-[2]
           max-w-[620px]
           mx-auto
+          px-1
         "
         style={{
           fontFamily: "Inter, sans-serif",
@@ -2032,9 +2042,11 @@ const locationName = getLocationName();
     <div
       className="
         grid
-        md:grid-cols-2
+        grid-cols-1
+        sm:grid-cols-2
         xl:grid-cols-4
-        gap-5
+        gap-4
+        md:gap-5
       "
     >
 
@@ -2087,8 +2099,10 @@ const locationName = getLocationName();
               border
               border-[#dfd3c0]
               bg-[#fbf8f2]
-              px-6
-              py-8
+              px-5
+              sm:px-6
+              py-7
+              sm:py-8
               shadow-[0_12px_30px_rgba(0,0,0,0.05)]
             "
           >
@@ -2102,10 +2116,12 @@ const locationName = getLocationName();
                 relative
                 z-10
                 text-[#bc924c]
-                text-[11px]
+                text-[10px]
+                sm:text-[11px]
                 tracking-[2px]
                 uppercase
-                mb-5
+                mb-4
+                sm:mb-5
               "
               style={{
                 fontFamily: "Inter, sans-serif",
@@ -2119,10 +2135,13 @@ const locationName = getLocationName();
             <div
               className="
                 absolute
-                right-5
-                top-5
+                right-4
+                sm:right-5
+                top-4
+                sm:top-5
                 text-[#d6bc88]/30
-                text-[54px]
+                text-[42px]
+                sm:text-[54px]
                 leading-none
               "
               style={{
@@ -2138,10 +2157,13 @@ const locationName = getLocationName();
                 relative
                 z-10
                 text-[#21392f]
-                text-[24px]
+                text-[22px]
+                sm:text-[24px]
                 leading-[1.15]
-                mb-4
+                mb-3
+                sm:mb-4
                 max-w-[240px]
+                pr-8
               "
               style={{
                 fontFamily: "Georgia, Times New Roman, serif",
@@ -2157,8 +2179,10 @@ const locationName = getLocationName();
                 relative
                 z-10
                 text-[#5c5c5c]
-                text-[13px]
-                leading-[1.9]
+                text-[12px]
+                sm:text-[13px]
+                leading-[1.8]
+                sm:leading-[1.9]
               "
               style={{
                 fontFamily: "Inter, sans-serif",
@@ -2168,7 +2192,7 @@ const locationName = getLocationName();
             </p>
 
             {/* BOTTOM GOLD LINE */}
-            <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-7" />
+            <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7" />
           </motion.div>
         ))}
     </div>
@@ -2176,14 +2200,16 @@ const locationName = getLocationName();
     {/* ================= QUOTE SECTION ================= */}
     <div
       className="
-        mt-14
+        mt-12
+        md:mt-14
         rounded-[12px]
         bg-[#efe9de]
         border
         border-[#e0d3be]
-        px-6
+        px-5
+        sm:px-6
         md:px-10
-        py-8
+        py-7
         md:py-10
         relative
         overflow-hidden
@@ -2194,10 +2220,13 @@ const locationName = getLocationName();
       <div
         className="
           absolute
-          left-6
-          top-5
+          left-3
+          sm:left-6
+          top-2
+          sm:top-5
           text-[#c9a64b]/40
-          text-[70px]
+          text-[50px]
+          sm:text-[70px]
           leading-none
         "
         style={{
@@ -2211,10 +2240,13 @@ const locationName = getLocationName();
       <div
         className="
           absolute
-          right-6
-          bottom-0
+          right-3
+          sm:right-6
+          bottom-[-10px]
+          sm:bottom-0
           text-[#c9a64b]/40
-          text-[70px]
+          text-[50px]
+          sm:text-[70px]
           leading-none
         "
         style={{
@@ -2228,12 +2260,15 @@ const locationName = getLocationName();
         className="
           text-[#4d4d4d]
           italic
-          text-[22px]
+          text-[20px]
+          sm:text-[26px]
           md:text-[34px]
-          leading-[1.5]
+          leading-[1.6]
+          md:leading-[1.5]
           text-center
           max-w-[900px]
           mx-auto
+          px-2
         "
         style={{
           fontFamily: "Georgia, Times New Roman, serif",
@@ -2244,7 +2279,7 @@ const locationName = getLocationName();
           `At ${coreDetails.title}, every detail is designed not just for today, but for a lifetime of unparalleled living.`}
       </p>
 
-      <div className="w-24 h-[1px] bg-[#c9a64b] mx-auto mt-6" />
+      <div className="w-20 md:w-24 h-[1px] bg-[#c9a64b] mx-auto mt-5 md:mt-6" />
     </div>
   </div>
 </motion.section>
@@ -3360,7 +3395,7 @@ id="amenities"
 
 {/* ================= LOCATION ADVANTAGES PREMIUM SECTION ================= */}
 <motion.section
-id="location"
+  id="location"
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
@@ -3375,7 +3410,8 @@ id="location"
       className="text-center mb-14"
     >
       <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-        07 | PRIME LOCATION
+        {locationData.sectionNumber || "07"} |{" "}
+        {locationData.topLabel || "PRIME LOCATION"}
       </p>
 
       <h2
@@ -3384,257 +3420,272 @@ id="location"
           fontFamily: "Cormorant Garamond, serif",
         }}
       >
-        A Location That{" "}
+        {locationData.headingLine1 || "A Location That"}{" "}
         <span className="text-[#b58b47]">
-          Defines Privilege.
+          {locationData.headingHighlight || "Defines Privilege."}
         </span>
       </h2>
 
       <p className="max-w-3xl mx-auto mt-6 text-[#555] text-base md:text-lg leading-relaxed">
-        {coreDetails.title}
+        {locationData.description || coreDetails.title}
       </p>
     </motion.div>
 
     {/* ================= MAIN GRID ================= */}
-<div className="grid lg:grid-cols-[360px_1fr] gap-6 items-stretch">
+    <div className="grid lg:grid-cols-[360px_1fr] gap-6 items-stretch">
 
-  {/* ================= LEFT SIDE LOCATION CARDS ================= */}
-  <motion.div
-    variants={fadeLeft}
-    className="rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
-  >
+      {/* ================= LEFT SIDE LOCATION CARDS ================= */}
+      <motion.div
+        variants={fadeLeft}
+        className="rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
+      >
 
-    {/* TOP HEADER */}
-    <div className="relative overflow-hidden bg-gradient-to-br from-[#08211c] via-[#0f3a30] to-[#123f34] px-8 py-10">
+        {/* TOP HEADER */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#08211c] via-[#0f3a30] to-[#123f34] px-8 py-10">
 
-      {/* GLOW */}
-      <div className="absolute -top-20 -right-20 w-52 h-52 bg-[#d4b071]/20 blur-3xl rounded-full" />
+          {/* GLOW */}
+          <div className="absolute -top-20 -right-20 w-52 h-52 bg-[#d4b071]/20 blur-3xl rounded-full" />
 
-      <div className="relative z-10">
-        <p className="uppercase tracking-[4px] text-[#d4b071] text-xs font-semibold mb-4">
-          Prime Connectivity
-        </p>
+          <div className="relative z-10">
+            <p className="uppercase tracking-[4px] text-[#d4b071] text-xs font-semibold mb-4">
+              {locationData.leftCardTag || "Prime Connectivity"}
+            </p>
 
-        <h3
-          className="text-4xl text-white leading-tight font-light"
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-          }}
-        >
-          Everything <br />
-          Within Reach
-        </h3>
+            <h3
+              className="text-4xl text-white leading-tight font-light"
+              style={{
+                fontFamily: "Cormorant Garamond, serif",
+              }}
+            >
+              {locationData.leftCardTitleLine1 || "Everything"} <br />
+              {locationData.leftCardTitleLine2 || "Within Reach"}
+            </h3>
 
-        <p className="text-white/70 mt-5 leading-relaxed text-sm">
-          Strategically positioned near major business hubs,
-          expressways, hospitals, schools and premium lifestyle destinations.
-        </p>
-      </div>
-    </div>
+            <p className="text-white/70 mt-5 leading-relaxed text-sm">
+              {locationData.leftCardDescription ||
+                "Strategically positioned near major business hubs, expressways, hospitals, schools and premium lifestyle destinations."}
+            </p>
+          </div>
+        </div>
 
-    {/* LOCATION LIST */}
-    <div className="p-5 space-y-4 bg-[#fcfaf7] h-full">
+        {/* LOCATION LIST */}
+        <div className="p-5 space-y-4 bg-[#fcfaf7] h-full">
 
-      {locationData.landmarks?.map((l, i) => (
-        l.name && (
+          {locationData.landmarks?.map((l, i) => (
+            l.name && (
+              <motion.div
+                key={i}
+                whileHover={{
+                  y: -3,
+                  scale: 1.01,
+                }}
+                transition={{
+                  duration: 0.3,
+                }}
+                className="group relative overflow-hidden rounded-[22px] border border-[#eadfce] bg-white p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
+              >
+
+                {/* GOLD HOVER */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-[linear-gradient(120deg,transparent,rgba(212,176,113,0.08),transparent)] translate-x-[-100%] group-hover:translate-x-[100%]" />
+
+                <div className="relative z-10 flex items-center justify-between gap-4">
+
+                  {/* LEFT */}
+                  <div className="flex items-center gap-4">
+
+                    {/* ICON */}
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0">
+
+                      {l.icon || "✦"}
+
+                    </div>
+
+                    {/* TEXT */}
+                    <div>
+                      <h4 className="text-[#17342d] font-semibold text-[15px] uppercase tracking-wide">
+                        {l.name}
+                      </h4>
+
+                      <p className="text-[#777] text-sm mt-1">
+                        {l.subtitle || "Premium Connectivity"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* DISTANCE */}
+                  <div className="text-right flex-shrink-0">
+
+                    <p className="text-2xl font-light text-[#b58b47] leading-none">
+                      {l.distance}
+                    </p>
+
+                    <span className="uppercase tracking-[2px] text-[10px] text-[#999]">
+                      Away
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ================= MAP SECTION ================= */}
+      <motion.div
+        variants={fadeUp}
+        className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
+      >
+
+        {/* MAP TOP BAR */}
+        <div className="relative z-20 flex items-center justify-between px-7 py-5 border-b border-[#ece2d3] bg-white">
+
+          <div>
+            <p className="uppercase tracking-[3px] text-[#b58b47] text-xs font-semibold mb-2">
+              {locationData.mapSectionTag || "Interactive Location Map"}
+            </p>
+
+            <h3
+              className="text-3xl text-[#17342d] font-light"
+              style={{
+                fontFamily: "Cormorant Garamond, serif",
+              }}
+            >
+              {locationData.mapSectionTitle || "Discover The Neighborhood"}
+            </h3>
+          </div>
+
+          {/* BADGE */}
+          <div className="hidden md:flex items-center gap-3 bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d4b071] px-5 py-3 rounded-2xl border border-[#d4b071]/30 shadow-lg">
+
+            <div className="w-10 h-10 rounded-full border border-[#d4b071] flex items-center justify-center">
+              ✦
+            </div>
+
+            <div>
+              <p className="uppercase tracking-[2px] text-[10px]">
+                {locationData.badgeTitle || "Prime"}
+              </p>
+
+              <p className="text-sm text-white">
+                {locationData.badgeSubtitle || "Location Advantage"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* MAP */}
+        <div className="relative flex-1 min-h-[720px]">
+
+          {locationData.mapEmbedUrl ? (
+            <iframe
+              src={locationData.mapEmbedUrl}
+              className="absolute inset-0 w-full h-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              style={{
+                border: 0,
+                filter:
+                  "grayscale(0.15) contrast(1.05) brightness(0.98)",
+                pointerEvents: "auto",
+              }}
+            />
+          ) : (
+            <div className="h-[750px] flex items-center justify-center bg-[#08211c] text-white">
+              Map Not Available
+            </div>
+          )}
+
+          {/* FLOATING INFO CARD */}
           <motion.div
-            key={i}
-            whileHover={{
-              y: -3,
-              scale: 1.01,
+            initial={{
+              opacity: 0,
+              y: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
             }}
             transition={{
-              duration: 0.3,
+              duration: 0.7,
             }}
-            className="group relative overflow-hidden rounded-[22px] border border-[#eadfce] bg-white p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
+            className="absolute left-6 bottom-8 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
           >
 
-            {/* GOLD HOVER */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-[linear-gradient(120deg,transparent,rgba(212,176,113,0.08),transparent)] translate-x-[-100%] group-hover:translate-x-[100%]" />
+            <div className="flex items-start gap-4">
 
-            <div className="relative z-10 flex items-center justify-between gap-4">
-
-              {/* LEFT */}
-              <div className="flex items-center gap-4">
-
-                {/* ICON */}
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0">
-
-                  {i === 0 && "✚"}
-                  {i === 1 && "⌂"}
-                  {i === 2 && "✦"}
-                  {i === 3 && "☁"}
-                  {i === 4 && "▣"}
-                  {i === 5 && "➜"}
-
-                </div>
-
-                {/* TEXT */}
-                <div>
-                  <h4 className="text-[#17342d] font-semibold text-[15px] uppercase tracking-wide">
-                    {l.name}
-                  </h4>
-
-                  <p className="text-[#777] text-sm mt-1">
-                    Premium Connectivity
-                  </p>
-                </div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-xl">
+                ✦
               </div>
 
-              {/* DISTANCE */}
-              <div className="text-right flex-shrink-0">
-
-                <p className="text-2xl font-light text-[#b58b47] leading-none">
-                  {l.distance}
+              <div>
+                <p className="uppercase tracking-[3px] text-[#b58b47] text-[11px] font-semibold mb-2">
+                  {locationData.floatingCardTag || "Signature Address"}
                 </p>
 
-                <span className="uppercase tracking-[2px] text-[10px] text-[#999]">
-                  Away
-                </span>
+                <h4 className="text-[#17342d] text-xl font-semibold leading-tight">
+                  {locationData.floatingCardTitle || "Prime Sector Connectivity"}
+                </h4>
+
+                <p className="text-[#666] text-sm mt-3 leading-relaxed">
+                  {locationData.floatingCardDescription ||
+                    "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations."}
+                </p>
               </div>
             </div>
           </motion.div>
-        )
-      ))}
-    </div>
-  </motion.div>
-
-  {/* ================= MAP SECTION ================= */}
-  <motion.div
-    variants={fadeUp}
-    className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
-  >
-
-    {/* MAP TOP BAR */}
-    <div className="relative z-20 flex items-center justify-between px-7 py-5 border-b border-[#ece2d3] bg-white">
-
-      <div>
-        <p className="uppercase tracking-[3px] text-[#b58b47] text-xs font-semibold mb-2">
-          Interactive Location Map
-        </p>
-
-        <h3
-          className="text-3xl text-[#17342d] font-light"
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-          }}
-        >
-          Discover The Neighborhood
-        </h3>
-      </div>
-
-      {/* BADGE */}
-      <div className="hidden md:flex items-center gap-3 bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d4b071] px-5 py-3 rounded-2xl border border-[#d4b071]/30 shadow-lg">
-
-        <div className="w-10 h-10 rounded-full border border-[#d4b071] flex items-center justify-center">
-          ✦
-        </div>
-
-        <div>
-          <p className="uppercase tracking-[2px] text-[10px]">
-            Prime
-          </p>
-
-          <p className="text-sm text-white">
-            Location Advantage
-          </p>
-        </div>
-      </div>
-    </div>
-
-    {/* MAP */}
-    <div className="relative flex-1 min-h-[720px]">
-
-  {locationData.mapEmbedUrl ? (
-    <iframe
-      src={locationData.mapEmbedUrl}
-      className="absolute inset-0 w-full h-full"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-          style={{
-            border: 0,
-            filter:
-              "grayscale(0.15) contrast(1.05) brightness(0.98)",
-            pointerEvents: "auto",
-          }}
-        />
-      ) : (
-        <div className="h-[750px] flex items-center justify-center bg-[#08211c] text-white">
-          Map Not Available
-        </div>
-      )}
-
-      {/* FLOATING INFO CARD */}
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 40,
-        }}
-        whileInView={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.7,
-        }}
-       className="absolute left-6 bottom-8 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
-      >
-
-        <div className="flex items-start gap-4">
-
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-xl">
-            ✦
-          </div>
-
-          <div>
-            <p className="uppercase tracking-[3px] text-[#b58b47] text-[11px] font-semibold mb-2">
-              Signature Address
-            </p>
-
-            <h4 className="text-[#17342d] text-xl font-semibold leading-tight">
-              Prime Sector Connectivity
-            </h4>
-
-            <p className="text-[#666] text-sm mt-3 leading-relaxed">
-              Positioned in one of the fastest growing luxury corridors with seamless access to major destinations.
-            </p>
-          </div>
         </div>
       </motion.div>
     </div>
-  </motion.div>
-</div>
 
     {/* BOTTOM STRIP */}
     <motion.div
       variants={fadeUp}
       className="mt-8 rounded-[24px] overflow-hidden border border-[#c9a96a] bg-gradient-to-r from-[#07211c] to-[#0f3a30]"
     >
-      <div className="grid md:grid-cols-5">
+      <div
+        className={`grid ${
+          (locationData.bottomStrip?.length || 0) >= 5
+            ? "md:grid-cols-5"
+            : (locationData.bottomStrip?.length || 0) === 4
+            ? "md:grid-cols-4"
+            : (locationData.bottomStrip?.length || 0) === 3
+            ? "md:grid-cols-3"
+            : "md:grid-cols-2"
+        }`}
+      >
 
-        {[
-          {
-            title: "Location that enhances life.",
-            desc: "Investment that appreciates.",
-          },
-          {
-            title: "Strategically Connected",
-            desc: "Seamless access to major hubs and expressways.",
-          },
-          {
-            title: "Thriving Neighborhood",
-            desc: "Surrounded by premium communities and landmarks.",
-          },
-          {
-            title: "Future-Ready Development",
-            desc: "Infrastructure and growth that future-proofs your investment.",
-          },
-          {
-            title: "High Investment Potential",
-            desc: "Prime location ensures long-term value appreciation.",
-          },
-        ].map((item, i) => (
+        {(locationData.bottomStrip?.length
+          ? locationData.bottomStrip
+          : [
+              {
+                title: "Location that enhances life.",
+                desc: "Investment that appreciates.",
+                icon: "✦",
+              },
+              {
+                title: "Strategically Connected",
+                desc: "Seamless access to major hubs and expressways.",
+                icon: "✦",
+              },
+              {
+                title: "Thriving Neighborhood",
+                desc: "Surrounded by premium communities and landmarks.",
+                icon: "✦",
+              },
+              {
+                title: "Future-Ready Development",
+                desc:
+                  "Infrastructure and growth that future-proofs your investment.",
+                icon: "✦",
+              },
+              {
+                title: "High Investment Potential",
+                desc:
+                  "Prime location ensures long-term value appreciation.",
+                icon: "✦",
+              },
+            ]).map((item, i) => (
           <motion.div
             key={i}
             whileHover={{
@@ -3645,7 +3696,7 @@ id="location"
             <div className="flex items-start gap-4">
 
               <div className="w-12 h-12 rounded-full border border-[#c9a96a] flex items-center justify-center text-[#d8b06b] flex-shrink-0">
-                ✦
+                {item.icon || "✦"}
               </div>
 
               <div>
@@ -3690,7 +3741,8 @@ id="location"
         className="text-center mb-16"
       >
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          08 | MASTER PLAN
+          {masterPlanData?.sectionNumber || "08"} |{" "}
+          {masterPlanData?.topLabel || "MASTER PLAN"}
         </p>
 
         <h2
@@ -3699,9 +3751,12 @@ id="location"
             fontFamily: "Cormorant Garamond, serif",
           }}
         >
-          Crafted With Vision.
+          {masterPlanData?.headingLine1 || "Crafted With Vision."}
+
           <span className="text-[#b58b47]">
-            {" "}Designed For Legacy.
+            {" "}
+            {masterPlanData?.headingHighlight ||
+              "Designed For Legacy."}
           </span>
         </h2>
 
@@ -3710,9 +3765,8 @@ id="location"
         </div>
 
         <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
-          Explore the thoughtfully designed master plan featuring elegant
-          layouts, landscaped greens, premium amenities, and seamless
-          connectivity crafted for elevated living.
+          {masterPlanData?.description ||
+            "Explore the thoughtfully designed master plan featuring elegant layouts, landscaped greens, premium amenities, and seamless connectivity crafted for elevated living."}
         </p>
       </motion.div>
 
@@ -3742,6 +3796,7 @@ id="location"
             {/* IMAGE */}
             <img
               src={
+                masterPlanData?.imageUrl ||
                 media?.gallery?.[0] ||
                 media?.heroImageUrl ||
                 "/placeholder.jpg"
@@ -3763,7 +3818,8 @@ id="location"
                 <div className="w-3 h-3 rounded-full bg-[#d4b071] animate-pulse" />
 
                 <span className="uppercase tracking-[3px] text-white text-xs font-medium">
-                  Premium Architectural Planning
+                  {masterPlanData?.topBadge ||
+                    "Premium Architectural Planning"}
                 </span>
               </div>
             </div>
@@ -3786,7 +3842,7 @@ id="location"
                 <div className="w-24 h-24 rounded-full border border-[#d4b071]/70 flex items-center justify-center">
 
                   <span className="text-[#d4b071] text-5xl">
-                    ✦
+                    {masterPlanData?.centerIcon || "✦"}
                   </span>
                 </div>
               </motion.div>
@@ -3798,12 +3854,13 @@ id="location"
                   fontFamily: "Cormorant Garamond, serif",
                 }}
               >
-                The Master Plan
+                {masterPlanData?.centerTitle ||
+                  "The Master Plan"}
               </h3>
 
               <p className="max-w-2xl mx-auto mt-6 text-white/80 text-lg leading-relaxed">
-                Every space is carefully envisioned to create harmony between
-                luxury, comfort, and timeless architecture.
+                {masterPlanData?.centerDescription ||
+                  "Every space is carefully envisioned to create harmony between luxury, comfort, and timeless architecture."}
               </p>
 
               {/* BUTTON */}
@@ -3838,7 +3895,8 @@ id="location"
                 </div>
 
                 <span>
-                  View Master Plan
+                  {masterPlanData?.buttonText ||
+                    "View Master Plan"}
                 </span>
 
                 {/* ARROW */}
@@ -3862,50 +3920,86 @@ id="location"
             {/* BOTTOM INFO STRIP */}
             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-r from-[#08211c]/95 to-[#0f3a30]/95 backdrop-blur-md border-t border-white/10 z-20">
 
-              <div className="grid md:grid-cols-4">
+              <div
+                className={`grid md:grid-cols-${
+                  masterPlanData?.bottomStrip?.length || 4
+                }`}
+              >
 
-                {[
-                  {
-                    title: "Thoughtful Layouts",
-                    desc: "Optimized space planning",
-                  },
-                  {
-                    title: "Landscape Greens",
-                    desc: "Open green environments",
-                  },
-                  {
-                    title: "Premium Amenities",
-                    desc: "Luxury lifestyle experiences",
-                  },
-                  {
-                    title: "Future-Ready Living",
-                    desc: "Modern & sustainable planning",
-                  },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="p-6 border-r border-white/10 last:border-r-0"
-                  >
-                    <div className="flex items-start gap-4">
+                {(masterPlanData?.bottomStrip || []).map(
+                  (item, i) => (
+                    <div
+                      key={i}
+                      className="p-6 border-r border-white/10 last:border-r-0"
+                    >
+                      <div className="flex items-start gap-4">
 
-                      {/* ICON */}
-                      <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] flex-shrink-0">
-                        ✦
-                      </div>
+                        {/* ICON */}
+                        <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] flex-shrink-0">
+                          {item.icon || "✦"}
+                        </div>
 
-                      {/* TEXT */}
-                      <div>
-                        <h4 className="text-[#d4b071] uppercase tracking-wide text-sm font-semibold">
-                          {item.title}
-                        </h4>
+                        {/* TEXT */}
+                        <div>
+                          <h4 className="text-[#d4b071] uppercase tracking-wide text-sm font-semibold">
+                            {item.title}
+                          </h4>
 
-                        <p className="text-white/70 text-sm mt-2 leading-relaxed">
-                          {item.desc}
-                        </p>
+                          <p className="text-white/70 text-sm mt-2 leading-relaxed">
+                            {item.desc}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
+
+                {/* FALLBACK STATIC */}
+                {(!masterPlanData?.bottomStrip ||
+                  masterPlanData.bottomStrip.length === 0) && (
+                  <>
+                    {[
+                      {
+                        title: "Thoughtful Layouts",
+                        desc: "Optimized space planning",
+                      },
+                      {
+                        title: "Landscape Greens",
+                        desc: "Open green environments",
+                      },
+                      {
+                        title: "Premium Amenities",
+                        desc: "Luxury lifestyle experiences",
+                      },
+                      {
+                        title: "Future-Ready Living",
+                        desc: "Modern & sustainable planning",
+                      },
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className="p-6 border-r border-white/10 last:border-r-0"
+                      >
+                        <div className="flex items-start gap-4">
+
+                          <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] flex-shrink-0">
+                            ✦
+                          </div>
+
+                          <div>
+                            <h4 className="text-[#d4b071] uppercase tracking-wide text-sm font-semibold">
+                              {item.title}
+                            </h4>
+
+                            <p className="text-white/70 text-sm mt-2 leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -3917,7 +4011,10 @@ id="location"
 
 {/* ================= PREMIUM FAQ SECTION ================= */}
 {faqs.filter((f) => f.question).length > 0 && (
-  <section id="contact" className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+  <section
+    id="contact"
+    className="relative bg-[#f7f3ee] py-24 overflow-hidden"
+  >
 
     {/* SOFT BACKGROUND */}
     <div
@@ -3939,8 +4036,10 @@ id="location"
         variants={fadeUp}
         className="text-center mb-16"
       >
+
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          09 | FAQ
+          {(faqSection?.sectionNumber || "09")} |{" "}
+          {(faqSection?.topLabel || "FAQ")}
         </p>
 
         <h2
@@ -3949,7 +4048,8 @@ id="location"
             fontFamily: "Cormorant Garamond, serif",
           }}
         >
-          Frequently Asked Questions
+          {faqSection?.heading ||
+            "Frequently Asked Questions"}
         </h2>
 
         <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
@@ -3957,163 +4057,166 @@ id="location"
         </div>
 
         <p className="max-w-2xl mx-auto mt-7 text-[#6b6b6b] text-base leading-relaxed">
-          Find answers to common questions about the project and your
-          journey to your dream home.
+          {faqSection?.subheading ||
+            "Find answers to common questions about the project and your journey to your dream home."}
         </p>
       </motion.div>
 
       {/* ================= MAIN GRID ================= */}
       <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
 
-   {/* ================= LEFT CARD ================= */}
-<motion.div
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  variants={fadeLeft}
-  className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
->
+        {/* ================= LEFT CARD ================= */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeLeft}
+          className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
+        >
 
-  {/* IMAGE */}
-  <div className="relative h-[380px] overflow-hidden group">
+          {/* IMAGE */}
+          <div className="relative h-[380px] overflow-hidden group">
 
-    {/* DEVELOPER IMAGE */}
-    <img
-      src={
-        developerImage ||
-        "/location6.webp"
-      }
-      alt={developerName}
-      className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
-    />
-
-    {/* PREMIUM OVERLAY */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
-
-    {/* GOLDEN GLOW */}
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
-
-    {/* CONTENT */}
-    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-
-      {/* LOGO */}
-      {developerLogo && (
-        <div className="relative mb-6">
-
-          {/* OUTER RING */}
-          <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
-
-          {/* LOGO HOLDER */}
-          <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-
+            {/* DEVELOPER IMAGE */}
             <img
-              src={developerLogo}
+              src={
+                developerImage ||
+                "/location6.webp"
+              }
               alt={developerName}
-              className="w-16 h-16 object-contain"
+              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
             />
-          </div>
-        </div>
-      )}
 
-      {/* DEVELOPER NAME */}
-      <h3
-        className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
-        style={{
-          fontFamily:
-            "Cormorant Garamond, serif",
-        }}
-      >
-        {developerName}
-      </h3>
+            {/* PREMIUM OVERLAY */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
 
-      {/* GOLD LINE */}
-      <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
+            {/* GOLDEN GLOW */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
 
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
-      </div>
+            {/* CONTENT */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
 
-      {/* SUBTEXT */}
-      <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
-        Luxury Developer
-      </p>
-    </div>
-  </div>
+              {/* LOGO */}
+              {developerLogo && (
+                <div className="relative mb-6">
 
-  {/* CONTACT BOX */}
-  <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+                  {/* OUTER RING */}
+                  <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
 
-    {/* BACKGROUND GLOW */}
-    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+                  {/* LOGO HOLDER */}
+                  <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
 
-    <div className="relative z-10 flex items-start gap-5">
+                    <img
+                      src={developerLogo}
+                      alt={developerName}
+                      className="w-16 h-16 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
 
-      {/* ICON */}
-      <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
+              {/* DEVELOPER NAME */}
+              <h3
+                className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
+                style={{
+                  fontFamily:
+                    "Cormorant Garamond, serif",
+                }}
+              >
+                {developerName}
+              </h3>
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-7 h-7"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.7}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      </div>
+              {/* GOLD LINE */}
+              <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
 
-      {/* TEXT */}
-      <div className="flex-1">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
+              </div>
 
-        <h4
-          className="text-3xl font-light"
-          style={{
-            fontFamily:
-              "Cormorant Garamond, serif",
-          }}
-        >
-          Still have questions?
-        </h4>
-
-        <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
-          Connect with our luxury property specialists and
-          discover every detail crafted for elevated living.
-        </p>
-
-        {/* CONTACT DETAILS */}
-        <div className="mt-6 space-y-4">
-
-          <div className="flex items-center gap-3 text-sm">
-
-            <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-              ✦
+              {/* SUBTEXT */}
+              <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
+                Luxury Developer
+              </p>
             </div>
-
-            <span className="text-white/90">
-              +91 99999 99999
-            </span>
           </div>
 
-          <div className="flex items-center gap-3 text-sm">
+          {/* CONTACT BOX */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
 
-            <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-              ✦
+            {/* BACKGROUND GLOW */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+
+            <div className="relative z-10 flex items-start gap-5">
+
+              {/* ICON */}
+              <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 h-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.7}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+
+              {/* TEXT */}
+              <div className="flex-1">
+
+                <h4
+                  className="text-3xl font-light"
+                  style={{
+                    fontFamily:
+                      "Cormorant Garamond, serif",
+                  }}
+                >
+                  {faqSection?.contactTitle ||
+                    "Still have questions?"}
+                </h4>
+
+                <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
+                  {faqSection?.contactDescription ||
+                    "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
+                </p>
+
+                {/* CONTACT DETAILS */}
+                <div className="mt-6 space-y-4">
+
+                  <div className="flex items-center gap-3 text-sm">
+
+                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+                      ✦
+                    </div>
+
+                    <span className="text-white/90">
+                      {faqSection?.contactPhone ||
+                        "+91 99999 99999"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm">
+
+                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+                      ✦
+                    </div>
+
+                    <span className="text-white/90">
+                      {faqSection?.contactTiming ||
+                        "Monday — Sunday | 10 AM — 7 PM"}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
             </div>
-
-            <span className="text-white/90">
-              Monday — Sunday | 10 AM — 7 PM
-            </span>
           </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.div>
+        </motion.div>
 
         {/* ================= FAQ ACCORDION ================= */}
         <motion.div
@@ -4319,12 +4422,13 @@ id="location"
                   fontFamily: "Cormorant Garamond, serif",
                 }}
               >
-                Ready to experience your dream home?
+                {faqSection?.ctaTitle ||
+                  "Ready to experience your dream home?"}
               </h3>
 
               <p className="text-[#777] mt-2 leading-relaxed">
-                Book a site visit and take the first step towards your dream
-                home.
+                {faqSection?.ctaDescription ||
+                  "Book a site visit and take the first step towards your dream home."}
               </p>
             </div>
           </div>
@@ -4335,7 +4439,8 @@ id="location"
               onClick={() => setShowModal(true)}
               className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
             >
-              Book A Site Visit
+              {faqSection?.ctaButtonText ||
+                "Book A Site Visit"}
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"

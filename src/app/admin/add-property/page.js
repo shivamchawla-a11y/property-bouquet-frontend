@@ -91,120 +91,426 @@ export default function AddProperty() {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    slug: "",
-    marketType: "Primary",
+  slug: "",
 
-    coreDetails: {
-  title: "",
-  developerRef: "",
-  developerName: "",
-  developerLogo: "", // ✅ ADD THIS
-  startingPrice: "",
-  maxPrice: "",
-},
+  marketType: "Primary",
 
-heroSection: {
-  propertyStatus: "PRIVATE DIGITAL MANDATE",
+  // ================= CORE DETAILS =================
+  coreDetails: {
+    title: "",
 
-  heroDescription: "",
+    developerRef: "",
 
-  brochureButtonText: "DOWNLOAD BROCHURE",
+    developerName: "",
 
-  videoButtonText: "WATCH PROJECT VIDEO",
+    developerLogo: "",
 
-  taglineItems: [
-    "Ultra-Luxury Residences",
-    "Low-Density Living",
-    "Exclusive Community",
-  ],
-},
+    developerImage: "",
 
-    keyMetrics: {
-      landArea: "",
-      possession: "",
-      status: "",
-    },
+    startingPrice: "",
 
-    overview: {
-  description: "",
-  aboutImageUrl: "",
-  highlights: [],
-},
-
-configurationSection: {
-  sectionNumber: "05",
-  sectionLabel: "Residence Configurations",
-
-  titleLine1: "Residences Tailored",
-
-  titleLine2: "to Your Lifestyle",
-
-  subheading:
-    "Thoughtfully designed layouts that redefine space, privacy and luxury.",
-
-  features: [],
-
-  buttonText: "View Details",
-},
-
-    unitConfigurations: [
-  {
-    unitType: "",
-    area: "",
-    price: "",
-    paymentPlan: "",
-    bedrooms: "",
-    bathrooms: "",
-    balconies: "",
+    maxPrice: "",
   },
-],
 
-    media: {
-      heroImageUrl: "",
-      gallery: [], // ✅ NOT [""] ❌
-      walkthroughUrl: "",
-    },
+  // ================= CATEGORY =================
+  categoryData: {
+    categoryRef: "",
 
-    locationData: {
-  locationRef: "",   // ObjectId from DB
-  locationName: "",  // store name for preview
-  customLocation: "", // if user types manually
-  address: "",
-  mapEmbedUrl: "",
-  landmarks: [{ name: "", distance: "" }],
-},
+    categoryName: "",
 
-    gatedContent: {
-  brochurePdfUrl: "",
-  requireLogin: true,
+    customCategory: "",
+  },
 
-  floorPlans: [
+  // ================= HERO SECTION =================
+  heroSection: {
+    propertyStatus: "PRIVATE DIGITAL MANDATE",
+
+    heroDescription: "",
+
+    brochureButtonText: "DOWNLOAD BROCHURE",
+
+    videoButtonText: "WATCH PROJECT VIDEO",
+
+    taglineItems: [
+      "Ultra-Luxury Residences",
+      "Low-Density Living",
+      "Exclusive Community",
+    ],
+  },
+
+  // ================= KEY METRICS =================
+  keyMetrics: {
+    landArea: "",
+
+    possession: "",
+
+    status: "",
+
+    totalUnits: "",
+
+    totalTowers: "",
+
+    floors: "",
+
+    reraNumber: "",
+  },
+
+  // ================= OVERVIEW =================
+  overview: {
+
+    // ABOUT SECTION
+    aboutSectionNumber: "02",
+
+    aboutLabel: "About The Project",
+
+    aboutTitleLine1: "A Vision That",
+
+    aboutTitleLine2: "Transcends the Ordinary",
+
+    description: "",
+
+    aboutParagraph2: "",
+
+    aboutImageUrl: "",
+
+    // FEATURE BAR
+    featureBar: [],
+
+    // HIGHLIGHTS
+    highlightsHeading: "Crafted for Elevated",
+
+    highlightsSubheading: "Modern Living",
+
+    highlights: [],
+
+    // QUOTE
+    highlightQuote: "",
+
+    // AMENITIES
+    amenitiesSectionNumber: "04",
+
+    amenitiesSectionLabel: "Project Amenities",
+
+    amenitiesHeadingLine1: "Every Detail.",
+
+    amenitiesHeadingLine2: "Elevated",
+
+    amenitiesHeadingLine3: "Beyond Expectation.",
+
+    amenitiesSubheading: "",
+
+    // BOTTOM STRIP
+    bottomStripTitle1: "Thoughtfully by Design.",
+
+    bottomStripTitle2: "Crafted for the Exceptional.",
+
+    bottomStripFeature1: "Premium Specifications",
+
+    bottomStripFeature2: "Finest Quality Materials",
+
+    bottomStripFeature3:
+      "Curated for Discerning Families",
+  },
+
+  // ================= CONFIGURATION SECTION =================
+  configurationSection: {
+
+    sectionNumber: "05",
+
+    sectionLabel: "Residence Configurations",
+
+    titleLine1: "Residences Tailored",
+
+    titleLine2: "to Your Lifestyle",
+
+    subheading:
+      "Thoughtfully designed layouts that redefine space, privacy and luxury.",
+
+    features: [],
+
+    buttonText: "View Details",
+  },
+
+  // ================= UNIT CONFIGURATIONS =================
+  unitConfigurations: [
     {
       unitType: "",
+
       area: "",
+
       price: "",
+
       paymentPlan: "",
+
       bedrooms: "",
+
       bathrooms: "",
+
       balconies: "",
-      image: "",
     },
   ],
+
+  // ================= MEDIA =================
+  media: {
+    heroImageUrl: "",
+
+    gallery: [],
+
+    walkthroughUrl: "",
+  },
+
+  // ================= LOCATION DATA =================
+  locationData: {
+
+    // BASIC
+    locationRef: "",
+
+    locationName: "",
+
+    customLocation: "",
+
+    address: "",
+
+    mapEmbedUrl: "",
+
+    // SECTION HEADER
+    sectionNumber: "07",
+
+    topLabel: "PRIME LOCATION",
+
+    headingLine1: "A Location That",
+
+    headingHighlight: "Defines Privilege.",
+
+    description: "",
+
+    // LEFT CARD
+    leftCardTag: "Prime Connectivity",
+
+    leftCardTitleLine1: "Everything",
+
+    leftCardTitleLine2: "Within Reach",
+
+    leftCardDescription:
+      "Strategically positioned near major business hubs, expressways, hospitals, schools and premium lifestyle destinations.",
+
+    // MAP SECTION
+    mapSectionTag: "Interactive Location Map",
+
+    mapSectionTitle: "Discover The Neighborhood",
+
+    // BADGE
+    badgeTitle: "Prime",
+
+    badgeSubtitle: "Location Advantage",
+
+    // FLOATING CARD
+    floatingCardTag: "Signature Address",
+
+    floatingCardTitle: "Prime Sector Connectivity",
+
+    floatingCardDescription:
+      "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations.",
+
+    // LANDMARKS
+    landmarks: [
+      {
+        name: "",
+
+        distance: "",
+
+        subtitle: "Premium Connectivity",
+
+        icon: "✦",
+      },
+    ],
+
+    // BOTTOM STRIP
+    bottomStrip: [
+      {
+        title: "Location that enhances life.",
+
+        desc: "Investment that appreciates.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Strategically Connected",
+
+        desc:
+          "Seamless access to major hubs and expressways.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Thriving Neighborhood",
+
+        desc:
+          "Surrounded by premium communities and landmarks.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Future-Ready Development",
+
+        desc:
+          "Infrastructure and growth that future-proofs your investment.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "High Investment Potential",
+
+        desc:
+          "Prime location ensures long-term value appreciation.",
+
+        icon: "✦",
+      },
+    ],
+  },
+
+  // ================= MASTER PLAN SECTION =================
+  masterPlanSection: {
+
+    sectionNumber: "08",
+
+    topLabel: "MASTER PLAN",
+
+    headingLine1: "Crafted With Vision.",
+
+    headingHighlight: "Designed For Legacy.",
+
+    description:
+      "Explore the thoughtfully designed master plan featuring elegant layouts, landscaped greens, premium amenities, and seamless connectivity crafted for elevated living.",
+
+    enableSideStrips: true,
+
+    topFloatingLabel:
+      "Premium Architectural Planning",
+
+    centerTitle: "The Master Plan",
+
+    centerDescription:
+      "Every space is carefully envisioned to create harmony between luxury, comfort, and timeless architecture.",
+
+    buttonText: "View Master Plan",
+
+    masterPlanImage: "",
+
+    bottomStrip: [
+      {
+        title: "Thoughtful Layouts",
+
+        desc: "Optimized space planning",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Landscape Greens",
+
+        desc: "Open green environments",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Premium Amenities",
+
+        desc: "Luxury lifestyle experiences",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Future-Ready Living",
+
+        desc: "Modern & sustainable planning",
+
+        icon: "✦",
+      },
+    ],
+  },
+
+  // ================= GATED CONTENT =================
+  gatedContent: {
+
+    brochurePdfUrl: "",
+
+    requireLogin: true,
+
+    floorPlans: [
+      {
+        unitType: "",
+
+        area: "",
+
+        price: "",
+
+        paymentPlan: "",
+
+        bedrooms: "",
+
+        bathrooms: "",
+
+        balconies: "",
+
+        image: "",
+      },
+    ],
+  },
+
+  // ================= SEO =================
+  seoEngine: {
+    metaTitle: "",
+
+    metaDescription: "",
+  },
+
+
+  // ================= FAQS =================
+  faqSection: {
+
+  sectionNumber: "09",
+
+  topLabel: "FAQ",
+
+  headingLine1: "Frequently Asked Questions",
+
+  headingHighlight: "",
+
+  description:
+    "Find answers to common questions about the project and your journey to your dream home.",
+
+  developerLabel: "Luxury Developer",
+
+  contactTitle: "Still have questions?",
+
+  contactDescription:
+    "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
+
+  phone: "+91 99999 99999",
+
+  timing: "Monday — Sunday | 10 AM — 7 PM",
+
+  ctaTitle:
+    "Ready to experience your dream home?",
+
+  ctaDescription:
+    "Book a site visit and take the first step towards your dream home.",
+
+  ctaButtonText: "Book A Site Visit",
+
+  callLabel: "Call Us",
+
+  whatsappLabel: "WhatsApp",
 },
 
-    categoryData: {
-  categoryRef: "",
-  categoryName: "",
-  customCategory: "",
-},
-
-    seoEngine: {
-      metaTitle: "",
-      metaDescription: "",
-    },
-
-    faqs: [{ question: "", answer: "" }],
-  });
+});
 
     const [previewData, setPreviewData] = useState(form);
     const [previewMode, setPreviewMode] = useState(false);
@@ -1928,132 +2234,129 @@ const buildOptions = (nodes, prefix = "") => {
 
         {/* ================= STEP 5 ================= */}
 {step === 5 && (
-  <div className="section space-y-6">
+  <div className="section">
 
-    {/* HEADING */}
-    <div>
-      <h2 className="text-2xl font-bold text-[#1f3d2b]">
-        Location Details
-      </h2>
+    <h2 className="section-title">
+      Location Details
+    </h2>
 
-      <p className="text-sm text-gray-500 mt-1">
-        Add project location, map & nearby landmarks
-      </p>
-    </div>
+    {/* ================= BASIC LOCATION ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-    {/* LOCATION SELECT */}
-    <div className="space-y-2">
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Basic Location Details
+      </h3>
 
-      <label className="text-sm font-medium text-gray-600">
-        Select Location
-      </label>
+      {/* LOCATION SELECT */}
+      <div className="mb-5">
 
-      {!useCustomLocation ? (
-        <select
-          className="input w-full"
-          value={form.locationData.locationRef || ""}
-          onChange={(e) => {
+        <label className="block text-sm text-white/70 mb-2">
+          Select Location
+        </label>
 
-            if (e.target.value === "OTHER") {
+        {!useCustomLocation ? (
 
-              setUseCustomLocation(true);
+          <select
+            className="input"
+            value={form.locationData.locationRef || ""}
+            onChange={(e) => {
 
-              setForm((prev) => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  locationRef: "",
-                  locationName: "",
-                  customLocation: "",
-                },
-              }));
+              if (e.target.value === "OTHER") {
 
-            } else {
+                setUseCustomLocation(true);
 
-              const selected = buildOptions(locations).find(
-                (l) => l._id === e.target.value
-              );
+                setForm((prev) => ({
+                  ...prev,
+                  locationData: {
+                    ...prev.locationData,
+                    locationRef: "",
+                    locationName: "",
+                    customLocation: "",
+                  },
+                }));
 
-              setUseCustomLocation(false);
+              } else {
 
-              setForm((prev) => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  locationRef: selected?._id || "",
-                  locationName: selected?.label || "",
-                  customLocation: "",
-                },
-              }));
-            }
-          }}
-        >
-          <option value="">Select Location</option>
+                const selected = buildOptions(locations).find(
+                  (l) => l._id === e.target.value
+                );
 
-          {buildOptions(locations).map((loc) => (
-            <option key={loc._id} value={loc._id}>
-              {loc.label}
-            </option>
-          ))}
+                setUseCustomLocation(false);
 
-          <option value="OTHER">
-            + Add Custom Location
-          </option>
-        </select>
-
-      ) : (
-
-        <div className="flex flex-col md:flex-row gap-3">
-
-          <input
-            className="input flex-1"
-            placeholder="Enter custom location"
-            value={form.locationData.customLocation}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  customLocation: e.target.value,
-                },
-              }))
-            }
-          />
-
-          <button
-            type="button"
-            onClick={() => {
-
-              setUseCustomLocation(false);
-
-              setForm((prev) => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  locationRef: "",
-                  locationName: "",
-                  customLocation: "",
-                },
-              }));
+                setForm((prev) => ({
+                  ...prev,
+                  locationData: {
+                    ...prev.locationData,
+                    locationRef: selected?._id || "",
+                    locationName: selected?.label || "",
+                    customLocation: "",
+                  },
+                }));
+              }
             }}
-            className="px-5 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
           >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
+            <option value="">
+              Select Location
+            </option>
 
-    {/* ADDRESS */}
-    <div className="space-y-2">
+            {buildOptions(locations).map((loc) => (
+              <option key={loc._id} value={loc._id}>
+                {loc.label}
+              </option>
+            ))}
 
-      <label className="text-sm font-medium text-gray-600">
-        Full Address
-      </label>
+            <option value="OTHER">
+              + Add Custom Location
+            </option>
+          </select>
 
+        ) : (
+
+          <div className="flex flex-col md:flex-row gap-3">
+
+            <input
+              className="input flex-1"
+              placeholder="Enter custom location"
+              value={form.locationData.customLocation || ""}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  locationData: {
+                    ...prev.locationData,
+                    customLocation: e.target.value,
+                  },
+                }))
+              }
+            />
+
+            <button
+              type="button"
+              onClick={() => {
+
+                setUseCustomLocation(false);
+
+                setForm((prev) => ({
+                  ...prev,
+                  locationData: {
+                    ...prev.locationData,
+                    locationRef: "",
+                    locationName: "",
+                    customLocation: "",
+                  },
+                }));
+              }}
+              className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ADDRESS */}
       <input
-        className="input w-full"
-        placeholder="Enter full property address"
+        className="input mb-4"
+        placeholder="Full Property Address"
         value={form.locationData.address || ""}
         onChange={(e) =>
           handleChange(
@@ -2063,18 +2366,11 @@ const buildOptions = (nodes, prefix = "") => {
           )
         }
       />
-    </div>
 
-    {/* GOOGLE MAP URL */}
-    <div className="space-y-2">
-
-      <label className="text-sm font-medium text-gray-600">
-        Google Maps Embed URL
-      </label>
-
+      {/* MAP URL */}
       <input
-        className="input w-full"
-        placeholder="https://www.google.com/maps/embed?pb=..."
+        className="input"
+        placeholder="Google Maps Embed URL"
         value={form.locationData.mapEmbedUrl || ""}
         onChange={(e) =>
           handleChange(
@@ -2084,187 +2380,1296 @@ const buildOptions = (nodes, prefix = "") => {
           )
         }
       />
+    </div>
 
-      <p className="text-xs text-gray-400">
-        Paste Google Maps iframe embed URL here
+    {/* ================= SECTION CONTENT ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Section Content
+      </h3>
+
+      {/* SECTION NUMBER */}
+      <input
+        className="input mb-4"
+        placeholder="Section Number"
+        value={form.locationData.sectionNumber || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "sectionNumber",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TOP LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="Top Label"
+        value={form.locationData.topLabel || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "topLabel",
+            e.target.value
+          )
+        }
+      />
+
+      {/* HEADING LINE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Line 1"
+        value={form.locationData.headingLine1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "headingLine1",
+            e.target.value
+          )
+        }
+      />
+
+      {/* HEADING HIGHLIGHT */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Highlight"
+        value={form.locationData.headingHighlight || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "headingHighlight",
+            e.target.value
+          )
+        }
+      />
+
+      {/* DESCRIPTION */}
+      <textarea
+        className="input min-h-[140px]"
+        placeholder="Section Description"
+        value={form.locationData.description || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "description",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= LEFT CARD ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Left Card Content
+      </h3>
+
+      {/* SMALL LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="Left Card Small Label"
+        value={form.locationData.leftCardTag || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "leftCardTag",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TITLE LINE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Left Card Title Line 1"
+        value={form.locationData.leftCardTitleLine1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "leftCardTitleLine1",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TITLE LINE 2 */}
+      <input
+        className="input mb-4"
+        placeholder="Left Card Title Line 2"
+        value={form.locationData.leftCardTitleLine2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "leftCardTitleLine2",
+            e.target.value
+          )
+        }
+      />
+
+      {/* DESCRIPTION */}
+      <textarea
+        className="input min-h-[120px]"
+        placeholder="Left Card Description"
+        value={form.locationData.leftCardDescription || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "leftCardDescription",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= MAP SECTION ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Map Section
+      </h3>
+
+      {/* MAP TAG */}
+      <input
+        className="input mb-4"
+        placeholder="Map Section Tag"
+        value={form.locationData.mapSectionTag || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "mapSectionTag",
+            e.target.value
+          )
+        }
+      />
+
+      {/* MAP TITLE */}
+      <input
+        className="input"
+        placeholder="Map Section Title"
+        value={form.locationData.mapSectionTitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "mapSectionTitle",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= BADGE ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Badge Content
+      </h3>
+
+      {/* BADGE TITLE */}
+      <input
+        className="input mb-4"
+        placeholder="Badge Title"
+        value={form.locationData.badgeTitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "badgeTitle",
+            e.target.value
+          )
+        }
+      />
+
+      {/* BADGE SUBTITLE */}
+      <input
+        className="input"
+        placeholder="Badge Subtitle"
+        value={form.locationData.badgeSubtitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "badgeSubtitle",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= FLOATING CARD ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Floating Card
+      </h3>
+
+      {/* TAG */}
+      <input
+        className="input mb-4"
+        placeholder="Floating Card Tag"
+        value={form.locationData.floatingCardTag || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "floatingCardTag",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TITLE */}
+      <input
+        className="input mb-4"
+        placeholder="Floating Card Title"
+        value={form.locationData.floatingCardTitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "floatingCardTitle",
+            e.target.value
+          )
+        }
+      />
+
+      {/* DESCRIPTION */}
+      <textarea
+        className="input min-h-[120px]"
+        placeholder="Floating Card Description"
+        value={form.locationData.floatingCardDescription || ""}
+        onChange={(e) =>
+          handleChange(
+            "locationData",
+            "floatingCardDescription",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= LANDMARKS ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <h3 className="font-semibold text-xl text-white">
+          Nearby Landmarks
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => {
+
+            const updated = [
+              ...(form.locationData.landmarks || []),
+              {
+                name: "",
+                distance: "",
+                subtitle: "",
+                icon: "✦",
+              },
+            ];
+
+            handleChange(
+              "locationData",
+              "landmarks",
+              updated
+            );
+          }}
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+        >
+          + Add Landmark
+        </button>
+      </div>
+
+      {(form.locationData.landmarks || []).map(
+        (item, index) => (
+          <div
+            key={index}
+            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+          >
+
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-4">
+
+              <h4 className="font-semibold text-white">
+                Landmark #{index + 1}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  const updated =
+                    form.locationData.landmarks.filter(
+                      (_, i) => i !== index
+                    );
+
+                  handleChange(
+                    "locationData",
+                    "landmarks",
+                    updated
+                  );
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* NAME */}
+            <input
+              className="input mb-4"
+              placeholder="Landmark Name"
+              value={item.name || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.landmarks,
+                ];
+
+                updated[index].name =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "landmarks",
+                  updated
+                );
+              }}
+            />
+
+            {/* DISTANCE */}
+            <input
+              className="input mb-4"
+              placeholder="Distance"
+              value={item.distance || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.landmarks,
+                ];
+
+                updated[index].distance =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "landmarks",
+                  updated
+                );
+              }}
+            />
+
+            {/* SUBTITLE */}
+            <input
+              className="input mb-4"
+              placeholder="Subtitle"
+              value={item.subtitle || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.landmarks,
+                ];
+
+                updated[index].subtitle =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "landmarks",
+                  updated
+                );
+              }}
+            />
+
+            {/* ICON */}
+            <input
+              className="input"
+              placeholder="Icon (✦ ⌂ ➜ ☁)"
+              value={item.icon || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.landmarks,
+                ];
+
+                updated[index].icon =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "landmarks",
+                  updated
+                );
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+
+    {/* ================= BOTTOM STRIP ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <h3 className="font-semibold text-xl text-white">
+          Bottom Strip Features
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => {
+
+            const updated = [
+              ...(form.locationData.bottomStrip || []),
+              {
+                title: "",
+                desc: "",
+                icon: "✦",
+              },
+            ];
+
+            handleChange(
+              "locationData",
+              "bottomStrip",
+              updated
+            );
+          }}
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+        >
+          + Add Feature
+        </button>
+      </div>
+
+      {(form.locationData.bottomStrip || []).map(
+        (item, index) => (
+          <div
+            key={index}
+            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+          >
+
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-4">
+
+              <h4 className="font-semibold text-white">
+                Feature #{index + 1}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  const updated =
+                    form.locationData.bottomStrip.filter(
+                      (_, i) => i !== index
+                    );
+
+                  handleChange(
+                    "locationData",
+                    "bottomStrip",
+                    updated
+                  );
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* TITLE */}
+            <input
+              className="input mb-4"
+              placeholder="Feature Title"
+              value={item.title || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.bottomStrip,
+                ];
+
+                updated[index].title =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+
+            {/* DESCRIPTION */}
+            <textarea
+              className="input min-h-[100px] mb-4"
+              placeholder="Feature Description"
+              value={item.desc || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.bottomStrip,
+                ];
+
+                updated[index].desc =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+
+            {/* ICON */}
+            <input
+              className="input"
+              placeholder="Icon (✦ ◈ ⌂ ▣)"
+              value={item.icon || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.locationData.bottomStrip,
+                ];
+
+                updated[index].icon =
+                  e.target.value;
+
+                handleChange(
+                  "locationData",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+  </div>
+)}
+
+
+       {/* ================= STEP 6 ================= */}
+{step === 6 && (
+  <div className="section space-y-8">
+
+    {/* ================= HEADING ================= */}
+    <div>
+      <h2 className="section-title">
+        Master Plan Section
+      </h2>
+
+      <p className="text-sm text-gray-400 mt-2">
+        Configure premium master plan section content
       </p>
     </div>
 
-    {/* LANDMARKS */}
-    <div className="space-y-4">
+    {/* ================= BROCHURE ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
 
-      <div className="flex items-center justify-between">
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Brochure PDF
+      </h3>
 
-        <label className="text-sm font-medium text-gray-600">
-          Nearby Landmarks
+      <input
+        className="input"
+        placeholder="Brochure PDF URL (Google Drive / CDN link)"
+        value={form.gatedContent.brochurePdfUrl || ""}
+        onChange={(e) =>
+          setForm((prev) => ({
+            ...prev,
+            gatedContent: {
+              ...prev.gatedContent,
+              brochurePdfUrl: e.target.value,
+            },
+          }))
+        }
+      />
+    </div>
+
+    {/* ================= MASTER PLAN CONTENT ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
+
+      <h3 className="font-semibold text-xl mb-5 text-white">
+        Master Plan Content
+      </h3>
+
+      {/* SECTION NUMBER */}
+      <input
+        className="input mb-4"
+        placeholder="Section Number"
+        value={form.masterPlanSection?.sectionNumber || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "sectionNumber",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TOP LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="Top Label"
+        value={form.masterPlanSection?.topLabel || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "topLabel",
+            e.target.value
+          )
+        }
+      />
+
+      {/* HEADING LINE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Line 1"
+        value={form.masterPlanSection?.headingLine1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "headingLine1",
+            e.target.value
+          )
+        }
+      />
+
+      {/* HEADING HIGHLIGHT */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Highlight"
+        value={form.masterPlanSection?.headingHighlight || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "headingHighlight",
+            e.target.value
+          )
+        }
+      />
+
+      {/* DESCRIPTION */}
+      <textarea
+        className="input min-h-[120px] mb-4"
+        placeholder="Section Description"
+        value={form.masterPlanSection?.description || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "description",
+            e.target.value
+          )
+        }
+      />
+
+      {/* TOP FLOATING LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="Top Floating Label"
+        value={form.masterPlanSection?.topFloatingLabel || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "topFloatingLabel",
+            e.target.value
+          )
+        }
+      />
+
+      {/* CENTER TITLE */}
+      <input
+        className="input mb-4"
+        placeholder="Center Title"
+        value={form.masterPlanSection?.centerTitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "centerTitle",
+            e.target.value
+          )
+        }
+      />
+
+      {/* CENTER DESCRIPTION */}
+      <textarea
+        className="input min-h-[120px] mb-4"
+        placeholder="Center Description"
+        value={form.masterPlanSection?.centerDescription || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "centerDescription",
+            e.target.value
+          )
+        }
+      />
+
+      {/* BUTTON TEXT */}
+      <input
+        className="input mb-4"
+        placeholder="Button Text"
+        value={form.masterPlanSection?.buttonText || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "buttonText",
+            e.target.value
+          )
+        }
+      />
+
+      {/* IMAGE */}
+      <input
+        className="input"
+        placeholder="Master Plan Image URL"
+        value={form.masterPlanSection?.masterPlanImage || ""}
+        onChange={(e) =>
+          handleChange(
+            "masterPlanSection",
+            "masterPlanImage",
+            e.target.value
+          )
+        }
+      />
+    </div>
+
+    {/* ================= BOTTOM STRIP ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <h3 className="font-semibold text-xl text-white">
+          Bottom Strip Features
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => {
+
+            const updated = [
+              ...(form.masterPlanSection?.bottomStrip || []),
+              {
+                title: "",
+                desc: "",
+                icon: "✦",
+              },
+            ];
+
+            handleChange(
+              "masterPlanSection",
+              "bottomStrip",
+              updated
+            );
+          }}
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+        >
+          + Add Feature
+        </button>
+      </div>
+
+      {(form.masterPlanSection?.bottomStrip || []).map(
+        (item, index) => (
+          <div
+            key={index}
+            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+          >
+
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-4">
+
+              <h4 className="font-semibold text-white">
+                Feature #{index + 1}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  const updated =
+                    form.masterPlanSection.bottomStrip.filter(
+                      (_, i) => i !== index
+                    );
+
+                  handleChange(
+                    "masterPlanSection",
+                    "bottomStrip",
+                    updated
+                  );
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* TITLE */}
+            <input
+              className="input mb-4"
+              placeholder="Feature Title"
+              value={item.title || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.masterPlanSection.bottomStrip,
+                ];
+
+                updated[index].title =
+                  e.target.value;
+
+                handleChange(
+                  "masterPlanSection",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+
+            {/* DESCRIPTION */}
+            <textarea
+              className="input min-h-[100px] mb-4"
+              placeholder="Feature Description"
+              value={item.desc || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.masterPlanSection.bottomStrip,
+                ];
+
+                updated[index].desc =
+                  e.target.value;
+
+                handleChange(
+                  "masterPlanSection",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+
+            {/* ICON */}
+            <input
+              className="input"
+              placeholder="Icon (✦ ◈ ↗ ▣)"
+              value={item.icon || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...form.masterPlanSection.bottomStrip,
+                ];
+
+                updated[index].icon =
+                  e.target.value;
+
+                handleChange(
+                  "masterPlanSection",
+                  "bottomStrip",
+                  updated
+                );
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+  </div>
+)}
+
+{/* ================= STEP 7 ================= */}
+{step === 7 && (
+  <div className="section space-y-8">
+
+    {/* ================= HEADING ================= */}
+    <div>
+      <h2 className="section-title">
+        FAQs Section
+      </h2>
+
+      <p className="text-sm text-gray-400 mt-2">
+        Fully dynamic FAQ content for property preview page
+      </p>
+    </div>
+
+    {/* ================= FAQ SECTION SETTINGS ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10 space-y-5">
+
+      <h3 className="font-semibold text-xl text-white">
+        FAQ Section Content
+      </h3>
+
+      {/* SECTION NUMBER */}
+      <div>
+        <label className="block text-sm text-gray-300 mb-2">
+          Section Number
         </label>
+
+        <input
+          className="input"
+          placeholder="09"
+          value={form.faqSection?.sectionNumber || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              faqSection: {
+                ...prev.faqSection,
+                sectionNumber: e.target.value,
+              },
+            }))
+          }
+        />
+      </div>
+
+      {/* TOP LABEL */}
+      <div>
+        <label className="block text-sm text-gray-300 mb-2">
+          Top Label
+        </label>
+
+        <input
+          className="input"
+          placeholder="FAQ"
+          value={form.faqSection?.topLabel || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              faqSection: {
+                ...prev.faqSection,
+                topLabel: e.target.value,
+              },
+            }))
+          }
+        />
+      </div>
+
+      {/* HEADING */}
+      <div>
+        <label className="block text-sm text-gray-300 mb-2">
+          Main Heading
+        </label>
+
+        <input
+          className="input"
+          placeholder="Frequently Asked Questions"
+          value={form.faqSection?.heading || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              faqSection: {
+                ...prev.faqSection,
+                heading: e.target.value,
+              },
+            }))
+          }
+        />
+      </div>
+
+      {/* SUBHEADING */}
+      <div>
+        <label className="block text-sm text-gray-300 mb-2">
+          Subheading
+        </label>
+
+        <textarea
+          className="input min-h-[100px]"
+          placeholder="Find answers to common questions about the project and your journey to your dream home."
+          value={form.faqSection?.subheading || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              faqSection: {
+                ...prev.faqSection,
+                subheading: e.target.value,
+              },
+            }))
+          }
+        />
+      </div>
+
+      {/* ================= LEFT CARD ================= */}
+
+      <div className="border-t border-white/10 pt-6">
+        <h3 className="font-semibold text-lg text-white mb-5">
+          Left Developer Card
+        </h3>
+
+        {/* CONTACT TITLE */}
+        <div className="mb-5">
+          <label className="block text-sm text-gray-300 mb-2">
+            Contact Card Title
+          </label>
+
+          <input
+            className="input"
+            placeholder="Still have questions?"
+            value={form.faqSection?.contactTitle || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  contactTitle: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* CONTACT DESCRIPTION */}
+        <div className="mb-5">
+          <label className="block text-sm text-gray-300 mb-2">
+            Contact Description
+          </label>
+
+          <textarea
+            className="input min-h-[120px]"
+            placeholder="Connect with our luxury property specialists and discover every detail crafted for elevated living."
+            value={form.faqSection?.contactDescription || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  contactDescription: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* PHONE */}
+        <div className="mb-5">
+          <label className="block text-sm text-gray-300 mb-2">
+            Contact Number
+          </label>
+
+          <input
+            className="input"
+            placeholder="+91 99999 99999"
+            value={form.faqSection?.contactPhone || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  contactPhone: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* TIMINGS */}
+        <div>
+          <label className="block text-sm text-gray-300 mb-2">
+            Working Hours
+          </label>
+
+          <input
+            className="input"
+            placeholder="Monday — Sunday | 10 AM — 7 PM"
+            value={form.faqSection?.contactTiming || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  contactTiming: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+      </div>
+
+      {/* ================= BOTTOM CTA ================= */}
+
+      <div className="border-t border-white/10 pt-6">
+        <h3 className="font-semibold text-lg text-white mb-5">
+          Bottom CTA Section
+        </h3>
+
+        {/* CTA TITLE */}
+        <div className="mb-5">
+          <label className="block text-sm text-gray-300 mb-2">
+            CTA Heading
+          </label>
+
+          <input
+            className="input"
+            placeholder="Ready to experience your dream home?"
+            value={form.faqSection?.ctaTitle || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  ctaTitle: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* CTA DESCRIPTION */}
+        <div className="mb-5">
+          <label className="block text-sm text-gray-300 mb-2">
+            CTA Description
+          </label>
+
+          <textarea
+            className="input min-h-[100px]"
+            placeholder="Book a site visit and take the first step towards your dream home."
+            value={form.faqSection?.ctaDescription || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  ctaDescription: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* CTA BUTTON */}
+        <div>
+          <label className="block text-sm text-gray-300 mb-2">
+            CTA Button Text
+          </label>
+
+          <input
+            className="input"
+            placeholder="Book A Site Visit"
+            value={form.faqSection?.ctaButtonText || ""}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                faqSection: {
+                  ...prev.faqSection,
+                  ctaButtonText: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* ================= FAQS ================= */}
+    <div className="glass p-6 rounded-2xl border border-white/10">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <h3 className="font-semibold text-xl text-white">
+          FAQs
+        </h3>
 
         <button
           type="button"
           onClick={() =>
             setForm((prev) => ({
               ...prev,
-              locationData: {
-                ...prev.locationData,
-                landmarks: [
-                  ...prev.locationData.landmarks,
-                  {
-                    name: "",
-                    distance: "",
-                  },
-                ],
-              },
+              faqs: [
+                ...prev.faqs,
+                {
+                  question: "",
+                  answer: "",
+                },
+              ],
             }))
           }
-          className="px-4 py-2 rounded-lg bg-[#1f3d2b] text-white text-sm hover:opacity-90 transition"
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
         >
-          + Add Landmark
+          + Add FAQ
         </button>
       </div>
 
-      {form.locationData.landmarks.map((l, i) => (
+      {form.faqs.map((f, i) => (
 
         <div
           key={i}
-          className="grid grid-cols-1 md:grid-cols-[1fr_180px_60px] gap-3"
+          className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
         >
 
-          {/* LANDMARK NAME */}
+          {/* TOP */}
+          <div className="flex items-center justify-between mb-4">
+
+            <h4 className="font-semibold text-white">
+              FAQ #{i + 1}
+            </h4>
+
+            <button
+              type="button"
+              onClick={() => {
+
+                const arr =
+                  form.faqs.filter(
+                    (_, idx) => idx !== i
+                  );
+
+                setForm((prev) => ({
+                  ...prev,
+                  faqs: arr,
+                }));
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-lg"
+            >
+              Delete
+            </button>
+          </div>
+
+          {/* QUESTION */}
           <input
-            className="input w-full"
-            value={l.name}
-            placeholder="Landmark Name"
+            className="input mb-4"
+            value={f.question || ""}
+            placeholder="Question"
             onChange={(e) => {
 
-              const arr = [...form.locationData.landmarks];
-              arr[i].name = e.target.value;
+              const arr = [...form.faqs];
+
+              arr[i].question =
+                e.target.value;
 
               setForm((prev) => ({
                 ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  landmarks: arr,
-                },
+                faqs: arr,
               }));
             }}
           />
 
-          {/* DISTANCE */}
-          <input
-            className="input w-full"
-            value={l.distance}
-            placeholder="Distance"
+          {/* ANSWER */}
+          <textarea
+            className="input min-h-[120px]"
+            value={f.answer || ""}
+            placeholder="Answer"
             onChange={(e) => {
 
-              const arr = [...form.locationData.landmarks];
-              arr[i].distance = e.target.value;
+              const arr = [...form.faqs];
+
+              arr[i].answer =
+                e.target.value;
 
               setForm((prev) => ({
                 ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  landmarks: arr,
-                },
+                faqs: arr,
               }));
             }}
           />
-
-          {/* DELETE */}
-          <button
-            type="button"
-            onClick={() => {
-
-              const arr =
-                form.locationData.landmarks.filter(
-                  (_, idx) => idx !== i
-                );
-
-              setForm((prev) => ({
-                ...prev,
-                locationData: {
-                  ...prev.locationData,
-                  landmarks: arr,
-                },
-              }));
-            }}
-            className="rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-          >
-            ✕
-          </button>
         </div>
       ))}
     </div>
   </div>
 )}
 
-        {/* ================= STEP 6 ================= */}
-        {step === 6 && (
-          <div className="section">
-            <div className="mt-6">
-  <h3 className="font-semibold mb-2">Brochure</h3>
-
-  <input
-    className="input"
-    placeholder="Brochure PDF URL (Google Drive / CDN link)"
-    value={form.gatedContent.brochurePdfUrl}
-    onChange={(e) =>
-      setForm(prev => ({
-        ...prev,
-        gatedContent: {
-          ...prev.gatedContent,
-          brochurePdfUrl: e.target.value,
-        }
-      }))
-    }
-  />
-</div>
-            <h2>FAQs</h2>
-
-            {form.faqs.map((f, i) => (
-              <div key={i} className="space-y-2">
-                <input value={f.question} placeholder="Question"
-                  onChange={(e) => {
-                    const arr = [...form.faqs];
-                    arr[i].question = e.target.value;
-                    setForm(prev => ({ ...prev, faqs: arr }));
-                  }}
-                />
-
-                <input value={f.answer} placeholder="Answer"
-                  onChange={(e) => {
-                    const arr = [...form.faqs];
-                    arr[i].answer = e.target.value;
-                    setForm(prev => ({ ...prev, faqs: arr }));
-                  }}
-                />
-
-                <button onClick={() => {
-                  const arr = form.faqs.filter((_, idx) => idx !== i);
-                  setForm(prev => ({ ...prev, faqs: arr }));
-                }}>
-                  ❌ Remove
-                </button>
-              </div>
-            ))}
-
-            <button onClick={() =>
-              setForm(prev => ({
-                ...prev,
-                faqs: [...prev.faqs, { question: "", answer: "" }]
-              }))
-            }>
-              + Add FAQ
-            </button>
-          </div>
-        )}
-        
-
       </div>
 
       <div className="flex justify-between mt-10 max-w-4xl mx-auto">
         {step > 1 && <button onClick={goPrev}>Back</button>}
 
-        {step < 6 ? (
+        {step < 7 ? (
           <button onClick={goNext}>Next</button>
         ) : (
           <button onClick={handleSubmit}>🚀 Publish</button>
