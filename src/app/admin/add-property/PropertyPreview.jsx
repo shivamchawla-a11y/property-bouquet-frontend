@@ -2691,7 +2691,7 @@ id="amenities"
       variants={staggerContainer}
       className="
         relative
-        py-16
+        py-14
         md:py-24
         bg-[#f7f3ec]
         overflow-hidden
@@ -2701,15 +2701,15 @@ id="amenities"
       {/* SOFT GLOW */}
       <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-4 lg:px-6">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6">
 
         {/* ================= SECTION LABEL ================= */}
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-center gap-3 mb-4"
+          className="flex items-center justify-center gap-2 sm:gap-3 mb-4"
         >
           <p
-            className="text-[#b89149] text-[11px] tracking-[3px] uppercase"
+            className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
             style={{
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
@@ -2718,10 +2718,10 @@ id="amenities"
             {configurationSection?.sectionNumber || "05"}
           </p>
 
-          <div className="w-8 h-[1px] bg-[#c9a64b]" />
+          <div className="w-6 sm:w-8 h-[1px] bg-[#c9a64b]" />
 
           <p
-            className="text-[#2d4137] text-[11px] tracking-[3px] uppercase"
+            className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase text-center"
             style={{
               fontFamily: "Inter, sans-serif",
             }}
@@ -2737,12 +2737,15 @@ id="amenities"
           className="
             text-center
             text-[#183126]
-            text-[38px]
+            text-[34px]
+            sm:text-[48px]
             md:text-[72px]
-            leading-[1]
-            tracking-[-2px]
+            leading-[0.95]
+            tracking-[-1px]
+            md:tracking-[-2px]
             max-w-[1100px]
             mx-auto
+            px-2
           "
           style={{
             fontFamily:
@@ -2755,7 +2758,7 @@ id="amenities"
               "Residences Tailored"}
           </span>
 
-          <span className="block text-[#b89149]">
+          <span className="block text-[#b89149] mt-1 sm:mt-2">
             {configurationSection?.titleLine2 ||
               "to Your Lifestyle"}
           </span>
@@ -2764,27 +2767,30 @@ id="amenities"
         {/* GOLD DIVIDER */}
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-center gap-3 mt-6"
+          className="flex items-center justify-center gap-3 mt-5 sm:mt-6"
         >
-          <div className="w-14 h-[1px] bg-[#c9a64b]" />
+          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
 
           <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
 
-          <div className="w-14 h-[1px] bg-[#c9a64b]" />
+          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
         </motion.div>
 
         {/* SUBTEXT */}
         <motion.p
           variants={fadeUp}
           className="
-            mt-6
+            mt-5
+            sm:mt-6
             text-center
             text-[#5d5d5d]
-            text-[14px]
+            text-[13px]
+            sm:text-[15px]
             md:text-[18px]
             leading-[1.9]
             max-w-[780px]
             mx-auto
+            px-2
           "
           style={{
             fontFamily: "Inter, sans-serif",
@@ -2799,11 +2805,13 @@ id="amenities"
         <motion.div
           variants={fadeUp}
           className="
-            mt-14
+            mt-10
+            md:mt-14
             bg-[#f9f7f3]
             border
             border-[#e4dac8]
-            rounded-[22px]
+            rounded-[18px]
+            md:rounded-[22px]
             shadow-[0_20px_60px_rgba(0,0,0,0.08)]
             overflow-hidden
           "
@@ -2812,95 +2820,111 @@ id="amenities"
           <div className="grid lg:grid-cols-[280px_1fr]">
 
             {/* ================= LEFT TABS ================= */}
-            <div className="border-r border-[#e6dccb] bg-[#f5f0e7]">
+            <div className="border-b lg:border-b-0 lg:border-r border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
 
-              {gatedContent.floorPlans.map((u, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActivePlan(i)}
-                  className={`
-                    group
-                    relative
-                    w-full
-                    text-left
-                    px-7
-                    py-6
-                    border-b
-                    border-[#e6dccb]
-                    transition-all
-                    duration-300
-                    ${
-                      activePlan === i
-                        ? "bg-[#03261d] text-white"
-                        : "hover:bg-[#f1eadf]"
-                    }
-                  `}
-                >
+              <div className="flex lg:block min-w-max lg:min-w-0">
 
-                  {/* ACTIVE BAR */}
-                  {activePlan === i && (
-                    <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
-                  )}
+                {gatedContent.floorPlans.map((u, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActivePlan(i)}
+                    className={`
+                      group
+                      relative
+                      flex-shrink-0
+                      lg:w-full
+                      text-left
+                      px-5
+                      sm:px-6
+                      py-5
+                      lg:py-6
+                      border-r
+                      lg:border-r-0
+                      lg:border-b
+                      border-[#e6dccb]
+                      transition-all
+                      duration-300
+                      min-w-[220px]
+                      sm:min-w-[260px]
+                      lg:min-w-0
+                      ${
+                        activePlan === i
+                          ? "bg-[#03261d] text-white"
+                          : "hover:bg-[#f1eadf]"
+                      }
+                    `}
+                  >
 
-                  <div className="flex items-center justify-between">
+                    {/* ACTIVE BAR */}
+                    {activePlan === i && (
+                      <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
+                    )}
 
-                    <div>
+                    <div className="flex items-center justify-between gap-4">
 
-                      <h3
+                      <div>
+
+                        <h3
+                          className={`
+                            text-[20px]
+                            sm:text-[22px]
+                            leading-none
+                            mb-2
+                            ${
+                              activePlan === i
+                                ? "text-white"
+                                : "text-[#1e352b]"
+                            }
+                          `}
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                            fontWeight: 400,
+                          }}
+                        >
+                          {u?.unitType || "Luxury Unit"}
+                        </h3>
+
+                        <p
+                          className={`
+                            text-[12px]
+                            sm:text-[13px]
+                            ${
+                              activePlan === i
+                                ? "text-[#d7b367]"
+                                : "text-[#666]"
+                            }
+                          `}
+                        >
+                          {u?.area || "Luxury Residences"}
+                        </p>
+                      </div>
+
+                      <div
                         className={`
-                          text-[22px]
-                          leading-none
-                          mb-2
+                          text-[18px]
+                          sm:text-[20px]
+                          transition-all
+                          duration-300
                           ${
                             activePlan === i
-                              ? "text-white"
-                              : "text-[#1e352b]"
-                          }
-                        `}
-                        style={{
-                          fontFamily:
-                            "Georgia, Times New Roman, serif",
-                          fontWeight: 400,
-                        }}
-                      >
-                        {u?.unitType || "Luxury Unit"}
-                      </h3>
-
-                      <p
-                        className={`
-                          text-[13px]
-                          ${
-                            activePlan === i
-                              ? "text-[#d7b367]"
-                              : "text-[#666]"
+                              ? "text-[#d7b367] translate-x-1"
+                              : "text-[#b89149]"
                           }
                         `}
                       >
-                        {u?.area || "Luxury Residences"}
-                      </p>
+                        →
+                      </div>
                     </div>
-
-                    <div
-                      className={`
-                        text-[20px]
-                        ${
-                          activePlan === i
-                            ? "text-[#d7b367] translate-x-1"
-                            : "text-[#b89149]"
-                        }
-                      `}
-                    >
-                      →
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* ================= RIGHT CONTENT ================= */}
-            <div className="p-7 lg:p-8">
+            <div className="p-5 sm:p-6 lg:p-8">
 
-              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
+              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 lg:gap-10 items-start">
 
                 {/* ================= DETAILS ================= */}
                 <div>
@@ -2908,7 +2932,8 @@ id="amenities"
                   <h3
                     className="
                       text-[#1b3127]
-                      text-[42px]
+                      text-[34px]
+                      sm:text-[42px]
                       leading-none
                     "
                     style={{
@@ -2923,16 +2948,17 @@ id="amenities"
                     className="
                       mt-3
                       text-[#b89149]
-                      text-[18px]
+                      text-[16px]
+                      sm:text-[18px]
                     "
                   >
                     {activeFloorPlan?.area || "Luxury Residences"}
                   </p>
 
-                  <div className="w-14 h-[1px] bg-[#c9a64b] mt-7 mb-7" />
+                  <div className="w-14 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7 mb-6 sm:mb-7" />
 
                   {/* ================= METRICS ================= */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
 
                     {[
                       {
@@ -2966,21 +2992,25 @@ id="amenities"
                         key={index}
                         className="
                           border-r
-                          last:border-r-0
+                          even:border-r-0
+                          md:even:border-r
+                          md:last:border-r-0
                           border-[#e2d6c2]
-                          pr-2
+                          pr-3
                         "
                       >
 
-                        <div className="text-[#c9a64b] text-[20px] mb-2">
+                        <div className="text-[#c9a64b] text-[18px] sm:text-[20px] mb-2">
                           {item.icon}
                         </div>
 
                         <p
                           className="
                             text-[#1f352c]
-                            text-[18px]
-                            leading-none
+                            text-[16px]
+                            sm:text-[18px]
+                            leading-snug
+                            break-words
                           "
                           style={{
                             fontFamily:
@@ -2994,8 +3024,11 @@ id="amenities"
                           className="
                             mt-2
                             text-[#6a6a6a]
-                            text-[11px]
+                            text-[10px]
+                            sm:text-[11px]
                             leading-[1.7]
+                            uppercase
+                            tracking-[1px]
                           "
                         >
                           {item.label}
@@ -3005,7 +3038,7 @@ id="amenities"
                   </div>
 
                   {/* ================= FEATURES ================= */}
-                  <div className="mt-10 space-y-4">
+                  <div className="mt-8 sm:mt-10 space-y-4">
 
                     {(configurationSection?.features?.length > 0
                       ? configurationSection.features
@@ -3022,14 +3055,15 @@ id="amenities"
                         className="flex items-start gap-3"
                       >
 
-                        <div className="mt-[5px] text-[#c9a64b]">
+                        <div className="mt-[5px] text-[#c9a64b] text-[14px]">
                           ⊚
                         </div>
 
                         <p
                           className="
                             text-[#4f4f4f]
-                            text-[14px]
+                            text-[13px]
+                            sm:text-[14px]
                             leading-[1.9]
                           "
                         >
@@ -3042,9 +3076,14 @@ id="amenities"
                   {/* BUTTON */}
                   <button
                     className="
-                      mt-10
-                      h-[52px]
-                      px-8
+                      mt-8
+                      sm:mt-10
+                      w-full
+                      sm:w-auto
+                      h-[50px]
+                      sm:h-[52px]
+                      px-7
+                      sm:px-8
                       rounded-[8px]
                       bg-[#03261d]
                       hover:bg-[#0a3328]
@@ -3053,7 +3092,10 @@ id="amenities"
                       text-white
                       flex
                       items-center
+                      justify-center
                       gap-3
+                      text-[14px]
+                      sm:text-[15px]
                     "
                   >
                     {configurationSection?.buttonText ||
@@ -3071,11 +3113,14 @@ id="amenities"
                   <div
                     className="
                       relative
-                      rounded-[18px]
+                      rounded-[16px]
+                      md:rounded-[18px]
                       border
                       border-[#e3d7c5]
                       bg-[#f6f2eb]
-                      p-5
+                      p-3
+                      sm:p-4
+                      md:p-5
                       shadow-[0_12px_35px_rgba(0,0,0,0.06)]
                     "
                   >
@@ -3086,13 +3131,14 @@ id="amenities"
                         alt="floor-plan"
                         className="
                           w-full
-                          h-[320px]
+                          h-[260px]
+                          sm:h-[360px]
                           md:h-[500px]
                           object-contain
                         "
                       />
                     ) : (
-                      <div className="h-[320px] md:h-[500px] flex items-center justify-center text-[#999]">
+                      <div className="h-[260px] sm:h-[360px] md:h-[500px] flex items-center justify-center text-[#999] text-[14px] sm:text-[16px]">
                         Floor Plan Coming Soon
                       </div>
                     )}
@@ -3111,13 +3157,13 @@ id="amenities"
 {/* ================= PREMIUM GALLERY SECTION ================= */}
 {media.gallery?.filter(Boolean).length > 0 && (
   <>
-    <motion.section 
-    id="gallery"
+    <motion.section
+      id="gallery"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.12 }}
       variants={staggerContainer}
-      className="relative bg-[#f7f3ee] py-24 overflow-hidden"
+      className="relative bg-[#f7f3ee] py-16 md:py-24 overflow-hidden"
     >
 
       {/* BACKGROUND */}
@@ -3130,19 +3176,19 @@ id="amenities"
         }}
       />
 
-      <div className="relative z-10 max-w-[1500px] mx-auto px-5">
+      <div className="relative z-10 max-w-[1500px] mx-auto px-4 sm:px-5">
 
         {/* ================= HEADING ================= */}
         <motion.div
           variants={fadeUp}
-          className="text-center mb-16"
+          className="text-center mb-12 md:mb-16"
         >
-          <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+          <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
             06 | GALLERY
           </p>
 
           <h2
-            className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+            className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] px-2"
             style={{
               fontFamily: "Cormorant Garamond, serif",
             }}
@@ -3153,18 +3199,18 @@ id="amenities"
             </span>
           </h2>
 
-          <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+          <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
           </div>
 
-          <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
+          <p className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2">
             Discover elegant architecture, luxurious interiors, lush landscapes,
             and thoughtfully curated experiences designed for a timeless lifestyle.
           </p>
         </motion.div>
 
         {/* ================= GALLERY WRAPPER ================= */}
-        <div className="relative rounded-[40px] border border-[#e6d7c3] bg-white/80 backdrop-blur-xl p-5 md:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.10)] overflow-hidden">
+        <div className="relative rounded-[24px] md:rounded-[40px] border border-[#e6d7c3] bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.10)] overflow-hidden">
 
           {/* SOFT GLOW */}
           <div className="absolute -top-32 -left-20 w-72 h-72 bg-[#d4b071]/10 blur-3xl rounded-full" />
@@ -3172,15 +3218,15 @@ id="amenities"
           <div className="relative z-10">
 
             {/* TOP BAR */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 md:mb-10">
 
               <div>
-                <p className="uppercase tracking-[4px] text-[#b58b47] text-xs font-semibold mb-3">
+                <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[10px] sm:text-xs font-semibold mb-3">
                   Premium Lifestyle Showcase
                 </p>
 
                 <h3
-                  className="text-3xl md:text-5xl text-[#17342d] font-light"
+                  className="text-[28px] sm:text-4xl md:text-5xl text-[#17342d] font-light leading-tight"
                   style={{
                     fontFamily: "Cormorant Garamond, serif",
                   }}
@@ -3203,10 +3249,10 @@ id="amenities"
                   );
                   setSelectedIndex(0);
                 }}
-                className="group bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-8 py-4 rounded-2xl flex items-center gap-4 uppercase tracking-[2px] text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-all duration-500"
+                className="group w-full sm:w-auto justify-center bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-3 sm:gap-4 uppercase tracking-[1.5px] sm:tracking-[2px] text-[11px] sm:text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-all duration-500"
               >
 
-                <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center group-hover:rotate-12 transition duration-500">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d4b071] flex items-center justify-center group-hover:rotate-12 transition duration-500">
                   ✦
                 </div>
 
@@ -3214,7 +3260,7 @@ id="amenities"
 
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 group-hover:translate-x-1 transition"
+                  className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -3229,167 +3275,167 @@ id="amenities"
               </motion.button>
             </div>
 
-{/* ================= PREMIUM MASONRY GRID ================= */}
-<div className="grid grid-cols-12 gap-5 auto-rows-[220px] md:auto-rows-[260px]">
+            {/* ================= PREMIUM MASONRY GRID ================= */}
+            <div className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-5 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[260px]">
 
-  {gallery.map((img, i) => {
+              {gallery.map((img, i) => {
 
-    /* PREMIUM BALANCED LAYOUT */
-    let spanClass =
-      "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
+                /* PREMIUM BALANCED LAYOUT */
+                let spanClass =
+                  "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
 
-    if (i % 7 === 0)
-      spanClass =
-        "col-span-12 lg:col-span-6 row-span-2";
+                if (i % 7 === 0)
+                  spanClass =
+                    "col-span-12 lg:col-span-6 row-span-2";
 
-    else if (i % 5 === 0)
-      spanClass =
-        "col-span-12 sm:col-span-6 lg:col-span-3 row-span-2";
+                else if (i % 5 === 0)
+                  spanClass =
+                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-2";
 
-    return (
-      <motion.div
-        key={i}
-        variants={fadeUp}
-        whileHover={{
-          y: -8,
-        }}
-        transition={{
-          duration: 0.4,
-        }}
-        onClick={() => {
-          setSelectedImage(img);
-          setSelectedIndex(i);
-        }}
-        className={`group relative overflow-hidden cursor-pointer rounded-[34px]
-        bg-white
-        border border-[#ebe1d4]
-        shadow-[0_18px_45px_rgba(0,0,0,0.08)]
-        hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
-        transition-all duration-500
-        ${spanClass}`}
-      >
+                return (
+                  <motion.div
+                    key={i}
+                    variants={fadeUp}
+                    whileHover={{
+                      y: -8,
+                    }}
+                    transition={{
+                      duration: 0.4,
+                    }}
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setSelectedIndex(i);
+                    }}
+                    className={`group relative overflow-hidden cursor-pointer rounded-[22px] sm:rounded-[28px] md:rounded-[34px]
+                    bg-white
+                    border border-[#ebe1d4]
+                    shadow-[0_18px_45px_rgba(0,0,0,0.08)]
+                    hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
+                    transition-all duration-500
+                    ${spanClass}`}
+                  >
 
-        {/* IMAGE */}
-        <img
-          src={img}
-          alt=""
-          className="w-full h-full object-cover transition duration-[1200ms] ease-out group-hover:scale-110"
-        />
+                    {/* IMAGE */}
+                    <img
+                      src={img}
+                      alt=""
+                      className="w-full h-full object-cover transition duration-[1200ms] ease-out group-hover:scale-110"
+                    />
 
-        {/* SOFT OVERLAY */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+                    {/* SOFT OVERLAY */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
 
-        {/* LUXURY SHINE */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+                    {/* LUXURY SHINE */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
 
-        {/* VIEW ICON */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+                    {/* VIEW ICON */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
 
-          <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-7 h-7 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 12H9m0 0l3-3m-3 3l3 3"
-              />
-            </svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.8}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12H9m0 0l3-3m-3 3l3 3"
+                          />
+                        </svg>
 
-          </div>
-        </div>
+                      </div>
+                    </div>
 
-      </motion.div>
-    );
-  })}
-</div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
     </motion.section>
 
     {/* ================= FULLSCREEN GALLERY ================= */}
-<AnimatePresence>
-  {selectedImage && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center"
-    >
+    <AnimatePresence>
+      {selectedImage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center px-3 sm:px-4"
+        >
 
-      {/* CLOSE */}
-      <button
-        onClick={() => setSelectedImage(null)}
-        className="absolute top-6 right-6 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
-      >
-        ✕
-      </button>
+          {/* CLOSE */}
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
+          >
+            ✕
+          </button>
 
-      {/* LEFT */}
-      <button
-        onClick={() => {
-          const newIndex =
-            selectedIndex === 0
-              ? gallery.length - 1
-              : selectedIndex - 1;
+          {/* LEFT */}
+          <button
+            onClick={() => {
+              const newIndex =
+                selectedIndex === 0
+                  ? gallery.length - 1
+                  : selectedIndex - 1;
 
-          setSelectedIndex(newIndex);
-          setSelectedImage(gallery[newIndex]);
-        }}
-        className="absolute left-5 md:left-10 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
-      >
-        ←
-      </button>
+              setSelectedIndex(newIndex);
+              setSelectedImage(gallery[newIndex]);
+            }}
+            className="absolute left-2 sm:left-5 md:left-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
+          >
+            ←
+          </button>
 
-      {/* IMAGE */}
-      <motion.img
-        key={selectedImage}
-        initial={{
-          opacity: 0,
-          scale: 0.92,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-        }}
-        exit={{
-          opacity: 0,
-          scale: 0.92,
-        }}
-        transition={{
-          duration: 0.35,
-        }}
-        src={selectedImage}
-        alt=""
-        className="max-w-[94vw] max-h-[90vh] object-contain rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.5)]"
-      />
+          {/* IMAGE */}
+          <motion.img
+            key={selectedImage}
+            initial={{
+              opacity: 0,
+              scale: 0.92,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.92,
+            }}
+            transition={{
+              duration: 0.35,
+            }}
+            src={selectedImage}
+            alt=""
+            className="max-w-[92vw] sm:max-w-[94vw] max-h-[75vh] sm:max-h-[90vh] object-contain rounded-[18px] sm:rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.5)]"
+          />
 
-      {/* RIGHT */}
-      <button
-        onClick={() => {
-          const newIndex =
-            selectedIndex === gallery.length - 1
-              ? 0
-              : selectedIndex + 1;
+          {/* RIGHT */}
+          <button
+            onClick={() => {
+              const newIndex =
+                selectedIndex === gallery.length - 1
+                  ? 0
+                  : selectedIndex + 1;
 
-          setSelectedIndex(newIndex);
-          setSelectedImage(gallery[newIndex]);
-        }}
-        className="absolute right-5 md:right-10 z-50 w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition"
-      >
-        →
-      </button>
+              setSelectedIndex(newIndex);
+              setSelectedImage(gallery[newIndex]);
+            }}
+            className="absolute right-2 sm:right-5 md:right-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
+          >
+            →
+          </button>
 
-    </motion.div>
-  )}
-</AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
   </>
 )}
 
@@ -3400,22 +3446,22 @@ id="amenities"
   whileInView="visible"
   viewport={{ once: true, amount: 0.15 }}
   variants={staggerContainer}
-  className="bg-[#f7f3ee] py-20 overflow-hidden"
+  className="bg-[#f7f3ee] py-16 md:py-20 overflow-hidden"
 >
-  <div className="max-w-[1450px] mx-auto px-5">
+  <div className="max-w-[1450px] mx-auto px-4 sm:px-5">
 
     {/* TOP HEADING */}
     <motion.div
       variants={fadeUp}
-      className="text-center mb-14"
+      className="text-center mb-12 md:mb-14"
     >
-      <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+      <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
         {locationData.sectionNumber || "07"} |{" "}
         {locationData.topLabel || "PRIME LOCATION"}
       </p>
 
       <h2
-        className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+        className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] md:leading-tight px-2"
         style={{
           fontFamily: "Cormorant Garamond, serif",
         }}
@@ -3426,33 +3472,33 @@ id="amenities"
         </span>
       </h2>
 
-      <p className="max-w-3xl mx-auto mt-6 text-[#555] text-base md:text-lg leading-relaxed">
+      <p className="max-w-3xl mx-auto mt-5 md:mt-6 text-[#555] text-[14px] sm:text-base md:text-lg leading-relaxed px-2">
         {locationData.description || coreDetails.title}
       </p>
     </motion.div>
 
     {/* ================= MAIN GRID ================= */}
-    <div className="grid lg:grid-cols-[360px_1fr] gap-6 items-stretch">
+    <div className="grid lg:grid-cols-[360px_1fr] gap-5 md:gap-6 items-stretch">
 
       {/* ================= LEFT SIDE LOCATION CARDS ================= */}
       <motion.div
         variants={fadeLeft}
-        className="rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
+        className="rounded-[24px] md:rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
       >
 
         {/* TOP HEADER */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#08211c] via-[#0f3a30] to-[#123f34] px-8 py-10">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#08211c] via-[#0f3a30] to-[#123f34] px-5 sm:px-7 md:px-8 py-8 sm:py-10">
 
           {/* GLOW */}
           <div className="absolute -top-20 -right-20 w-52 h-52 bg-[#d4b071]/20 blur-3xl rounded-full" />
 
           <div className="relative z-10">
-            <p className="uppercase tracking-[4px] text-[#d4b071] text-xs font-semibold mb-4">
+            <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#d4b071] text-[10px] sm:text-xs font-semibold mb-4">
               {locationData.leftCardTag || "Prime Connectivity"}
             </p>
 
             <h3
-              className="text-4xl text-white leading-tight font-light"
+              className="text-[34px] sm:text-[42px] md:text-4xl text-white leading-tight font-light"
               style={{
                 fontFamily: "Cormorant Garamond, serif",
               }}
@@ -3461,7 +3507,7 @@ id="amenities"
               {locationData.leftCardTitleLine2 || "Within Reach"}
             </h3>
 
-            <p className="text-white/70 mt-5 leading-relaxed text-sm">
+            <p className="text-white/70 mt-5 leading-relaxed text-[13px] sm:text-sm">
               {locationData.leftCardDescription ||
                 "Strategically positioned near major business hubs, expressways, hospitals, schools and premium lifestyle destinations."}
             </p>
@@ -3469,7 +3515,7 @@ id="amenities"
         </div>
 
         {/* LOCATION LIST */}
-        <div className="p-5 space-y-4 bg-[#fcfaf7] h-full">
+        <div className="p-4 sm:p-5 space-y-4 bg-[#fcfaf7] h-full">
 
           {locationData.landmarks?.map((l, i) => (
             l.name && (
@@ -3482,31 +3528,31 @@ id="amenities"
                 transition={{
                   duration: 0.3,
                 }}
-                className="group relative overflow-hidden rounded-[22px] border border-[#eadfce] bg-white p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
+                className="group relative overflow-hidden rounded-[18px] sm:rounded-[22px] border border-[#eadfce] bg-white p-4 sm:p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
               >
 
                 {/* GOLD HOVER */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-[linear-gradient(120deg,transparent,rgba(212,176,113,0.08),transparent)] translate-x-[-100%] group-hover:translate-x-[100%]" />
 
-                <div className="relative z-10 flex items-center justify-between gap-4">
+                <div className="relative z-10 flex items-center justify-between gap-3 sm:gap-4">
 
                   {/* LEFT */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
 
                     {/* ICON */}
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-sm sm:text-base">
 
                       {l.icon || "✦"}
 
                     </div>
 
                     {/* TEXT */}
-                    <div>
-                      <h4 className="text-[#17342d] font-semibold text-[15px] uppercase tracking-wide">
+                    <div className="min-w-0">
+                      <h4 className="text-[#17342d] font-semibold text-[13px] sm:text-[15px] uppercase tracking-wide truncate">
                         {l.name}
                       </h4>
 
-                      <p className="text-[#777] text-sm mt-1">
+                      <p className="text-[#777] text-[12px] sm:text-sm mt-1 leading-relaxed">
                         {l.subtitle || "Premium Connectivity"}
                       </p>
                     </div>
@@ -3515,11 +3561,11 @@ id="amenities"
                   {/* DISTANCE */}
                   <div className="text-right flex-shrink-0">
 
-                    <p className="text-2xl font-light text-[#b58b47] leading-none">
+                    <p className="text-xl sm:text-2xl font-light text-[#b58b47] leading-none">
                       {l.distance}
                     </p>
 
-                    <span className="uppercase tracking-[2px] text-[10px] text-[#999]">
+                    <span className="uppercase tracking-[1.5px] sm:tracking-[2px] text-[9px] sm:text-[10px] text-[#999]">
                       Away
                     </span>
                   </div>
@@ -3533,19 +3579,19 @@ id="amenities"
       {/* ================= MAP SECTION ================= */}
       <motion.div
         variants={fadeUp}
-        className="relative rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
+        className="relative rounded-[24px] md:rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
       >
 
         {/* MAP TOP BAR */}
-        <div className="relative z-20 flex items-center justify-between px-7 py-5 border-b border-[#ece2d3] bg-white">
+        <div className="relative z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 px-5 sm:px-6 md:px-7 py-5 border-b border-[#ece2d3] bg-white">
 
           <div>
-            <p className="uppercase tracking-[3px] text-[#b58b47] text-xs font-semibold mb-2">
+            <p className="uppercase tracking-[2px] sm:tracking-[3px] text-[#b58b47] text-[10px] sm:text-xs font-semibold mb-2">
               {locationData.mapSectionTag || "Interactive Location Map"}
             </p>
 
             <h3
-              className="text-3xl text-[#17342d] font-light"
+              className="text-[28px] sm:text-3xl text-[#17342d] font-light leading-tight"
               style={{
                 fontFamily: "Cormorant Garamond, serif",
               }}
@@ -3555,18 +3601,18 @@ id="amenities"
           </div>
 
           {/* BADGE */}
-          <div className="hidden md:flex items-center gap-3 bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d4b071] px-5 py-3 rounded-2xl border border-[#d4b071]/30 shadow-lg">
+          <div className="flex sm:self-start md:self-auto items-center gap-3 bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d4b071] px-4 sm:px-5 py-3 rounded-2xl border border-[#d4b071]/30 shadow-lg w-fit">
 
-            <div className="w-10 h-10 rounded-full border border-[#d4b071] flex items-center justify-center">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4b071] flex items-center justify-center text-sm sm:text-base">
               ✦
             </div>
 
             <div>
-              <p className="uppercase tracking-[2px] text-[10px]">
+              <p className="uppercase tracking-[2px] text-[9px] sm:text-[10px]">
                 {locationData.badgeTitle || "Prime"}
               </p>
 
-              <p className="text-sm text-white">
+              <p className="text-[12px] sm:text-sm text-white leading-tight">
                 {locationData.badgeSubtitle || "Location Advantage"}
               </p>
             </div>
@@ -3574,7 +3620,7 @@ id="amenities"
         </div>
 
         {/* MAP */}
-        <div className="relative flex-1 min-h-[720px]">
+        <div className="relative flex-1 min-h-[420px] sm:min-h-[520px] md:min-h-[720px]">
 
           {locationData.mapEmbedUrl ? (
             <iframe
@@ -3591,7 +3637,7 @@ id="amenities"
               }}
             />
           ) : (
-            <div className="h-[750px] flex items-center justify-center bg-[#08211c] text-white">
+            <div className="h-[420px] sm:h-[520px] md:h-[750px] flex items-center justify-center bg-[#08211c] text-white text-sm sm:text-base">
               Map Not Available
             </div>
           )}
@@ -3609,25 +3655,25 @@ id="amenities"
             transition={{
               duration: 0.7,
             }}
-            className="absolute left-6 bottom-8 z-20 max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
+            className="absolute left-3 right-3 sm:left-6 sm:right-auto bottom-4 sm:bottom-8 z-20 sm:max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
           >
 
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3 sm:gap-4">
 
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-xl">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-lg sm:text-xl">
                 ✦
               </div>
 
               <div>
-                <p className="uppercase tracking-[3px] text-[#b58b47] text-[11px] font-semibold mb-2">
+                <p className="uppercase tracking-[2px] sm:tracking-[3px] text-[#b58b47] text-[10px] sm:text-[11px] font-semibold mb-2">
                   {locationData.floatingCardTag || "Signature Address"}
                 </p>
 
-                <h4 className="text-[#17342d] text-xl font-semibold leading-tight">
+                <h4 className="text-[#17342d] text-[18px] sm:text-xl font-semibold leading-tight">
                   {locationData.floatingCardTitle || "Prime Sector Connectivity"}
                 </h4>
 
-                <p className="text-[#666] text-sm mt-3 leading-relaxed">
+                <p className="text-[#666] text-[12px] sm:text-sm mt-3 leading-relaxed">
                   {locationData.floatingCardDescription ||
                     "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations."}
                 </p>
@@ -3641,17 +3687,17 @@ id="amenities"
     {/* BOTTOM STRIP */}
     <motion.div
       variants={fadeUp}
-      className="mt-8 rounded-[24px] overflow-hidden border border-[#c9a96a] bg-gradient-to-r from-[#07211c] to-[#0f3a30]"
+      className="mt-6 md:mt-8 rounded-[20px] md:rounded-[24px] overflow-hidden border border-[#c9a96a] bg-gradient-to-r from-[#07211c] to-[#0f3a30]"
     >
       <div
-        className={`grid ${
+        className={`grid grid-cols-1 sm:grid-cols-2 ${
           (locationData.bottomStrip?.length || 0) >= 5
-            ? "md:grid-cols-5"
+            ? "lg:grid-cols-5"
             : (locationData.bottomStrip?.length || 0) === 4
-            ? "md:grid-cols-4"
+            ? "lg:grid-cols-4"
             : (locationData.bottomStrip?.length || 0) === 3
-            ? "md:grid-cols-3"
-            : "md:grid-cols-2"
+            ? "lg:grid-cols-3"
+            : "lg:grid-cols-2"
         }`}
       >
 
@@ -3691,20 +3737,20 @@ id="amenities"
             whileHover={{
               y: -4,
             }}
-            className="p-7 border-r border-white/10 last:border-r-0"
+            className="p-5 sm:p-6 md:p-7 border-b sm:border-b-0 sm:border-r border-white/10 last:border-r-0"
           >
             <div className="flex items-start gap-4">
 
-              <div className="w-12 h-12 rounded-full border border-[#c9a96a] flex items-center justify-center text-[#d8b06b] flex-shrink-0">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#c9a96a] flex items-center justify-center text-[#d8b06b] flex-shrink-0 text-sm sm:text-base">
                 {item.icon || "✦"}
               </div>
 
               <div>
-                <h4 className="text-[#d8b06b] text-sm uppercase tracking-wide font-semibold leading-relaxed">
+                <h4 className="text-[#d8b06b] text-[12px] sm:text-sm uppercase tracking-wide font-semibold leading-relaxed">
                   {item.title}
                 </h4>
 
-                <p className="text-white/70 text-sm mt-2 leading-relaxed">
+                <p className="text-white/70 text-[12px] sm:text-sm mt-2 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
@@ -3718,7 +3764,7 @@ id="amenities"
 
 {/* ================= MASTER PLAN PREMIUM SECTION ================= */}
 {gatedContent?.brochurePdfUrl && (
-  <section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+  <section className="relative bg-[#f7f3ee] py-16 md:py-24 overflow-hidden">
 
     {/* SOFT PATTERN */}
     <div
@@ -3730,7 +3776,7 @@ id="amenities"
       }}
     />
 
-    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+    <div className="relative z-10 max-w-[1450px] mx-auto px-4 md:px-5">
 
       {/* ================= HEADING ================= */}
       <motion.div
@@ -3738,15 +3784,15 @@ id="amenities"
         whileInView="visible"
         viewport={{ once: true }}
         variants={fadeUp}
-        className="text-center mb-16"
+        className="text-center mb-12 md:mb-16"
       >
-        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+        <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] md:text-sm font-medium mb-4">
           {masterPlanData?.sectionNumber || "08"} |{" "}
           {masterPlanData?.topLabel || "MASTER PLAN"}
         </p>
 
         <h2
-          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+          className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.08] md:leading-tight"
           style={{
             fontFamily: "Cormorant Garamond, serif",
           }}
@@ -3764,7 +3810,7 @@ id="amenities"
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
         </div>
 
-        <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
+        <p className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] md:text-base lg:text-lg leading-relaxed px-2 md:px-0">
           {masterPlanData?.description ||
             "Explore the thoughtfully designed master plan featuring elegant layouts, landscaped greens, premium amenities, and seamless connectivity crafted for elevated living."}
         </p>
@@ -3773,10 +3819,10 @@ id="amenities"
       {/* ================= MAIN LAYOUT ================= */}
       <div className="relative max-w-7xl mx-auto">
 
-        {/* SIDE STRIPS */}
-        <div className="absolute inset-y-24 left-0 w-[22%] bg-gradient-to-b from-[#08211c] to-[#0f3a30] rounded-l-[40px]" />
+        {/* SIDE STRIPS - DESKTOP ONLY */}
+        <div className="hidden lg:block absolute inset-y-24 left-0 w-[22%] bg-gradient-to-b from-[#08211c] to-[#0f3a30] rounded-l-[40px]" />
 
-        <div className="absolute inset-y-24 right-0 w-[22%] bg-gradient-to-b from-[#b58b47] to-[#d4b071] rounded-r-[40px]" />
+        <div className="hidden lg:block absolute inset-y-24 right-0 w-[22%] bg-gradient-to-b from-[#b58b47] to-[#d4b071] rounded-r-[40px]" />
 
         {/* MAIN CARD */}
         <motion.div
@@ -3787,7 +3833,7 @@ id="amenities"
           whileHover={{
             y: -6,
           }}
-          className="relative z-10 max-w-6xl mx-auto rounded-[32px] overflow-hidden border border-[#dfd5c8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white"
+          className="relative z-10 max-w-6xl mx-auto rounded-[26px] md:rounded-[32px] overflow-hidden border border-[#dfd5c8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white"
         >
 
           {/* IMAGE WRAPPER */}
@@ -3802,7 +3848,7 @@ id="amenities"
                 "/placeholder.jpg"
               }
               alt="Master Plan"
-              className="w-full h-[720px] object-cover scale-[1.02]"
+              className="w-full h-[640px] sm:h-[700px] md:h-[720px] object-cover scale-[1.02]"
             />
 
             {/* OVERLAYS */}
@@ -3811,13 +3857,13 @@ id="amenities"
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/20" />
 
             {/* TOP LABEL */}
-            <div className="absolute top-8 left-8 z-20">
+            <div className="absolute top-4 sm:top-6 md:top-8 left-4 sm:left-6 md:left-8 z-20">
 
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 flex items-center gap-3">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 sm:px-5 md:px-6 py-2.5 md:py-3 flex items-center gap-3 max-w-[92vw]">
 
-                <div className="w-3 h-3 rounded-full bg-[#d4b071] animate-pulse" />
+                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#d4b071] animate-pulse flex-shrink-0" />
 
-                <span className="uppercase tracking-[3px] text-white text-xs font-medium">
+                <span className="uppercase tracking-[2px] md:tracking-[3px] text-white text-[9px] sm:text-[10px] md:text-xs font-medium">
                   {masterPlanData?.topBadge ||
                     "Premium Architectural Planning"}
                 </span>
@@ -3825,7 +3871,7 @@ id="amenities"
             </div>
 
             {/* CENTER CONTENT */}
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6">
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 sm:px-6">
 
               {/* GOLD EMBLEM */}
               <motion.div
@@ -3837,11 +3883,11 @@ id="amenities"
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="w-32 h-32 rounded-full border border-[#d4b071] bg-[#08211c]/70 backdrop-blur-md flex items-center justify-center shadow-[0_0_40px_rgba(212,176,113,0.35)] mb-8"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border border-[#d4b071] bg-[#08211c]/70 backdrop-blur-md flex items-center justify-center shadow-[0_0_40px_rgba(212,176,113,0.35)] mb-6 md:mb-8"
               >
-                <div className="w-24 h-24 rounded-full border border-[#d4b071]/70 flex items-center justify-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border border-[#d4b071]/70 flex items-center justify-center">
 
-                  <span className="text-[#d4b071] text-5xl">
+                  <span className="text-[#d4b071] text-3xl sm:text-4xl md:text-5xl">
                     {masterPlanData?.centerIcon || "✦"}
                   </span>
                 </div>
@@ -3849,7 +3895,7 @@ id="amenities"
 
               {/* TITLE */}
               <h3
-                className="text-white text-5xl md:text-7xl font-light leading-tight"
+                className="text-white text-[38px] sm:text-5xl md:text-7xl font-light leading-[1.05] md:leading-tight"
                 style={{
                   fontFamily: "Cormorant Garamond, serif",
                 }}
@@ -3858,7 +3904,7 @@ id="amenities"
                   "The Master Plan"}
               </h3>
 
-              <p className="max-w-2xl mx-auto mt-6 text-white/80 text-lg leading-relaxed">
+              <p className="max-w-2xl mx-auto mt-5 md:mt-6 text-white/80 text-[14px] sm:text-[16px] md:text-lg leading-relaxed px-2">
                 {masterPlanData?.centerDescription ||
                   "Every space is carefully envisioned to create harmony between luxury, comfort, and timeless architecture."}
               </p>
@@ -3872,15 +3918,15 @@ id="amenities"
                   scale: 0.98,
                 }}
                 onClick={() => setShowModal(true)}
-                className="mt-10 bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_35px_rgba(212,176,113,0.35)] transition-all duration-300 text-[#e0bd7d] px-10 py-5 rounded-2xl flex items-center gap-5 uppercase tracking-[2px] text-sm font-semibold"
+                className="mt-7 md:mt-10 bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_35px_rgba(212,176,113,0.35)] transition-all duration-300 text-[#e0bd7d] px-6 sm:px-8 md:px-10 py-4 md:py-5 rounded-2xl flex items-center gap-3 md:gap-5 uppercase tracking-[1.5px] md:tracking-[2px] text-[11px] md:text-sm font-semibold w-full sm:w-auto justify-center max-w-[320px]"
               >
 
                 {/* ICON */}
-                <div className="w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-[#d4b071] flex items-center justify-center flex-shrink-0">
 
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6"
+                    className="w-5 h-5 md:w-6 md:h-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -3902,7 +3948,7 @@ id="amenities"
                 {/* ARROW */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+                  className="w-4 h-4 md:w-5 md:h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -3917,8 +3963,8 @@ id="amenities"
               </motion.button>
             </div>
 
-            {/* BOTTOM INFO STRIP */}
-            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-r from-[#08211c]/95 to-[#0f3a30]/95 backdrop-blur-md border-t border-white/10 z-20">
+            {/* ================= DESKTOP BOTTOM INFO STRIP ================= */}
+            <div className="hidden md:block absolute bottom-0 left-0 w-full bg-gradient-to-r from-[#08211c]/95 to-[#0f3a30]/95 backdrop-blur-md border-t border-white/10 z-20">
 
               <div
                 className={`grid md:grid-cols-${
@@ -4004,10 +4050,342 @@ id="amenities"
             </div>
           </div>
         </motion.div>
+
+        {/* ================= MOBILE FEATURES ================= */}
+        <div className="md:hidden mt-5 grid grid-cols-1 gap-3">
+
+          {(masterPlanData?.bottomStrip?.length
+            ? masterPlanData.bottomStrip
+            : [
+                {
+                  title: "Thoughtful Layouts",
+                  desc: "Optimized space planning",
+                  icon: "✦",
+                },
+                {
+                  title: "Landscape Greens",
+                  desc: "Open green environments",
+                  icon: "✦",
+                },
+                {
+                  title: "Premium Amenities",
+                  desc: "Luxury lifestyle experiences",
+                  icon: "✦",
+                },
+                {
+                  title: "Future-Ready Living",
+                  desc: "Modern & sustainable planning",
+                  icon: "✦",
+                },
+              ]).map((item, i) => (
+            <div
+              key={i}
+              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071]/20 rounded-[20px] p-5 shadow-lg"
+            >
+              <div className="flex items-start gap-4">
+
+                <div className="w-11 h-11 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] flex-shrink-0">
+                  {item.icon || "✦"}
+                </div>
+
+                <div>
+                  <h4 className="text-[#d4b071] uppercase tracking-wide text-[13px] font-semibold">
+                    {item.title}
+                  </h4>
+
+                  <p className="text-white/70 text-sm mt-2 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   </section>
 )}
+
+{/* ================= DEVELOPER PROJECTS PREMIUM SECTION ================= */}
+<section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+
+  {/* SOFT BACKGROUND */}
+  <div
+    className="absolute inset-0 opacity-[0.03]"
+    style={{
+      backgroundImage:
+        "radial-gradient(circle, #17342d 1px, transparent 1px)",
+      backgroundSize: "28px 28px",
+    }}
+  />
+
+  {/* GOLD GLOW */}
+  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4b071]/10 blur-3xl rounded-full" />
+
+  <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+
+    {/* ================= HEADING ================= */}
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={fadeUp}
+      className="text-center mb-16"
+    >
+
+      <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+        09 | OTHER DEVELOPMENTS
+      </p>
+
+      <h2
+        className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+        style={{
+          fontFamily: "Cormorant Garamond, serif",
+        }}
+      >
+        More Signature Creations By
+
+        <span className="text-[#b58b47]">
+          {" "}
+          Signature Global
+        </span>
+      </h2>
+
+      <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+      </div>
+
+      <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
+        Explore landmark developments crafted with timeless design,
+        premium architecture, and elevated lifestyles across Gurgaon.
+      </p>
+    </motion.div>
+
+    {/* ================= PROJECT GRID ================= */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-7">
+
+      {[
+        {
+          name: "Signature Global City 93",
+          location: "Sector 93, Gurgaon",
+          price: "₹ 1.45 Cr",
+          image:
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
+        },
+        {
+          name: "Signature Titanium SPR",
+          location: "SPR Road, Gurgaon",
+          price: "₹ 3.2 Cr",
+          image:
+            "https://images.unsplash.com/photo-1613977257365-aaae5a9817ff?q=80&w=1600&auto=format&fit=crop",
+        },
+        {
+          name: "Signature Deluxe DXP",
+          location: "Dwarka Expressway",
+          price: "₹ 2.8 Cr",
+          image:
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop",
+        },
+        {
+          name: "Signature Twin Tower",
+          location: "Sector 84, Gurgaon",
+          price: "₹ 4.1 Cr",
+          image:
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
+        },
+      ].map((project, i) => (
+
+        <motion.div
+          key={i}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          whileHover={{
+            y: -10,
+          }}
+          className="group relative rounded-[30px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]"
+        >
+
+          {/* IMAGE */}
+          <div className="relative h-[420px] overflow-hidden">
+
+            <img
+              src={project.image}
+              alt={project.name}
+              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+            />
+
+            {/* OVERLAY */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/30 to-transparent" />
+
+            {/* TOP BADGE */}
+            <div className="absolute top-5 left-5 z-20">
+
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+
+                <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
+
+                <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
+                  Premium Development
+                </span>
+              </div>
+            </div>
+
+            {/* CONTENT */}
+            <div className="absolute bottom-0 left-0 w-full p-7 z-20">
+
+              {/* LOCATION */}
+              <div className="flex items-center gap-2 text-[#e0bd7d] text-xs uppercase tracking-[2px] mb-4">
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17.657 16.657L13.414 12.414m0 0A6 6 0 1012 18a6 6 0 001.414-5.586z"
+                  />
+                </svg>
+
+                <span>
+                  {project.location}
+                </span>
+              </div>
+
+              {/* TITLE */}
+              <h3
+                className="text-white text-3xl leading-tight font-light"
+                style={{
+                  fontFamily:
+                    "Cormorant Garamond, serif",
+                }}
+              >
+                {project.name}
+              </h3>
+
+              {/* DESCRIPTION */}
+              <p className="text-white/70 text-sm leading-relaxed mt-4 line-clamp-3">
+                Experience sophisticated living crafted with premium
+                amenities, landscaped greens, and timeless architecture.
+              </p>
+
+              {/* BOTTOM */}
+              <div className="flex items-center justify-between mt-7 pt-5 border-t border-white/10">
+
+                {/* PRICE */}
+                <div>
+
+                  <p className="text-white/40 text-[11px] uppercase tracking-[2px]">
+                    Starting From
+                  </p>
+
+                  <h4 className="text-[#e0bd7d] text-lg font-semibold mt-1">
+                    {project.price}
+                  </h4>
+                </div>
+
+                {/* BUTTON */}
+                <button
+                  className="w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* ================= CTA ================= */}
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={fadeUp}
+      className="mt-16 flex justify-center"
+    >
+
+      <button
+        className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-2xl flex items-center gap-5"
+      >
+
+        {/* SHINE */}
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition duration-1000" />
+
+        {/* ICON */}
+        <div className="relative z-10 w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071]">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
+            />
+          </svg>
+        </div>
+
+        {/* TEXT */}
+        <div className="relative z-10 text-left">
+
+          <p className="text-white/50 text-[11px] uppercase tracking-[3px] mb-1">
+            Explore Portfolio
+          </p>
+
+          <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
+            View All Projects By Signature Global
+          </h4>
+        </div>
+
+        {/* ARROW */}
+        <div className="relative z-10 text-[#d4b071] group-hover:translate-x-1 transition duration-300">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
+          </svg>
+        </div>
+      </button>
+    </motion.div>
+  </div>
+</section>
 
 {/* ================= PREMIUM FAQ SECTION ================= */}
 {faqs.filter((f) => f.question).length > 0 && (
@@ -4038,7 +4416,7 @@ id="amenities"
       >
 
         <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          {(faqSection?.sectionNumber || "09")} |{" "}
+          {(faqSection?.sectionNumber || "10")} |{" "}
           {(faqSection?.topLabel || "FAQ")}
         </p>
 
