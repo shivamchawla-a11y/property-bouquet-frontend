@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 export default function PagesAdmin() {
+
   const [pages, setPages] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
@@ -19,9 +20,11 @@ export default function PagesAdmin() {
     pageType: "Custom",
   });
 
-  // ================= FETCH =================
+  // ================= FETCH PAGES =================
+
   const fetchPages = async () => {
     try {
+
       const res = await fetch(
         "https://property-bouquet-backend.onrender.com/api/pages",
         {
@@ -34,6 +37,7 @@ export default function PagesAdmin() {
       if (res.ok) {
         setPages(data.data || []);
       }
+
     } catch (err) {
       console.error(err);
     }
@@ -43,9 +47,12 @@ export default function PagesAdmin() {
     fetchPages();
   }, []);
 
-  // ================= CREATE =================
+  // ================= CREATE PAGE =================
+
   const handleCreate = async () => {
+
     try {
+
       const res = await fetch(
         "https://property-bouquet-backend.onrender.com/api/pages",
         {
@@ -61,6 +68,7 @@ export default function PagesAdmin() {
       const data = await res.json();
 
       if (res.ok) {
+
         setShowModal(false);
 
         setForm({
@@ -70,6 +78,7 @@ export default function PagesAdmin() {
         });
 
         fetchPages();
+
       } else {
         alert(data.message);
       }
@@ -80,165 +89,264 @@ export default function PagesAdmin() {
   };
 
   return (
-    <div className="space-y-6">
+
+    <div className="min-h-screen bg-[#f4f7fb] p-6 text-gray-800">
 
       {/* ================= HEADER ================= */}
-      <div className="flex items-center justify-between">
+
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
+
         <div>
-          <h1 className="text-3xl font-bold text-[#0f3b2e]">
+
+          <h1 className="text-4xl font-bold text-[#0f3b2e]">
             Website Pages
           </h1>
 
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 mt-2 text-base">
             Manage static pages & landing pages
           </p>
+
         </div>
 
         <button
           onClick={() => setShowModal(true)}
-          className="h-12 px-5 rounded-2xl bg-gradient-to-r from-[#c9a64b] to-[#e0be69] text-black font-semibold shadow-lg flex items-center gap-2"
+          className="h-12 px-6 rounded-2xl bg-gradient-to-r from-[#c9a64b] to-[#e0be69] text-black font-semibold shadow-lg flex items-center gap-2 hover:scale-[1.02] transition"
         >
           <Plus size={18} />
+
           Create Page
         </button>
+
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead className="bg-[#f8faf9] text-gray-500 text-xs uppercase">
-            <tr>
-              <th className="p-4 text-left">Title</th>
-              <th className="p-4 text-left">Slug</th>
-              <th className="p-4 text-left">Type</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Created</th>
-              <th className="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
 
-          <tbody>
-            {pages.map((page) => (
-              <tr
-                key={page._id}
-                className="border-t border-gray-100 hover:bg-[#fafdfb]"
-              >
-                <td className="p-4 font-semibold">
-                  {page.title}
-                </td>
+      <div className="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-100">
 
-                <td className="p-4 text-gray-500">
-                  {page.pageType === "Home"
-  ? "/"
-  : `/${page.slug}`}
-                </td>
+        <div className="overflow-x-auto">
 
-                <td className="p-4">
-  <span
-    className={`px-3 py-1 rounded-full text-xs font-bold ${
-      page.pageType === "Home"
-        ? "bg-blue-100 text-blue-700"
-        : "bg-gray-100 text-gray-700"
-    }`}
-  >
-    {page.pageType}
-  </span>
-</td>
+          <table className="w-full min-w-[1000px]">
 
-                <td className="p-4">
-                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                    LIVE
-                  </span>
-                </td>
+            <thead className="bg-[#f8fafc] border-b border-gray-200">
 
-                <td className="p-4 text-sm text-gray-500">
-                  {new Date(
-                    page.createdAt
-                  ).toLocaleDateString()}
-                </td>
+              <tr className="text-left text-gray-700">
 
-                <td className="p-4">
-                  <div className="flex justify-end gap-2">
+                <th className="px-6 py-5 text-sm font-bold">
+                  Title
+                </th>
 
-  {/* PREVIEW */}
-  <button
-    onClick={() =>
-      window.open(
-        page.pageType === "Home"
-          ? "/"
-          : `/${page.slug}`,
-        "_blank"
-      )
-    }
-    className="h-10 w-10 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition"
-    title="Preview Page"
-  >
-    <Eye size={16} />
-  </button>
+                <th className="px-6 py-5 text-sm font-bold">
+                  Slug
+                </th>
 
-  {/* LIVE WEBSITE */}
-  <button
-    onClick={() =>
-      window.open(
-        page.pageType === "Home"
-          ? "/"
-          : `/${page.slug}`,
-        "_blank"
-      )
-    }
-    className="h-10 w-10 rounded-xl bg-black hover:bg-gray-800 text-white flex items-center justify-center transition"
-    title="Open Live Website"
-  >
-    <Globe size={16} />
-  </button>
+                <th className="px-6 py-5 text-sm font-bold">
+                  Type
+                </th>
 
-  {/* EDIT */}
-  <button
-    className="h-10 w-10 rounded-xl bg-[#0f3b2e] hover:bg-[#145240] text-white flex items-center justify-center transition"
-    title="Edit Page"
-  >
-    <Pencil size={16} />
-  </button>
+                <th className="px-6 py-5 text-sm font-bold">
+                  Status
+                </th>
 
-</div>
-                </td>
+                <th className="px-6 py-5 text-sm font-bold">
+                  Created
+                </th>
+
+                <th className="px-6 py-5 text-right text-sm font-bold">
+                  Actions
+                </th>
+
               </tr>
-            ))}
-          </tbody>
-        </table>
 
-        {pages.length === 0 && (
-          <div className="p-10 text-center text-gray-500">
-            No pages created yet
-          </div>
-        )}
+            </thead>
+
+            <tbody>
+
+              {pages.length > 0 ? (
+
+                pages.map((page) => (
+
+                  <tr
+                    key={page._id}
+                    className="border-b border-gray-100 hover:bg-[#fafdfb] transition"
+                  >
+
+                    {/* TITLE */}
+
+                    <td className="px-6 py-5">
+
+                      <div className="font-semibold text-gray-900 text-base">
+                        {page.title}
+                      </div>
+
+                    </td>
+
+                    {/* SLUG */}
+
+                    <td className="px-6 py-5">
+
+                      <div className="text-gray-600 font-medium">
+                        {page.pageType === "Home"
+                          ? "/"
+                          : `/${page.slug}`}
+                      </div>
+
+                    </td>
+
+                    {/* TYPE */}
+
+                    <td className="px-6 py-5">
+
+                      <span
+                        className={`px-4 py-2 rounded-full text-xs font-bold ${
+                          page.pageType === "Home"
+                            ? "bg-blue-100 text-blue-700 border border-blue-200"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
+                      >
+                        {page.pageType}
+                      </span>
+
+                    </td>
+
+                    {/* STATUS */}
+
+                    <td className="px-6 py-5">
+
+                      <span className="px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                        LIVE
+                      </span>
+
+                    </td>
+
+                    {/* CREATED */}
+
+                    <td className="px-6 py-5 text-sm text-gray-600 font-medium">
+
+                      {new Date(page.createdAt).toLocaleDateString()}
+
+                    </td>
+
+                    {/* ACTIONS */}
+
+                    <td className="px-6 py-5">
+
+                      <div className="flex justify-end gap-3">
+
+                        {/* PREVIEW */}
+
+                        <button
+                          onClick={() =>
+                            window.open(
+                              page.pageType === "Home"
+                                ? "/"
+                                : `/${page.slug}`,
+                              "_blank"
+                            )
+                          }
+                          className="h-11 w-11 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition shadow-sm"
+                          title="Preview Page"
+                        >
+                          <Eye size={17} />
+                        </button>
+
+                        {/* LIVE WEBSITE */}
+
+                        <button
+                          onClick={() =>
+                            window.open(
+                              page.pageType === "Home"
+                                ? "/"
+                                : `/${page.slug}`,
+                              "_blank"
+                            )
+                          }
+                          className="h-11 w-11 rounded-2xl bg-black hover:bg-gray-800 text-white flex items-center justify-center transition shadow-sm"
+                          title="Open Live Website"
+                        >
+                          <Globe size={17} />
+                        </button>
+
+                        {/* EDIT */}
+
+                        <button
+                          className="h-11 w-11 rounded-2xl bg-[#0f3b2e] hover:bg-[#145240] text-white flex items-center justify-center transition shadow-sm"
+                          title="Edit Page"
+                        >
+                          <Pencil size={17} />
+                        </button>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              ) : (
+
+                <tr>
+
+                  <td
+                    colSpan="6"
+                    className="py-20 text-center text-gray-500 text-lg"
+                  >
+                    No pages created yet
+                  </td>
+
+                </tr>
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       </div>
 
-      {/* ================= MODAL ================= */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
-          <div className="w-full max-w-lg bg-white rounded-3xl p-7 shadow-2xl">
+      {/* ================= CREATE MODAL ================= */}
 
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center">
-                <FileText />
+      {showModal && (
+
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-5">
+
+          <div className="w-full max-w-xl bg-white rounded-3xl p-7 shadow-2xl">
+
+            {/* HEADER */}
+
+            <div className="flex items-center gap-4 mb-8">
+
+              <div className="h-14 w-14 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center shadow-md">
+
+                <FileText size={24} />
+
               </div>
 
               <div>
-                <h2 className="text-2xl font-bold text-[#0f3b2e]">
+
+                <h2 className="text-3xl font-bold text-[#0f3b2e]">
                   Create New Page
                 </h2>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-sm mt-1">
                   Add a new static website page
                 </p>
+
               </div>
+
             </div>
 
-            <div className="space-y-5">
+            {/* FORM */}
+
+            <div className="space-y-6">
+
+              {/* TITLE */}
 
               <div>
-                <label className="text-sm font-medium text-gray-700">
+
+                <label className="text-sm font-semibold text-gray-700">
                   Page Title
                 </label>
 
@@ -250,33 +358,43 @@ export default function PagesAdmin() {
                       title: e.target.value,
                     })
                   }
-                  className="mt-2 w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+                  className="mt-2 w-full border border-gray-300 text-gray-800 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e]"
                   placeholder="About Us"
                 />
+
               </div>
 
-              {form.pageType !== "Home" && (
-  <div>
-    <label className="text-sm font-medium text-gray-700">
-      Slug
-    </label>
+              {/* SLUG */}
 
-    <input
-      value={form.slug}
-      onChange={(e) =>
-        setForm({
-          ...form,
-          slug: e.target.value,
-        })
-      }
-      className="mt-2 w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e]"
-      placeholder="about-us"
-    />
-  </div>
-)}
+              {form.pageType !== "Home" && (
+
+                <div>
+
+                  <label className="text-sm font-semibold text-gray-700">
+                    Slug
+                  </label>
+
+                  <input
+                    value={form.slug}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        slug: e.target.value,
+                      })
+                    }
+                    className="mt-2 w-full border border-gray-300 text-gray-800 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+                    placeholder="about-us"
+                  />
+
+                </div>
+
+              )}
+
+              {/* PAGE TYPE */}
 
               <div>
-                <label className="text-sm font-medium text-gray-700">
+
+                <label className="text-sm font-semibold text-gray-700">
                   Page Type
                 </label>
 
@@ -288,38 +406,53 @@ export default function PagesAdmin() {
                       pageType: e.target.value,
                     })
                   }
-                  className="mt-2 w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+                  className="mt-2 w-full border border-gray-300 text-gray-800 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-[#0f3b2e] bg-white"
                 >
-                  <option>Home</option>
-                    <option>Custom</option>
-                    <option>About</option>
-                  <option>Contact</option>
-                  <option>Privacy</option>
-                  <option>Terms</option>
+
+                  <option value="Home">Home</option>
+
+                  <option value="Custom">Custom</option>
+
+                  <option value="About">About</option>
+
+                  <option value="Contact">Contact</option>
+
+                  <option value="Privacy">Privacy</option>
+
+                  <option value="Terms">Terms</option>
+
                 </select>
+
               </div>
 
-              <div className="flex justify-end gap-3 pt-3">
+              {/* BUTTONS */}
+
+              <div className="flex justify-end gap-4 pt-4">
 
                 <button
                   onClick={() => setShowModal(false)}
-                  className="h-11 px-5 rounded-2xl border border-gray-200"
+                  className="h-12 px-6 rounded-2xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={handleCreate}
-                  className="h-11 px-5 rounded-2xl bg-[#0f3b2e] text-white font-semibold"
+                  className="h-12 px-6 rounded-2xl bg-[#0f3b2e] hover:bg-[#145240] text-white font-semibold transition shadow-md"
                 >
                   Create Page
                 </button>
 
               </div>
+
             </div>
+
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 }

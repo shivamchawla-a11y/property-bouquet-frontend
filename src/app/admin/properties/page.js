@@ -6,6 +6,12 @@ import {
   Eye,
   RefreshCw,
   Globe,
+  Star,
+  TrendingUp,
+  Sparkles,
+  BadgeCheck,
+  Tag,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -14,11 +20,22 @@ export default function PropertiesPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
+
   const [filter, setFilter] = useState("active"); // active | inactive | all
+
+  // 🔥 TAG FILTER
+  const [tagFilter, setTagFilter] = useState("All");
+
   const [user, setUser] = useState(null);
+
+  // 🔥 FEATURE MODAL
+  const [featureModal, setFeatureModal] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 8;
 
+  const router = useRouter();
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user"));
@@ -26,10 +43,8 @@ export default function PropertiesPage() {
   }, []);
 
   useEffect(() => {
-  setCurrentPage(1);
-}, [search, filter]);
-
-  const router = useRouter();
+    setCurrentPage(1);
+  }, [search, filter, tagFilter]);
 
   // ================= FETCH =================
   const fetchProperties = async () => {
@@ -69,6 +84,48 @@ export default function PropertiesPage() {
   useEffect(() => {
     fetchProperties();
   }, [filter]);
+
+  // ================= FEATURE UPDATE =================
+  const updatePropertyTag = async (id, tag) => {
+    try {
+      setActionId(id);
+
+      const res = await fetch(
+        `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            propertyTag: tag,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setProperties((prev) =>
+          prev.map((item) =>
+            item._id === id
+              ? { ...item, propertyTag: tag }
+              : item
+          )
+        );
+
+        setFeatureModal(null);
+      } else {
+        alert(data.message || "Update failed ❌");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error ❌");
+    } finally {
+      setActionId(null);
+    }
+  };
 
   // ================= SOFT DELETE =================
   const handleDelete = async (id) => {
@@ -137,394 +194,597 @@ export default function PropertiesPage() {
   };
 
   // ================= FILTER =================
-  const filtered = properties.filter((p) =>
-  p?.coreDetails?.title
-    ?.toLowerCase()
-    .includes(search.toLowerCase())
-);
+  const filtered = properties.filter((p) => {
+    const titleMatch = p?.coreDetails?.title
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
 
-// ================= PAGINATION =================
-const totalPages = Math.ceil(
-  filtered.length / itemsPerPage
-);
+    const tagMatch =
+      tagFilter === "All" ||
+      (p.propertyTag || "Normal") === tagFilter;
 
-const startIndex =
-  (currentPage - 1) * itemsPerPage;
+    return titleMatch && tagMatch;
+  });
 
-const paginatedProperties = filtered.slice(
-  startIndex,
-  startIndex + itemsPerPage
-);
+  // ================= PAGINATION =================
+  const totalPages = Math.ceil(
+    filtered.length / itemsPerPage
+  );
+
+  const startIndex =
+    (currentPage - 1) * itemsPerPage;
+
+  const paginatedProperties = filtered.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  // ================= TAG BADGE =================
+  const tagStyle = (tag) => {
+    switch (tag) {
+      case "Featured":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "Recommended":
+        return "bg-blue-100 text-blue-700";
+
+      case "Trending":
+        return "bg-pink-100 text-pink-700";
+
+      case "New":
+        return "bg-emerald-100 text-emerald-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   return (
-  <div className="p-4 bg-[#f7f8f7] min-h-screen">
+    <div className="p-4 bg-[#f7f8f7] min-h-screen">
 
-    {/* ================= HEADER ================= */}
-    <div className="flex flex-col xl:flex-row xl:justify-between xl:items-center gap-4 mb-6">
+      {/* ================= HEADER ================= */}
+      <div className="flex flex-col xl:flex-row xl:justify-between xl:items-center gap-4 mb-6">
 
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#0f3b2e] tracking-tight">
-          Property Inventory
-        </h1>
+        <div>
+          <h1 className="text-3xl font-extrabold text-[#0f3b2e] tracking-tight">
+            Property Inventory
+          </h1>
 
-        <p className="text-gray-600 mt-1 text-xs font-medium">
-          Manage live listings, drafts, and property visibility
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-
-        {/* FILTER TABS */}
-        <div className="flex border border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm">
-
-          <button
-            onClick={() => setFilter("active")}
-            className={`px-4 py-2 text-sm font-semibold transition ${
-              filter === "active"
-                ? "bg-[#0f3b2e] text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            Active
-          </button>
-
-          <button
-            onClick={() => setFilter("inactive")}
-            className={`px-4 py-2 text-sm font-semibold transition ${
-              filter === "inactive"
-                ? "bg-[#0f3b2e] text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            Inactive
-          </button>
-
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-2 text-sm font-semibold transition ${
-              filter === "all"
-                ? "bg-[#0f3b2e] text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            All
-          </button>
+          <p className="text-gray-600 mt-1 text-xs font-medium">
+            Manage live listings, drafts, and property visibility
+          </p>
         </div>
 
-        {/* REFRESH */}
-        <button
-          onClick={fetchProperties}
-          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-xl flex items-center gap-2 hover:bg-gray-100 transition text-sm font-semibold shadow-sm"
-        >
-          <RefreshCw size={14} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap gap-2">
 
-        {/* ADD */}
-        <button
-          onClick={() => router.push("/admin/add-property")}
-          className="bg-gradient-to-r from-[#c9a64b] to-[#e0be69] hover:opacity-90 text-black px-5 py-2 rounded-xl text-sm font-bold shadow-lg transition"
-        >
-          + Add Property
-        </button>
+          {/* FILTER TABS */}
+          <div className="flex border border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm">
+
+            <button
+              onClick={() => setFilter("active")}
+              className={`px-4 py-2 text-sm font-semibold transition ${
+                filter === "active"
+                  ? "bg-[#0f3b2e] text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Active
+            </button>
+
+            <button
+              onClick={() => setFilter("inactive")}
+              className={`px-4 py-2 text-sm font-semibold transition ${
+                filter === "inactive"
+                  ? "bg-[#0f3b2e] text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Inactive
+            </button>
+
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-4 py-2 text-sm font-semibold transition ${
+                filter === "all"
+                  ? "bg-[#0f3b2e] text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              All
+            </button>
+          </div>
+
+          {/* REFRESH */}
+          <button
+            onClick={fetchProperties}
+            className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-xl flex items-center gap-2 hover:bg-gray-100 transition text-sm font-semibold shadow-sm"
+          >
+            <RefreshCw size={14} />
+            Refresh
+          </button>
+
+          {/* ADD */}
+          <button
+            onClick={() => router.push("/admin/add-property")}
+            className="bg-gradient-to-r from-[#c9a64b] to-[#e0be69] hover:opacity-90 text-black px-5 py-2 rounded-xl text-sm font-bold shadow-lg transition"
+          >
+            + Add Property
+          </button>
+        </div>
       </div>
-    </div>
 
-    {/* ================= SEARCH ================= */}
-    <div className="mb-4">
-      <input
-        placeholder="Search by property title..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full md:w-[320px] bg-white border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition shadow-sm"
-      />
-    </div>
+      {/* ================= SEARCH + TAG FILTER ================= */}
+      <div className="mb-4 flex flex-wrap gap-3">
 
-    {/* ================= TABLE ================= */}
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden">
+        <input
+          placeholder="Search by property title..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:w-[320px] bg-white border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition shadow-sm"
+        />
 
-      <table className="w-full">
+        {/* TAG FILTER */}
+        <select
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          className="bg-white border border-gray-300 text-sm text-gray-800 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition shadow-sm"
+        >
+          <option value="All">All Tags</option>
+          <option value="Featured">Featured</option>
+          <option value="Recommended">Recommended</option>
+          <option value="Trending">Trending</option>
+          <option value="New">New</option>
+          <option value="Normal">Normal</option>
+        </select>
 
-        <thead className="bg-[#f5f7f6] text-gray-700 text-[11px] uppercase tracking-wider">
-          <tr>
-            <th className="p-3 text-left font-bold w-[60px]">
-  Sr.
-</th>
+      </div>
 
-<th className="p-3 text-left font-bold">
-  Title
-</th>
-            <th className="p-3 text-left font-bold">Market</th>
-            <th className="p-3 text-left font-bold">Price</th>
-            <th className="p-3 text-left font-bold">Location</th>
-            <th className="p-3 text-left font-bold">Status</th>
-            <th className="p-3 text-left font-bold">Created</th>
-            <th className="p-3 text-right font-bold">Actions</th>
-          </tr>
-        </thead>
+      {/* ================= TABLE ================= */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden">
 
-        <tbody>
-          {loading ? (
+        <table className="w-full">
+
+          <thead className="bg-[#f5f7f6] text-gray-700 text-[11px] uppercase tracking-wider">
             <tr>
-              <td
-                colSpan="8"
-                className="p-8 text-center text-sm text-gray-600 font-medium"
-              >
-                Loading properties...
-              </td>
+
+              <th className="p-3 text-left font-bold w-[60px]">
+                Sr.
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Title
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Market
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Price
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Location
+              </th>
+
+              {/* NEW COLUMN */}
+              <th className="p-3 text-left font-bold">
+                Tag
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Status
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                Created
+              </th>
+
+              <th className="p-3 text-right font-bold">
+                Actions
+              </th>
+
             </tr>
-          ) : filtered.length > 0 ? (
-            paginatedProperties.map((property, index) => (
-              <tr
-                key={property._id}
-                className="border-t border-gray-200 hover:bg-[#f7faf8] transition duration-200"
-              >
+          </thead>
 
-                <td className="p-3 text-sm font-semibold text-gray-500">
-  {startIndex + index + 1}
-</td>
-                {/* TITLE */}
-                <td className="p-3 font-semibold text-sm text-gray-900 max-w-[180px] truncate">
-                  {property.coreDetails?.title || "N/A"}
-                </td>
-
-                {/* MARKET */}
-                <td className="p-3 text-gray-700 text-sm font-medium">
-                  {property.marketType || "N/A"}
-                </td>
-
-                {/* PRICE */}
-                <td className="p-3 text-[#0f3b2e] text-sm font-bold whitespace-nowrap">
-                  {property.coreDetails?.startingPrice
-                    ? `₹${property.coreDetails.startingPrice}`
-                    : property.unitConfigurations?.[0]?.price || "N/A"}
-                </td>
-
-                {/* LOCATION */}
-                <td className="p-3">
-                  <div
-                    className="max-w-[130px] truncate cursor-pointer text-sm text-gray-700 font-medium"
-                    title={
-                      property.locationData?.locationName ||
-                      property.locationData?.customLocation ||
-                      property.locationData?.address ||
-                      "N/A"
-                    }
-                  >
-                    {property.locationData?.locationName
-                      ?.split(">")[0]
-                      ?.trim() ||
-                      property.locationData?.customLocation ||
-                      property.locationData?.address ||
-                      "N/A"}
-                  </div>
-                </td>
-
-                {/* STATUS */}
-                <td className="p-3">
-                  <span
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${
-                      property.isActive
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        property.isActive
-                          ? "bg-emerald-500"
-                          : "bg-amber-500"
-                      }`}
-                    />
-
-                    {property.isActive ? "LIVE" : "DRAFT"}
-                  </span>
-                </td>
-
-                {/* CREATED */}
-                <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
-                  {new Date(property.createdAt).toLocaleDateString()}
-                </td>
-
-                {/* ACTIONS */}
-                <td className="p-3">
-                  <div className="flex justify-end gap-2">
-
-                    {/* VIEW */}
-                    <button
-                      onClick={() =>
-                        router.push(`/property/${property.slug}`)
-                      }
-                      className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm"
-                    >
-                      <Eye size={14} />
-                    </button>
-
-                    {/* LIVE WEBSITE */}
-                    {property.isActive && (
-                      <button
-                        onClick={() =>
-                          window.open(
-                            `/${property.slug}`,
-                            "_blank"
-                          )
-                        }
-                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-black hover:bg-gray-800 text-white transition shadow-sm"
-                      >
-                        <Globe size={14} />
-                      </button>
-                    )}
-
-                    {/* EDIT */}
-                    <button
-                      onClick={() =>
-                        router.push(
-                          `/admin/edit-property/${property._id}`
-                        )
-                      }
-                      className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#0f3b2e] hover:bg-[#145240] text-white transition shadow-sm"
-                    >
-                      <Pencil size={14} />
-                    </button>
-
-                    {/* DELETE / RESTORE */}
-                    {property.isActive ? (
-                      <button
-                        disabled={actionId === property._id}
-                        onClick={() =>
-                          handleDelete(property._id)
-                        }
-                        className="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition whitespace-nowrap"
-                      >
-                        {actionId === property._id
-                          ? "..."
-                          : "Draft"}
-                      </button>
-                    ) : (
-                      <button
-                        disabled={actionId === property._id}
-                        onClick={() =>
-                          handleRestore(property._id)
-                        }
-                        className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap"
-                      >
-                        {actionId === property._id
-                          ? "..."
-                          : "Live"}
-                      </button>
-                    )}
-                  </div>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td
+                  colSpan="9"
+                  className="p-8 text-center text-sm text-gray-600 font-medium"
+                >
+                  Loading properties...
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan="8"
-                className="p-8 text-center text-sm text-gray-500 font-medium"
+            ) : filtered.length > 0 ? (
+              paginatedProperties.map((property, index) => (
+                <tr
+                  key={property._id}
+                  className="border-t border-gray-200 hover:bg-[#f7faf8] transition duration-200"
+                >
+
+                  <td className="p-3 text-sm font-semibold text-gray-500">
+                    {startIndex + index + 1}
+                  </td>
+
+                  {/* TITLE */}
+                  <td className="p-3 font-semibold text-sm text-gray-900 max-w-[180px] truncate">
+                    {property.coreDetails?.title || "N/A"}
+                  </td>
+
+                  {/* MARKET */}
+                  <td className="p-3 text-gray-700 text-sm font-medium">
+                    {property.marketType || "N/A"}
+                  </td>
+
+                  {/* PRICE */}
+                  <td className="p-3 text-[#0f3b2e] text-sm font-bold whitespace-nowrap">
+                    {property.coreDetails?.startingPrice
+                      ? `₹${property.coreDetails.startingPrice}`
+                      : property.unitConfigurations?.[0]?.price || "N/A"}
+                  </td>
+
+                  {/* LOCATION */}
+                  <td className="p-3">
+                    <div
+                      className="max-w-[130px] truncate cursor-pointer text-sm text-gray-700 font-medium"
+                      title={
+                        property.locationData?.locationName ||
+                        property.locationData?.customLocation ||
+                        property.locationData?.address ||
+                        "N/A"
+                      }
+                    >
+                      {property.locationData?.locationName
+                        ?.split(">")[0]
+                        ?.trim() ||
+                        property.locationData?.customLocation ||
+                        property.locationData?.address ||
+                        "N/A"}
+                    </div>
+                  </td>
+
+                  {/* TAG */}
+                  <td className="p-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold ${tagStyle(
+                        property.propertyTag || "Normal"
+                      )}`}
+                    >
+                      {property.propertyTag || "Normal"}
+                    </span>
+                  </td>
+
+                  {/* STATUS */}
+                  <td className="p-3">
+                    <span
+                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${
+                        property.isActive
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          property.isActive
+                            ? "bg-emerald-500"
+                            : "bg-amber-500"
+                        }`}
+                      />
+
+                      {property.isActive ? "LIVE" : "DRAFT"}
+                    </span>
+                  </td>
+
+                  {/* CREATED */}
+                  <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
+                    {new Date(property.createdAt).toLocaleDateString()}
+                  </td>
+
+                  {/* ACTIONS */}
+                  <td className="p-3">
+                    <div className="flex justify-end gap-2 flex-wrap">
+
+                      {/* VIEW */}
+                      <button
+                        onClick={() =>
+                          router.push(`/property/${property.slug}`)
+                        }
+                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm"
+                      >
+                        <Eye size={14} />
+                      </button>
+
+                      {/* LIVE WEBSITE */}
+                      {property.isActive && (
+                        <button
+                          onClick={() =>
+                            window.open(
+                              `/${property.slug}`,
+                              "_blank"
+                            )
+                          }
+                          className="h-9 w-9 flex items-center justify-center rounded-lg bg-black hover:bg-gray-800 text-white transition shadow-sm"
+                        >
+                          <Globe size={14} />
+                        </button>
+                      )}
+
+                      {/* FEATURE BUTTON */}
+                      <button
+                        onClick={() => setFeatureModal(property)}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-sm"
+                      >
+                        <Star size={14} />
+                      </button>
+
+                      {/* EDIT */}
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/admin/edit-property/${property._id}`
+                          )
+                        }
+                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#0f3b2e] hover:bg-[#145240] text-white transition shadow-sm"
+                      >
+                        <Pencil size={14} />
+                      </button>
+
+                      {/* DELETE / RESTORE */}
+                      {property.isActive ? (
+                        <button
+                          disabled={actionId === property._id}
+                          onClick={() =>
+                            handleDelete(property._id)
+                          }
+                          className="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition whitespace-nowrap"
+                        >
+                          {actionId === property._id
+                            ? "..."
+                            : "Draft"}
+                        </button>
+                      ) : (
+                        <button
+                          disabled={actionId === property._id}
+                          onClick={() =>
+                            handleRestore(property._id)
+                          }
+                          className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap"
+                        >
+                          {actionId === property._id
+                            ? "..."
+                            : "Live"}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="9"
+                  className="p-8 text-center text-sm text-gray-500 font-medium"
+                >
+                  No properties found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* ================= PAGINATION ================= */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-white">
+
+            <p className="text-sm text-gray-600 font-medium">
+              Showing{" "}
+              <span className="font-bold">
+                {startIndex + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-bold">
+                {Math.min(
+                  startIndex + itemsPerPage,
+                  filtered.length
+                )}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold">
+                {filtered.length}
+              </span>{" "}
+              properties
+            </p>
+
+            <div className="flex items-center gap-2">
+
+              {/* PREV */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setCurrentPage((prev) => prev - 1)
+                }
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
-                No properties found
-              </td>
-            </tr>
-          )}
-        </tbody>
+                Prev
+              </button>
 
-      </table>
+              {/* PAGE NUMBERS */}
+              {Array.from(
+                {
+                  length: Math.min(totalPages, 5),
+                },
+                (_, i) => {
+                  let page;
 
-      {/* ================= PAGINATION ================= */}
-{totalPages > 1 && (
-  <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-white">
+                  if (currentPage <= 3) {
+                    page = i + 1;
+                  } else if (
+                    currentPage >=
+                    totalPages - 2
+                  ) {
+                    page =
+                      totalPages - 4 + i;
+                  } else {
+                    page = currentPage - 2 + i;
+                  }
 
-    <p className="text-sm text-gray-600 font-medium">
-      Showing{" "}
-      <span className="font-bold">
-        {startIndex + 1}
-      </span>{" "}
-      to{" "}
-      <span className="font-bold">
-        {Math.min(
-          startIndex + itemsPerPage,
-          filtered.length
+                  return page;
+                }
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
+                    currentPage === page
+                      ? "bg-[#0f3b2e] text-white"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* NEXT */}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => prev + 1)
+                }
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         )}
-      </span>{" "}
-      of{" "}
-      <span className="font-bold">
-        {filtered.length}
-      </span>{" "}
-      properties
-    </p>
+      </div>
 
-    <div className="flex items-center gap-2">
+      {/* ================= FEATURE MODAL ================= */}
+      {featureModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
 
-      {/* PREV */}
-      <button
-        disabled={currentPage === 1}
-        onClick={() =>
-          setCurrentPage((prev) => prev - 1)
-        }
-        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-          currentPage === 1
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-        }`}
-      >
-        Prev
-      </button>
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-      {/* PAGE NUMBERS */}
-      {Array.from(
-  {
-    length: Math.min(totalPages, 5),
-  },
-  (_, i) => {
-    let page;
+            {/* HEADER */}
+            <div className="flex items-center justify-between px-6 py-5 border-b">
 
-    if (currentPage <= 3) {
-      page = i + 1;
-    } else if (
-      currentPage >=
-      totalPages - 2
-    ) {
-      page =
-        totalPages - 4 + i;
-    } else {
-      page = currentPage - 2 + i;
-    }
+              <div>
+                <h2 className="text-xl font-bold text-[#0f3b2e]">
+                  Property Tag
+                </h2>
 
-    return page;
-  }
-).map((page) => (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
-            currentPage === page
-              ? "bg-[#0f3b2e] text-white"
-              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
+                <p className="text-sm text-gray-500 mt-1">
+                  Select a tag for this property
+                </p>
+              </div>
 
-      {/* NEXT */}
-      <button
-        disabled={currentPage === totalPages}
-        onClick={() =>
-          setCurrentPage((prev) => prev + 1)
-        }
-        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-          currentPage === totalPages
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-        }`}
-      >
-        Next
-      </button>
+              <button
+                onClick={() => setFeatureModal(null)}
+                className="h-9 w-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+              >
+                <X size={18} />
+              </button>
+
+            </div>
+
+            {/* BODY */}
+            <div className="p-6 grid grid-cols-2 gap-4">
+
+              {/* FEATURED */}
+              <button
+                onClick={() =>
+                  updatePropertyTag(
+                    featureModal._id,
+                    "Featured"
+                  )
+                }
+                className="h-24 rounded-2xl bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 flex flex-col items-center justify-center transition"
+              >
+                <Star className="text-yellow-600 mb-2" />
+                <span className="font-semibold text-yellow-700">
+                  Featured
+                </span>
+              </button>
+
+              {/* RECOMMENDED */}
+              <button
+                onClick={() =>
+                  updatePropertyTag(
+                    featureModal._id,
+                    "Recommended"
+                  )
+                }
+                className="h-24 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 flex flex-col items-center justify-center transition"
+              >
+                <BadgeCheck className="text-blue-600 mb-2" />
+                <span className="font-semibold text-blue-700">
+                  Recommended
+                </span>
+              </button>
+
+              {/* TRENDING */}
+              <button
+                onClick={() =>
+                  updatePropertyTag(
+                    featureModal._id,
+                    "Trending"
+                  )
+                }
+                className="h-24 rounded-2xl bg-pink-50 hover:bg-pink-100 border border-pink-200 flex flex-col items-center justify-center transition"
+              >
+                <TrendingUp className="text-pink-600 mb-2" />
+                <span className="font-semibold text-pink-700">
+                  Trending
+                </span>
+              </button>
+
+              {/* NEW */}
+              <button
+                onClick={() =>
+                  updatePropertyTag(
+                    featureModal._id,
+                    "New"
+                  )
+                }
+                className="h-24 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex flex-col items-center justify-center transition"
+              >
+                <Sparkles className="text-emerald-600 mb-2" />
+                <span className="font-semibold text-emerald-700">
+                  New
+                </span>
+              </button>
+
+              {/* NORMAL */}
+              <button
+                onClick={() =>
+                  updatePropertyTag(
+                    featureModal._id,
+                    "Normal"
+                  )
+                }
+                className="col-span-2 h-20 rounded-2xl bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center gap-3 transition"
+              >
+                <Tag className="text-gray-700" />
+
+                <span className="font-semibold text-gray-700">
+                  Normal Property
+                </span>
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-    </div>
-  </div>
-);
+  );
 }

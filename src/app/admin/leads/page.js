@@ -45,35 +45,58 @@ export default function LeadsPage() {
   }, []);
 
   const fetchLeads = async () => {
-    const res = await fetch(`${API}/leads`, { headers: getHeaders() });
-    const data = await res.json();
-    setLeads(data.data || []);
-    setLoading(false);
+    try {
+      const res = await fetch(`${API}/leads`, {
+        headers: getHeaders(),
+      });
+
+      const data = await res.json();
+
+      setLeads(data.data || []);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+    }
   };
 
   const fetchAgents = async () => {
-    const res = await fetch(`${API}/auth/users`, { headers: getHeaders() });
-    const data = await res.json();
-    setAgents((data.data || []).filter((u) => u.role === "Agent"));
+    try {
+      const res = await fetch(`${API}/auth/users`, {
+        headers: getHeaders(),
+      });
+
+      const data = await res.json();
+
+      setAgents((data.data || []).filter((u) => u.role === "Agent"));
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const updateLead = async (id, payload) => {
-    await fetch(`${API}/leads/${id}`, {
-      method: "PATCH",
-      headers: getHeaders(),
-      body: JSON.stringify(payload),
-    });
-    fetchLeads();
+    try {
+      await fetch(`${API}/leads/${id}`, {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      fetchLeads();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const getLatestNote = (notes) => {
     if (Array.isArray(notes) && notes.length > 0) {
-      return notes[notes.length - 1].text;
+      return notes[notes.length - 1]?.text || "";
     }
     return "";
   };
 
   // ================= COUNTS =================
+
   const total = leads.length;
   const hot = leads.filter((l) => l.priority === "Hot").length;
   const warm = leads.filter((l) => l.priority === "Warm").length;
@@ -81,6 +104,7 @@ export default function LeadsPage() {
   const closed = leads.filter((l) => l.status === "Closed").length;
 
   // ================= FILTER =================
+
   const filteredLeads = leads.filter((l) => {
     const searchMatch =
       l.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -117,65 +141,109 @@ export default function LeadsPage() {
   });
 
   const statusStyle = (s) => {
-    if (s === "New") return "bg-blue-100 text-blue-700";
-    if (s === "Interested") return "bg-green-100 text-green-700";
-    if (s === "Not Interested") return "bg-red-100 text-red-600";
-    if (s === "Visit") return "bg-yellow-100 text-yellow-700";
-    if (s === "Closed") return "bg-purple-100 text-purple-700";
-    return "bg-gray-100 text-gray-600";
+    if (s === "New")
+      return "bg-blue-100 text-blue-700 border border-blue-200";
+
+    if (s === "Interested")
+      return "bg-green-100 text-green-700 border border-green-200";
+
+    if (s === "Not Interested")
+      return "bg-red-100 text-red-600 border border-red-200";
+
+    if (s === "Visit")
+      return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+
+    if (s === "Closed")
+      return "bg-purple-100 text-purple-700 border border-purple-200";
+
+    return "bg-gray-100 text-gray-700 border border-gray-200";
   };
 
   const priorityStyle = (p) => {
-    if (p === "Hot") return "bg-red-100 text-red-600";
-    if (p === "Warm") return "bg-yellow-100 text-yellow-700";
-    if (p === "Cold") return "bg-blue-100 text-blue-600";
-    return "bg-gray-100";
+    if (p === "Hot")
+      return "bg-red-100 text-red-600 border border-red-200";
+
+    if (p === "Warm")
+      return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+
+    if (p === "Cold")
+      return "bg-blue-100 text-blue-600 border border-blue-200";
+
+    return "bg-gray-100 text-gray-700 border border-gray-200";
   };
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg font-semibold text-gray-700">
+        Loading Leads...
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6 bg-[#f4f6f9] min-h-screen">
+    <div className="min-h-screen bg-[#f4f7fb] p-6 text-gray-800">
 
       {/* HEADER */}
-      <h1 className="text-3xl font-bold flex gap-2">
-        <Users /> Lead Dashboard
-      </h1>
+
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+
+        <div>
+          <h1 className="text-4xl font-bold text-[#0b3b2e] flex items-center gap-3">
+            <Users className="w-9 h-9" />
+            Lead Dashboard
+          </h1>
+
+          <p className="text-gray-500 mt-1">
+            Manage and track all property leads
+          </p>
+        </div>
+
+      </div>
 
       {/* TABS */}
-      <div className="flex gap-3">
+
+      <div className="flex gap-3 flex-wrap mb-6">
+
         {["All", "Assigned", "Unassigned"].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-full ${
-              tab === t ? "bg-green-800 text-white" : "bg-white shadow"
+            className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+              tab === t
+                ? "bg-[#0b5d3b] text-white shadow-lg"
+                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
             }`}
           >
             {t}
           </button>
         ))}
+
       </div>
 
       {/* KPI CARDS */}
-      <div className="grid grid-cols-5 gap-4">
 
-        <Card title="Total" value={total} icon={<Users />} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-6">
 
         <Card
-          title="Hot"
+          title="Total Leads"
+          value={total}
+          icon={<Users className="text-[#0b5d3b]" />}
+        />
+
+        <Card
+          title="Hot Leads"
           value={hot}
           icon={<Flame className="text-red-500" />}
         />
 
         <Card
-          title="Warm"
+          title="Warm Leads"
           value={warm}
           icon={<ThermometerSun className="text-yellow-500" />}
         />
 
         <Card
-          title="Cold"
+          title="Cold Leads"
           value={cold}
           icon={<Snowflake className="text-blue-500" />}
         />
@@ -185,247 +253,378 @@ export default function LeadsPage() {
           value={closed}
           icon={<CheckCircle className="text-green-600" />}
         />
+
       </div>
 
       {/* FILTERS */}
-      {/* FILTER BAR */}
-      <div className="bg-white p-5 rounded-2xl shadow flex flex-wrap gap-4">
 
-        <input
-          placeholder="Search name / phone"
-          className="border px-4 py-2 rounded-xl"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="bg-white rounded-3xl shadow-md p-5 mb-6">
 
-        <select
-          className="border px-3 py-2 rounded-xl"
-          onChange={(e) => setPropertyFilter(e.target.value)}
-        >
-          <option value="All">All Properties</option>
-          {[...new Set(leads.map((l) => l.property))].map((p) => (
-            <option key={p}>{p}</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
 
-        <select
-          className="border px-3 py-2 rounded-xl"
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="All">All Status</option>
-          <option>New</option>
-          <option>Interested</option>
-          <option>Not Interested</option>
-          <option>Visit</option>
-          <option>Closed</option>
-        </select>
+          <input
+            placeholder="Search name / phone"
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-        <select
-          className="border px-3 py-2 rounded-xl"
-          onChange={(e) => setAgentFilter(e.target.value)}
-        >
-          <option value="All">All Agents</option>
-          <option value="Unassigned">Unassigned</option>
-          {agents.map((a) => (
-            <option key={a._id} value={a._id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
+          <select
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700 bg-white"
+            value={propertyFilter}
+            onChange={(e) => setPropertyFilter(e.target.value)}
+          >
+            <option value="All">All Properties</option>
 
-        <input
-          type="date"
-          className="border px-3 py-2 rounded-xl"
-          onChange={(e) => setStartDate(e.target.value)}
-        />
+            {[...new Set(leads.map((l) => l.property))].map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
 
-        <input
-          type="date"
-          className="border px-3 py-2 rounded-xl"
-          onChange={(e) => setEndDate(e.target.value)}
-        />
+          <select
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700 bg-white"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All Status</option>
+            <option value="New">New</option>
+            <option value="Interested">Interested</option>
+            <option value="Not Interested">Not Interested</option>
+            <option value="Visit">Visit</option>
+            <option value="Closed">Closed</option>
+          </select>
+
+          <select
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700 bg-white"
+            value={agentFilter}
+            onChange={(e) => setAgentFilter(e.target.value)}
+          >
+            <option value="All">All Agents</option>
+            <option value="Unassigned">Unassigned</option>
+
+            {agents.map((a) => (
+              <option key={a._id} value={a._id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+
+          <input
+            type="date"
+            className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+
+        </div>
+
       </div>
 
-
       {/* TABLE */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
 
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-3xl shadow-md overflow-x-auto">
 
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-5 text-left">Lead</th>
-              <th>Property</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Agent</th>
-              <th>Notes</th>
-              <th>Actions</th>
+        <table className="w-full min-w-[1100px]">
+
+          <thead className="bg-[#f8fafc] border-b border-gray-200">
+
+            <tr className="text-left text-gray-700">
+
+              <th className="px-6 py-4 font-semibold">Lead</th>
+
+              <th className="px-6 py-4 font-semibold">Property</th>
+
+              <th className="px-6 py-4 font-semibold">Status</th>
+
+              <th className="px-6 py-4 font-semibold">Priority</th>
+
+              <th className="px-6 py-4 font-semibold">Agent</th>
+
+              <th className="px-6 py-4 font-semibold">Notes</th>
+
+              <th className="px-6 py-4 font-semibold">Actions</th>
+
             </tr>
+
           </thead>
 
           <tbody>
-            {filteredLeads.map((l) => (
-              <tr key={l._id} className="border-t hover:bg-gray-50">
 
-                <td className="p-5">
-                  <div className="font-semibold">{l.name}</div>
-                  <div className="text-xs text-gray-500">{l.phone}</div>
-                </td>
+            {filteredLeads.length > 0 ? (
+              filteredLeads.map((l) => (
+                <tr
+                  key={l._id}
+                  className="border-b border-gray-100 hover:bg-gray-50 transition"
+                >
 
-                <td>{l.property}</td>
+                  {/* LEAD */}
 
-                <td>
-                  <select
-                    value={l.status}
-                    onChange={(e) =>
-                      updateLead(l._id, { status: e.target.value })
-                    }
-                    className={`px-2 py-1 rounded ${statusStyle(l.status)}`}
-                  >
-                    <option>New</option>
-                    <option>Interested</option>
-                    <option>Not Interested</option>
-                    <option>Visit</option>
-                    <option>Closed</option>
-                  </select>
-                </td>
+                  <td className="px-6 py-5">
 
-                <td>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${priorityStyle(
-                      l.priority
-                    )}`}
-                  >
-                    {l.priority || "Warm"}
-                  </span>
-                </td>
+                    <div className="font-semibold text-gray-900">
+                      {l.name}
+                    </div>
 
-                <td>
-                  {l.assignedTo ? (
-                    <div>
-                      {l.assignedTo.name}
-                      <div className="flex gap-2 text-xs">
+                    <div className="text-sm text-gray-500 mt-1">
+                      {l.phone}
+                    </div>
+
+                  </td>
+
+                  {/* PROPERTY */}
+
+                  <td className="px-6 py-5 text-gray-700 font-medium">
+                    {l.property}
+                  </td>
+
+                  {/* STATUS */}
+
+                  <td className="px-6 py-5">
+
+                    <select
+                      value={l.status}
+                      onChange={(e) =>
+                        updateLead(l._id, {
+                          status: e.target.value,
+                        })
+                      }
+                      className={`px-3 py-2 rounded-xl text-sm font-medium outline-none ${statusStyle(
+                        l.status
+                      )}`}
+                    >
+                      <option value="New">New</option>
+
+                      <option value="Interested">Interested</option>
+
+                      <option value="Not Interested">
+                        Not Interested
+                      </option>
+
+                      <option value="Visit">Visit</option>
+
+                      <option value="Closed">Closed</option>
+
+                    </select>
+
+                  </td>
+
+                  {/* PRIORITY */}
+
+                  <td className="px-6 py-5">
+
+                    <span
+                      className={`px-4 py-2 rounded-full text-xs font-bold ${priorityStyle(
+                        l.priority
+                      )}`}
+                    >
+                      {l.priority || "Warm"}
+                    </span>
+
+                  </td>
+
+                  {/* AGENT */}
+
+                  <td className="px-6 py-5">
+
+                    {l.assignedTo ? (
+                      <div>
+
+                        <div className="font-medium text-gray-800">
+                          {l.assignedTo.name}
+                        </div>
+
+                        <div className="flex gap-3 mt-2 text-xs">
+
+                          <button
+                            onClick={() => {
+                              setAssignModal(l);
+                              setSelectedAgent(l.assignedTo._id);
+                            }}
+                            className="text-blue-600 font-semibold hover:underline"
+                          >
+                            Change
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              updateLead(l._id, {
+                                assignedTo: null,
+                              })
+                            }
+                            className="text-red-500 font-semibold hover:underline"
+                          >
+                            Unassign
+                          </button>
+
+                        </div>
+
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setAssignModal(l)}
+                        className="bg-[#0b5d3b] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90"
+                      >
+                        Assign
+                      </button>
+                    )}
+
+                  </td>
+
+                  {/* NOTES */}
+
+                  <td className="px-6 py-5 w-[250px]">
+
+                    {editingNoteId === l._id ? (
+                      <div className="space-y-2">
+
+                        <textarea
+                          value={noteValue}
+                          onChange={(e) => setNoteValue(e.target.value)}
+                          className="w-full border border-gray-300 text-gray-800 p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-700"
+                          rows={3}
+                        />
+
                         <button
                           onClick={() => {
-                            setAssignModal(l);
-                            setSelectedAgent(l.assignedTo._id);
-                          }}
-                          className="text-blue-600"
-                        >
-                          Change
-                        </button>
+                            updateLead(l._id, {
+                              notes: noteValue || "",
+                            });
 
-                        <button
-                          onClick={() =>
-                            updateLead(l._id, { assignedTo: null })
-                          }
-                          className="text-red-500"
-                        >
-                          Unassign
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAssignModal(l)}
-                      className="text-blue-600"
-                    >
-                      Assign
-                    </button>
-                  )}
-                </td>
-
-                <td className="w-[220px]">
-                  {editingNoteId === l._id ? (
-                    <div>
-                      <textarea
-                        value={noteValue}
-                        onChange={(e) => setNoteValue(e.target.value)}
-                        className="w-full border p-2 rounded"
-                      />
-
-                      <button
-                        onClick={() => {
-                            updateLead(l._id, { notes: noteValue || "" });
                             setEditingNoteId(null);
                           }}
-                        className="text-green-600 text-xs"
+                          className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+                        >
+                          Save
+                        </button>
+
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => {
+                          setEditingNoteId(l._id);
+                          setNoteValue(getLatestNote(l.notes));
+                        }}
+                        className="bg-gray-100 hover:bg-gray-200 transition p-3 rounded-xl text-sm text-gray-700 cursor-pointer min-h-[50px]"
                       >
-                        Save
+                        {getLatestNote(l.notes) || "+ Add note"}
+                      </div>
+                    )}
+
+                  </td>
+
+                  {/* ACTIONS */}
+
+                  <td className="px-6 py-5">
+
+                    <div className="flex gap-3">
+
+                      <button
+                        onClick={() => window.open(`tel:${l.phone}`)}
+                        className="bg-green-700 hover:bg-green-800 text-white p-3 rounded-xl"
+                      >
+                        <Phone size={16} />
                       </button>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => {
-                        setEditingNoteId(l._id);
-                        setNoteValue(getLatestNote(l.notes));
-                      }}
-                      className="bg-gray-50 p-2 rounded cursor-pointer text-xs hover:bg-gray-100"
-                    >
-                      {getLatestNote(l.notes) || "+ Add note"}
-                    </div>
-                  )}
-                </td>
 
-                <td className="flex gap-2">
-                  <button
-                    onClick={() => window.open(`tel:${l.phone}`)}
-                    className="bg-green-600 text-white p-2 rounded-lg"
-                  >
-                    <Phone size={14} />
-                  </button>
+                      <button
+                        onClick={() =>
+                          window.open(`https://wa.me/91${l.phone}`)
+                        }
+                        className="bg-[#25D366] hover:opacity-90 text-white p-3 rounded-xl"
+                      >
+                        <MessageCircle size={16} />
+                      </button>
 
-                  <button
-                    onClick={() =>
-                      window.open(`https://wa.me/91${l.phone}`)
-                    }
-                    className="bg-green-500 text-white p-2 rounded-lg"
-                  >
-                    <MessageCircle size={14} />
-                  </button>
+                    </div>
+
+                  </td>
+
+                </tr>
+              ))
+            ) : (
+              <tr>
+
+                <td
+                  colSpan="7"
+                  className="text-center py-16 text-gray-500"
+                >
+                  No Leads Found
                 </td>
 
               </tr>
-            ))}
+            )}
+
           </tbody>
 
         </table>
+
       </div>
 
       {/* ASSIGN MODAL */}
+
       {assignModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
 
-          <div className="bg-white p-6 rounded-xl w-[300px]">
+          <div className="bg-white w-[95%] max-w-md rounded-3xl p-6 shadow-2xl">
 
-            <h2 className="font-bold mb-4">Assign Agent</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-5">
+              Assign Agent
+            </h2>
 
-            {agents.map((a) => (
-              <div
-                key={a._id}
-                onClick={() => setSelectedAgent(a._id)}
-                className={`p-2 border mb-2 cursor-pointer ${
-                  selectedAgent === a._id ? "bg-green-200" : ""
-                }`}
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+
+              {agents.map((a) => (
+                <div
+                  key={a._id}
+                  onClick={() => setSelectedAgent(a._id)}
+                  className={`p-4 rounded-2xl border cursor-pointer transition ${
+                    selectedAgent === a._id
+                      ? "bg-green-100 border-green-600"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-semibold text-gray-800">
+                    {a.name}
+                  </div>
+                </div>
+              ))}
+
+            </div>
+
+            <div className="flex gap-3 mt-6">
+
+              <button
+                onClick={() => setAssignModal(null)}
+                className="flex-1 border border-gray-300 py-3 rounded-2xl font-semibold"
               >
-                {a.name}
-              </div>
-            ))}
+                Cancel
+              </button>
 
-            <button
-              onClick={() => {
-                updateLead(assignModal._id, {
-                  assignedTo: selectedAgent || null,
-                });
-                setAssignModal(null);
-              }}
-              className="bg-green-700 text-white px-4 py-2 mt-3 w-full"
-            >
-              Save
-            </button>
+              <button
+                onClick={() => {
+                  updateLead(assignModal._id, {
+                    assignedTo: selectedAgent || null,
+                  });
+
+                  setAssignModal(null);
+                }}
+                className="flex-1 bg-[#0b5d3b] text-white py-3 rounded-2xl font-semibold"
+              >
+                Save
+              </button>
+
+            </div>
 
           </div>
+
         </div>
       )}
 
@@ -433,15 +632,28 @@ export default function LeadsPage() {
   );
 }
 
-// 🔥 CARD COMPONENT
+// ================= CARD COMPONENT =================
+
 function Card({ title, value, icon }) {
   return (
-    <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
+    <div className="bg-white rounded-3xl shadow-md p-5 flex items-center justify-between hover:shadow-lg transition">
+
       <div>
-        <p className="text-gray-500 text-sm">{title}</p>
-        <h2 className="text-xl font-bold">{value}</h2>
+
+        <p className="text-sm text-gray-500 font-medium">
+          {title}
+        </p>
+
+        <h2 className="text-3xl font-bold text-gray-900 mt-1">
+          {value}
+        </h2>
+
       </div>
-      {icon}
+
+      <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+        {icon}
+      </div>
+
     </div>
   );
 }
