@@ -27,6 +27,8 @@ export default function DevelopersPage() {
     developerImage,
     setDeveloperImage,
   ] = useState("");
+  const [description, setDescription] =
+  useState("");
 
   // EDIT MODE
   const [
@@ -36,6 +38,9 @@ export default function DevelopersPage() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [uploading, setUploading] =
+    useState(false);
 
   const [search, setSearch] =
     useState("");
@@ -78,6 +83,93 @@ export default function DevelopersPage() {
     setCurrentPage(1);
   }, [search]);
 
+  // ================= VALIDATE FILE =================
+const validateFile = (file) => {
+  if (!file) return false;
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files allowed ❌");
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error("Max file size is 5MB ❌");
+    return false;
+  }
+
+  return true;
+};
+
+// ================= UPLOAD IMAGE =================
+const uploadImage = async (file) => {
+  try {
+    const data = new FormData();
+
+    data.append("file", file);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(
+        result.message || "Upload failed"
+      );
+    }
+
+    return result.url;
+  } catch (err) {
+    console.error(err);
+
+    toast.error("Upload failed ❌");
+
+    return null;
+  }
+};
+
+// ================= LOGO UPLOAD =================
+const handleLogoUpload = async (file) => {
+  if (!validateFile(file)) return;
+
+  setUploading(true);
+
+  const url = await uploadImage(file);
+
+  if (url) {
+    setLogo(url);
+
+    toast.success("Logo uploaded ✅");
+  }
+
+  setUploading(false);
+};
+
+// ================= DEVELOPER IMAGE UPLOAD =================
+const handleDeveloperImageUpload =
+  async (file) => {
+    if (!validateFile(file)) return;
+
+    setUploading(true);
+
+    const url = await uploadImage(file);
+
+    if (url) {
+      setDeveloperImage(url);
+
+      toast.success(
+        "Developer image uploaded ✅"
+      );
+    }
+
+    setUploading(false);
+  };
+
   // ================= ADD / EDIT =================
   const addDeveloper = async () => {
     if (!name.trim()) return;
@@ -87,6 +179,7 @@ export default function DevelopersPage() {
         name,
         logo,
         image: developerImage,
+        description,
       };
 
       const url = editingDeveloper
@@ -125,6 +218,7 @@ export default function DevelopersPage() {
       setName("");
       setLogo("");
       setDeveloperImage("");
+      setDescription("");
       setEditingDeveloper(null);
 
       fetchDevelopers();
@@ -179,6 +273,10 @@ export default function DevelopersPage() {
       dev.image || ""
     );
 
+    setDescription(
+      dev.description || ""
+    );
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -222,6 +320,15 @@ export default function DevelopersPage() {
 
   return (
     <div className="p-4 bg-[#f7f8f7] min-h-screen space-y-5">
+
+      {/* ================= LOADER ================= */}
+{uploading && (
+  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center">
+    <div className="bg-white px-6 py-4 rounded-2xl shadow-xl text-sm font-semibold">
+      Uploading image...
+    </div>
+  </div>
+)}
 
       {/* ================= HEADER ================= */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -292,9 +399,9 @@ export default function DevelopersPage() {
 
                 setName("");
                 setLogo("");
-                setDeveloperImage(
-                  ""
-                );
+                setDeveloperImage("");
+                setDescription("");
+                
               }}
               className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition font-semibold"
             >
@@ -318,28 +425,56 @@ export default function DevelopersPage() {
           />
 
           {/* LOGO */}
-          <input
-            value={logo}
-            onChange={(e) =>
-              setLogo(
-                e.target.value
-              )
-            }
-            placeholder="Logo URL"
-            className="border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#0f3b2e]"
-          />
+<div
+  onClick={() =>
+    document
+      .getElementById("logoUpload")
+      .click()
+  }
+  className="border border-dashed border-gray-300 rounded-xl px-4 py-2.5 flex items-center justify-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition"
+>
+  Upload Logo
+</div>
+
+<input
+  id="logoUpload"
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={(e) => {
+    handleLogoUpload(
+      e.target.files[0]
+    );
+
+    e.target.value = "";
+  }}
+/>
 
           {/* IMAGE */}
-          <input
-            value={developerImage}
-            onChange={(e) =>
-              setDeveloperImage(
-                e.target.value
-              )
-            }
-            placeholder="Developer Image URL"
-            className="border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#0f3b2e]"
-          />
+<div
+  onClick={() =>
+    document
+      .getElementById("developerImageUpload")
+      .click()
+  }
+  className="border border-dashed border-gray-300 rounded-xl px-4 py-2.5 flex items-center justify-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition"
+>
+  Upload Developer Image
+</div>
+
+<input
+  id="developerImageUpload"
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={(e) => {
+    handleDeveloperImageUpload(
+      e.target.files[0]
+    );
+
+    e.target.value = "";
+  }}
+/>
 
           {/* BUTTON */}
           <button
@@ -351,6 +486,38 @@ export default function DevelopersPage() {
               : "Add Developer"}
           </button>
         </div>
+
+              {/* ================= DESCRIPTION ================= */}
+<div className="mt-5">
+
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    About Developer
+  </label>
+
+  <textarea
+    value={description}
+    onChange={(e) =>
+      setDescription(
+        e.target.value
+      )
+    }
+    placeholder="Write detailed information about the developer, legacy, projects, trust, experience, achievements, luxury positioning etc..."
+    rows={8}
+    className="w-full border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f3b2e] resize-y min-h-[220px]"
+  />
+
+  <div className="flex items-center justify-between mt-2">
+
+    <p className="text-xs text-gray-500">
+      This content will appear on developer profile page
+    </p>
+
+    <p className="text-xs text-gray-400">
+      {description.length} characters
+    </p>
+
+  </div>
+</div>
 
         {/* PREVIEW */}
         {(logo ||
@@ -475,27 +642,17 @@ export default function DevelopersPage() {
                       <td className="p-3">
                         <div className="h-14 w-24 rounded-xl overflow-hidden border border-gray-200 bg-gray-100">
 
-                         {dev.image ? (
-  <img
-    src={dev.image}
-    className="h-full w-full object-cover"
-    alt={dev.name}
-  />
-) : (
-  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-400">
-    No Image
-  </div>
-)}{dev.image ? (
-  <img
-    src={dev.image}
-    className="h-full w-full object-cover"
-    alt={dev.name}
-  />
-) : (
-  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-400">
-    No Image
-  </div>
-)}
+              {dev.image ? (
+                <img
+                  src={dev.image}
+                  className="h-full w-full object-cover"
+                  alt={dev.name}
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-400">
+                  No Image
+                </div>
+              )}
                         </div>
                       </td>
 

@@ -20,36 +20,56 @@ import {
 } from "lucide-react";
 
 export default function DeveloperSlugPage() {
-  const API = "https://property-bouquet-backend.onrender.com/api";
+  const API =
+    "https://property-bouquet-backend.onrender.com/api";
 
   const { slug } = useParams();
 
-  const [developer, setDeveloper] = useState(null);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [developer, setDeveloper] =
+    useState(null);
+
+  const [properties, setProperties] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   // ================= FETCH =================
   useEffect(() => {
     if (!slug) return;
 
-    const fetchDeveloper = async () => {
-      try {
-        const res = await fetch(`${API}/developers/${slug}`);
-        const data = await res.json();
+    const fetchDeveloper =
+      async () => {
+        try {
+          const res = await fetch(
+            `${API}/developers/${slug}`
+          );
 
-        if (res.ok) {
-          setDeveloper(data.developer);
-          setProperties(data.properties || []);
-        } else {
+          const data =
+            await res.json();
+
+          if (res.ok) {
+            setDeveloper(
+              data.developer
+            );
+
+            setProperties(
+              data.properties || []
+            );
+          } else {
+            setDeveloper(null);
+          }
+        } catch (err) {
+          console.error(
+            "Error fetching developer:",
+            err
+          );
+
           setDeveloper(null);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Error fetching developer:", err);
-        setDeveloper(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
     fetchDeveloper();
   }, [slug]);
@@ -81,8 +101,17 @@ export default function DeveloperSlugPage() {
       {/* HERO */}
       <section className="relative pt-36 pb-24 overflow-hidden bg-gradient-to-br from-[#081c15] via-[#1b4332] to-[#2d6a4f]">
 
+        {/* DEVELOPER COVER IMAGE */}
+        {developer?.image && (
+          <img
+            src={developer.image}
+            alt={developer.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
         {/* OVERLAY */}
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* GLOW */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d4af37]/20 blur-3xl rounded-full" />
@@ -143,6 +172,42 @@ export default function DeveloperSlugPage() {
           </div>
         </div>
       </section>
+
+      {/* ================= ABOUT DEVELOPER ================= */}
+      {developer?.description && (
+        <section className="max-w-7xl mx-auto px-4 pt-16">
+
+          <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-xl border border-gray-100">
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <div className="h-12 w-12 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center">
+                <Building2 size={22} />
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-[#0f3b2e] uppercase tracking-widest">
+                  About Developer
+                </p>
+
+                <h2 className="text-3xl md:text-4xl font-black text-[#081c15]">
+                  {developer.name}
+                </h2>
+              </div>
+            </div>
+
+            <div className="h-[2px] w-24 bg-[#d4af37] rounded-full mb-8" />
+
+            <div className="prose prose-lg max-w-none text-gray-700 leading-9">
+
+              <p className="whitespace-pre-line text-[17px] leading-[2.1]">
+                {developer.description}
+              </p>
+
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* MAIN */}
       <section className="max-w-[1500px] mx-auto px-4 py-16">
@@ -278,7 +343,6 @@ export default function DeveloperSlugPage() {
                   </label>
 
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" />
                     Ready To Move
                   </label>
                 </div>
@@ -304,9 +368,17 @@ export default function DeveloperSlugPage() {
               </div>
 
               <select className="h-14 px-5 rounded-2xl border border-gray-200 outline-none bg-white">
-                <option>Newest First</option>
-                <option>Price Low To High</option>
-                <option>Price High To Low</option>
+                <option>
+                  Newest First
+                </option>
+
+                <option>
+                  Price Low To High
+                </option>
+
+                <option>
+                  Price High To Low
+                </option>
               </select>
             </div>
 
@@ -314,77 +386,96 @@ export default function DeveloperSlugPage() {
             {properties.length > 0 ? (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-                {properties.map((property) => (
-                  <div
-                    key={property._id}
-                    className="group relative bg-white rounded-[32px] overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
+                {properties.map(
+                  (property) => (
+                    <div
+                      key={
+                        property._id
+                      }
+                      className="group relative bg-white rounded-[32px] overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
 
-                    {/* IMAGE */}
-                    <div className="relative h-[320px] overflow-hidden">
+                      {/* IMAGE */}
+                      <div className="relative h-[320px] overflow-hidden">
 
-                      <img
-                        src={
-                          property?.media?.heroImageUrl ||
-                          "/placeholder.jpg"
-                        }
-                        alt={property?.coreDetails?.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
-                      />
+                        <img
+                          src={
+                            property
+                              ?.media
+                              ?.heroImageUrl ||
+                            "/placeholder.jpg"
+                          }
+                          alt={
+                            property
+                              ?.coreDetails
+                              ?.title
+                          }
+                          className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                        />
 
-                      {/* OVERLAY */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                        {/* OVERLAY */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-                      {/* PRICE */}
-                      <div className="absolute top-5 right-5 bg-[#081c15] text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl">
-                        ₹{" "}
-                        {formatPrice(
-                          property?.coreDetails?.startingPrice
-                        )}
-                      </div>
+                        {/* PRICE */}
+                        <div className="absolute top-5 right-5 bg-[#081c15] text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl">
+                          ₹{" "}
+                          {formatPrice(
+                            property
+                              ?.coreDetails
+                              ?.startingPrice
+                          )}
+                        </div>
 
-                      {/* CONTENT */}
-                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        {/* CONTENT */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
 
-                        <h3 className="text-2xl font-black leading-tight">
-                          {property?.coreDetails?.title}
-                        </h3>
-
-                        <div className="flex items-center gap-2 text-white/80 mt-3">
-
-                          <MapPin size={16} />
-
-                          <span className="text-sm">
+                          <h3 className="text-2xl font-black leading-tight">
                             {
-                              property?.locationData
-                                ?.locationName
+                              property
+                                ?.coreDetails
+                                ?.title
                             }
-                          </span>
+                          </h3>
+
+                          <div className="flex items-center gap-2 text-white/80 mt-3">
+
+                            <MapPin
+                              size={16}
+                            />
+
+                            <span className="text-sm">
+                              {
+                                property
+                                  ?.locationData
+                                  ?.locationName
+                              }
+                            </span>
+                          </div>
                         </div>
                       </div>
+
+                      {/* BOTTOM */}
+                      <div className="p-6">
+
+                        <button className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
+
+                          Explore Property
+
+                          <ArrowRight
+                            size={18}
+                            className="group-hover:translate-x-1 transition"
+                          />
+                        </button>
+                      </div>
+
+                      {/* LINK */}
+                      <Link
+                        href={`/${property.slug}`}
+                        className="absolute inset-0 z-10"
+                      />
                     </div>
-
-                    {/* BOTTOM */}
-                    <div className="p-6">
-
-                      <button className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
-
-                        Explore Property
-
-                        <ArrowRight
-                          size={18}
-                          className="group-hover:translate-x-1 transition"
-                        />
-                      </button>
-                    </div>
-
-                    {/* LINK */}
-                    <Link
-                      href={`/${property.slug}`}
-                      className="absolute inset-0 z-10"
-                    />
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
               <div className="bg-white rounded-[32px] p-20 text-center shadow-xl">

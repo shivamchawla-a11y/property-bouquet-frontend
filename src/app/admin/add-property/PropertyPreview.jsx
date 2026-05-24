@@ -488,6 +488,41 @@ const locationName = getLocationName();
 
   const developerName = getDeveloperName();
 
+  // ================= DEVELOPER DESCRIPTION RESOLVER =================
+const getDeveloperDescription = () => {
+
+  // ✅ Direct custom description
+  if (coreDetails?.developerDescription?.trim()) {
+    return coreDetails.developerDescription;
+  }
+
+  // ✅ If populated object from backend
+  if (
+    coreDetails?.developerRef &&
+    typeof coreDetails.developerRef === "object"
+  ) {
+    return (
+      coreDetails.developerRef.description || ""
+    );
+  }
+
+  // ✅ If only ID exists
+  if (coreDetails?.developerRef) {
+
+    const dev = developers.find(
+      (d) => d._id === coreDetails.developerRef
+    );
+
+    return dev?.description || "";
+  }
+
+  return "";
+};
+
+const developerDescription =
+  getDeveloperDescription();
+
+
 useEffect(() => {
 
   if (!developerName) return;
@@ -508,9 +543,37 @@ useEffect(() => {
 
       if (res.ok) {
 
+        // ✅ PROJECTS
         setDeveloperProjects(
           data.properties || []
         );
+
+        // ✅ AUTO LOAD DESCRIPTION
+        if (
+          data.developer?.description &&
+          !coreDetails?.developerDescription
+        ) {
+          form.coreDetails.developerDescription =
+            data.developer.description;
+        }
+
+        // ✅ AUTO LOAD IMAGE
+        if (
+          data.developer?.image &&
+          !coreDetails?.developerImage
+        ) {
+          form.coreDetails.developerImage =
+            data.developer.image;
+        }
+
+        // ✅ AUTO LOAD LOGO
+        if (
+          data.developer?.logo &&
+          !coreDetails?.developerLogo
+        ) {
+          form.coreDetails.developerLogo =
+            data.developer.logo;
+        }
 
       } else {
 
@@ -4278,9 +4341,9 @@ id="amenities"
 
 {/* ================= DEVELOPER PROJECTS PREMIUM SECTION ================= */}
 {developerProjects.length > 0 && (
-  <section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+  <section className="relative bg-[#f7f3ee] py-28 overflow-hidden">
 
-    {/* SOFT BACKGROUND */}
+    {/* BACKGROUND PATTERN */}
     <div
       className="absolute inset-0 opacity-[0.03]"
       style={{
@@ -4291,11 +4354,191 @@ id="amenities"
     />
 
     {/* GOLD GLOW */}
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4b071]/10 blur-3xl rounded-full" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[320px] bg-[#d4b071]/10 blur-3xl rounded-full" />
 
-    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+    {/* SIDE GLOW */}
+    <div className="absolute right-0 top-1/3 w-[300px] h-[300px] bg-[#17342d]/[0.04] blur-3xl rounded-full" />
 
-      {/* ================= HEADING ================= */}
+    <div className="relative z-10 max-w-[1500px] mx-auto px-5">
+
+      {/* ================= MAIN HEADING ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+        className="text-center mb-20"
+      >
+
+        <div className="inline-flex items-center gap-4 mb-6">
+
+          <div className="w-14 h-[1px] bg-[#c8a66a]" />
+
+          <p className="uppercase tracking-[5px] text-[#b58b47] text-xs md:text-sm font-medium">
+            09 | Developer Portfolio
+          </p>
+
+          <div className="w-14 h-[1px] bg-[#c8a66a]" />
+        </div>
+
+        <h2
+          className="text-5xl md:text-7xl leading-[1.05] font-light text-[#17342d]"
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
+          }}
+        >
+          More Signature Creations By
+
+          <span className="block text-[#b58b47] mt-2">
+            {developerName}
+          </span>
+        </h2>
+
+        <div className="w-28 h-[1px] bg-[#c8a66a] mx-auto mt-7 relative">
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#c8a66a]" />
+        </div>
+
+      </motion.div>
+
+      {/* ================= ABOUT DEVELOPER ================= */}
+      {developerDescription && (
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="mb-28"
+        >
+
+          <div className="relative overflow-hidden rounded-[42px] border border-[#ddd2c4] bg-gradient-to-br from-white via-[#fcfaf7] to-[#f5ede1] shadow-[0_30px_80px_rgba(0,0,0,0.08)]">
+
+            {/* GOLD TOP LINE */}
+            <div className="h-[4px] w-full bg-gradient-to-r from-[#b58b47] via-[#f0cf92] to-[#b58b47]" />
+
+            {/* DECOR */}
+            <div className="absolute -top-32 right-0 w-[340px] h-[340px] bg-[#d4b071]/10 blur-3xl rounded-full" />
+
+            <div className="absolute bottom-0 left-0 w-[260px] h-[260px] bg-[#17342d]/[0.03] blur-3xl rounded-full" />
+
+            <div className="relative z-10 p-7 md:p-14 lg:p-16">
+
+              <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
+
+                {/* ================= LEFT ================= */}
+                <div>
+
+                  {/* LABEL */}
+                  <div className="inline-flex items-center gap-3 mb-6">
+
+                    <div className="w-10 h-[1px] bg-[#c8a66a]" />
+
+                    <p className="uppercase tracking-[4px] text-[#b58b47] text-xs font-medium">
+                      About The Developer
+                    </p>
+                  </div>
+
+                  {/* HEADING */}
+                  <h2
+                    className="text-5xl md:text-6xl leading-[1.05] font-light text-[#17342d]"
+                    style={{
+                      fontFamily:
+                        "Cormorant Garamond, serif",
+                    }}
+                  >
+                    The Legacy Of
+
+                    <span className="block text-[#b58b47] mt-2">
+                      {developerName}
+                    </span>
+                  </h2>
+
+                  {/* DIVIDER */}
+                  <div className="w-24 h-[1px] bg-[#c8a66a] mt-8 mb-8 relative">
+
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+                  </div>
+
+                  {/* DESCRIPTION */}
+                  <p className="text-[#5f5f5f] text-[16px] md:text-[18px] leading-[2.1] whitespace-pre-line font-light max-w-3xl">
+                    {developerDescription}
+                  </p>
+
+                  
+                </div>
+
+                {/* ================= RIGHT IMAGE ================= */}
+                <div className="relative">
+
+                  <div className="relative overflow-hidden rounded-[36px] border border-[#dccfbf] bg-[#17342d] h-[580px] shadow-[0_30px_70px_rgba(0,0,0,0.18)]">
+
+                    {/* IMAGE */}
+                    {developerImage ? (
+                      <img
+                        src={developerImage}
+                        alt={developerName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f2c26] to-[#17342d]">
+
+                        <Building2
+                          className="text-[#d4b071]"
+                          size={90}
+                        />
+                      </div>
+                    )}
+
+                    {/* OVERLAY */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/20 to-transparent" />
+
+                    {/* LOGO */}
+                    {developerLogo && (
+                      <div className="absolute top-7 left-7 w-24 h-24 rounded-[24px] bg-white/90 backdrop-blur-md border border-white/40 flex items-center justify-center p-3 shadow-2xl">
+
+                        <img
+                          src={developerLogo}
+                          alt={developerName}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+
+                    {/* BOTTOM CARD */}
+                    <div className="absolute bottom-7 left-7 right-7">
+
+                      <div className="rounded-[30px] border border-white/10 bg-white/10 backdrop-blur-xl p-7">
+
+                        <p className="text-white/60 text-[10px] uppercase tracking-[3px] mb-3">
+                          Signature Developments
+                        </p>
+
+                        <h3
+                          className="text-white text-3xl md:text-4xl leading-tight font-light"
+                          style={{
+                            fontFamily:
+                              "Cormorant Garamond, serif",
+                          }}
+                        >
+                          Crafted With Vision,
+                          Elegance & Trust
+                        </h3>
+
+                        <div className="w-16 h-[1px] bg-[#d4b071] mt-6 relative">
+
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ================= OTHER PROJECTS HEADING ================= */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -4303,38 +4546,27 @@ id="amenities"
         variants={fadeUp}
         className="text-center mb-16"
       >
-
-        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          09 | OTHER DEVELOPMENTS
-        </p>
-
         <h2
-          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+          className="text-4xl md:text-6xl leading-[1.1] font-light text-[#17342d]"
           style={{
             fontFamily: "Cormorant Garamond, serif",
           }}
         >
-          More Signature Creations By
+          Other Landmark Projects By
 
-          <span className="text-[#b58b47]">
-            {" "}
+          <span className="block text-[#b58b47] mt-2">
             {developerName}
           </span>
         </h2>
 
-        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-6 relative">
+
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
         </div>
-
-        <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
-          Explore landmark developments crafted with timeless
-          design, premium architecture, and elevated lifestyles
-          across Gurgaon.
-        </p>
       </motion.div>
 
       {/* ================= PROJECT GRID ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
 
         {developerProjects
           .slice(0, 4)
@@ -4349,11 +4581,11 @@ id="amenities"
               whileHover={{
                 y: -10,
               }}
-              className="group relative rounded-[30px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]"
+              className="group relative rounded-[34px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)] transition-all duration-700"
             >
 
               {/* IMAGE */}
-              <div className="relative h-[420px] overflow-hidden">
+              <div className="relative h-[460px] overflow-hidden">
 
                 <img
                   src={
@@ -4367,10 +4599,10 @@ id="amenities"
                 />
 
                 {/* OVERLAY */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/35 to-transparent" />
 
-                {/* TOP BADGE */}
-                <div className="absolute top-5 left-5 z-20">
+                {/* BADGE */}
+                <div className="absolute top-6 left-6 z-20">
 
                   <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
 
@@ -4382,86 +4614,83 @@ id="amenities"
                   </div>
                 </div>
 
-               {/* CONTENT */}
-<div className="absolute inset-0 flex flex-col justify-end p-7 z-20">
+                {/* CONTENT */}
+                <div className="absolute inset-0 flex flex-col justify-end p-8 z-20">
 
-  {/* TOP LOCATION + STATUS */}
-  <div className="flex items-center justify-between mb-5">
+                  {/* LOCATION */}
+                  <div className="mb-6">
 
-    {/* LOCATION */}
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full flex items-center gap-2">
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full">
 
-      <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
+                      <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
 
-      <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
+                      <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
 
-        {getShortLocation(
-          project?.locationData?.locationName
-        )}
+                        {getShortLocation(
+                          project?.locationData?.locationName
+                        )}
 
-      </span>
-    </div>
+                      </span>
+                    </div>
+                  </div>
 
-  </div>
+                  {/* TITLE */}
+                  <div>
 
-  {/* TITLE */}
-  <div>
+                    <h3
+                      className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+                      style={{
+                        fontFamily:
+                          "Cormorant Garamond, serif",
+                      }}
+                    >
+                      {project?.coreDetails?.title}
+                    </h3>
 
-    <h3
-      className="text-white text-[30px] md:text-[34px] leading-[1.1] font-light tracking-wide"
-      style={{
-        fontFamily:
-          "Cormorant Garamond, serif",
-      }}
-    >
-      {project?.coreDetails?.title}
-    </h3>
+                    <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-7 relative">
 
-    {/* GOLD LINE */}
-    <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-6 relative">
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+                    </div>
+                  </div>
 
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
-    </div>
-  </div>
+                  {/* BOTTOM */}
+                  <div className="flex items-end justify-between gap-4">
 
-  {/* BOTTOM */}
-  <div className="flex items-end justify-between">
+                    {/* PRICE */}
+                    <div>
 
-    {/* PRICE */}
-    <div>
+                      <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
+                        Starting Price
+                      </p>
 
-      <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
-        Starting Price
-      </p>
+                      <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
+                        ₹{" "}
+                        {formatPrice(
+                          project?.coreDetails?.startingPrice
+                        )}
+                      </h4>
+                    </div>
 
-      <h4 className="text-[#f0cf92] text-2xl font-semibold tracking-wide">
-        ₹{" "}
-        {formatPrice(
-          project?.coreDetails?.startingPrice
-        )}
-      </h4>
-    </div>
+                    {/* BUTTON */}
+                    <div className="group/button shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
 
-    {/* BUTTON */}
-    <div className="group/button w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
-
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-5 h-5 group-hover/button:translate-x-0.5 transition duration-300"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M13 7l5 5m0 0l-5 5m5-5H6"
-        />
-      </svg>
-    </div>
-  </div>
-</div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 group-hover/button:translate-x-0.5 transition duration-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
 
                 {/* LINK */}
                 <Link
@@ -4479,14 +4708,14 @@ id="amenities"
         whileInView="visible"
         viewport={{ once: true }}
         variants={fadeUp}
-        className="mt-16 flex justify-center"
+        className="mt-20 flex justify-center"
       >
 
         <Link
           href={`/developers/${developerName
             ?.toLowerCase()
             ?.replace(/\s+/g, "-")}`}
-          className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-2xl flex items-center gap-5"
+          className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-[24px] flex items-center gap-5"
         >
 
           {/* SHINE */}
@@ -4515,7 +4744,7 @@ id="amenities"
           <div className="relative z-10 text-left">
 
             <p className="text-white/50 text-[11px] uppercase tracking-[3px] mb-1">
-              Explore Portfolio
+              Explore Complete Portfolio
             </p>
 
             <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
