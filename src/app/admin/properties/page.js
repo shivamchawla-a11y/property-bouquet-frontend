@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatPrice } from "@/utils/formatPrice";
 import {
   Pencil,
   Eye,
@@ -221,23 +222,23 @@ export default function PropertiesPage() {
 
   // ================= TAG BADGE =================
   const tagStyle = (tag) => {
-    switch (tag) {
-      case "Featured":
-        return "bg-yellow-100 text-yellow-700";
+  switch (tag) {
+    case "Featured":
+      return "bg-yellow-50 text-yellow-700 border border-yellow-200";
 
-      case "Recommended":
-        return "bg-blue-100 text-blue-700";
+    case "Recommended":
+      return "bg-blue-50 text-blue-700 border border-blue-200";
 
-      case "Trending":
-        return "bg-pink-100 text-pink-700";
+    case "Trending":
+      return "bg-pink-50 text-pink-700 border border-pink-200";
 
-      case "New":
-        return "bg-emerald-100 text-emerald-700";
+    case "New":
+      return "bg-emerald-50 text-emerald-700 border border-emerald-200";
 
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+    default:
+      return "bg-gray-50 text-gray-700 border border-gray-200";
+  }
+};
 
   return (
     <div className="p-4 bg-[#f7f8f7] min-h-screen">
@@ -419,11 +420,15 @@ export default function PropertiesPage() {
                   </td>
 
                   {/* PRICE */}
-                  <td className="p-3 text-[#0f3b2e] text-sm font-bold whitespace-nowrap">
-                    {property.coreDetails?.startingPrice
-                      ? `₹${property.coreDetails.startingPrice}`
-                      : property.unitConfigurations?.[0]?.price || "N/A"}
-                  </td>
+<td className="p-3 text-[#0f3b2e] text-sm font-bold whitespace-nowrap">
+  {property.coreDetails?.startingPrice ? (
+    <>₹{formatPrice(property.coreDetails.startingPrice)}</>
+  ) : property.unitConfigurations?.[0]?.price ? (
+    <>₹{formatPrice(property.unitConfigurations[0].price)}</>
+  ) : (
+    "N/A"
+  )}
+</td>
 
                   {/* LOCATION */}
                   <td className="p-3">
@@ -448,9 +453,9 @@ export default function PropertiesPage() {
                   {/* TAG */}
                   <td className="p-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold ${tagStyle(
-                        property.propertyTag || "Normal"
-                      )}`}
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center ${tagStyle(
+                      property.propertyTag || "Normal"
+                    )}`}
                     >
                       {property.propertyTag || "Normal"}
                     </span>
