@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -267,6 +268,8 @@ const [scrolled, setScrolled] = useState(false);
 const [activeSection, setActiveSection] = useState("overview");
 const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);
+  const [developerProjects, setDeveloperProjects] =
+  useState([]);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -281,6 +284,8 @@ useEffect(() => {
 
 const gallery =
   media.gallery?.filter((img) => img && img.trim()) || [];
+
+  
 
 /* KEYBOARD NAVIGATION */
 useEffect(() => {
@@ -482,6 +487,72 @@ const categoryName = getCategoryName();
 const locationName = getLocationName();
 
   const developerName = getDeveloperName();
+
+useEffect(() => {
+
+  if (!developerName) return;
+
+  const fetchDeveloperProjects = async () => {
+
+    try {
+
+      const developerSlug = developerName
+        ?.toLowerCase()
+        ?.replace(/\s+/g, "-");
+
+      const res = await fetch(
+        `https://property-bouquet-backend.onrender.com/api/developers/${developerSlug}`
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+
+        setDeveloperProjects(
+          data.properties || []
+        );
+
+      } else {
+
+        setDeveloperProjects([]);
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        "Error fetching developer projects:",
+        err
+      );
+
+      setDeveloperProjects([]);
+
+    }
+  };
+
+  fetchDeveloperProjects();
+
+}, [developerName]);
+
+const getShortLocation = (location) => {
+
+  if (!location) return "Gurgaon";
+
+  if (location.includes(">")) {
+
+    const parts = location
+      .split(">")
+      .map((p) => p.trim());
+
+    return parts[parts.length - 1];
+  }
+
+  if (location.includes(",")) {
+    return location.split(",")[0].trim();
+  }
+
+  return location;
+};
 
   return (
     <div className="relative overflow-hidden bg-black">
@@ -4108,284 +4179,275 @@ id="amenities"
 )}
 
 {/* ================= DEVELOPER PROJECTS PREMIUM SECTION ================= */}
-<section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
+{developerProjects.length > 0 && (
+  <section className="relative bg-[#f7f3ee] py-24 overflow-hidden">
 
-  {/* SOFT BACKGROUND */}
-  <div
-    className="absolute inset-0 opacity-[0.03]"
-    style={{
-      backgroundImage:
-        "radial-gradient(circle, #17342d 1px, transparent 1px)",
-      backgroundSize: "28px 28px",
-    }}
-  />
+    {/* SOFT BACKGROUND */}
+    <div
+      className="absolute inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle, #17342d 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }}
+    />
 
-  {/* GOLD GLOW */}
-  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4b071]/10 blur-3xl rounded-full" />
+    {/* GOLD GLOW */}
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#d4b071]/10 blur-3xl rounded-full" />
 
-  <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
 
-    {/* ================= HEADING ================= */}
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      variants={fadeUp}
-      className="text-center mb-16"
-    >
-
-      <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-        09 | OTHER DEVELOPMENTS
-      </p>
-
-      <h2
-        className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
-        style={{
-          fontFamily: "Cormorant Garamond, serif",
-        }}
+      {/* ================= HEADING ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+        className="text-center mb-16"
       >
-        More Signature Creations By
 
-        <span className="text-[#b58b47]">
-          {" "}
-          Signature Global
-        </span>
-      </h2>
+        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+          09 | OTHER DEVELOPMENTS
+        </p>
 
-      <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
-      </div>
-
-      <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
-        Explore landmark developments crafted with timeless design,
-        premium architecture, and elevated lifestyles across Gurgaon.
-      </p>
-    </motion.div>
-
-    {/* ================= PROJECT GRID ================= */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-7">
-
-      {[
-        {
-          name: "Signature Global City 93",
-          location: "Sector 93, Gurgaon",
-          price: "₹ 1.45 Cr",
-          image:
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
-        },
-        {
-          name: "Signature Titanium SPR",
-          location: "SPR Road, Gurgaon",
-          price: "₹ 3.2 Cr",
-          image:
-            "https://images.unsplash.com/photo-1613977257365-aaae5a9817ff?q=80&w=1600&auto=format&fit=crop",
-        },
-        {
-          name: "Signature Deluxe DXP",
-          location: "Dwarka Expressway",
-          price: "₹ 2.8 Cr",
-          image:
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop",
-        },
-        {
-          name: "Signature Twin Tower",
-          location: "Sector 84, Gurgaon",
-          price: "₹ 4.1 Cr",
-          image:
-            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
-        },
-      ].map((project, i) => (
-
-        <motion.div
-          key={i}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          whileHover={{
-            y: -10,
+        <h2
+          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
           }}
-          className="group relative rounded-[30px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]"
         >
+          More Signature Creations By
 
-          {/* IMAGE */}
-          <div className="relative h-[420px] overflow-hidden">
+          <span className="text-[#b58b47]">
+            {" "}
+            {developerName}
+          </span>
+        </h2>
 
-            <img
-              src={project.image}
-              alt={project.name}
-              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
-            />
+        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+        </div>
 
-            {/* OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/30 to-transparent" />
+        <p className="max-w-3xl mx-auto mt-7 text-[#6b6b6b] text-base md:text-lg leading-relaxed">
+          Explore landmark developments crafted with timeless
+          design, premium architecture, and elevated lifestyles
+          across Gurgaon.
+        </p>
+      </motion.div>
 
-            {/* TOP BADGE */}
-            <div className="absolute top-5 left-5 z-20">
+      {/* ================= PROJECT GRID ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-7">
 
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+        {developerProjects
+          .slice(0, 4)
+          .map((project, i) => (
 
-                <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
+            <motion.div
+              key={project._id || i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              whileHover={{
+                y: -10,
+              }}
+              className="group relative rounded-[30px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]"
+            >
 
-                <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
-                  Premium Development
-                </span>
-              </div>
-            </div>
+              {/* IMAGE */}
+              <div className="relative h-[420px] overflow-hidden">
 
-            {/* CONTENT */}
-            <div className="absolute bottom-0 left-0 w-full p-7 z-20">
+                <img
+                  src={
+                    project?.media?.heroImageUrl ||
+                    "/placeholder.jpg"
+                  }
+                  alt={
+                    project?.coreDetails?.title
+                  }
+                  className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+                />
 
-              {/* LOCATION */}
-              <div className="flex items-center gap-2 text-[#e0bd7d] text-xs uppercase tracking-[2px] mb-4">
+                {/* OVERLAY */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/30 to-transparent" />
 
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.657 16.657L13.414 12.414m0 0A6 6 0 1012 18a6 6 0 001.414-5.586z"
-                  />
-                </svg>
+                {/* TOP BADGE */}
+                <div className="absolute top-5 left-5 z-20">
 
-                <span>
-                  {project.location}
-                </span>
-              </div>
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
 
-              {/* TITLE */}
-              <h3
-                className="text-white text-3xl leading-tight font-light"
-                style={{
-                  fontFamily:
-                    "Cormorant Garamond, serif",
-                }}
-              >
-                {project.name}
-              </h3>
+                    <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
 
-              {/* DESCRIPTION */}
-              <p className="text-white/70 text-sm leading-relaxed mt-4 line-clamp-3">
-                Experience sophisticated living crafted with premium
-                amenities, landscaped greens, and timeless architecture.
-              </p>
-
-              {/* BOTTOM */}
-              <div className="flex items-center justify-between mt-7 pt-5 border-t border-white/10">
-
-                {/* PRICE */}
-                <div>
-
-                  <p className="text-white/40 text-[11px] uppercase tracking-[2px]">
-                    Starting From
-                  </p>
-
-                  <h4 className="text-[#e0bd7d] text-lg font-semibold mt-1">
-                    {project.price}
-                  </h4>
+                    <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
+                      Premium Development
+                    </span>
+                  </div>
                 </div>
 
-                {/* BUTTON */}
-                <button
-                  className="w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-300"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      ))}
+               {/* CONTENT */}
+<div className="absolute inset-0 flex flex-col justify-end p-7 z-20">
+
+  {/* TOP LOCATION + STATUS */}
+  <div className="flex items-center justify-between mb-5">
+
+    {/* LOCATION */}
+    <div className="bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full flex items-center gap-2">
+
+      <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
+
+      <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
+
+        {getShortLocation(
+          project?.locationData?.locationName
+        )}
+
+      </span>
     </div>
 
-    {/* ================= CTA ================= */}
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      variants={fadeUp}
-      className="mt-16 flex justify-center"
-    >
+  </div>
 
-      <button
-        className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-2xl flex items-center gap-5"
+  {/* TITLE */}
+  <div>
+
+    <h3
+      className="text-white text-[30px] md:text-[34px] leading-[1.1] font-light tracking-wide"
+      style={{
+        fontFamily:
+          "Cormorant Garamond, serif",
+      }}
+    >
+      {project?.coreDetails?.title}
+    </h3>
+
+    {/* GOLD LINE */}
+    <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-6 relative">
+
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+    </div>
+  </div>
+
+  {/* BOTTOM */}
+  <div className="flex items-end justify-between">
+
+    {/* PRICE */}
+    <div>
+
+      <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
+        Starting Price
+      </p>
+
+      <h4 className="text-[#f0cf92] text-2xl font-semibold tracking-wide">
+        ₹{" "}
+        {formatPrice(
+          project?.coreDetails?.startingPrice
+        )}
+      </h4>
+    </div>
+
+    {/* BUTTON */}
+    <div className="group/button w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-5 h-5 group-hover/button:translate-x-0.5 transition duration-300"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M13 7l5 5m0 0l-5 5m5-5H6"
+        />
+      </svg>
+    </div>
+  </div>
+</div>
+
+                {/* LINK */}
+                <Link
+                  href={`/${project.slug}`}
+                  className="absolute inset-0 z-30"
+                />
+              </div>
+            </motion.div>
+          ))}
+      </div>
+
+      {/* ================= CTA ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+        className="mt-16 flex justify-center"
       >
 
-        {/* SHINE */}
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition duration-1000" />
+        <Link
+          href={`/developers/${developerName
+            ?.toLowerCase()
+            ?.replace(/\s+/g, "-")}`}
+          className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-2xl flex items-center gap-5"
+        >
 
-        {/* ICON */}
-        <div className="relative z-10 w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071]">
+          {/* SHINE */}
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition duration-1000" />
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
-            />
-          </svg>
-        </div>
+          {/* ICON */}
+          <div className="relative z-10 w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071]">
 
-        {/* TEXT */}
-        <div className="relative z-10 text-left">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
+              />
+            </svg>
+          </div>
 
-          <p className="text-white/50 text-[11px] uppercase tracking-[3px] mb-1">
-            Explore Portfolio
-          </p>
+          {/* TEXT */}
+          <div className="relative z-10 text-left">
 
-          <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
-            View All Projects By Signature Global
-          </h4>
-        </div>
+            <p className="text-white/50 text-[11px] uppercase tracking-[3px] mb-1">
+              Explore Portfolio
+            </p>
 
-        {/* ARROW */}
-        <div className="relative z-10 text-[#d4b071] group-hover:translate-x-1 transition duration-300">
+            <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
+              View All Projects By {developerName}
+            </h4>
+          </div>
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13 7l5 5m0 0l-5 5m5-5H6"
-            />
-          </svg>
-        </div>
-      </button>
-    </motion.div>
-  </div>
-</section>
+          {/* ARROW */}
+          <div className="relative z-10 text-[#d4b071] group-hover:translate-x-1 transition duration-300">
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+          </div>
+        </Link>
+      </motion.div>
+    </div>
+  </section>
+)}
 
 {/* ================= PREMIUM FAQ SECTION ================= */}
 {faqs.filter((f) => f.question).length > 0 && (
