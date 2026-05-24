@@ -2753,6 +2753,10 @@ id="amenities"
   const activeFloorPlan =
     gatedContent.floorPlans?.[activePlan] || {};
 
+  const hasFloorPlanImage =
+    activeFloorPlan?.image &&
+    activeFloorPlan.image.trim() !== "";
+
   return (
     <motion.section
       id="configuration"
@@ -3146,6 +3150,7 @@ id="amenities"
 
                   {/* BUTTON */}
                   <button
+                    onClick={() => setShowModal(true)}
                     className="
                       mt-8
                       sm:mt-10
@@ -3170,7 +3175,7 @@ id="amenities"
                     "
                   >
                     {configurationSection?.buttonText ||
-                      "View Details"}
+                      "Unlock Floor Plan"}
 
                     <span className="text-[#d7b367] text-[18px]">
                       →
@@ -3179,42 +3184,135 @@ id="amenities"
                 </div>
 
                 {/* ================= FLOOR PLAN ================= */}
-                <div className="relative">
+<div className="relative">
 
-                  <div
-                    className="
-                      relative
-                      rounded-[16px]
-                      md:rounded-[18px]
-                      border
-                      border-[#e3d7c5]
-                      bg-[#f6f2eb]
-                      p-3
-                      sm:p-4
-                      md:p-5
-                      shadow-[0_12px_35px_rgba(0,0,0,0.06)]
-                    "
-                  >
+  <div
+    className="
+      relative
+      rounded-[16px]
+      md:rounded-[18px]
+      border
+      border-[#e3d7c5]
+      bg-[#f6f2eb]
+      p-3
+      sm:p-4
+      md:p-5
+      shadow-[0_12px_35px_rgba(0,0,0,0.06)]
+      overflow-hidden
+    "
+  >
 
-                    {activeFloorPlan?.image ? (
-                      <img
-                        src={activeFloorPlan.image}
-                        alt="floor-plan"
-                        className="
-                          w-full
-                          h-[260px]
-                          sm:h-[360px]
-                          md:h-[500px]
-                          object-contain
-                        "
-                      />
-                    ) : (
-                      <div className="h-[260px] sm:h-[360px] md:h-[500px] flex items-center justify-center text-[#999] text-[14px] sm:text-[16px]">
-                        Floor Plan Coming Soon
-                      </div>
-                    )}
-                  </div>
-                </div>
+    {/* ================= IF FLOOR PLAN EXISTS ================= */}
+    {hasFloorPlanImage ? (
+
+      <img
+        src={activeFloorPlan.image}
+        alt="floor-plan"
+        className="
+          w-full
+          h-[260px]
+          sm:h-[360px]
+          md:h-[500px]
+          object-contain
+        "
+      />
+
+    ) : (
+
+      <>
+        {/* PLACEHOLDER BLUR */}
+        <div className="relative h-[260px] sm:h-[360px] md:h-[500px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
+
+          {/* FAKE FLOOR PLAN LINES */}
+          <div className="absolute inset-0 opacity-40">
+            <div className="absolute top-10 left-10 w-40 h-24 border border-[#cbb58c]" />
+            <div className="absolute top-40 left-28 w-56 h-32 border border-[#cbb58c]" />
+            <div className="absolute bottom-20 right-20 w-44 h-28 border border-[#cbb58c]" />
+          </div>
+
+          {/* BLUR OVERLAY */}
+          <div className="absolute inset-0 backdrop-blur-[5px] bg-white/30" />
+
+          {/* LOCK CONTENT */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+
+            {/* LOCK ICON */}
+            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-2xl border border-white/50">
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-9 h-9 text-[#0b2c23]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16 11V7a4 4 0 10-8 0v4m-2 0h12a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z"
+                />
+              </svg>
+            </div>
+
+            {/* TITLE */}
+            <h4
+              className="mt-7 text-[#17342d] text-[28px] sm:text-[34px]"
+              style={{
+                fontFamily:
+                  "Georgia, Times New Roman, serif",
+              }}
+            >
+              Unlock Floor Plan
+            </h4>
+
+
+            {/* BUTTON */}
+            <button
+              onClick={() => setShowModal(true)}
+              className="
+                mt-7
+                h-[52px]
+                px-8
+                rounded-full
+                bg-[#03261d]
+                hover:bg-[#0a3328]
+                text-white
+                text-[14px]
+                tracking-[1px]
+                uppercase
+                flex
+                items-center
+                gap-3
+                transition-all
+                duration-300
+                shadow-xl
+              "
+            >
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5 text-[#d7b367]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                />
+              </svg>
+
+              Unlock Now
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+</div>
 
               </div>
             </div>

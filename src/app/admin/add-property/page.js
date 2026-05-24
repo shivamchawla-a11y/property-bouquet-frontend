@@ -523,6 +523,7 @@ export default function AddProperty() {
     const [customAmenity, setCustomAmenity] = useState("");
     const [fullFormMode, setFullFormMode] = useState(false);
     const [selectedCustomIcon, setSelectedCustomIcon] = useState("Home");
+    const [uploading, setUploading] = useState(false);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -1341,6 +1342,15 @@ const buildOptions = (nodes, prefix = "") => {
 {step === 2 && (
   <div className="section">
 
+    {/* ================= LOADER ================= */}
+{uploading && (
+  <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center">
+    <p className="text-white text-lg animate-pulse">
+      Uploading...
+    </p>
+  </div>
+)}
+
     <h2 className="section-title">
       About & Property Highlights
     </h2>
@@ -1440,19 +1450,126 @@ const buildOptions = (nodes, prefix = "") => {
         }
       />
 
-      {/* ABOUT IMAGE */}
-      <input
-        className="input"
-        placeholder="About Image URL"
-        value={form.overview.aboutImageUrl || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutImageUrl",
-            e.target.value
-          )
+      {/* ================= ABOUT IMAGE ================= */}
+<div className="mt-4">
+
+  <p className="text-white font-semibold mb-3">
+    About Section Image
+  </p>
+
+  {/* UPLOAD BUTTON */}
+  <div
+    className="upload-box cursor-pointer"
+    onClick={() =>
+      document
+        .getElementById("aboutImageUpload")
+        .click()
+    }
+  >
+    Upload About Image
+  </div>
+
+  {/* INPUT */}
+  <input
+    id="aboutImageUpload"
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={async (e) => {
+
+      const file = e.target.files[0];
+
+      if (!file) return;
+
+      // ================= VALIDATION =================
+      if (!file.type.startsWith("image/")) {
+        alert("Only image files allowed ❌");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Max file size is 5MB ❌");
+        return;
+      }
+
+      try {
+
+        setUploading(true);
+
+        // ================= UPLOAD =================
+        const data = new FormData();
+        data.append("file", file);
+
+        const res = await fetch(
+          "https://property-bouquet-backend.onrender.com/api/upload",
+          {
+            method: "POST",
+            body: data,
+          }
+        );
+
+        const result = await res.json();
+
+        if (!res.ok || !result.url) {
+          throw new Error(
+            result.message || "Upload failed"
+          );
         }
+
+        // ================= SAVE URL =================
+        setForm((prev) => ({
+          ...prev,
+          overview: {
+            ...prev.overview,
+            aboutImageUrl: result.url,
+          },
+        }));
+
+      } catch (err) {
+
+        console.error("Upload Error:", err);
+
+        alert("Upload failed ❌");
+
+      } finally {
+
+        setUploading(false);
+      }
+
+      e.target.value = "";
+
+    }}
+  />
+
+  {/* IMAGE PREVIEW */}
+  {form.overview?.aboutImageUrl?.trim() && (
+    <div className="relative mt-4">
+
+      <img
+        src={form.overview.aboutImageUrl}
+        className="preview-img"
+        alt="About"
       />
+
+      {/* REMOVE BUTTON */}
+      <button
+        type="button"
+        onClick={() =>
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              aboutImageUrl: "",
+            },
+          }))
+        }
+        className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+      >
+        ✕
+      </button>
+    </div>
+  )}
+</div>
     </div>
 
     {/* ================= FEATURE BAR ================= */}
@@ -3573,7 +3690,7 @@ const buildOptions = (nodes, prefix = "") => {
             setForm((prev) => ({
               ...prev,
               faqs: [
-                ...prev.faqs,
+  ...(prev.faqs || []),
                 {
                   question: "",
                   answer: "",
@@ -3587,7 +3704,7 @@ const buildOptions = (nodes, prefix = "") => {
         </button>
       </div>
 
-      {form.faqs.map((f, i) => (
+      {(form.faqs || []).map((f, i) => (
 
         <div
           key={i}
