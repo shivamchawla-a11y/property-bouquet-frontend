@@ -101,6 +101,7 @@ const validateFile = (file) => {
 };
 
 // ================= UPLOAD IMAGE (NO WATERMARK) =================
+// ================= UPLOAD IMAGE (NO WATERMARK) =================
 const uploadImage = async (file) => {
   try {
     const data = new FormData();
@@ -108,7 +109,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/developer-upload",
+      "https://property-bouquet-backend.onrender.com/api/upload-developer",
       {
         method: "POST",
         body: data,

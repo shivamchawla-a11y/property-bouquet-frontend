@@ -524,6 +524,10 @@ export default function AddProperty() {
     const [fullFormMode, setFullFormMode] = useState(false);
     const [selectedCustomIcon, setSelectedCustomIcon] = useState("Home");
     const [uploading, setUploading] = useState(false);
+    const [
+  customAmenitySubheading,
+  setCustomAmenitySubheading,
+] = useState("");
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -732,7 +736,7 @@ const buildOptions = (nodes, prefix = "") => {
         </h1>
 
         <p className="text-gray-300">
-          Step {step} of 6
+          Step {step} of 7
         </p>
       </div>
 
@@ -1913,101 +1917,101 @@ const buildOptions = (nodes, prefix = "") => {
   </div>
 )}
 
-        {/* ================= STEP 3 ================= */}
+  {/* ================= STEP 3 ================= */}
 {step === 3 && (
   <div className="section">
 
     {/* ================= AMENITIES HEADER ================= */}
-<div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-  <h3 className="font-semibold text-xl text-white mb-5">
-    Amenities Section Content
-  </h3>
+      <h3 className="font-semibold text-xl text-white mb-5">
+        Amenities Section Content
+      </h3>
 
-  {/* SECTION NUMBER */}
-  <input
-    className="input mb-4"
-    placeholder="Section Number (Example: 04)"
-    value={form.overview.amenitiesSectionNumber || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesSectionNumber",
-        e.target.value
-      )
-    }
-  />
+      {/* SECTION NUMBER */}
+      <input
+        className="input mb-4"
+        placeholder="Section Number (Example: 04)"
+        value={form.overview.amenitiesSectionNumber || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesSectionNumber",
+            e.target.value
+          )
+        }
+      />
 
-  {/* SECTION LABEL */}
-  <input
-    className="input mb-4"
-    placeholder="Section Label"
-    value={form.overview.amenitiesSectionLabel || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesSectionLabel",
-        e.target.value
-      )
-    }
-  />
+      {/* SECTION LABEL */}
+      <input
+        className="input mb-4"
+        placeholder="Section Label"
+        value={form.overview.amenitiesSectionLabel || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesSectionLabel",
+            e.target.value
+          )
+        }
+      />
 
-  {/* HEADING LINE 1 */}
-  <input
-    className="input mb-4"
-    placeholder="Heading Line 1"
-    value={form.overview.amenitiesHeadingLine1 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesHeadingLine1",
-        e.target.value
-      )
-    }
-  />
+      {/* HEADING LINE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Line 1"
+        value={form.overview.amenitiesHeadingLine1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesHeadingLine1",
+            e.target.value
+          )
+        }
+      />
 
-  {/* HEADING LINE 2 (GOLD) */}
-  <input
-    className="input mb-4"
-    placeholder="Heading Line 2 (Gold Text)"
-    value={form.overview.amenitiesHeadingLine2 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesHeadingLine2",
-        e.target.value
-      )
-    }
-  />
+      {/* HEADING LINE 2 */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Line 2 (Gold Text)"
+        value={form.overview.amenitiesHeadingLine2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesHeadingLine2",
+            e.target.value
+          )
+        }
+      />
 
-  {/* HEADING LINE 3 */}
-  <input
-    className="input mb-4"
-    placeholder="Heading Line 3"
-    value={form.overview.amenitiesHeadingLine3 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesHeadingLine3",
-        e.target.value
-      )
-    }
-  />
+      {/* HEADING LINE 3 */}
+      <input
+        className="input mb-4"
+        placeholder="Heading Line 3"
+        value={form.overview.amenitiesHeadingLine3 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesHeadingLine3",
+            e.target.value
+          )
+        }
+      />
 
-  {/* SUBHEADING */}
-  <textarea
-    className="input min-h-[120px]"
-    placeholder="Amenities Subheading"
-    value={form.overview.amenitiesSubheading || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "amenitiesSubheading",
-        e.target.value
-      )
-    }
-  />
-</div>
+      {/* SUBHEADING */}
+      <textarea
+        className="input min-h-[120px]"
+        placeholder="Amenities Subheading"
+        value={form.overview.amenitiesSubheading || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "amenitiesSubheading",
+            e.target.value
+          )
+        }
+      />
+    </div>
 
     <h2 className="section-title">
       Amenities
@@ -2027,12 +2031,12 @@ const buildOptions = (nodes, prefix = "") => {
           const selected =
             form.overview.highlights.some((h) => {
 
-              const name =
+              const amenityName =
                 typeof h === "string"
                   ? h
-                  : h.name;
+                  : h?.heading || h?.name;
 
-              return name === item.name;
+              return amenityName === item.name;
             });
 
           const Icon = item.icon;
@@ -2064,12 +2068,12 @@ const buildOptions = (nodes, prefix = "") => {
                       form.overview.highlights.filter(
                         (h) => {
 
-                          const name =
+                          const amenityName =
                             typeof h === "string"
                               ? h
-                              : h.name;
+                              : h?.heading || h?.name;
 
-                          return name !== item.name;
+                          return amenityName !== item.name;
                         }
                       );
 
@@ -2078,7 +2082,9 @@ const buildOptions = (nodes, prefix = "") => {
                     updated = [
                       ...form.overview.highlights,
                       {
-                        name: item.name,
+                        heading: item.name,
+                        subheading:
+                          "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
                         icon: item.name,
                       },
                     ];
@@ -2122,6 +2128,17 @@ const buildOptions = (nodes, prefix = "") => {
           setCustomAmenity(e.target.value)
         }
       />
+
+      <textarea
+  className="input w-full mt-4 min-h-[100px]"
+  placeholder="Amenity Description / Subheading (Optional)"
+  value={customAmenitySubheading}
+  onChange={(e) =>
+    setCustomAmenitySubheading(
+      e.target.value
+    )
+  }
+/>
 
       {/* ICON SELECTOR */}
       <div className="mt-6">
@@ -2184,9 +2201,14 @@ const buildOptions = (nodes, prefix = "") => {
             return;
 
           const amenityObject = {
-            name: customAmenity,
-            icon: selectedCustomIcon,
-          };
+  heading: customAmenity,
+
+  subheading:
+    customAmenitySubheading.trim() ||
+    "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
+
+  icon: selectedCustomIcon,
+};
 
           handleChange(
             "overview",
@@ -2198,6 +2220,7 @@ const buildOptions = (nodes, prefix = "") => {
           );
 
           setCustomAmenity("");
+          setCustomAmenitySubheading("");
           setSelectedCustomIcon("Home");
         }}
       >
@@ -2220,7 +2243,7 @@ const buildOptions = (nodes, prefix = "") => {
             const itemName =
               typeof item === "string"
                 ? item
-                : item.name;
+                : item?.heading || item?.name;
 
             return (
               <div
@@ -2265,82 +2288,82 @@ const buildOptions = (nodes, prefix = "") => {
     </div>
 
     {/* ================= BOTTOM STRIP ================= */}
-<div className="glass p-6 rounded-2xl border border-white/10 mt-8">
+    <div className="glass p-6 rounded-2xl border border-white/10 mt-8">
 
-  <h3 className="font-semibold text-xl text-white mb-5">
-    Bottom Strip Content
-  </h3>
+      <h3 className="font-semibold text-xl text-white mb-5">
+        Bottom Strip Content
+      </h3>
 
-  {/* LEFT TITLE 1 */}
-  <input
-    className="input mb-4"
-    placeholder="Left Title Line 1"
-    value={form.overview.bottomStripTitle1 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "bottomStripTitle1",
-        e.target.value
-      )
-    }
-  />
+      {/* LEFT TITLE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Left Title Line 1"
+        value={form.overview.bottomStripTitle1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "bottomStripTitle1",
+            e.target.value
+          )
+        }
+      />
 
-  {/* LEFT TITLE 2 */}
-  <input
-    className="input mb-4"
-    placeholder="Left Title Line 2"
-    value={form.overview.bottomStripTitle2 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "bottomStripTitle2",
-        e.target.value
-      )
-    }
-  />
+      {/* LEFT TITLE 2 */}
+      <input
+        className="input mb-4"
+        placeholder="Left Title Line 2"
+        value={form.overview.bottomStripTitle2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "bottomStripTitle2",
+            e.target.value
+          )
+        }
+      />
 
-  {/* FEATURE 1 */}
-  <input
-    className="input mb-4"
-    placeholder="Feature 1"
-    value={form.overview.bottomStripFeature1 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "bottomStripFeature1",
-        e.target.value
-      )
-    }
-  />
+      {/* FEATURE 1 */}
+      <input
+        className="input mb-4"
+        placeholder="Feature 1"
+        value={form.overview.bottomStripFeature1 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "bottomStripFeature1",
+            e.target.value
+          )
+        }
+      />
 
-  {/* FEATURE 2 */}
-  <input
-    className="input mb-4"
-    placeholder="Feature 2"
-    value={form.overview.bottomStripFeature2 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "bottomStripFeature2",
-        e.target.value
-      )
-    }
-  />
+      {/* FEATURE 2 */}
+      <input
+        className="input mb-4"
+        placeholder="Feature 2"
+        value={form.overview.bottomStripFeature2 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "bottomStripFeature2",
+            e.target.value
+          )
+        }
+      />
 
-  {/* FEATURE 3 */}
-  <input
-    className="input"
-    placeholder="Feature 3"
-    value={form.overview.bottomStripFeature3 || ""}
-    onChange={(e) =>
-      handleChange(
-        "overview",
-        "bottomStripFeature3",
-        e.target.value
-      )
-    }
-  />
-</div>
+      {/* FEATURE 3 */}
+      <input
+        className="input"
+        placeholder="Feature 3"
+        value={form.overview.bottomStripFeature3 || ""}
+        onChange={(e) =>
+          handleChange(
+            "overview",
+            "bottomStripFeature3",
+            e.target.value
+          )
+        }
+      />
+    </div>
   </div>
 )}
 
