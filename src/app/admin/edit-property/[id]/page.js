@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import StepMedia from "./StepMedia";
+import StepMedia from "../../add-property/StepMedia";
 import { useRouter } from "next/navigation";
-import PropertyPreview from "./PropertyPreview";
+import PropertyPreview from "../../add-property/PropertyPreview";
 
 import {
   Waves,
