@@ -2742,21 +2742,7 @@ id="amenities"
         {/* GOLD LINE */}
         <div className="relative w-10 h-[1px] bg-[#c9a64b] mx-auto my-4" />
 
-        {/* DESCRIPTION */}
-        <p
-          className="
-            relative
-            text-white/65
-            text-[13px]
-            leading-[2]
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 300,
-          }}
-        >
-          {amenityDescription}
-        </p>
+        
       </motion.div>
     );
   })}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
 import PropertyPreview from "./PropertyPreview";
+import toast from "react-hot-toast";
 
 import {
   Waves,
@@ -528,6 +529,8 @@ export default function AddProperty() {
   customAmenitySubheading,
   setCustomAmenitySubheading,
 ] = useState("");
+const [errors, setErrors] = useState({});
+const [errorList, setErrorList] = useState([]);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -590,8 +593,48 @@ export default function AddProperty() {
   return () => clearTimeout(t);
 }, [form]);
 
+const getNestedValue = (obj, path) => {
+  return path.split(".").reduce((acc, key) => acc?.[key], obj);
+};
+
   // ================= NAVIGATION =================
-  const goNext = () => setStep((prev) => prev + 1);
+  const goNext = () => {
+  const requiredFields = [
+    { path: "slug", label: "Slug" },
+    { path: "coreDetails.title", label: "Project Title" },
+  ];
+
+  const missing = [];
+
+  requiredFields.forEach((field) => {
+    const value = getNestedValue(form, field.path);
+
+    if (!value || value.toString().trim() === "") {
+      missing.push(field.label);
+    }
+  });
+
+  if (missing.length > 0) {
+    toast.error(
+      `Please fill required fields:\n${missing
+        .map((e) => `• ${e}`)
+        .join("\n")}`,
+      {
+        duration: 4000,
+        style: {
+          whiteSpace: "pre-line",
+          background: "#1f1f1f",
+          color: "#fff",
+          border: "1px solid #ef4444",
+        },
+      }
+    );
+
+    return;
+  }
+
+  setStep((prev) => prev + 1);
+};
   const goPrev = () => setStep((prev) => prev - 1);
 
   // ================= COMMON HANDLER =================
@@ -605,8 +648,8 @@ export default function AddProperty() {
     }));
   };
 
-  // ================= SUBMIT =================
-  const handleSubmit = async () => {
+ // ================= SUBMIT =================
+const handleSubmit = async () => {
   try {
     const token = localStorage.getItem("token");
 
@@ -618,61 +661,61 @@ export default function AddProperty() {
 
     // 🔥 CLEAN CONFIGS
     const cleanedConfigurations =
-  form.unitConfigurations.filter(
-    (u) =>
-      u.unitType?.trim() ||
-      u.area?.trim() ||
-      u.price?.trim() ||
-      u.paymentPlan?.trim() ||
-      u.bedrooms?.trim() ||
-      u.bathrooms?.trim() ||
-      u.balconies?.trim()
-  );
+      form.unitConfigurations.filter(
+        (u) =>
+          u.unitType?.trim() ||
+          u.area?.trim() ||
+          u.price?.trim() ||
+          u.paymentPlan?.trim() ||
+          u.bedrooms?.trim() ||
+          u.bathrooms?.trim() ||
+          u.balconies?.trim()
+      );
 
     const validConfigurations = cleanedConfigurations;
 
     const cleanedForm = {
-  ...form,
+      ...form,
 
-  coreDetails: {
-    ...form.coreDetails,
-    developerRef: useCustomDeveloper
-      ? null
-      : form.coreDetails.developerRef,
-    developerName: form.coreDetails.developerName,
-  },
+      coreDetails: {
+        ...form.coreDetails,
+        developerRef: useCustomDeveloper
+          ? null
+          : form.coreDetails.developerRef,
+        developerName: form.coreDetails.developerName,
+      },
 
-  categoryData: {
-    categoryRef: useCustomCategory
-      ? null
-      : form.categoryData.categoryRef,
-    categoryName: useCustomCategory
-      ? form.categoryData.customCategory
-      : form.categoryData.categoryName,
-  },
+      categoryData: {
+        categoryRef: useCustomCategory
+          ? null
+          : form.categoryData.categoryRef,
+        categoryName: useCustomCategory
+          ? form.categoryData.customCategory
+          : form.categoryData.categoryName,
+      },
 
-  locationData: {
-    ...form.locationData,
-    locationRef: useCustomLocation
-      ? null
-      : form.locationData.locationRef,
-    locationName: useCustomLocation
-      ? form.locationData.customLocation
-      : form.locationData.locationName,
-  },
+      locationData: {
+        ...form.locationData,
+        locationRef: useCustomLocation
+          ? null
+          : form.locationData.locationRef,
+        locationName: useCustomLocation
+          ? form.locationData.customLocation
+          : form.locationData.locationName,
+      },
 
-  keyMetrics: {
-  ...form.keyMetrics,
-  totalUnits: Number(form.keyMetrics.totalUnits) || 0,
-  totalTowers: Number(form.keyMetrics.totalTowers) || 0,
-},
+      keyMetrics: {
+        ...form.keyMetrics,
+        totalUnits: Number(form.keyMetrics.totalUnits) || 0,
+        totalTowers: Number(form.keyMetrics.totalTowers) || 0,
+      },
 
-  configurationSection: {
-  ...form.configurationSection,
-},
+      configurationSection: {
+        ...form.configurationSection,
+      },
 
-  unitConfigurations: validConfigurations,
-};
+      unitConfigurations: validConfigurations,
+    };
 
     console.log("🚀 FINAL PAYLOAD:", cleanedForm);
 
@@ -690,18 +733,68 @@ export default function AddProperty() {
 
     const data = await res.json();
 
+    // ================= SUCCESS =================
     if (res.ok) {
       alert("Property Added ✅");
-    } else {
-      console.error(data);
-      alert(data.message || "Forbidden ❌");
+
+      // reset errors
+      setErrors({});
+      setErrorList([]);
+
+      return;
     }
 
+   const missing = data.missingFields || [];
+
+const fieldErrors = {};
+const errorMessages = [];
+
+let firstStep = 1;
+
+missing.forEach((field) => {
+  fieldErrors[field] = true;
+
+  const label = labelMap?.[field] || field;
+  errorMessages.push(label);
+
+  const stepNo = fieldStepMap?.[field];
+  if (stepNo && stepNo < firstStep) {
+    firstStep = stepNo;
+  }
+});
+
+setErrors(fieldErrors);
+setErrorList(errorMessages);
+
+toast.error(
+  `Missing required fields:\n${errorMessages.map((e) => `• ${e}`).join("\n")}`,
+  {
+    duration: 6000,
+    style: {
+      whiteSpace: "pre-line",
+      background: "#1f1f1f",
+      color: "#fff",
+      border: "1px solid #ef4444",
+    },
+  }
+);
+
+// optional fallback log
+if (data.message) {
+  console.log("Validation:", data.message);
+}
+
+// move user to first step with error
+setStep(firstStep);
+
+// scroll to top
+window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
     console.error(err);
     alert("Server error ❌");
   }
 };
+
 
 const buildOptions = (nodes, prefix = "") => {
   let options = [];
@@ -721,6 +814,39 @@ const buildOptions = (nodes, prefix = "") => {
   });
 
   return options;
+};
+
+const hasError = (fieldPath) => {
+  return Boolean(errors?.[fieldPath]);
+};
+
+const fieldStepMap = {
+  slug: 1,
+  "coreDetails.title": 1,
+  "coreDetails.developerRef": 1,
+  "categoryData.categoryRef": 1,
+
+  "heroSection.heroDescription": 1,
+  "keyMetrics.possession": 1,
+  "keyMetrics.landArea": 1,
+  "keyMetrics.totalUnits": 1,
+  "keyMetrics.totalTowers": 1,
+  "keyMetrics.floors": 1,
+  "keyMetrics.reraNumber": 1,
+};
+
+const labelMap = {
+  slug: "Slug",
+  "coreDetails.title": "Project Title",
+  "coreDetails.developerRef": "Developer",
+  "categoryData.categoryRef": "Category",
+  "heroSection.heroDescription": "Hero Description",
+  "keyMetrics.possession": "Possession",
+  "keyMetrics.landArea": "Land Area",
+  "keyMetrics.totalUnits": "Total Units",
+  "keyMetrics.totalTowers": "Total Towers",
+  "keyMetrics.floors": "Floors",
+  "keyMetrics.reraNumber": "RERA Number",
 };
 
  return (
@@ -819,8 +945,12 @@ const buildOptions = (nodes, prefix = "") => {
     <h2 className="section-title">Core Details</h2>
 
     <input
-      className="input"
-      placeholder="Slug"
+      className={`input transition-all duration-200 ${
+  hasError("slug")
+    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+    : ""
+}`}
+  placeholder="Slug *"
       value={form.slug}
       onChange={(e) =>
         setForm((prev) => ({
@@ -830,18 +960,28 @@ const buildOptions = (nodes, prefix = "") => {
       }
     />
 
+    {hasError("slug") && (
+  <p className="text-red-400 text-sm mt-1 animate-pulse">
+    Slug is required
+  </p>
+)}
+
     <input
-      className="input"
-      placeholder="Title"
-      value={form.coreDetails.title}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "title",
-          e.target.value
-        )
-      }
-    />
+  className={`input transition-all duration-200 ${
+    hasError("coreDetails.title")
+      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+      : ""
+  }`}
+  placeholder="Title *"
+  value={form.coreDetails.title}
+  onChange={(e) =>
+    handleChange("coreDetails", "title", e.target.value)
+  }
+/>
+
+    {hasError("coreDetails.title") && (
+  <p className="text-red-400 text-sm">Title is required</p>
+)}
 
     {/* ================= DEVELOPER ================= */}
     <div className="space-y-2">
@@ -2164,10 +2304,6 @@ const buildOptions = (nodes, prefix = "") => {
               >
 
                 <Icon size={22} />
-
-                <span className="text-xs">
-                  {item.name}
-                </span>
               </button>
             );
           })}

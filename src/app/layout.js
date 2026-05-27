@@ -1,5 +1,7 @@
 import "./globals.css";
 
+import { Toaster } from "react-hot-toast";
+
 import {
   Playfair_Display,
   Montserrat,
@@ -25,15 +27,29 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}) {
+export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
       className={`${playfair.variable} ${montserrat.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+
+        {/* 🔥 GLOBAL TOAST SYSTEM */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "#1f1f1f",
+              color: "#fff",
+              border: "1px solid #333",
+              fontSize: "14px",
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }
