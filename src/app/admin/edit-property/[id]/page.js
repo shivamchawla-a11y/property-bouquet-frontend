@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import StepMedia from "../../add-property/StepMedia";
+import React, { useState, useEffect } from "react";
+import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
-import PropertyPreview from "../../add-property/PropertyPreview";
-import { useParams } from "next/navigation";
+import PropertyPreview from "./PropertyPreview";
 
 import {
   Waves,
@@ -35,6 +34,7 @@ import {
   Wind,
 } from "lucide-react";
 
+// ✅ Amenities with icons
 // ✅ Amenities with icons
 const AMENITIES = [
   { name: "Swimming Pool", icon: Waves },
@@ -92,83 +92,426 @@ export default function EditProperty() {
   const { id } = useParams();
 
   const [form, setForm] = useState({
-    slug: "",
-    marketType: "Primary",
+  slug: "",
 
-    coreDetails: {
-  title: "",
-  developerRef: "",
-  developerName: "",
-  developerLogo: "",   // ✅ ADD THIS
-  startingPrice: "",
-  maxPrice: "",
-},
+  marketType: "Primary",
 
-heroSection: {
-  propertyStatus: "PRIVATE DIGITAL MANDATE",
+  // ================= CORE DETAILS =================
+  coreDetails: {
+    title: "",
 
-  heroDescription: "",
+    developerRef: "",
 
-  brochureButtonText: "DOWNLOAD BROCHURE",
+    developerName: "",
 
-  videoButtonText: "WATCH PROJECT VIDEO",
+    developerLogo: "",
 
-  taglineItems: [
-    "Ultra-Luxury Residences",
-    "Low-Density Living",
-    "Exclusive Community",
-  ],
-},
+    developerImage: "",
 
-    keyMetrics: {
-      landArea: "",
-      possession: "",
-      status: "",
+    startingPrice: "",
+
+    maxPrice: "",
+  },
+
+  // ================= CATEGORY =================
+  categoryData: {
+    categoryRef: "",
+
+    categoryName: "",
+
+    customCategory: "",
+  },
+
+  // ================= HERO SECTION =================
+  heroSection: {
+    propertyStatus: "PRIVATE DIGITAL MANDATE",
+
+    heroDescription: "",
+
+    brochureButtonText: "DOWNLOAD BROCHURE",
+
+    videoButtonText: "WATCH PROJECT VIDEO",
+
+    taglineItems: [
+      "Ultra-Luxury Residences",
+      "Low-Density Living",
+      "Exclusive Community",
+    ],
+  },
+
+  // ================= KEY METRICS =================
+  keyMetrics: {
+    landArea: "",
+
+    possession: "",
+
+    status: "",
+
+    totalUnits: "",
+
+    totalTowers: "",
+
+    floors: "",
+
+    reraNumber: "",
+  },
+
+  // ================= OVERVIEW =================
+  overview: {
+
+    // ABOUT SECTION
+    aboutSectionNumber: "02",
+
+    aboutLabel: "About The Project",
+
+    aboutTitleLine1: "A Vision That",
+
+    aboutTitleLine2: "Transcends the Ordinary",
+
+    description: "",
+
+    aboutParagraph2: "",
+
+    aboutImageUrl: "",
+
+    // FEATURE BAR
+    featureBar: [],
+
+    // HIGHLIGHTS
+    highlightsHeading: "Crafted for Elevated",
+
+    highlightsSubheading: "Modern Living",
+
+    highlights: [],
+
+    // QUOTE
+    highlightQuote: "",
+
+    // AMENITIES
+    amenitiesSectionNumber: "04",
+
+    amenitiesSectionLabel: "Project Amenities",
+
+    amenitiesHeadingLine1: "Every Detail.",
+
+    amenitiesHeadingLine2: "Elevated",
+
+    amenitiesHeadingLine3: "Beyond Expectation.",
+
+    amenitiesSubheading: "",
+
+    // BOTTOM STRIP
+    bottomStripTitle1: "Thoughtfully by Design.",
+
+    bottomStripTitle2: "Crafted for the Exceptional.",
+
+    bottomStripFeature1: "Premium Specifications",
+
+    bottomStripFeature2: "Finest Quality Materials",
+
+    bottomStripFeature3:
+      "Curated for Discerning Families",
+  },
+
+  // ================= CONFIGURATION SECTION =================
+  configurationSection: {
+
+    sectionNumber: "05",
+
+    sectionLabel: "Residence Configurations",
+
+    titleLine1: "Residences Tailored",
+
+    titleLine2: "to Your Lifestyle",
+
+    subheading:
+      "Thoughtfully designed layouts that redefine space, privacy and luxury.",
+
+    features: [],
+
+    buttonText: "View Details",
+  },
+
+  // ================= UNIT CONFIGURATIONS =================
+  unitConfigurations: [
+    {
+      unitType: "",
+
+      area: "",
+
+      price: "",
+
+      paymentPlan: "",
+
+      bedrooms: "",
+
+      bathrooms: "",
+
+      balconies: "",
     },
+  ],
 
-    overview: {
-  description: "",
-  aboutImageUrl: "",
-  highlights: [],
-},
+  // ================= MEDIA =================
+  media: {
+    heroImageUrl: "",
 
-    unitConfigurations: [
-      { unitType: "", area: "", price: "", paymentPlan: "" }
+    gallery: [],
+
+    walkthroughUrl: "",
+  },
+
+  // ================= LOCATION DATA =================
+  locationData: {
+
+    // BASIC
+    locationRef: "",
+
+    locationName: "",
+
+    customLocation: "",
+
+    address: "",
+
+    mapEmbedUrl: "",
+
+    // SECTION HEADER
+    sectionNumber: "07",
+
+    topLabel: "PRIME LOCATION",
+
+    headingLine1: "A Location That",
+
+    headingHighlight: "Defines Privilege.",
+
+    description: "",
+
+    // LEFT CARD
+    leftCardTag: "Prime Connectivity",
+
+    leftCardTitleLine1: "Everything",
+
+    leftCardTitleLine2: "Within Reach",
+
+    leftCardDescription:
+      "Strategically positioned near major business hubs, expressways, hospitals, schools and premium lifestyle destinations.",
+
+    // MAP SECTION
+    mapSectionTag: "Interactive Location Map",
+
+    mapSectionTitle: "Discover The Neighborhood",
+
+    // BADGE
+    badgeTitle: "Prime",
+
+    badgeSubtitle: "Location Advantage",
+
+    // FLOATING CARD
+    floatingCardTag: "Signature Address",
+
+    floatingCardTitle: "Prime Sector Connectivity",
+
+    floatingCardDescription:
+      "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations.",
+
+    // LANDMARKS
+    landmarks: [
+      {
+        name: "",
+
+        distance: "",
+
+        subtitle: "Premium Connectivity",
+
+        icon: "✦",
+      },
     ],
 
-    media: {
-      heroImageUrl: "",
-      gallery: [], // ✅ NOT [""] ❌
-      walkthroughUrl: "",
-    },
+    // BOTTOM STRIP
+    bottomStrip: [
+      {
+        title: "Location that enhances life.",
 
-    locationData: {
-  locationRef: "",   // ObjectId from DB
-  locationName: "",  // store name for preview
-  customLocation: "", // if user types manually
-  address: "",
-  mapEmbedUrl: "",
-  landmarks: [{ name: "", distance: "" }],
+        desc: "Investment that appreciates.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Strategically Connected",
+
+        desc:
+          "Seamless access to major hubs and expressways.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Thriving Neighborhood",
+
+        desc:
+          "Surrounded by premium communities and landmarks.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Future-Ready Development",
+
+        desc:
+          "Infrastructure and growth that future-proofs your investment.",
+
+        icon: "✦",
+      },
+
+      {
+        title: "High Investment Potential",
+
+        desc:
+          "Prime location ensures long-term value appreciation.",
+
+        icon: "✦",
+      },
+    ],
+  },
+
+  // ================= MASTER PLAN SECTION =================
+  masterPlanSection: {
+
+    sectionNumber: "08",
+
+    topLabel: "MASTER PLAN",
+
+    headingLine1: "Crafted With Vision.",
+
+    headingHighlight: "Designed For Legacy.",
+
+    description:
+      "Explore the thoughtfully designed master plan featuring elegant layouts, landscaped greens, premium amenities, and seamless connectivity crafted for elevated living.",
+
+    enableSideStrips: true,
+
+    topFloatingLabel:
+      "Premium Architectural Planning",
+
+    centerTitle: "The Master Plan",
+
+    centerDescription:
+      "Every space is carefully envisioned to create harmony between luxury, comfort, and timeless architecture.",
+
+    buttonText: "View Master Plan",
+
+    masterPlanImage: "",
+
+    bottomStrip: [
+      {
+        title: "Thoughtful Layouts",
+
+        desc: "Optimized space planning",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Landscape Greens",
+
+        desc: "Open green environments",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Premium Amenities",
+
+        desc: "Luxury lifestyle experiences",
+
+        icon: "✦",
+      },
+
+      {
+        title: "Future-Ready Living",
+
+        desc: "Modern & sustainable planning",
+
+        icon: "✦",
+      },
+    ],
+  },
+
+  // ================= GATED CONTENT =================
+  gatedContent: {
+
+    brochurePdfUrl: "",
+
+    requireLogin: true,
+
+    floorPlans: [
+      {
+        unitType: "",
+
+        area: "",
+
+        price: "",
+
+        paymentPlan: "",
+
+        bedrooms: "",
+
+        bathrooms: "",
+
+        balconies: "",
+
+        image: "",
+      },
+    ],
+  },
+
+  // ================= SEO =================
+  seoEngine: {
+    metaTitle: "",
+
+    metaDescription: "",
+  },
+
+
+  // ================= FAQS =================
+  faqSection: {
+
+  sectionNumber: "09",
+
+  topLabel: "FAQ",
+
+  headingLine1: "Frequently Asked Questions",
+
+  headingHighlight: "",
+
+  description:
+    "Find answers to common questions about the project and your journey to your dream home.",
+
+  developerLabel: "Luxury Developer",
+
+  contactTitle: "Still have questions?",
+
+  contactDescription:
+    "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
+
+  phone: "+91 99999 99999",
+
+  timing: "Monday — Sunday | 10 AM — 7 PM",
+
+  ctaTitle:
+    "Ready to experience your dream home?",
+
+  ctaDescription:
+    "Book a site visit and take the first step towards your dream home.",
+
+  ctaButtonText: "Book A Site Visit",
+
+  callLabel: "Call Us",
+
+  whatsappLabel: "WhatsApp",
 },
 
-    gatedContent: {
-      brochurePdfUrl: "",
-      floorPlans: [{ title: "", image: "" }],
-    },
-
-    categoryData: {
-  categoryRef: "",
-  categoryName: "",
-  customCategory: "",
-},
-
-    seoEngine: {
-      metaTitle: "",
-      metaDescription: "",
-    },
-
-    faqs: [{ question: "", answer: "" }],
-  });
+});
 
     const [previewData, setPreviewData] = useState(form);
     const [previewMode, setPreviewMode] = useState(false);

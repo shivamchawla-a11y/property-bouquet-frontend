@@ -32,6 +32,10 @@ import {
   Bus,
   Store,
   MapPin,
+   Phone,
+  Mail,
+  MessageCircle,
+  ArrowRight,
 
   // ADD THESE
   Download,
@@ -270,6 +274,8 @@ const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);
   const [developerProjects, setDeveloperProjects] =
   useState([]);
+  const [showAboutMore, setShowAboutMore] =
+  useState(false);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -1931,16 +1937,74 @@ const getShortLocation = (location) => {
           }}
         >
 
-          {/* PARAGRAPH 1 */}
-          <p>
-            {overview?.description ||
-              "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality."}
-          </p>
+          {/* COMBINED CONTENT */}
+          {(() => {
 
-          {/* PARAGRAPH 2 */}
-          <p>
-            {aboutParagraph2}
-          </p>
+            const paragraph1 =
+              overview?.description ||
+              "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
+
+            const paragraph2 =
+              aboutParagraph2 ||
+              "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
+
+            const combinedText =
+              `${paragraph1} ${paragraph2}`;
+
+            const shouldTruncate =
+              combinedText.length > 320;
+
+            const previewText =
+              combinedText.slice(0, 320);
+
+            return (
+              <>
+                <p>
+                  {showAboutMore || !shouldTruncate
+                    ? combinedText
+                    : `${previewText}...`}
+                </p>
+
+                {shouldTruncate && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowAboutMore(
+                        !showAboutMore
+                      )
+                    }
+                    className="
+                      mt-2
+                      inline-flex
+                      items-center
+                      gap-2
+                      text-[#b89149]
+                      hover:text-[#9f7d3d]
+                      text-[12px]
+                      sm:text-[13px]
+                      tracking-[1.5px]
+                      uppercase
+                      transition-all
+                      duration-300
+                    "
+                    style={{
+                      fontFamily:
+                        "Inter, sans-serif",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {showAboutMore
+                      ? "Read Less"
+                      : "Read More"}
+
+                    <span className="text-[14px]">
+                      →
+                    </span>
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -4349,6 +4413,485 @@ id="amenities"
   </section>
 )}
 
+{/* ================= PREMIUM FAQ SECTION ================= */}
+{faqs.filter((f) => f.question).length > 0 && (
+  <section
+    id="contact"
+    className="relative bg-[#f7f3ee] py-24 overflow-hidden"
+  >
+
+    {/* SOFT BACKGROUND */}
+    <div
+      className="absolute inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle, #17342d 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }}
+    />
+
+    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+
+      {/* ================= HEADING ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+        className="text-center mb-16"
+      >
+
+        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
+          {(faqSection?.sectionNumber || "10")} |{" "}
+          {(faqSection?.topLabel || "FAQ")}
+        </p>
+
+        <h2
+          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
+          }}
+        >
+          {faqSection?.heading ||
+            "Frequently Asked Questions"}
+        </h2>
+
+        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+        </div>
+
+        <p className="max-w-2xl mx-auto mt-7 text-[#6b6b6b] text-base leading-relaxed">
+          {faqSection?.subheading ||
+            "Find answers to common questions about the project and your journey to your dream home."}
+        </p>
+      </motion.div>
+
+      {/* ================= MAIN GRID ================= */}
+      <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
+
+        {/* ================= LEFT CARD ================= */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeLeft}
+          className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
+        >
+
+          {/* IMAGE */}
+          <div className="relative h-[380px] overflow-hidden group">
+
+            {/* DEVELOPER IMAGE */}
+            <img
+              src={
+                developerImage ||
+                "/location6.webp"
+              }
+              alt={developerName}
+              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+            />
+
+            {/* PREMIUM OVERLAY */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
+
+            {/* GOLDEN GLOW */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
+
+            {/* CONTENT */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+
+              {/* LOGO */}
+              {developerLogo && (
+                <div className="relative mb-6">
+
+                  {/* OUTER RING */}
+                  <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
+
+                  {/* LOGO HOLDER */}
+                  <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+
+                    <img
+                      src={developerLogo}
+                      alt={developerName}
+                      className="w-16 h-16 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* DEVELOPER NAME */}
+              <h3
+                className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
+                style={{
+                  fontFamily:
+                    "Cormorant Garamond, serif",
+                }}
+              >
+                {developerName}
+              </h3>
+
+              {/* GOLD LINE */}
+              <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
+
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
+              </div>
+
+              {/* SUBTEXT */}
+              <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
+                Luxury Developer
+              </p>
+            </div>
+          </div>
+
+          {/* CONTACT BOX */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+
+            {/* BACKGROUND GLOW */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+
+            <div className="relative z-10 flex items-start gap-5">
+
+              {/* ICON */}
+              <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 h-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.7}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+
+              {/* TEXT */}
+              <div className="flex-1">
+
+                <h4
+                  className="text-3xl font-light"
+                  style={{
+                    fontFamily:
+                      "Cormorant Garamond, serif",
+                  }}
+                >
+                  {faqSection?.contactTitle ||
+                    "Still have questions?"}
+                </h4>
+
+                <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
+                  {faqSection?.contactDescription ||
+                    "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
+                </p>
+
+                {/* CONTACT DETAILS */}
+                <div className="mt-6 space-y-4">
+
+                  <div className="flex items-center gap-3 text-sm">
+
+                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+                      ✦
+                    </div>
+
+                    <span className="text-white/90">
+                      {faqSection?.contactPhone ||
+                        "+91 99999 99999"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm">
+
+                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
+                      ✦
+                    </div>
+
+                    <span className="text-white/90">
+                      {faqSection?.contactTiming ||
+                        "Monday — Sunday | 10 AM — 7 PM"}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ================= FAQ ACCORDION ================= */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeRight}
+          className="space-y-4"
+        >
+
+          {faqs.map(
+            (f, i) =>
+              f.question && (
+                <details
+                  key={i}
+                  open={i === 0}
+                  className="group rounded-[18px] border border-[#e3d9cc] bg-[#fbf9f6] overflow-hidden shadow-sm transition-all duration-300"
+                >
+
+                  {/* QUESTION */}
+                  <summary className="list-none cursor-pointer px-7 py-6 flex items-center justify-between">
+
+                    <div className="flex items-center gap-5">
+
+                      {/* ICON */}
+                      <div className="w-12 h-12 rounded-full border border-[#dbc7a0] flex items-center justify-center text-[#c8a66a] flex-shrink-0">
+
+                        {i % 6 === 0 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 21h18M5 21V8l7-5 7 5v13"
+                            />
+                          </svg>
+                        )}
+
+                        {i % 6 === 1 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 12h6m-3-3v6m9 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        )}
+
+                        {i % 6 === 2 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M17.657 16.657L13.414 12.414m0 0A6 6 0 1012 18a6 6 0 001.414-5.586z"
+                            />
+                          </svg>
+                        )}
+
+                        {i % 6 === 3 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 17v-2m3 2v-4m3 4v-6"
+                            />
+                          </svg>
+                        )}
+
+                        {i % 6 === 4 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 7V3m8 4V3m-9 8h10"
+                            />
+                          </svg>
+                        )}
+
+                        {i % 6 === 5 && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 16h8M8 12h8m-8-4h8"
+                            />
+                          </svg>
+                        )}
+                      </div>
+
+                      {/* QUESTION */}
+                      <h3 className="text-[#1c2d28] text-lg md:text-[19px] font-medium leading-relaxed">
+                        {f.question}
+                      </h3>
+                    </div>
+
+                    {/* ARROW */}
+                    <div className="ml-5 flex-shrink-0 text-[#17342d] transition-transform duration-300 group-open:rotate-180">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </summary>
+
+                  {/* ANSWER */}
+                  <div className="px-24 pb-7 text-[#666] text-[15px] leading-[1.9] border-t border-[#ece3d8]">
+                    <div className="pt-6 max-w-4xl">
+                      {f.answer}
+                    </div>
+                  </div>
+                </details>
+              )
+          )}
+        </motion.div>
+      </div>
+
+
+      {/* ================= BOTTOM CTA ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+        className="mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+      >
+        <div className="grid lg:grid-cols-[1fr_auto_auto_auto] items-center">
+
+          {/* LEFT */}
+          <div className="flex items-center gap-5 p-7">
+
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10"
+                />
+              </svg>
+            </div>
+
+            <div>
+              <h3
+                className="text-3xl text-[#17342d] font-light"
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                }}
+              >
+                {faqSection?.ctaTitle ||
+                  "Ready to experience your dream home?"}
+              </h3>
+
+              <p className="text-[#777] mt-2 leading-relaxed">
+                {faqSection?.ctaDescription ||
+                  "Book a site visit and take the first step towards your dream home."}
+              </p>
+            </div>
+          </div>
+
+          {/* BUTTON */}
+          <div className="border-l border-[#e5ddd2] p-6">
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
+            >
+              {faqSection?.ctaButtonText ||
+                "Book A Site Visit"}
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* CALL */}
+          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
+            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
+              ☎
+            </div>
+
+            <p className="text-[#17342d] text-sm font-medium">
+              Call Us
+            </p>
+          </div>
+
+          {/* WHATSAPP */}
+          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
+            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
+              ✦
+            </div>
+
+            <p className="text-[#17342d] text-sm font-medium">
+              WhatsApp
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+    </div>
+  </section>
+)}
+
 {/* ================= DEVELOPER PROJECTS PREMIUM SECTION ================= */}
 {developerProjects.length > 0 && (
   <section className="relative bg-[#f7f3ee] py-28 overflow-hidden">
@@ -4385,7 +4928,7 @@ id="amenities"
           <div className="w-14 h-[1px] bg-[#c8a66a]" />
 
           <p className="uppercase tracking-[5px] text-[#b58b47] text-xs md:text-sm font-medium">
-            09 | Developer Portfolio
+            10 | Developer Portfolio
           </p>
 
           <div className="w-14 h-[1px] bg-[#c8a66a]" />
@@ -4786,483 +5329,208 @@ id="amenities"
   </section>
 )}
 
-{/* ================= PREMIUM FAQ SECTION ================= */}
-{faqs.filter((f) => f.question).length > 0 && (
-  <section
-    id="contact"
-    className="relative bg-[#f7f3ee] py-24 overflow-hidden"
-  >
+{/* ================= ULTRA PREMIUM FOOTER ================= */}
+<footer className="relative overflow-hidden bg-[#f6f3ee] border-t border-black/10">
 
-    {/* SOFT BACKGROUND */}
-    <div
-      className="absolute inset-0 opacity-[0.03]"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, #17342d 1px, transparent 1px)",
-        backgroundSize: "28px 28px",
-      }}
-    />
+  {/* TOP SECTION */}
+  <div className="relative overflow-hidden">
 
-    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
+    {/* BACKGROUND GLOW */}
+    <div className="absolute top-[-150px] left-[-120px] w-[420px] h-[420px] rounded-full bg-[#c89d58]/10 blur-[140px]" />
 
-      {/* ================= HEADING ================= */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="text-center mb-16"
-      >
+    <div className="absolute bottom-[-180px] right-[-120px] w-[420px] h-[420px] rounded-full bg-[#c89d58]/10 blur-[150px]" />
 
-        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          {(faqSection?.sectionNumber || "10")} |{" "}
-          {(faqSection?.topLabel || "FAQ")}
-        </p>
+    <div className="max-w-[1450px] mx-auto px-5 py-20">
 
-        <h2
-          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-          }}
-        >
-          {faqSection?.heading ||
-            "Frequently Asked Questions"}
-        </h2>
+      <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
 
-        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
-        </div>
+        {/* LEFT */}
+        <div className="relative z-10">
 
-        <p className="max-w-2xl mx-auto mt-7 text-[#6b6b6b] text-base leading-relaxed">
-          {faqSection?.subheading ||
-            "Find answers to common questions about the project and your journey to your dream home."}
-        </p>
-      </motion.div>
+          {/* TAG */}
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#c89d58]/20 bg-white/70 backdrop-blur-xl mb-8 shadow-sm">
 
-      {/* ================= MAIN GRID ================= */}
-      <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
+            <div className="w-2 h-2 rounded-full bg-[#c89d58]" />
 
-        {/* ================= LEFT CARD ================= */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeLeft}
-          className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
-        >
-
-          {/* IMAGE */}
-          <div className="relative h-[380px] overflow-hidden group">
-
-            {/* DEVELOPER IMAGE */}
-            <img
-              src={
-                developerImage ||
-                "/location6.webp"
-              }
-              alt={developerName}
-              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
-            />
-
-            {/* PREMIUM OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
-
-            {/* GOLDEN GLOW */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
-
-            {/* CONTENT */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-
-              {/* LOGO */}
-              {developerLogo && (
-                <div className="relative mb-6">
-
-                  {/* OUTER RING */}
-                  <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
-
-                  {/* LOGO HOLDER */}
-                  <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-
-                    <img
-                      src={developerLogo}
-                      alt={developerName}
-                      className="w-16 h-16 object-contain"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* DEVELOPER NAME */}
-              <h3
-                className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
-                style={{
-                  fontFamily:
-                    "Cormorant Garamond, serif",
-                }}
-              >
-                {developerName}
-              </h3>
-
-              {/* GOLD LINE */}
-              <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
-
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
-              </div>
-
-              {/* SUBTEXT */}
-              <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
-                Luxury Developer
-              </p>
-            </div>
+            <span className="text-[11px] tracking-[2px] uppercase text-[#9a6f2f] font-semibold">
+              Luxury Real Estate Advisory
+            </span>
           </div>
 
-          {/* CONTACT BOX */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+          {/* LOGO */}
+          <div className="flex items-center gap-5 mb-8">
 
-            {/* BACKGROUND GLOW */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+            <div className="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-[#021f1b] via-[#032821] to-[#04150f] flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.18)] border border-[#c89d58]/10">
 
-            <div className="relative z-10 flex items-start gap-5">
-
-              {/* ICON */}
-              <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-7 h-7"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-
-              {/* TEXT */}
-              <div className="flex-1">
-
-                <h4
-                  className="text-3xl font-light"
-                  style={{
-                    fontFamily:
-                      "Cormorant Garamond, serif",
-                  }}
-                >
-                  {faqSection?.contactTitle ||
-                    "Still have questions?"}
-                </h4>
-
-                <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
-                  {faqSection?.contactDescription ||
-                    "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
-                </p>
-
-                {/* CONTACT DETAILS */}
-                <div className="mt-6 space-y-4">
-
-                  <div className="flex items-center gap-3 text-sm">
-
-                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-                      ✦
-                    </div>
-
-                    <span className="text-white/90">
-                      {faqSection?.contactPhone ||
-                        "+91 99999 99999"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-sm">
-
-                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-                      ✦
-                    </div>
-
-                    <span className="text-white/90">
-                      {faqSection?.contactTiming ||
-                        "Monday — Sunday | 10 AM — 7 PM"}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ================= FAQ ACCORDION ================= */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeRight}
-          className="space-y-4"
-        >
-
-          {faqs.map(
-            (f, i) =>
-              f.question && (
-                <details
-                  key={i}
-                  open={i === 0}
-                  className="group rounded-[18px] border border-[#e3d9cc] bg-[#fbf9f6] overflow-hidden shadow-sm transition-all duration-300"
-                >
-
-                  {/* QUESTION */}
-                  <summary className="list-none cursor-pointer px-7 py-6 flex items-center justify-between">
-
-                    <div className="flex items-center gap-5">
-
-                      {/* ICON */}
-                      <div className="w-12 h-12 rounded-full border border-[#dbc7a0] flex items-center justify-center text-[#c8a66a] flex-shrink-0">
-
-                        {i % 6 === 0 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M3 21h18M5 21V8l7-5 7 5v13"
-                            />
-                          </svg>
-                        )}
-
-                        {i % 6 === 1 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M9 12h6m-3-3v6m9 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        )}
-
-                        {i % 6 === 2 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M17.657 16.657L13.414 12.414m0 0A6 6 0 1012 18a6 6 0 001.414-5.586z"
-                            />
-                          </svg>
-                        )}
-
-                        {i % 6 === 3 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M9 17v-2m3 2v-4m3 4v-6"
-                            />
-                          </svg>
-                        )}
-
-                        {i % 6 === 4 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8 7V3m8 4V3m-9 8h10"
-                            />
-                          </svg>
-                        )}
-
-                        {i % 6 === 5 && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8 16h8M8 12h8m-8-4h8"
-                            />
-                          </svg>
-                        )}
-                      </div>
-
-                      {/* QUESTION */}
-                      <h3 className="text-[#1c2d28] text-lg md:text-[19px] font-medium leading-relaxed">
-                        {f.question}
-                      </h3>
-                    </div>
-
-                    {/* ARROW */}
-                    <div className="ml-5 flex-shrink-0 text-[#17342d] transition-transform duration-300 group-open:rotate-180">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </summary>
-
-                  {/* ANSWER */}
-                  <div className="px-24 pb-7 text-[#666] text-[15px] leading-[1.9] border-t border-[#ece3d8]">
-                    <div className="pt-6 max-w-4xl">
-                      {f.answer}
-                    </div>
-                  </div>
-                </details>
-              )
-          )}
-        </motion.div>
-      </div>
-
-      {/* ================= BOTTOM CTA ================= */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
-      >
-        <div className="grid lg:grid-cols-[1fr_auto_auto_auto] items-center">
-
-          {/* LEFT */}
-          <div className="flex items-center gap-5 p-7">
-
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-8 h-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10"
-                />
-              </svg>
+              <img
+                src="/logo.png"
+                alt="logo"
+                className="w-[72px] h-[72px] object-contain"
+              />
             </div>
 
             <div>
-              <h3
-                className="text-3xl text-[#17342d] font-light"
+
+              <h2
+                className="text-[40px] leading-none text-[#171717]"
                 style={{
-                  fontFamily: "Cormorant Garamond, serif",
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
                 }}
               >
-                {faqSection?.ctaTitle ||
-                  "Ready to experience your dream home?"}
-              </h3>
+                Property Bouquet
+              </h2>
 
-              <p className="text-[#777] mt-2 leading-relaxed">
-                {faqSection?.ctaDescription ||
-                  "Book a site visit and take the first step towards your dream home."}
+              <p className="text-black/45 mt-2 text-[15px] tracking-wide">
+                Curating Luxury Investments Across India & Dubai
               </p>
             </div>
           </div>
 
-          {/* BUTTON */}
-          <div className="border-l border-[#e5ddd2] p-6">
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
-            >
-              {faqSection?.ctaButtonText ||
-                "Book A Site Visit"}
+          {/* DESCRIPTION */}
+          <p className="text-[16px] leading-[2] text-black/60 max-w-[720px]">
+            Property Bouquet specializes in premium luxury
+            residences, branded developments, and investment
+            opportunities across Gurgaon, Dubai and Delhi NCR.
+            Discover elite homes crafted for modern luxury
+            living and long-term investment growth.
+          </p>
 
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+          {/* CONTACT */}
+          <div className="mt-12 grid sm:grid-cols-3 gap-5">
+
+            {/* PHONE */}
+            <div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500">
+
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
+
+                <Phone size={18} />
+              </div>
+
+              <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+                Call Us
+              </p>
+
+              <h4 className="text-[#171717] text-[18px] font-semibold mt-1">
+                +91 9958-328-555
+              </h4>
+            </div>
+
+            {/* EMAIL */}
+            <div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500">
+
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
+
+                <Mail size={18} />
+              </div>
+
+              <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+                Email
+              </p>
+
+              <h4 className="text-[#171717] text-[16px] font-semibold mt-1 break-all">
+                support@propertybouquet.com
+              </h4>
+            </div>
+
+            {/* WHATSAPP */}
+            <div className="group rounded-[26px] border border-black/5 bg-white/70 backdrop-blur-2xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500 overflow-hidden">
+
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#02231d] to-[#04150f] text-[#d4ae67] flex items-center justify-center shadow-lg">
+
+                <MessageCircle size={18} />
+              </div>
+
+              <p className="text-black/45 text-[12px] mt-5 uppercase tracking-[1.5px] font-semibold">
+                WhatsApp
+              </p>
+
+              <h4 className="text-[#171717] text-[15px] font-semibold mt-1 break-all leading-[1.5]">
+                wa.me/propertybouquet
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT FORM */}
+        <div className="relative">
+
+          {/* OUTER GLOW */}
+          <div className="absolute inset-0 bg-[#c89d58]/10 blur-[80px] rounded-[40px]" />
+
+          {/* CARD */}
+          <div className="relative overflow-hidden rounded-[38px] border border-black/5 bg-white/75 backdrop-blur-2xl p-8 md:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.08)]">
+
+            {/* TOP LIGHT */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4ae67]/60 to-transparent" />
+
+            {/* HEADER */}
+            <div className="text-center">
+
+              <p className="text-[11px] tracking-[2px] uppercase text-[#b98b3c] font-semibold mb-4">
+                Private Consultation
+              </p>
+
+              <h3
+                className="text-[42px] leading-[1.08] text-[#171717]"
+                style={{
+                  fontFamily:
+                    "Georgia, Times New Roman, serif",
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </button>
-          </div>
+                Get Instant
+                <br />
+                Callback
+              </h3>
 
-          {/* CALL */}
-          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
-            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
-              ☎
+              <p className="text-black/50 mt-5 text-[15px] leading-8 max-w-[420px] mx-auto">
+                Get expert advice on your luxury property
+                investment from our senior advisory team.
+              </p>
             </div>
 
-            <p className="text-[#17342d] text-sm font-medium">
-              Call Us
-            </p>
-          </div>
+            {/* FORM */}
+            <div className="mt-10 space-y-5">
 
-          {/* WHATSAPP */}
-          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
-            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
-              ✦
+              <input
+                type="text"
+                placeholder="Your Name"
+                className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
+              />
+
+              <input
+                type="text"
+                placeholder="Phone Number"
+                className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
+              />
+
+              <button className="group relative overflow-hidden w-full h-[62px] rounded-2xl bg-gradient-to-r from-[#d8b36c] to-[#b88731] text-black font-semibold text-[15px] shadow-[0_15px_40px_rgba(212,174,103,0.35)] hover:scale-[1.01] transition-all duration-500">
+
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition" />
+
+                <span className="relative flex items-center justify-center gap-2">
+
+                  Contact Now
+
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition"
+                  />
+                </span>
+              </button>
             </div>
 
-            <p className="text-[#17342d] text-sm font-medium">
-              WhatsApp
+            {/* BOTTOM */}
+            <p className="text-center text-black/40 text-[13px] mt-6 leading-7">
+              Our luxury property consultants will contact
+              you within 30 minutes.
             </p>
           </div>
         </div>
-      </motion.div>
-
+      </div>
     </div>
-  </section>
-)}
+  </div>
+</footer>
 
       {/* ================= PREMIUM LEAD MODAL ================= */}
 {showModal && (
