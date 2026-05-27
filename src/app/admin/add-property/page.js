@@ -2056,7 +2056,8 @@ const labelMap = {
         Amenities Section Content
       </h3>
 
-      {/* SECTION NUMBER */}
+      {/* SECTION NUMBER */}  
+      
       <input
         className="input mb-4"
         placeholder="Section Number (Example: 04)"
