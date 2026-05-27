@@ -776,7 +776,7 @@ const buildOptions = (nodes, prefix = "") => {
           <div
             className="bg-gold h-2 rounded-full transition-all"
             style={{
-              width: `${(step / 6) * 100}%`,
+              width: `${(step / 7) * 100}%`,
             }}
           />
         </div>
@@ -1233,18 +1233,6 @@ const buildOptions = (nodes, prefix = "") => {
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
-        <input
-          className="input"
-          placeholder="Status (e.g. New Launch)"
-          value={form.keyMetrics.status}
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "status",
-              e.target.value
-            )
-          }
-        />
 
         <input
           className="input"
