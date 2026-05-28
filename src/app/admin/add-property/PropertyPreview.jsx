@@ -2482,7 +2482,7 @@ const getShortLocation = (location) => {
   </div>
 </motion.section>
 
-{/* ================= ULTRA PREMIUM HIGHLIGHTS SECTION ================= */}
+{/* ================= ULTRA PREMIUM AMENETIES SECTION ================= */}
 <motion.section
 id="amenities"
   initial="hidden"
@@ -2622,132 +2622,148 @@ id="amenities"
     </motion.p>
 
     {/* ================= PREMIUM GRID ================= */}
-    {Array.isArray(overview.highlights) &&
-      overview.highlights.filter(Boolean).length > 0 && (
+{Array.isArray(overview?.amenities) &&
+  overview.amenities.filter(Boolean).length > 0 && (
 
-        <motion.div
-          variants={fadeUp}
-          className="
-            grid
-            grid-cols-1
-            sm:grid-cols-2
-            lg:grid-cols-4
-            gap-5
-            mt-14
-          "
-        >
-          {overview.highlights
-  .filter((h) => h)
-  .slice(0, 8)
-  .map((h, i) => {
+    <motion.div
+      variants={fadeUp}
+      className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        lg:grid-cols-4
+        gap-5
+        mt-14
+      "
+    >
+      {overview.amenities
+        .filter((h) => h)
+        .slice(0, 8)
+        .map((h, i) => {
 
-    // ================= FIXED AMENITY NAME =================
-    const amenityName =
-      typeof h === "string"
-        ? h
-        : h?.heading ||
-          h?.icon ||
-          "Amenity";
+          // ================= AMENITY NAME =================
+          const amenityName =
+            typeof h === "string"
+              ? h
+              : h?.heading ||
+                h?.icon ||
+                "Amenity";
 
-    // ================= FIXED ICON =================
-    const iconKey =
-      typeof h === "string"
-        ? "Home"
-        : h?.icon || "Home";
+          // ================= ICON =================
+          const iconKey =
+            typeof h === "string"
+              ? "Home"
+              : h?.icon || "Home";
 
-    const IconComponent =
-      CUSTOM_ICONS.find(
-        (item) =>
-          item.name === iconKey
-      )?.icon || Home;
+          const IconComponent =
+            CUSTOM_ICONS.find(
+              (item) =>
+                item.name === iconKey
+            )?.icon || Home;
 
-    // ================= DESCRIPTION =================
-    const amenityDescription =
-      typeof h === "string"
-        ? "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living."
-        : h?.subheading ||
-          "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living.";
+          // ================= DESCRIPTION =================
+          const amenityDescription =
+            typeof h === "string"
+              ? "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living."
+              : h?.subheading ||
+                "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living.";
 
-    return (
-      <motion.div
-        key={i}
-        whileHover={{
-          y: -6,
-          scale: 1.01,
-        }}
-        transition={{
-          duration: 0.35,
-        }}
-        className="
-          relative
-          overflow-hidden
-          rounded-[14px]
-          border
-          border-[#8f6a2c]/45
-          bg-[rgba(4,31,24,0.72)]
-          backdrop-blur-xl
-          px-7
-          py-9
-          text-center
-          shadow-[0_15px_40px_rgba(0,0,0,0.28)]
-        "
-      >
+          return (
+            <motion.div
+              key={i}
+              whileHover={{
+                y: -6,
+                scale: 1.01,
+              }}
+              transition={{
+                duration: 0.35,
+              }}
+              className="
+                relative
+                overflow-hidden
+                rounded-[14px]
+                border
+                border-[#8f6a2c]/45
+                bg-[rgba(4,31,24,0.72)]
+                backdrop-blur-xl
+                px-7
+                py-9
+                text-center
+                shadow-[0_15px_40px_rgba(0,0,0,0.28)]
+              "
+            >
 
-        {/* CARD GLOW */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,166,75,0.12),transparent_60%)] opacity-70" />
+              {/* CARD GLOW */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,166,75,0.12),transparent_60%)] opacity-70" />
 
-        {/* ICON */}
-        <div className="relative flex justify-center mb-5">
+              {/* ICON */}
+              <div className="relative flex justify-center mb-5">
 
-          <div
-            className="
-              w-[72px]
-              h-[72px]
-              rounded-full
-              border
-              border-[#c9a64b]/30
-              bg-[#08271f]
-              flex
-              items-center
-              justify-center
-            "
-          >
-            <IconComponent
-              size={34}
-              className="text-[#d7b367]"
-              strokeWidth={1.5}
-            />
-          </div>
-        </div>
+                <div
+                  className="
+                    w-[72px]
+                    h-[72px]
+                    rounded-full
+                    border
+                    border-[#c9a64b]/30
+                    bg-[#08271f]
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  <IconComponent
+                    size={34}
+                    className="text-[#d7b367]"
+                    strokeWidth={1.5}
+                  />
+                </div>
+              </div>
 
-        {/* TITLE */}
-        <h3
-          className="
-            relative
-            text-white
-            text-[15px]
-            md:text-[16px]
-            uppercase
-            tracking-[1.3px]
-            leading-[1.6]
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 500,
-          }}
-        >
-          {amenityName}
-        </h3>
+              {/* TITLE */}
+              <h3
+                className="
+                  relative
+                  text-white
+                  text-[15px]
+                  md:text-[16px]
+                  uppercase
+                  tracking-[1.3px]
+                  leading-[1.6]
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 500,
+                }}
+              >
+                {amenityName}
+              </h3>
 
-        {/* GOLD LINE */}
-        <div className="relative w-10 h-[1px] bg-[#c9a64b] mx-auto my-4" />
+              {/* GOLD LINE */}
+              <div className="relative w-10 h-[1px] bg-[#c9a64b] mx-auto my-4" />
 
-        
-      </motion.div>
-    );
-  })}
-        </motion.div>
-      )}
+              {/* DESCRIPTION */}
+              <p
+                className="
+                  relative
+                  text-white/65
+                  text-[13px]
+                  leading-[1.9]
+                  max-w-[260px]
+                  mx-auto
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 300,
+                }}
+              >
+                {amenityDescription}
+              </p>
+            </motion.div>
+          );
+        })}
+    </motion.div>
+)}
 
     {/* ================= BOTTOM STRIP ================= */}
     <motion.div

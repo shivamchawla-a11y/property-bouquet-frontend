@@ -229,30 +229,6 @@ export default function AdminLayout({ children }) {
       {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* ================= HEADER ================= */}
-        <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0f3b2e]">
-              Admin Panel
-            </h1>
-
-            <p className="text-sm text-gray-500 mt-0.5">
-              Manage your property platform
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <input
-              placeholder="Search..."
-              className="w-[260px] bg-[#f7f9f8] border border-gray-200 px-4 py-2.5 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f3b2e] transition"
-            />
-
-            <div className="h-11 w-11 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center font-bold shadow-md">
-              {role?.charAt(0)}
-            </div>
-          </div>
-        </header>
-
         {/* ================= CONTENT ================= */}
         <main className="flex-1 overflow-auto p-6 bg-[#f7f9f8]">
           {children}

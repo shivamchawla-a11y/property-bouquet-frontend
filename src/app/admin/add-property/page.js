@@ -184,6 +184,8 @@ export default function AddProperty() {
 
     highlights: [],
 
+    amenities: [],
+
     // QUOTE
     highlightQuote: "",
 
@@ -2056,9 +2058,7 @@ const labelMap = {
         Amenities Section Content
       </h3>
 
-      {/* SECTION NUMBER */}  
-
-      
+      {/* SECTION NUMBER */}
       <input
         className="input mb-4"
         placeholder="Section Number (Example: 04)"
@@ -2158,8 +2158,9 @@ const labelMap = {
 
         {AMENITIES.map((item) => {
 
+          // ✅ FIXED → use amenities instead of highlights
           const selected =
-            form.overview.highlights.some((h) => {
+            (form.overview.amenities || []).some((h) => {
 
               const amenityName =
                 typeof h === "string"
@@ -2195,7 +2196,7 @@ const labelMap = {
                   if (selected) {
 
                     updated =
-                      form.overview.highlights.filter(
+                      (form.overview.amenities || []).filter(
                         (h) => {
 
                           const amenityName =
@@ -2210,7 +2211,7 @@ const labelMap = {
                   } else {
 
                     updated = [
-                      ...form.overview.highlights,
+                      ...(form.overview.amenities || []),
                       {
                         heading: item.name,
                         subheading:
@@ -2222,7 +2223,7 @@ const labelMap = {
 
                   handleChange(
                     "overview",
-                    "highlights",
+                    "amenities",
                     updated
                   );
                 }}
@@ -2260,15 +2261,15 @@ const labelMap = {
       />
 
       <textarea
-  className="input w-full mt-4 min-h-[100px]"
-  placeholder="Amenity Description / Subheading (Optional)"
-  value={customAmenitySubheading}
-  onChange={(e) =>
-    setCustomAmenitySubheading(
-      e.target.value
-    )
-  }
-/>
+        className="input w-full mt-4 min-h-[100px]"
+        placeholder="Amenity Description / Subheading (Optional)"
+        value={customAmenitySubheading}
+        onChange={(e) =>
+          setCustomAmenitySubheading(
+            e.target.value
+          )
+        }
+      />
 
       {/* ICON SELECTOR */}
       <div className="mt-6">
@@ -2327,20 +2328,20 @@ const labelMap = {
             return;
 
           const amenityObject = {
-  heading: customAmenity,
+            heading: customAmenity,
 
-  subheading:
-    customAmenitySubheading.trim() ||
-    "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
+            subheading:
+              customAmenitySubheading.trim() ||
+              "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
 
-  icon: selectedCustomIcon,
-};
+            icon: selectedCustomIcon,
+          };
 
           handleChange(
             "overview",
-            "highlights",
+            "amenities",
             [
-              ...form.overview.highlights,
+              ...(form.overview.amenities || []),
               amenityObject,
             ]
           );
@@ -2363,7 +2364,7 @@ const labelMap = {
 
       <div className="flex flex-wrap gap-3">
 
-        {form.overview.highlights.map(
+        {(form.overview.amenities || []).map(
           (item, i) => {
 
             const itemName =
@@ -2391,14 +2392,14 @@ const labelMap = {
                   onClick={() => {
 
                     const updated =
-                      form.overview.highlights.filter(
+                      (form.overview.amenities || []).filter(
                         (_, idx) =>
                           idx !== i
                       );
 
                     handleChange(
                       "overview",
-                      "highlights",
+                      "amenities",
                       updated
                     );
                   }}
