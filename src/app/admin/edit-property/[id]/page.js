@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import StepMedia from "../../add-property/StepMedia";
 import { useRouter, useParams } from "next/navigation";
 import PropertyPreview from "../../add-property/PropertyPreview";
+import toast from "react-hot-toast";
 
 import {
   Waves,
@@ -183,6 +184,8 @@ export default function EditProperty() {
     highlightsSubheading: "Modern Living",
 
     highlights: [],
+
+    amenities: [],
 
     // QUOTE
     highlightQuote: "",
@@ -530,6 +533,8 @@ export default function EditProperty() {
      customAmenitySubheading,
      setCustomAmenitySubheading,
    ] = useState("");
+   const [errors, setErrors] = useState({});
+const [errorList, setErrorList] = useState([]);
    
        const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -584,7 +589,6 @@ export default function EditProperty() {
     property.overview?.highlights?.length > 0
       ? property.overview.highlights.map((h) => {
 
-          // OLD STRING FORMAT
           if (typeof h === "string") {
             return {
               name: h,
@@ -592,9 +596,13 @@ export default function EditProperty() {
             };
           }
 
-          // NEW OBJECT FORMAT
           return h;
         })
+      : [],
+
+  amenities:
+    property.overview?.amenities?.length > 0
+      ? property.overview.amenities
       : [],
 
   ...property.overview,
@@ -729,9 +737,183 @@ export default function EditProperty() {
 
   return () => clearTimeout(t);
 }, [form]);
-
+const getNestedValue = (obj, path) => {
+  return path.split(".").reduce((acc, key) => acc?.[key], obj);
+};
   // ================= NAVIGATION =================
-  const goNext = () => setStep((prev) => prev + 1);
+  const goNext = () => {
+
+  const missing = [];
+
+  // ================= STEP 1 VALIDATION =================
+  if (step === 1) {
+
+    // SLUG
+    if (!form.slug?.trim()) {
+      missing.push({
+        path: "slug",
+        label: "Slug",
+      });
+    }
+
+    // TITLE
+    if (!form.coreDetails.title?.trim()) {
+      missing.push({
+        path: "coreDetails.title",
+        label: "Project Title",
+      });
+    }
+
+    // ================= DEVELOPER VALIDATION =================
+    if (useCustomDeveloper) {
+
+      if (!form.coreDetails.developerName?.trim()) {
+        missing.push({
+          path: "coreDetails.developerRef",
+          label: "Developer",
+        });
+      }
+
+    } else {
+
+      if (!form.coreDetails.developerRef?.trim()) {
+        missing.push({
+          path: "coreDetails.developerRef",
+          label: "Developer",
+        });
+      }
+    }
+
+    // ================= CATEGORY VALIDATION =================
+    if (useCustomCategory) {
+
+      if (!form.categoryData.customCategory?.trim()) {
+        missing.push({
+          path: "categoryData.categoryRef",
+          label: "Category",
+        });
+      }
+
+    } else {
+
+      if (!form.categoryData.categoryRef?.trim()) {
+        missing.push({
+          path: "categoryData.categoryRef",
+          label: "Category",
+        });
+      }
+    }
+
+    // ================= HERO DESCRIPTION =================
+    if (!form.heroSection.heroDescription?.trim()) {
+      missing.push({
+        path: "heroSection.heroDescription",
+        label: "Hero Description",
+      });
+    }
+  }
+
+  // ================= STEP 2 VALIDATION =================
+  if (step === 2) {
+
+    // ABOUT DESCRIPTION
+    if (!form.overview.description?.trim()) {
+      missing.push({
+        path: "overview.description",
+        label: "About Description",
+      });
+    }
+
+    // ABOUT IMAGE
+    if (!form.overview.aboutImageUrl?.trim()) {
+      missing.push({
+        path: "overview.aboutImageUrl",
+        label: "About Image",
+      });
+    }
+
+    // HIGHLIGHTS HEADING
+    if (!form.overview.highlightsHeading?.trim()) {
+      missing.push({
+        path: "overview.highlightsHeading",
+        label: "Highlights Heading",
+      });
+    }
+
+    // HIGHLIGHTS SUBHEADING
+    if (!form.overview.highlightsSubheading?.trim()) {
+      missing.push({
+        path: "overview.highlightsSubheading",
+        label: "Highlights Subheading",
+      });
+    }
+
+    // HIGHLIGHT CARDS
+    if (
+      !form.overview.highlights ||
+      form.overview.highlights.length === 0
+    ) {
+      missing.push({
+        path: "overview.highlights",
+        label: "Highlight Cards",
+      });
+    }
+
+    // CHECK EMPTY HIGHLIGHT CARDS
+    form.overview.highlights?.forEach((item, index) => {
+
+      if (!item.heading?.trim()) {
+        missing.push({
+          path: `overview.highlights.${index}.heading`,
+          label: `Highlight Card ${index + 1} Heading`,
+        });
+      }
+
+      if (!item.subheading?.trim()) {
+        missing.push({
+          path: `overview.highlights.${index}.subheading`,
+          label: `Highlight Card ${index + 1} Description`,
+        });
+      }
+    });
+  }
+
+  // ================= ERROR UI =================
+  if (missing.length > 0) {
+
+    const newErrors = {};
+
+    missing.forEach((field) => {
+      newErrors[field.path] = true;
+    });
+
+    setErrors(newErrors);
+
+    toast.error(
+      `Please fill required fields:\n${missing
+        .map((e) => `• ${e.label}`)
+        .join("\n")}`,
+      {
+        duration: 5000,
+        style: {
+          whiteSpace: "pre-line",
+          background: "#1f1f1f",
+          color: "#fff",
+          border: "1px solid #ef4444",
+        },
+      }
+    );
+
+    return;
+  }
+
+  // ================= CLEAR OLD ERRORS =================
+  setErrors({});
+
+  // ================= NEXT STEP =================
+  setStep((prev) => prev + 1);
+};
+
   const goPrev = () => setStep((prev) => prev - 1);
 
   // ================= COMMON HANDLER =================
@@ -746,63 +928,67 @@ export default function EditProperty() {
   };
 
   // ================= SUBMIT =================
-  const handleUpdate = async () => {
+const handleUpdate = async () => {
   try {
     const token = localStorage.getItem("token");
 
-if (!token) {
-  alert("Session expired ❌");
-  router.push("/login");
-  return;
-}
-
-    const cleanedConfigurations = form.unitConfigurations.filter(
-      (u) =>
-        u.unitType?.trim() ||
-        u.area?.trim() ||
-        u.price?.trim() ||
-        u.paymentPlan?.trim()
-    );
-
-    const validConfigurations = cleanedConfigurations.filter(
-      (u) => u.price && u.price.trim() !== ""
-    );
-
-    const normalizedHighlights =
-  form.overview.highlights.map((h) => {
-
-    // OLD STRING FORMAT
-    if (typeof h === "string") {
-      return {
-        name: h,
-        icon: h,
-      };
+    if (!token) {
+      alert("Session expired ❌ Please login again");
+      window.location.href = "/login";
+      return;
     }
 
-    // ALREADY OBJECT
-    return h;
-  });
+    const cleanedConfigurations =
+      form.unitConfigurations.filter(
+        (u) =>
+          u.unitType?.trim() ||
+          u.area?.trim() ||
+          u.price?.trim() ||
+          u.paymentPlan?.trim() ||
+          u.bedrooms?.trim() ||
+          u.bathrooms?.trim() ||
+          u.balconies?.trim()
+      );
 
+    const validConfigurations = cleanedConfigurations;
+
+    const normalizedHighlights =
+      form.overview.highlights.map((h) => {
+
+        // OLD STRING FORMAT
+        if (typeof h === "string") {
+          return {
+            name: h,
+            icon: h,
+          };
+        }
+
+        return h;
+      });
+
+    // ================= FINAL PAYLOAD =================
     const cleanedForm = {
       ...form,
 
       overview: {
-  ...form.overview,
-  highlights: normalizedHighlights,
-},
+        ...form.overview,
+        highlights: normalizedHighlights,
+      },
 
       coreDetails: {
         ...form.coreDetails,
         developerRef: useCustomDeveloper
           ? null
           : form.coreDetails.developerRef,
-      },
 
+        developerName: form.coreDetails.developerName,
+      },
 
       categoryData: {
         categoryRef: useCustomCategory
           ? null
           : form.categoryData.categoryRef,
+
         categoryName: useCustomCategory
           ? form.categoryData.customCategory
           : form.categoryData.categoryName,
@@ -810,27 +996,37 @@ if (!token) {
 
       locationData: {
         ...form.locationData,
+
         locationRef: useCustomLocation
           ? null
           : form.locationData.locationRef,
+
         locationName: useCustomLocation
           ? form.locationData.customLocation
           : form.locationData.locationName,
       },
 
-      unitConfigurations: validConfigurations,
-
       keyMetrics: {
-  ...form.keyMetrics,
-  totalUnits: Number(form.keyMetrics.totalUnits) || 0,
-  totalTowers: Number(form.keyMetrics.totalTowers) || 0,
-},
+        ...form.keyMetrics,
+
+        totalUnits: Number(form.keyMetrics.totalUnits) || 0,
+
+        totalTowers: Number(form.keyMetrics.totalTowers) || 0,
+      },
+
+      configurationSection: {
+        ...form.configurationSection,
+      },
+
+      unitConfigurations: validConfigurations,
     };
+
+    console.log("🚀 UPDATE PAYLOAD:", cleanedForm);
 
     const res = await fetch(
       `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
       {
-        method: "PATCH", // 🔥 CHANGE HERE
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -841,17 +1037,85 @@ if (!token) {
 
     const data = await res.json();
 
+    // ================= SUCCESS =================
     if (res.ok) {
-  alert("Property Updated ✅");
-  router.push("/admin/properties"); // ✅ ADD THIS
-    } else {
-      alert(data.message || "Update failed ❌");
+
+      alert("Property Updated ✅");
+
+      // clear old errors
+      setErrors({});
+      setErrorList([]);
+
+      router.push("/admin/properties");
+
+      return;
     }
+
+    // ================= VALIDATION ERRORS =================
+    const missing = data.missingFields || [];
+
+    const fieldErrors = {};
+    const errorMessages = [];
+
+    let firstStep = Infinity;
+
+    missing.forEach((field) => {
+
+      fieldErrors[field] = true;
+
+      const label = labelMap?.[field] || field;
+
+      errorMessages.push(label);
+
+      const stepNo = fieldStepMap?.[field];
+
+      if (stepNo && stepNo < firstStep) {
+        firstStep = stepNo;
+      }
+    });
+
+    setErrors(fieldErrors);
+
+    setErrorList(errorMessages);
+
+    toast.error(
+      `Missing required fields:\n${errorMessages
+        .map((e) => `• ${e}`)
+        .join("\n")}`,
+      {
+        duration: 6000,
+        style: {
+          whiteSpace: "pre-line",
+          background: "#1f1f1f",
+          color: "#fff",
+          border: "1px solid #ef4444",
+        },
+      }
+    );
+
+    // move to first invalid step
+    if (firstStep !== Infinity) {
+      setStep(firstStep);
+    }
+
+    // optional log
+    if (data.message) {
+      console.log("Validation:", data.message);
+    }
+
+    // scroll top
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
   } catch (err) {
     console.error(err);
+
     alert("Server error ❌");
   }
 };
+
 
 const buildOptions = (nodes, prefix = "") => {
   let options = [];
@@ -872,3096 +1136,3336 @@ const buildOptions = (nodes, prefix = "") => {
 
   return options;
 };
+
+const hasError = (fieldPath) => {
+  return Boolean(errors?.[fieldPath]);
+};
+
+const fieldStepMap = {
+  slug: 1,
+  "coreDetails.title": 1,
+  "coreDetails.developerRef": 1,
+  "categoryData.categoryRef": 1,
+
+  "heroSection.heroDescription": 1,
+  "keyMetrics.possession": 1,
+  "keyMetrics.landArea": 1,
+  "keyMetrics.totalUnits": 1,
+  "keyMetrics.totalTowers": 1,
+  "keyMetrics.floors": 1,
+  "keyMetrics.reraNumber": 1,
+
+  "overview.description": 2,
+"overview.aboutImageUrl": 2,
+"overview.highlightsHeading": 2,
+"overview.highlights": 2,
+};
+
+const labelMap = {
+  slug: "Slug",
+  "coreDetails.title": "Project Title",
+  "coreDetails.developerRef": "Developer",
+  "categoryData.categoryRef": "Category",
+
+
+  "heroSection.heroDescription": "Hero Description",
+  "keyMetrics.possession": "Possession",
+  "keyMetrics.landArea": "Land Area",
+  "keyMetrics.totalUnits": "Total Units",
+  "keyMetrics.totalTowers": "Total Towers",
+  "keyMetrics.floors": "Floors",
+  "keyMetrics.reraNumber": "RERA Number",
+
+  "overview.description": "About Description",
+"overview.aboutImageUrl": "About Image",
+"overview.highlightsHeading": "Highlights Heading",
+"overview.highlights": "Highlight Cards",
+};
+
 if (loading) {
   return <div className="text-white p-10">Loading property...</div>;
 }
   return (
      <div className="app-bg p-4 md:p-6 lg:p-10 overflow-x-hidden min-h-screen">
-    
-        {/* HEADER */}
-        <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10">
-    
-          {/* LEFT */}
-          <div>
-            <h1 className="text-4xl font-bold text-white">
-              Edit Property
-            </h1>
-    
-            <p className="text-gray-300">
-              Step {step} of 7
-            </p>
-          </div>
-    
-          {/* RIGHT */}
-          <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
-    
-            {/* BUTTONS */}
-            <div className="flex flex-wrap gap-3">
-    
-              {/* PREVIEW BUTTON */}
-              <button
-                onClick={() =>
-                  setPreviewMode(!previewMode)
-                }
-                className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
-              >
-                {previewMode
-                  ? "← Back to Edit"
-                  : "👁 Full Preview"}
-              </button>
-    
-              {/* FORM MODE BUTTON */}
-              <button
-                onClick={() =>
-                  setFullFormMode(!fullFormMode)
-                }
-                className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
-              >
-                {fullFormMode
-                  ? "↔ Split View"
-                  : "📝 Full Form"}
-              </button>
-            </div>
-    
-            {/* PROGRESS */}
-            <div className="w-full md:w-64 bg-white/20 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-gold h-2 rounded-full transition-all"
-                style={{
-                  width: `${(step / 7) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-    
-        {previewMode ? (
-    
-          // ================= FULL PREVIEW =================
-          <div className="w-full max-w-full h-[80vh] overflow-y-auto overflow-x-hidden bg-white rounded-xl p-2 md:p-4">
-    
-            <div className="w-full overflow-x-hidden">
-              <PropertyPreview
-      form={previewData}
-      insideAdmin={true}
-    />
-            </div>
-    
-          </div>
-    
-        ) : (
-    
-          // ================= EDIT MODE =================
-          <div className="flex flex-col xl:flex-row gap-6 w-full overflow-hidden">
-    
-            {/* ================= LEFT SIDE ================= */}
-            <div
-              className={`${
-                fullFormMode
-                  ? "w-full"
-                  : "xl:w-1/2 w-full"
-              } overflow-y-auto overflow-x-hidden h-[80vh] pr-2 min-w-0`}
-            >
-    
-        <div className="space-y-8">
-
-          {/* ================= STEP 1 ================= */}
-{step === 1 && (
-  <div className="section">
-    <h2 className="section-title">Core Details</h2>
-
-    <input
-      className="input"
-      placeholder="Slug"
-      value={form.slug}
-      onChange={(e) =>
-        setForm((prev) => ({
-          ...prev,
-          slug: e.target.value,
-        }))
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Title"
-      value={form.coreDetails.title}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "title",
-          e.target.value
-        )
-      }
-    />
-
-    {/* ================= DEVELOPER ================= */}
-    <div className="space-y-2">
-      <label className="text-sm text-white/70 font-medium">
-        Developer
-      </label>
-
-      {!useCustomDeveloper ? (
-        <select
-          className="input"
-          value={form.coreDetails.developerRef || ""}
-          onChange={(e) => {
-            if (e.target.value === "OTHER") {
-              setUseCustomDeveloper(true);
-
-              setForm((prev) => ({
-                ...prev,
-                coreDetails: {
-                  ...prev.coreDetails,
-                  developerRef: "",
-                  developerName: "",
-                  developerLogo: "",
-                },
-              }));
-            } else {
-              const selectedDev = developers.find(
-                (d) => d._id === e.target.value
-              );
-
-              setUseCustomDeveloper(false);
-
-              setForm((prev) => ({
-                ...prev,
-                coreDetails: {
-                  ...prev.coreDetails,
-                  developerRef:
-                    selectedDev?._id || "",
-                  developerName:
-                    selectedDev?.name || "",
-                  developerLogo:
-                    selectedDev?.logo || "",
-                },
-              }));
-            }
-          }}
-        >
-          <option value="">
-            Select Developer
-          </option>
-
-          {developers.map((dev) => (
-            <option
-              key={dev._id}
-              value={dev._id}
-            >
-              {dev.name}
-            </option>
-          ))}
-
-          <option value="OTHER">
-            + Add Custom Developer
-          </option>
-        </select>
-      ) : (
-        <div className="flex gap-2">
-          <input
-            className="input flex-1"
-            placeholder="Enter developer name"
-            value={
-              form.coreDetails.developerName
-            }
-            onChange={(e) =>
-              handleChange(
-                "coreDetails",
-                "developerName",
-                e.target.value
-              )
-            }
-          />
-
-          <button
-            type="button"
-            onClick={() => {
-              setUseCustomDeveloper(false);
-
-              setForm((prev) => ({
-                ...prev,
-                coreDetails: {
-                  ...prev.coreDetails,
-                  developerRef: "",
-                  developerName: "",
-                },
-              }));
-            }}
-            className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
-
-    {/* ================= CATEGORY ================= */}
-    <div className="space-y-2">
-      <label className="text-sm text-white/70 font-medium">
-        Category
-      </label>
-
-      {!useCustomCategory ? (
-        <select
-          className="input"
-          value={form.categoryData.categoryRef || ""}
-          onChange={(e) => {
-            if (e.target.value === "OTHER") {
-              setUseCustomCategory(true);
-
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  categoryRef: "",
-                  categoryName: "",
-                  customCategory: "",
-                },
-              }));
-            } else {
-              const selected = categories.find(
-                (c) => c._id === e.target.value
-              );
-
-              setUseCustomCategory(false);
-
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  categoryRef:
-                    selected?._id || "",
-                  categoryName:
-                    selected?.name || "",
-                  customCategory: "",
-                },
-              }));
-            }
-          }}
-        >
-          <option value="">
-            Select Category
-          </option>
-
-          {categories.map((cat) => (
-            <option
-              key={cat._id}
-              value={cat._id}
-            >
-              {cat.name}
-            </option>
-          ))}
-
-          <option value="OTHER">
-            + Add Custom Category
-          </option>
-        </select>
-      ) : (
-        <div className="flex gap-2">
-          <input
-            className="input flex-1"
-            placeholder="Enter custom category"
-            value={
-              form.categoryData.customCategory
-            }
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  ...prev.categoryData,
-                  customCategory:
-                    e.target.value,
-                },
-              }))
-            }
-          />
-
-          <button
-            type="button"
-            onClick={() => {
-              setUseCustomCategory(false);
-
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  categoryRef: "",
-                  categoryName: "",
-                  customCategory: "",
-                },
-              }));
-            }}
-            className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
-
-    <input
-      className="input"
-      placeholder="Starting Price"
-      value={form.coreDetails.startingPrice}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "startingPrice",
-          e.target.value
-        )
-      }
-    />
-
-    <input
-      className="input"
-      placeholder="Max Price"
-      value={form.coreDetails.maxPrice}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "maxPrice",
-          e.target.value
-        )
-      }
-    />
-
-    {/* ================= HERO SECTION ================= */}
-    <div className="mt-8">
-      <h3 className="font-semibold mb-4 text-white">
-        Hero Section
-      </h3>
-
-      <div className="grid grid-cols-1 gap-4">
-        <input
-          className="input"
-          placeholder="propertyStatus Text"
-          value={
-            form.heroSection
-              ?.propertyStatus || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "propertyStatus",
-              e.target.value
-            )
-          }
-        />
-
-        <textarea
-          className="input min-h-[120px]"
-          placeholder="Hero Description"
-          value={
-            form.heroSection
-              ?.heroDescription || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "heroDescription",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Brochure Button Text"
-          value={
-            form.heroSection
-              ?.brochureButtonText || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "brochureButtonText",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Video Button Text"
-          value={
-            form.heroSection
-              ?.videoButtonText || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "videoButtonText",
-              e.target.value
-            )
-          }
-        />
-      </div>
-    </div>
-
-    {/* ================= TAGLINES ================= */}
-    <div className="mt-6">
-      <h4 className="font-medium mb-3 text-white">
-        Tagline Items
-      </h4>
-
-      {form.heroSection?.taglineItems?.map(
-        (item, index) => (
-          <div
-            key={index}
-            className="flex gap-2 mb-2"
-          >
-            <input
-              className="input flex-1"
-              placeholder={`Tagline ${
-                index + 1
-              }`}
-              value={item}
-              onChange={(e) => {
-                const updated = [
-                  ...form.heroSection
-                    .taglineItems,
-                ];
-
-                updated[index] =
-                  e.target.value;
-
-                setForm((prev) => ({
-                  ...prev,
-                  heroSection: {
-                    ...prev.heroSection,
-                    taglineItems: updated,
-                  },
-                }));
-              }}
-            />
-
-            <button
-              type="button"
-              onClick={() => {
-                const updated =
-                  form.heroSection.taglineItems.filter(
-                    (_, i) => i !== index
-                  );
-
-                setForm((prev) => ({
-                  ...prev,
-                  heroSection: {
-                    ...prev.heroSection,
-                    taglineItems: updated,
-                  },
-                }));
-              }}
-              className="px-4 bg-red-500 text-white rounded-xl"
-            >
-              X
-            </button>
-          </div>
-        )
-      )}
-
-      <button
-        type="button"
-        onClick={() => {
-          setForm((prev) => ({
-            ...prev,
-            heroSection: {
-              ...prev.heroSection,
-              taglineItems: [
-                ...prev.heroSection
-                  .taglineItems,
-                "",
-              ],
-            },
-          }));
-        }}
-        className="mt-2 px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-      >
-        + Add Tagline
-      </button>
-    </div>
-
-    {/* ================= KEY METRICS ================= */}
-    <div className="mt-6">
-      <h3 className="font-semibold mb-2 text-white">
-        Key Metrics
-      </h3>
-
-      <div className="grid grid-cols-2 gap-4">
-
-        <input
-          className="input"
-          placeholder="Possession (e.g. 2028)"
-          value={form.keyMetrics.possession}
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "possession",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Land Area (e.g. 10 Acres)"
-          value={form.keyMetrics.landArea}
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "landArea",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Total Units"
-          value={
-            form.keyMetrics.totalUnits ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "totalUnits",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Total Towers"
-          value={
-            form.keyMetrics.totalTowers ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "totalTowers",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Floors"
-          value={
-            form.keyMetrics.floors || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "floors",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input col-span-2"
-          placeholder="RERA Number"
-          value={
-            form.keyMetrics.reraNumber ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "reraNumber",
-              e.target.value
-            )
-          }
-        />
-      </div>
-    </div>
-  </div>
-)}
-
- 
-         
- 
-{/* ================= STEP 2 ================= */}
-{step === 2 && (
-  <div className="section">
-
-    {/* ================= LOADER ================= */}
-{uploading && (
-  <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center">
-    <p className="text-white text-lg animate-pulse">
-      Uploading...
-    </p>
-  </div>
-)}
-
-    <h2 className="section-title">
-      About & Property Highlights
-    </h2>
-
-    {/* ================= ABOUT SECTION ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        About Section
-      </h3>
-
-      {/* SECTION NUMBER */}
-      <input
-        className="input mb-4"
-        placeholder="Section Number (Example: 02)"
-        value={form.overview.aboutSectionNumber || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutSectionNumber",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ABOUT LABEL */}
-      <input
-        className="input mb-4"
-        placeholder="About Label"
-        value={form.overview.aboutLabel || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutLabel",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ABOUT TITLE LINE 1 */}
-      <input
-        className="input mb-4"
-        placeholder="About Title Line 1"
-        value={form.overview.aboutTitleLine1 || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutTitleLine1: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* ABOUT TITLE LINE 2 */}
-      <input
-        className="input mb-4"
-        placeholder="About Title Line 2"
-        value={form.overview.aboutTitleLine2 || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutTitleLine2: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* ABOUT DESCRIPTION */}
-      <textarea
-        className="input min-h-[140px] mb-4"
-        placeholder="About Description"
-        value={form.overview.description || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "description",
-            e.target.value
-          )
-        }
-      />
-
-      {/* SECOND PARAGRAPH */}
-      <textarea
-        className="input min-h-[120px] mb-4"
-        placeholder="Second Paragraph"
-        value={form.overview.aboutParagraph2 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutParagraph2",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ================= ABOUT IMAGE ================= */}
-<div className="mt-4">
-
-  <p className="text-white font-semibold mb-3">
-    About Section Image
-  </p>
-
-  {/* UPLOAD BUTTON */}
-  <div
-    className="upload-box cursor-pointer"
-    onClick={() =>
-      document
-        .getElementById("aboutImageUpload")
-        .click()
-    }
-  >
-    Upload About Image
-  </div>
-
-  {/* INPUT */}
-  <input
-    id="aboutImageUpload"
-    type="file"
-    hidden
-    accept="image/*"
-    onChange={async (e) => {
-
-      const file = e.target.files[0];
-
-      if (!file) return;
-
-      // ================= VALIDATION =================
-      if (!file.type.startsWith("image/")) {
-        alert("Only image files allowed ❌");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Max file size is 5MB ❌");
-        return;
-      }
-
-      try {
-
-        setUploading(true);
-
-        // ================= UPLOAD =================
-        const data = new FormData();
-        data.append("file", file);
-
-        const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/upload",
-          {
-            method: "POST",
-            body: data,
-          }
-        );
-
-        const result = await res.json();
-
-        if (!res.ok || !result.url) {
-          throw new Error(
-            result.message || "Upload failed"
-          );
-        }
-
-        // ================= SAVE URL =================
-        setForm((prev) => ({
-          ...prev,
-          overview: {
-            ...prev.overview,
-            aboutImageUrl: result.url,
-          },
-        }));
-
-      } catch (err) {
-
-        console.error("Upload Error:", err);
-
-        alert("Upload failed ❌");
-
-      } finally {
-
-        setUploading(false);
-      }
-
-      e.target.value = "";
-
-    }}
-  />
-
-  {/* IMAGE PREVIEW */}
-  {form.overview?.aboutImageUrl?.trim() && (
-    <div className="relative mt-4">
-
-      <img
-        src={form.overview.aboutImageUrl}
-        className="preview-img"
-        alt="About"
-      />
-
-      {/* REMOVE BUTTON */}
-      <button
-        type="button"
-        onClick={() =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutImageUrl: "",
-            },
-          }))
-        }
-        className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-      >
-        ✕
-      </button>
-    </div>
-  )}
-</div>
-    </div>
-
-    {/* ================= FEATURE BAR ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <div className="flex items-center justify-between mb-5">
-
-        <h3 className="font-semibold text-xl text-white">
-          Feature Bar
-        </h3>
-
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.overview.featureBar || []),
-              {
-                title: "",
-                desc: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "overview",
-              "featureBar",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Feature
-        </button>
-      </div>
-
-      {(form.overview.featureBar || []).map(
-        (item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-          >
-
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
-
-              <h4 className="font-semibold text-white">
-                Feature #{index + 1}
-              </h4>
-
-              <button
-                type="button"
-                onClick={() => {
-
-                  const updated =
-                    form.overview.featureBar.filter(
-                      (_, i) => i !== index
-                    );
-
-                  handleChange(
-                    "overview",
-                    "featureBar",
-                    updated
-                  );
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
-
-            {/* TITLE */}
-            <input
-              className="input mb-4"
-              placeholder="Feature Title"
-              value={item.title || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].title =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-
-            {/* DESCRIPTION */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Feature Description"
-              value={item.desc || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].desc =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ⌂ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
-
-    {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        Property Highlights Header
-      </h3>
-
-      {/* FIXED ISSUE */}
-      <input
-        className="input mb-4"
-        placeholder="Highlights Heading"
-        value={form.overview.highlightsHeading || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              highlightsHeading: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* FIXED ISSUE */}
-      <input
-        className="input"
-        placeholder="Highlights Subheading"
-        value={form.overview.highlightsSubheading || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              highlightsSubheading: e.target.value,
-            },
-          }))
-        }
-      />
-    </div>
-
-    {/* ================= HIGHLIGHTS CARDS ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <div className="flex items-center justify-between mb-5">
-
-        <h3 className="font-semibold text-xl text-white">
-          Highlight Cards
-        </h3>
-
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.overview.highlights || []),
-              {
-                heading: "",
-                subheading: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "overview",
-              "highlights",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Highlight
-        </button>
-      </div>
-
-      {(form.overview.highlights || []).map(
-        (item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-          >
-
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
-
-              <h4 className="font-semibold text-white">
-                Highlight #{index + 1}
-              </h4>
-
-              <button
-                type="button"
-                onClick={() => {
-
-                  const updated =
-                    form.overview.highlights.filter(
-                      (_, i) => i !== index
-                    );
-
-                  handleChange(
-                    "overview",
-                    "highlights",
-                    updated
-                  );
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
-
-            {/* HEADING */}
-            <input
-              className="input mb-4"
-              placeholder="Card Heading"
-              value={item.heading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].heading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* SUBHEADING */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Card Description"
-              value={item.subheading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].subheading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ↗ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
-
-    {/* ================= QUOTE SECTION ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        Quote Section
-      </h3>
-
-      <textarea
-        className="input min-h-[120px]"
-        placeholder="Highlight Quote"
-        value={form.overview.highlightQuote || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "highlightQuote",
-            e.target.value
-          )
-        }
-      />
-    </div>
-  </div>
-)}
-
-  {/* ================= STEP 3 ================= */}
-{step === 3 && (
-  <div className="section">
-
-    {/* ================= AMENITIES HEADER ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl text-white mb-5">
-        Amenities Section Content
-      </h3>
-
-      {/* SECTION NUMBER */}
-      <input
-        className="input mb-4"
-        placeholder="Section Number (Example: 04)"
-        value={form.overview.amenitiesSectionNumber || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesSectionNumber",
-            e.target.value
-          )
-        }
-      />
-
-      {/* SECTION LABEL */}
-      <input
-        className="input mb-4"
-        placeholder="Section Label"
-        value={form.overview.amenitiesSectionLabel || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesSectionLabel",
-            e.target.value
-          )
-        }
-      />
-
-      {/* HEADING LINE 1 */}
-      <input
-        className="input mb-4"
-        placeholder="Heading Line 1"
-        value={form.overview.amenitiesHeadingLine1 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesHeadingLine1",
-            e.target.value
-          )
-        }
-      />
-
-      {/* HEADING LINE 2 */}
-      <input
-        className="input mb-4"
-        placeholder="Heading Line 2 (Gold Text)"
-        value={form.overview.amenitiesHeadingLine2 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesHeadingLine2",
-            e.target.value
-          )
-        }
-      />
-
-      {/* HEADING LINE 3 */}
-      <input
-        className="input mb-4"
-        placeholder="Heading Line 3"
-        value={form.overview.amenitiesHeadingLine3 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesHeadingLine3",
-            e.target.value
-          )
-        }
-      />
-
-      {/* SUBHEADING */}
-      <textarea
-        className="input min-h-[120px]"
-        placeholder="Amenities Subheading"
-        value={form.overview.amenitiesSubheading || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "amenitiesSubheading",
-            e.target.value
-          )
-        }
-      />
-    </div>
-
-    <h2 className="section-title">
-      Amenities
-    </h2>
-
-    {/* ================= SELECT AMENITIES ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl text-white mb-5">
-        Select Amenities
-      </h3>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-
-        {AMENITIES.map((item) => {
-
-          // ✅ FIXED → use amenities instead of highlights
-          const selected =
-            (form.overview.amenities || []).some((h) => {
-
-              const amenityName =
-                typeof h === "string"
-                  ? h
-                  : h?.heading || h?.name;
-
-              return amenityName === item.name;
-            });
-
-          const Icon = item.icon;
-
-          return (
-            <label
-              key={item.name}
-              className={`
-                flex items-center gap-3 cursor-pointer
-                p-4 rounded-2xl border transition-all
-                ${
-                  selected
-                    ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
-                    : "bg-white/5 border-white/10 text-white/70"
-                }
-              `}
-            >
-
-              <input
-                type="checkbox"
-                checked={selected}
-                onChange={() => {
-
-                  let updated;
-
-                  if (selected) {
-
-                    updated =
-                      (form.overview.amenities || []).filter(
-                        (h) => {
-
-                          const amenityName =
-                            typeof h === "string"
-                              ? h
-                              : h?.heading || h?.name;
-
-                          return amenityName !== item.name;
-                        }
-                      );
-
-                  } else {
-
-                    updated = [
-                      ...(form.overview.amenities || []),
-                      {
-                        heading: item.name,
-                        subheading:
-                          "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
-                        icon: item.name,
-                      },
-                    ];
-                  }
-
-                  handleChange(
-                    "overview",
-                    "amenities",
-                    updated
-                  );
-                }}
-              />
-
-              <Icon
-                size={18}
-                className="text-[#D4AF37]"
-              />
-
-              <span className="text-sm font-medium">
-                {item.name}
-              </span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-
-    {/* ================= CUSTOM AMENITY ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl text-white mb-5">
-        Add Custom Amenity
-      </h3>
-
-      {/* INPUT */}
-      <input
-        className="input w-full"
-        placeholder="Enter amenity name"
-        value={customAmenity}
-        onChange={(e) =>
-          setCustomAmenity(e.target.value)
-        }
-      />
-
-      <textarea
-        className="input w-full mt-4 min-h-[100px]"
-        placeholder="Amenity Description / Subheading (Optional)"
-        value={customAmenitySubheading}
-        onChange={(e) =>
-          setCustomAmenitySubheading(
-            e.target.value
-          )
-        }
-      />
-
-      {/* ICON SELECTOR */}
-      <div className="mt-6">
-
-        <p className="text-sm text-white/60 mb-4">
-          Select Icon
-        </p>
-
-        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-
-          {CUSTOM_ICONS.map((item) => {
-
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.name}
-                type="button"
-                onClick={() =>
-                  setSelectedCustomIcon(
-                    item.name
-                  )
-                }
-                className={`
-                  p-4 rounded-2xl border
-                  flex flex-col items-center gap-2
-                  transition-all
-                  ${
-                    selectedCustomIcon ===
-                    item.name
-                      ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
-                      : "bg-white/5 border-white/10 text-white/70"
-                  }
-                `}
-              >
-
-                <Icon size={22} />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ADD BUTTON */}
-      <button
-        type="button"
-        className="
-          mt-6 px-5 py-3 rounded-xl
-          bg-[#D4AF37]
-          text-black font-semibold
-          hover:opacity-90 transition
-        "
-        onClick={() => {
-
-          if (!customAmenity.trim())
-            return;
-
-          const amenityObject = {
-            heading: customAmenity,
-
-            subheading:
-              customAmenitySubheading.trim() ||
-              "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
-
-            icon: selectedCustomIcon,
-          };
-
-          handleChange(
-            "overview",
-            "amenities",
-            [
-              ...(form.overview.amenities || []),
-              amenityObject,
-            ]
-          );
-
-          setCustomAmenity("");
-          setCustomAmenitySubheading("");
-          setSelectedCustomIcon("Home");
-        }}
-      >
-        + Add Custom Amenity
-      </button>
-    </div>
-
-    {/* ================= SELECTED AMENITIES ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10">
-
-      <h3 className="font-semibold text-xl text-white mb-5">
-        Selected Amenities
-      </h3>
-
-      <div className="flex flex-wrap gap-3">
-
-        {(form.overview.amenities || []).map(
-          (item, i) => {
-
-            const itemName =
-              typeof item === "string"
-                ? item
-                : item?.heading || item?.name;
-
-            return (
-              <div
-                key={i}
-                className="
-                  bg-[#D4AF37]
-                  text-black
-                  px-4 py-2
-                  rounded-full
-                  flex items-center gap-2
-                  font-medium
-                "
-              >
-
-                {itemName}
-
-                <button
-                  type="button"
-                  onClick={() => {
-
-                    const updated =
-                      (form.overview.amenities || []).filter(
-                        (_, idx) =>
-                          idx !== i
-                      );
-
-                    handleChange(
-                      "overview",
-                      "amenities",
-                      updated
-                    );
-                  }}
-                  className="text-black"
-                >
-                  ✕
-                </button>
-              </div>
-            );
-          }
-        )}
-      </div>
-    </div>
-
-    {/* ================= BOTTOM STRIP ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mt-8">
-
-      <h3 className="font-semibold text-xl text-white mb-5">
-        Bottom Strip Content
-      </h3>
-
-      {/* LEFT TITLE 1 */}
-      <input
-        className="input mb-4"
-        placeholder="Left Title Line 1"
-        value={form.overview.bottomStripTitle1 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "bottomStripTitle1",
-            e.target.value
-          )
-        }
-      />
-
-      {/* LEFT TITLE 2 */}
-      <input
-        className="input mb-4"
-        placeholder="Left Title Line 2"
-        value={form.overview.bottomStripTitle2 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "bottomStripTitle2",
-            e.target.value
-          )
-        }
-      />
-
-      {/* FEATURE 1 */}
-      <input
-        className="input mb-4"
-        placeholder="Feature 1"
-        value={form.overview.bottomStripFeature1 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "bottomStripFeature1",
-            e.target.value
-          )
-        }
-      />
-
-      {/* FEATURE 2 */}
-      <input
-        className="input mb-4"
-        placeholder="Feature 2"
-        value={form.overview.bottomStripFeature2 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "bottomStripFeature2",
-            e.target.value
-          )
-        }
-      />
-
-      {/* FEATURE 3 */}
-      <input
-        className="input"
-        placeholder="Feature 3"
-        value={form.overview.bottomStripFeature3 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "bottomStripFeature3",
-            e.target.value
-          )
-        }
-      />
-    </div>
-  </div>
-)}
-         {/* ================= STEP 4 ================= */}
-         {step === 4 && (
-           <StepMedia form={form} setForm={setForm} />
-         )}
- 
-         {/* ================= STEP 5 ================= */}
- {step === 5 && (
-   <div className="section">
- 
-     <h2 className="section-title">
-       Location Details
-     </h2>
- 
-     {/* ================= BASIC LOCATION ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Basic Location Details
-       </h3>
- 
-       {/* LOCATION SELECT */}
-       <div className="mb-5">
- 
-         <label className="block text-sm text-white/70 mb-2">
-           Select Location
-         </label>
- 
-         {!useCustomLocation ? (
- 
-           <select
-             className="input"
-             value={form.locationData.locationRef || ""}
-             onChange={(e) => {
- 
-               if (e.target.value === "OTHER") {
- 
-                 setUseCustomLocation(true);
- 
-                 setForm((prev) => ({
-                   ...prev,
-                   locationData: {
-                     ...prev.locationData,
-                     locationRef: "",
-                     locationName: "",
-                     customLocation: "",
-                   },
-                 }));
- 
-               } else {
- 
-                 const selected = buildOptions(locations).find(
-                   (l) => l._id === e.target.value
-                 );
- 
-                 setUseCustomLocation(false);
- 
-                 setForm((prev) => ({
-                   ...prev,
-                   locationData: {
-                     ...prev.locationData,
-                     locationRef: selected?._id || "",
-                     locationName: selected?.label || "",
-                     customLocation: "",
-                   },
-                 }));
+     
+         {/* ================= PREMIUM STEPPER ================= */}
+     
+     <div className="mb-8 overflow-x-auto">
+       <div className="min-w-[900px] bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+     
+         <div className="flex items-center justify-between relative">
+     
+           {[
+             {
+               no: "01",
+               title: "Core Details",
+               sub: "Basic Information",
+             },
+             {
+               no: "02",
+               title: "About Project",
+               sub: "Project Overview",
+             },
+             {
+               no: "03",
+               title: "Amenities",
+               sub: "Lifestyle Features",
+             },
+             {
+               no: "04",
+               title: "Gallery and Floor Plans",
+               sub: "Media & Visuals",
+             },
+             {
+               no: "05",
+               title: "Location",
+               sub: "Connectivity",
+             },
+             {
+               no: "06",
+               title: "Master Plan",
+               sub: "brochure & features",
+             },
+             {
+               no: "07",
+               title: "FAQ Section",
+               sub: "FAQ & Publish",
+             },
+           ].map((item, index) => {
+             const currentStep = index + 1;
+             const active = step === currentStep;
+             const completed = step > currentStep;
+     
+             return (
+               <div
+                 key={index}
+                 className="flex-1 flex items-center relative"
+               >
+                 {/* CONNECTOR */}
+                 {index !== 0 && (
+                   <div
+                     className={`absolute left-[-50%] top-6 h-[2px] w-full
+                     ${
+                       step > currentStep
+                         ? "bg-gradient-to-r from-[#c8a45d] to-[#f5d488]"
+                         : "bg-white/10"
+                     }`}
+                   />
+                 )}
+     
+                 {/* STEP */}
+                 <div className="relative z-10 flex flex-col items-center text-center w-full">
+     
+                   {/* CIRCLE */}
+                   <div
+                     className={`
+                     w-14 h-14 rounded-full flex items-center justify-center
+                     text-sm font-bold transition-all duration-300 border
+     
+                     ${
+                       active
+                         ? "bg-gradient-to-br from-[#c8a45d] to-[#f5d488] text-black border-[#f5d488] scale-110 shadow-[0_0_30px_rgba(245,212,136,0.4)]"
+                         : completed
+                         ? "bg-[#c8a45d] text-black border-[#c8a45d]"
+                         : "bg-white/5 text-gray-400 border-white/10"
+                     }
+                   `}
+                   >
+                     {completed ? "✓" : item.no}
+                   </div>
+     
+                   {/* TEXT */}
+                   <div className="mt-3">
+                     <p
+                       className={`text-sm font-semibold ${
+                         active
+                           ? "text-white"
+                           : completed
+                           ? "text-[#f5d488]"
+                           : "text-gray-400"
+                       }`}
+                     >
+                       {item.title}
+                     </p>
+     
+                     <p className="text-xs text-gray-500 mt-1">
+                       {item.sub}
+                     </p>
+                   </div>
+                 </div>
+               </div>
+             );
+           })}
+         </div>
+       </div>
+     </div>
+     
+         {/* HEADER */}
+         <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10">
+     
+           {/* LEFT */}
+           <div>
+             <h1 className="text-4xl font-bold text-white">
+               Add Property
+             </h1>
+     
+             <p className="text-gray-300">
+               Step {step} of 7
+             </p>
+           </div>
+     
+           {/* RIGHT */}
+           <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
+     
+             {/* BUTTONS */}
+             <div className="flex flex-wrap gap-3">
+     
+               {/* PREVIEW BUTTON */}
+               <button
+                 onClick={() =>
+                   setPreviewMode(!previewMode)
+                 }
+                 className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
+               >
+                 {previewMode
+                   ? "← Back to Edit"
+                   : "👁 Full Preview"}
+               </button>
+     
+               {/* FORM MODE BUTTON */}
+               <button
+                 onClick={() =>
+                   setFullFormMode(!fullFormMode)
+                 }
+                 className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
+               >
+                 {fullFormMode
+                   ? "↔ Split View"
+                   : "📝 Full Form"}
+               </button>
+             </div>
+     
+             {/* PROGRESS */}
+             <div className="w-full md:w-64 bg-white/20 rounded-full h-2 overflow-hidden">
+               <div
+                 className="bg-gold h-2 rounded-full transition-all"
+                 style={{
+                   width: `${(step / 7) * 100}%`,
+                 }}
+               />
+             </div>
+           </div>
+         </div>
+     
+         {previewMode ? (
+     
+           // ================= FULL PREVIEW =================
+           <div className="w-full max-w-full h-[80vh] overflow-y-auto overflow-x-hidden bg-white rounded-xl p-2 md:p-4">
+     
+             <div className="w-full overflow-x-hidden">
+               <PropertyPreview
+       form={previewData}
+       insideAdmin={true}
+     />
+             </div>
+     
+           </div>
+     
+         ) : (
+     
+           // ================= EDIT MODE =================
+           <div className="flex flex-col xl:flex-row gap-6 w-full overflow-hidden">
+     
+             {/* ================= LEFT SIDE ================= */}
+             <div
+               className={`${
+                 fullFormMode
+                   ? "w-full"
+                   : "xl:w-1/2 w-full"
+               } overflow-y-auto overflow-x-hidden h-[80vh] pr-2 min-w-0`}
+             >
+     
+         <div className="space-y-8">
+     
+             {/* ================= STEP 1 ================= */}
+     {step === 1 && (
+       <div className="section">
+         <h2 className="section-title">Core Details</h2>
+     
+         <input
+           className={`input transition-all duration-200 ${
+       hasError("slug")
+         ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+         : ""
+     }`}
+       placeholder="Slug *"
+           value={form.slug}
+           onChange={(e) =>
+             setForm((prev) => ({
+               ...prev,
+               slug: e.target.value,
+             }))
+           }
+         />
+     
+         {hasError("slug") && (
+       <p className="text-red-400 text-sm mt-1 animate-pulse">
+         Slug is required
+       </p>
+     )}
+     
+         <input
+       className={`input transition-all duration-200 ${
+         hasError("coreDetails.title")
+           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+           : ""
+       }`}
+       placeholder="Title *"
+       value={form.coreDetails.title}
+       onChange={(e) =>
+         handleChange("coreDetails", "title", e.target.value)
+       }
+     />
+     
+         {hasError("coreDetails.title") && (
+       <p className="text-red-400 text-sm">Title is required</p>
+     )}
+     
+         {/* ================= DEVELOPER ================= */}
+         <div className="space-y-2">
+           <label className="text-sm text-white/70 font-medium">
+             Developer
+           </label>
+     
+           {!useCustomDeveloper ? (
+             <select
+       className={`input transition-all duration-200 ${
+         hasError("coreDetails.developerRef")
+           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+           : ""
+       }`}
+               value={form.coreDetails.developerRef || ""}
+               onChange={(e) => {
+                 if (e.target.value === "OTHER") {
+                   setUseCustomDeveloper(true);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     coreDetails: {
+                       ...prev.coreDetails,
+                       developerRef: "",
+                       developerName: "",
+                       developerLogo: "",
+                     },
+                   }));
+                 } else {
+                   const selectedDev = developers.find(
+                     (d) => d._id === e.target.value
+                   );
+     
+                   setUseCustomDeveloper(false);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     coreDetails: {
+                       ...prev.coreDetails,
+                       developerRef:
+                         selectedDev?._id || "",
+                       developerName:
+                         selectedDev?.name || "",
+                       developerLogo:
+                         selectedDev?.logo || "",
+                     },
+                   }));
+                 }
+               }}
+             >
+               <option value="">
+                 Select Developer
+               </option>
+     
+               {developers.map((dev) => (
+                 <option
+                   key={dev._id}
+                   value={dev._id}
+                 >
+                   {dev.name}
+                 </option>
+               ))}
+     
+               <option value="OTHER">
+                 + Add Custom Developer
+               </option>
+             </select>
+             
+           ) : (
+             <div className="flex gap-2">
+               <input
+                 className="input flex-1"
+                 placeholder="Enter developer name"
+                 value={
+                   form.coreDetails.developerName
+                 }
+                 onChange={(e) =>
+                   handleChange(
+                     "coreDetails",
+                     "developerName",
+                     e.target.value
+                   )
+                 }
+               />
+     
+               <button
+                 type="button"
+                 onClick={() => {
+                   setUseCustomDeveloper(false);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     coreDetails: {
+                       ...prev.coreDetails,
+                       developerRef: "",
+                       developerName: "",
+                     },
+                   }));
+                 }}
+                 className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+               >
+                 Cancel
+               </button>
+             </div>
+           )}
+         </div>
+     
+         {hasError("coreDetails.developerRef") && (
+       <p className="text-red-400 text-sm">
+         Developer is required
+       </p>
+     )}
+     
+         {/* ================= CATEGORY ================= */}
+         <div className="space-y-2">
+           <label className="text-sm text-white/70 font-medium">
+             Category
+           </label>
+     
+           {!useCustomCategory ? (
+             <select
+       className={`input transition-all duration-200 ${
+         hasError("categoryData.categoryRef")
+           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+           : ""
+       }`}
+               value={form.categoryData.categoryRef || ""}
+               onChange={(e) => {
+                 if (e.target.value === "OTHER") {
+                   setUseCustomCategory(true);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     categoryData: {
+                       categoryRef: "",
+                       categoryName: "",
+                       customCategory: "",
+                     },
+                   }));
+                 } else {
+                   const selected = categories.find(
+                     (c) => c._id === e.target.value
+                   );
+     
+                   setUseCustomCategory(false);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     categoryData: {
+                       categoryRef:
+                         selected?._id || "",
+                       categoryName:
+                         selected?.name || "",
+                       customCategory: "",
+                     },
+                   }));
+                 }
+               }}
+             >
+               <option value="">
+                 Select Category
+               </option>
+     
+               {categories.map((cat) => (
+                 <option
+                   key={cat._id}
+                   value={cat._id}
+                 >
+                   {cat.name}
+                 </option>
+               ))}
+     
+               <option value="OTHER">
+                 + Add Custom Category
+               </option>
+             </select>
+           ) : (
+             <div className="flex gap-2">
+               <input
+                 className="input flex-1"
+                 placeholder="Enter custom category"
+                 value={
+                   form.categoryData.customCategory
+                 }
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     categoryData: {
+                       ...prev.categoryData,
+                       customCategory:
+                         e.target.value,
+                     },
+                   }))
+                 }
+               />
+     
+               <button
+                 type="button"
+                 onClick={() => {
+                   setUseCustomCategory(false);
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     categoryData: {
+                       categoryRef: "",
+                       categoryName: "",
+                       customCategory: "",
+                     },
+                   }));
+                 }}
+                 className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+               >
+                 Cancel
+               </button>
+             </div>
+           )}
+         </div>
+     
+         {hasError("categoryData.categoryRef") && (
+       <p className="text-red-400 text-sm">
+         Category is required
+       </p>
+     )}
+     
+         <input
+           className="input"
+           placeholder="Starting Price"
+           value={form.coreDetails.startingPrice}
+           onChange={(e) =>
+             handleChange(
+               "coreDetails",
+               "startingPrice",
+               e.target.value
+             )
+           }
+         />
+     
+         <input
+           className="input"
+           placeholder="Max Price"
+           value={form.coreDetails.maxPrice}
+           onChange={(e) =>
+             handleChange(
+               "coreDetails",
+               "maxPrice",
+               e.target.value
+             )
+           }
+         />
+     
+         {/* ================= HERO SECTION ================= */}
+         <div className="mt-8">
+           <h3 className="font-semibold mb-4 text-white">
+             Hero Section
+           </h3>
+     
+           <div className="grid grid-cols-1 gap-4">
+             <input
+               className="input"
+               placeholder="propertyStatus Text"
+               value={
+                 form.heroSection
+                   ?.propertyStatus || ""
                }
+               onChange={(e) =>
+                 handleChange(
+                   "heroSection",
+                   "propertyStatus",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <textarea
+       className={`input min-h-[120px] ${
+         hasError("heroSection.heroDescription")
+           ? "border-red-500 ring-2 ring-red-500"
+           : ""
+       }`}
+               placeholder="Hero Description *"
+               value={
+                 form.heroSection
+                   ?.heroDescription || ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "heroSection",
+                   "heroDescription",
+                   e.target.value
+                 )
+               }
+             />
+     
+             {hasError("heroSection.heroDescription") && (
+       <p className="text-red-400 text-sm">
+         Hero Description is required
+       </p>
+     )}
+     
+             <input
+               className="input"
+               placeholder="Brochure Button Text"
+               value={
+                 form.heroSection
+                   ?.brochureButtonText || ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "heroSection",
+                   "brochureButtonText",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input"
+               placeholder="Video Button Text"
+               value={
+                 form.heroSection
+                   ?.videoButtonText || ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "heroSection",
+                   "videoButtonText",
+                   e.target.value
+                 )
+               }
+             />
+           </div>
+         </div>
+     
+         {/* ================= TAGLINES ================= */}
+         <div className="mt-6">
+           <h4 className="font-medium mb-3 text-white">
+             Tagline Items
+           </h4>
+     
+           {form.heroSection?.taglineItems?.map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="flex gap-2 mb-2"
+               >
+                 <input
+                   className="input flex-1"
+                   placeholder={`Tagline ${
+                     index + 1
+                   }`}
+                   value={item}
+                   onChange={(e) => {
+                     const updated = [
+                       ...form.heroSection
+                         .taglineItems,
+                     ];
+     
+                     updated[index] =
+                       e.target.value;
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       heroSection: {
+                         ...prev.heroSection,
+                         taglineItems: updated,
+                       },
+                     }));
+                   }}
+                 />
+     
+                 <button
+                   type="button"
+                   onClick={() => {
+                     const updated =
+                       form.heroSection.taglineItems.filter(
+                         (_, i) => i !== index
+                       );
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       heroSection: {
+                         ...prev.heroSection,
+                         taglineItems: updated,
+                       },
+                     }));
+                   }}
+                   className="px-4 bg-red-500 text-white rounded-xl"
+                 >
+                   X
+                 </button>
+               </div>
+             )
+           )}
+     
+           <button
+             type="button"
+             onClick={() => {
+               setForm((prev) => ({
+                 ...prev,
+                 heroSection: {
+                   ...prev.heroSection,
+                   taglineItems: [
+                     ...prev.heroSection
+                       .taglineItems,
+                     "",
+                   ],
+                 },
+               }));
+             }}
+             className="mt-2 px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+           >
+             + Add Tagline
+           </button>
+         </div>
+     
+         {/* ================= KEY METRICS ================= */}
+         <div className="mt-6">
+           <h3 className="font-semibold mb-2 text-white">
+             Key Metrics
+           </h3>
+     
+           <div className="grid grid-cols-2 gap-4">
+     
+             <input
+               className="input"
+               placeholder="Possession (e.g. 2028)"
+               value={form.keyMetrics.possession}
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "possession",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input"
+               placeholder="Land Area (e.g. 10 Acres)"
+               value={form.keyMetrics.landArea}
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "landArea",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input"
+               placeholder="Total Units"
+               value={
+                 form.keyMetrics.totalUnits ||
+                 ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "totalUnits",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input"
+               placeholder="Total Towers"
+               value={
+                 form.keyMetrics.totalTowers ||
+                 ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "totalTowers",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input"
+               placeholder="Floors"
+               value={
+                 form.keyMetrics.floors || ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "floors",
+                   e.target.value
+                 )
+               }
+             />
+     
+             <input
+               className="input col-span-2"
+               placeholder="RERA Number"
+               value={
+                 form.keyMetrics.reraNumber ||
+                 ""
+               }
+               onChange={(e) =>
+                 handleChange(
+                   "keyMetrics",
+                   "reraNumber",
+                   e.target.value
+                 )
+               }
+             />
+           </div>
+         </div>
+       </div>
+     )}
+     
+             
+     
+             {/* ================= STEP 2 ================= */}
+     {/* ================= STEP 2 ================= */}
+     {step === 2 && (
+       <div className="section">
+     
+         {/* ================= LOADER ================= */}
+     {uploading && (
+       <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center">
+         <p className="text-white text-lg animate-pulse">
+           Uploading...
+         </p>
+       </div>
+     )}
+     
+         <h2 className="section-title">
+           About & Property Highlights
+         </h2>
+     
+         {/* ================= ABOUT SECTION ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             About Section
+           </h3>
+     
+           {/* SECTION NUMBER */}
+           <input
+             className="input mb-4"
+             placeholder="Section Number (Example: 02)"
+             value={form.overview.aboutSectionNumber || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "aboutSectionNumber",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* ABOUT LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="About Label"
+             value={form.overview.aboutLabel || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "aboutLabel",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* ABOUT TITLE LINE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="About Title Line 1"
+             value={form.overview.aboutTitleLine1 || ""}
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 overview: {
+                   ...prev.overview,
+                   aboutTitleLine1: e.target.value,
+                 },
+               }))
+             }
+           />
+     
+           {/* ABOUT TITLE LINE 2 */}
+           <input
+             className="input mb-4"
+             placeholder="About Title Line 2"
+             value={form.overview.aboutTitleLine2 || ""}
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 overview: {
+                   ...prev.overview,
+                   aboutTitleLine2: e.target.value,
+                 },
+               }))
+             }
+           />
+     
+           {/* ABOUT DESCRIPTION */}
+           <textarea
+             className={`input min-h-[140px] mb-4 transition-all duration-200 ${
+       hasError("overview.description")
+         ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+         : ""
+     }`}
+             placeholder="About Description"
+             value={form.overview.description || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "description",
+                 e.target.value
+               )
+             }
+           />
+     
+           {hasError("overview.description") && (
+       <p className="text-red-400 text-sm">
+         About Description is required
+       </p>
+     )}
+     
+           {/* SECOND PARAGRAPH */}
+           <textarea
+             className="input min-h-[120px] mb-4"
+             placeholder="Second Paragraph"
+             value={form.overview.aboutParagraph2 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "aboutParagraph2",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* ================= ABOUT IMAGE ================= */}
+     <div className="mt-4">
+     
+       <p className="text-white font-semibold mb-3">
+         About Section Image
+       </p>
+     
+       {/* UPLOAD BUTTON */}
+       <div
+         className={`upload-box cursor-pointer transition-all duration-200 ${
+       hasError("overview.aboutImageUrl")
+         ? "border border-red-500 ring-2 ring-red-500"
+         : ""
+     }`}
+         onClick={() =>
+           document
+             .getElementById("aboutImageUpload")
+             .click()
+         }
+       >
+         Upload About Image
+       </div>
+     
+       {hasError("overview.aboutImageUrl") && (
+       <p className="text-red-400 text-sm mt-2">
+         About Image is required
+       </p>
+     )}
+     
+       {/* INPUT */}
+       <input
+         id="aboutImageUpload"
+         type="file"
+         hidden
+         accept="image/*"
+         onChange={async (e) => {
+     
+           const file = e.target.files[0];
+     
+           if (!file) return;
+     
+           // ================= VALIDATION =================
+           if (!file.type.startsWith("image/")) {
+             alert("Only image files allowed ❌");
+             return;
+           }
+     
+           if (file.size > 5 * 1024 * 1024) {
+             alert("Max file size is 5MB ❌");
+             return;
+           }
+     
+           try {
+     
+             setUploading(true);
+     
+             // ================= UPLOAD =================
+             const data = new FormData();
+             data.append("file", file);
+     
+             const res = await fetch(
+               "https://property-bouquet-backend.onrender.com/api/upload",
+               {
+                 method: "POST",
+                 body: data,
+               }
+             );
+     
+             const result = await res.json();
+     
+             if (!res.ok || !result.url) {
+               throw new Error(
+                 result.message || "Upload failed"
+               );
+             }
+     
+             // ================= SAVE URL =================
+             setForm((prev) => ({
+               ...prev,
+               overview: {
+                 ...prev.overview,
+                 aboutImageUrl: result.url,
+               },
+             }));
+     
+           } catch (err) {
+     
+             console.error("Upload Error:", err);
+     
+             alert("Upload failed ❌");
+     
+           } finally {
+     
+             setUploading(false);
+           }
+     
+           e.target.value = "";
+     
+         }}
+       />
+     
+       {/* IMAGE PREVIEW */}
+       {form.overview?.aboutImageUrl?.trim() && (
+         <div className="relative mt-4">
+     
+           <img
+             src={form.overview.aboutImageUrl}
+             className="preview-img"
+             alt="About"
+           />
+     
+           {/* REMOVE BUTTON */}
+           <button
+             type="button"
+             onClick={() =>
+               setForm((prev) => ({
+                 ...prev,
+                 overview: {
+                   ...prev.overview,
+                   aboutImageUrl: "",
+                 },
+               }))
+             }
+             className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+           >
+             ✕
+           </button>
+         </div>
+       )}
+     </div>
+         </div>
+     
+         {/* ================= FEATURE BAR ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               Feature Bar
+             </h3>
+     
+             <button
+               type="button"
+               onClick={() => {
+     
+                 const updated = [
+                   ...(form.overview.featureBar || []),
+                   {
+                     title: "",
+                     desc: "",
+                     icon: "✦",
+                   },
+                 ];
+     
+                 handleChange(
+                   "overview",
+                   "featureBar",
+                   updated
+                 );
+               }}
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+             >
+               + Add Feature
+             </button>
+           </div>
+     
+           {(form.overview.featureBar || []).map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+               >
+     
+                 {/* TOP */}
+                 <div className="flex items-center justify-between mb-4">
+     
+                   <h4 className="font-semibold text-white">
+                     Feature #{index + 1}
+                   </h4>
+     
+                   <button
+                     type="button"
+                     onClick={() => {
+     
+                       const updated =
+                         form.overview.featureBar.filter(
+                           (_, i) => i !== index
+                         );
+     
+                       handleChange(
+                         "overview",
+                         "featureBar",
+                         updated
+                       );
+                     }}
+                     className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   >
+                     Delete
+                   </button>
+                 </div>
+     
+                 {/* TITLE */}
+                 <input
+                   className={`input mb-4 transition-all duration-200 ${
+       hasError("overview.highlightsHeading")
+         ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+         : ""
+     }`}
+                   placeholder="Feature Title"
+                   value={item.title || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.featureBar,
+                     ];
+     
+                     updated[index].title =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "featureBar",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {hasError("overview.highlightsHeading") && (
+       <p className="text-red-400 text-sm mb-3">
+         Highlights Heading is required
+       </p>
+     )}
+     
+                 {/* DESCRIPTION */}
+                 <textarea
+                   className="input min-h-[100px] mb-4"
+                   placeholder="Feature Description"
+                   value={item.desc || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.featureBar,
+                     ];
+     
+                     updated[index].desc =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "featureBar",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* ICON */}
+                 <input
+                   className="input"
+                   placeholder="Icon (✦ ◈ ⌂ ▣)"
+                   value={item.icon || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.featureBar,
+                     ];
+     
+                     updated[index].icon =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "featureBar",
+                       updated
+                     );
+                   }}
+                 />
+               </div>
+             )
+           )}
+         </div>
+     
+         {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Property Highlights Header
+           </h3>
+     
+           {/* FIXED ISSUE */}
+           <input
+             className="input mb-4"
+             placeholder="Highlights Heading"
+             value={form.overview.highlightsHeading || ""}
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 overview: {
+                   ...prev.overview,
+                   highlightsHeading: e.target.value,
+                 },
+               }))
+             }
+           />
+     
+           {/* FIXED ISSUE */}
+           <input
+             className="input"
+             placeholder="Highlights Subheading"
+             value={form.overview.highlightsSubheading || ""}
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 overview: {
+                   ...prev.overview,
+                   highlightsSubheading: e.target.value,
+                 },
+               }))
+             }
+           />
+         </div>
+     
+         {/* ================= HIGHLIGHTS CARDS ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               Highlight Cards
+             </h3>
+     
+             {hasError("overview.highlights") && (
+       <p className="text-red-400 text-sm mt-2">
+         At least 1 Highlight Card is required
+       </p>
+     )}
+     
+             <button
+               type="button"
+               onClick={() => {
+     
+                 const updated = [
+                   ...(form.overview.highlights || []),
+                   {
+                     heading: "",
+                     subheading: "",
+                     icon: "✦",
+                   },
+                 ];
+     
+                 handleChange(
+                   "overview",
+                   "highlights",
+                   updated
+                 );
+               }}
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+             >
+               + Add Highlight
+             </button>
+           </div>
+     
+           {(form.overview.highlights || []).map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+               >
+     
+                 {/* TOP */}
+                 <div className="flex items-center justify-between mb-4">
+     
+                   <h4 className="font-semibold text-white">
+                     Highlight #{index + 1}
+                   </h4>
+     
+                   <button
+                     type="button"
+                     onClick={() => {
+     
+                       const updated =
+                         form.overview.highlights.filter(
+                           (_, i) => i !== index
+                         );
+     
+                       handleChange(
+                         "overview",
+                         "highlights",
+                         updated
+                       );
+                     }}
+                     className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   >
+                     Delete
+                   </button>
+                 </div>
+     
+                 {/* HEADING */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Card Heading"
+                   value={item.heading || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.highlights,
+                     ];
+     
+                     updated[index].heading =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "highlights",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* SUBHEADING */}
+                 <textarea
+                   className="input min-h-[100px] mb-4"
+                   placeholder="Card Description"
+                   value={item.subheading || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.highlights,
+                     ];
+     
+                     updated[index].subheading =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "highlights",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* ICON */}
+                 <input
+                   className="input"
+                   placeholder="Icon (✦ ◈ ↗ ▣)"
+                   value={item.icon || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.overview.highlights,
+                     ];
+     
+                     updated[index].icon =
+                       e.target.value;
+     
+                     handleChange(
+                       "overview",
+                       "highlights",
+                       updated
+                     );
+                   }}
+                 />
+               </div>
+             )
+           )}
+         </div>
+     
+         {/* ================= QUOTE SECTION ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Quote Section
+           </h3>
+     
+           <textarea
+             className="input min-h-[120px]"
+             placeholder="Highlight Quote"
+             value={form.overview.highlightQuote || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "highlightQuote",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+       </div>
+     )}
+     
+       {/* ================= STEP 3 ================= */}
+     {step === 3 && (
+       <div className="section">
+     
+         {/* ================= AMENITIES HEADER ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl text-white mb-5">
+             Amenities Section Content
+           </h3>
+     
+           {/* SECTION NUMBER */}
+           <input
+             className="input mb-4"
+             placeholder="Section Number (Example: 04)"
+             value={form.overview.amenitiesSectionNumber || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesSectionNumber",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* SECTION LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="Section Label"
+             value={form.overview.amenitiesSectionLabel || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesSectionLabel",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING LINE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Line 1"
+             value={form.overview.amenitiesHeadingLine1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesHeadingLine1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING LINE 2 */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Line 2 (Gold Text)"
+             value={form.overview.amenitiesHeadingLine2 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesHeadingLine2",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING LINE 3 */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Line 3"
+             value={form.overview.amenitiesHeadingLine3 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesHeadingLine3",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* SUBHEADING */}
+           <textarea
+             className="input min-h-[120px]"
+             placeholder="Amenities Subheading"
+             value={form.overview.amenitiesSubheading || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "amenitiesSubheading",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         <h2 className="section-title">
+           Amenities
+         </h2>
+     
+         {/* ================= SELECT AMENITIES ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl text-white mb-5">
+             Select Amenities
+           </h3>
+     
+           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+     
+             {AMENITIES.map((item) => {
+     
+               // ✅ FIXED → use amenities instead of highlights
+               const selected =
+                 (form.overview.amenities || []).some((h) => {
+     
+                   const amenityName =
+                     typeof h === "string"
+                       ? h
+                       : h?.heading || h?.name;
+     
+                   return amenityName === item.name;
+                 });
+     
+               const Icon = item.icon;
+     
+               return (
+                 <label
+                   key={item.name}
+                   className={`
+                     flex items-center gap-3 cursor-pointer
+                     p-4 rounded-2xl border transition-all
+                     ${
+                       selected
+                         ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
+                         : "bg-white/5 border-white/10 text-white/70"
+                     }
+                   `}
+                 >
+     
+                   <input
+                     type="checkbox"
+                     checked={selected}
+                     onChange={() => {
+     
+                       let updated;
+     
+                       if (selected) {
+     
+                         updated =
+                           (form.overview.amenities || []).filter(
+                             (h) => {
+     
+                               const amenityName =
+                                 typeof h === "string"
+                                   ? h
+                                   : h?.heading || h?.name;
+     
+                               return amenityName !== item.name;
+                             }
+                           );
+     
+                       } else {
+     
+                         updated = [
+                           ...(form.overview.amenities || []),
+                           {
+                             heading: item.name,
+                             subheading:
+                               "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
+                             icon: item.name,
+                           },
+                         ];
+                       }
+     
+                       handleChange(
+                         "overview",
+                         "amenities",
+                         updated
+                       );
+                     }}
+                   />
+     
+                   <Icon
+                     size={18}
+                     className="text-[#D4AF37]"
+                   />
+     
+                   <span className="text-sm font-medium">
+                     {item.name}
+                   </span>
+                 </label>
+               );
+             })}
+           </div>
+         </div>
+     
+         {/* ================= CUSTOM AMENITY ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl text-white mb-5">
+             Add Custom Amenity
+           </h3>
+     
+           {/* INPUT */}
+           <input
+             className="input w-full"
+             placeholder="Enter amenity name"
+             value={customAmenity}
+             onChange={(e) =>
+               setCustomAmenity(e.target.value)
+             }
+           />
+     
+           <textarea
+             className="input w-full mt-4 min-h-[100px]"
+             placeholder="Amenity Description / Subheading (Optional)"
+             value={customAmenitySubheading}
+             onChange={(e) =>
+               setCustomAmenitySubheading(
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* ICON SELECTOR */}
+           <div className="mt-6">
+     
+             <p className="text-sm text-white/60 mb-4">
+               Select Icon
+             </p>
+     
+             <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+     
+               {CUSTOM_ICONS.map((item) => {
+     
+                 const Icon = item.icon;
+     
+                 return (
+                   <button
+                     key={item.name}
+                     type="button"
+                     onClick={() =>
+                       setSelectedCustomIcon(
+                         item.name
+                       )
+                     }
+                     className={`
+                       p-4 rounded-2xl border
+                       flex flex-col items-center gap-2
+                       transition-all
+                       ${
+                         selectedCustomIcon ===
+                         item.name
+                           ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
+                           : "bg-white/5 border-white/10 text-white/70"
+                       }
+                     `}
+                   >
+     
+                     <Icon size={22} />
+                   </button>
+                 );
+               })}
+             </div>
+           </div>
+     
+           {/* ADD BUTTON */}
+           <button
+             type="button"
+             className="
+               mt-6 px-5 py-3 rounded-xl
+               bg-[#D4AF37]
+               text-black font-semibold
+               hover:opacity-90 transition
+             "
+             onClick={() => {
+     
+               if (!customAmenity.trim())
+                 return;
+     
+               const amenityObject = {
+                 heading: customAmenity,
+     
+                 subheading:
+                   customAmenitySubheading.trim() ||
+                   "Luxury-crafted spaces designed for elevated comfort and timeless sophistication.",
+     
+                 icon: selectedCustomIcon,
+               };
+     
+               handleChange(
+                 "overview",
+                 "amenities",
+                 [
+                   ...(form.overview.amenities || []),
+                   amenityObject,
+                 ]
+               );
+     
+               setCustomAmenity("");
+               setCustomAmenitySubheading("");
+               setSelectedCustomIcon("Home");
              }}
            >
-             <option value="">
+             + Add Custom Amenity
+           </button>
+         </div>
+     
+         {/* ================= SELECTED AMENITIES ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <h3 className="font-semibold text-xl text-white mb-5">
+             Selected Amenities
+           </h3>
+     
+           <div className="flex flex-wrap gap-3">
+     
+             {(form.overview.amenities || []).map(
+               (item, i) => {
+     
+                 const itemName =
+                   typeof item === "string"
+                     ? item
+                     : item?.heading || item?.name;
+     
+                 return (
+                   <div
+                     key={i}
+                     className="
+                       bg-[#D4AF37]
+                       text-black
+                       px-4 py-2
+                       rounded-full
+                       flex items-center gap-2
+                       font-medium
+                     "
+                   >
+     
+                     {itemName}
+     
+                     <button
+                       type="button"
+                       onClick={() => {
+     
+                         const updated =
+                           (form.overview.amenities || []).filter(
+                             (_, idx) =>
+                               idx !== i
+                           );
+     
+                         handleChange(
+                           "overview",
+                           "amenities",
+                           updated
+                         );
+                       }}
+                       className="text-black"
+                     >
+                       ✕
+                     </button>
+                   </div>
+                 );
+               }
+             )}
+           </div>
+         </div>
+     
+         {/* ================= BOTTOM STRIP ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mt-8">
+     
+           <h3 className="font-semibold text-xl text-white mb-5">
+             Bottom Strip Content
+           </h3>
+     
+           {/* LEFT TITLE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Left Title Line 1"
+             value={form.overview.bottomStripTitle1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "bottomStripTitle1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* LEFT TITLE 2 */}
+           <input
+             className="input mb-4"
+             placeholder="Left Title Line 2"
+             value={form.overview.bottomStripTitle2 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "bottomStripTitle2",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* FEATURE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Feature 1"
+             value={form.overview.bottomStripFeature1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "bottomStripFeature1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* FEATURE 2 */}
+           <input
+             className="input mb-4"
+             placeholder="Feature 2"
+             value={form.overview.bottomStripFeature2 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "bottomStripFeature2",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* FEATURE 3 */}
+           <input
+             className="input"
+             placeholder="Feature 3"
+             value={form.overview.bottomStripFeature3 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "overview",
+                 "bottomStripFeature3",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+       </div>
+     )}
+     
+             {/* ================= STEP 4 ================= */}
+             {step === 4 && (
+               <StepMedia form={form} setForm={setForm} />
+             )}
+     
+             {/* ================= STEP 5 ================= */}
+     {step === 5 && (
+       <div className="section">
+     
+         <h2 className="section-title">
+           Location Details
+         </h2>
+     
+         {/* ================= BASIC LOCATION ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Basic Location Details
+           </h3>
+     
+           {/* LOCATION SELECT */}
+           <div className="mb-5">
+     
+             <label className="block text-sm text-white/70 mb-2">
                Select Location
-             </option>
- 
-             {buildOptions(locations).map((loc) => (
-               <option key={loc._id} value={loc._id}>
-                 {loc.label}
-               </option>
-             ))}
- 
-             <option value="OTHER">
-               + Add Custom Location
-             </option>
-           </select>
- 
-         ) : (
- 
-           <div className="flex flex-col md:flex-row gap-3">
- 
+             </label>
+     
+             {!useCustomLocation ? (
+     
+               <select
+                 className="input"
+                 value={form.locationData.locationRef || ""}
+                 onChange={(e) => {
+     
+                   if (e.target.value === "OTHER") {
+     
+                     setUseCustomLocation(true);
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       locationData: {
+                         ...prev.locationData,
+                         locationRef: "",
+                         locationName: "",
+                         customLocation: "",
+                       },
+                     }));
+     
+                   } else {
+     
+                     const selected = buildOptions(locations).find(
+                       (l) => l._id === e.target.value
+                     );
+     
+                     setUseCustomLocation(false);
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       locationData: {
+                         ...prev.locationData,
+                         locationRef: selected?._id || "",
+                         locationName: selected?.label || "",
+                         customLocation: "",
+                       },
+                     }));
+                   }
+                 }}
+               >
+                 <option value="">
+                   Select Location
+                 </option>
+     
+                 {buildOptions(locations).map((loc) => (
+                   <option key={loc._id} value={loc._id}>
+                     {loc.label}
+                   </option>
+                 ))}
+     
+                 <option value="OTHER">
+                   + Add Custom Location
+                 </option>
+               </select>
+     
+             ) : (
+     
+               <div className="flex flex-col md:flex-row gap-3">
+     
+                 <input
+                   className="input flex-1"
+                   placeholder="Enter custom location"
+                   value={form.locationData.customLocation || ""}
+                   onChange={(e) =>
+                     setForm((prev) => ({
+                       ...prev,
+                       locationData: {
+                         ...prev.locationData,
+                         customLocation: e.target.value,
+                       },
+                     }))
+                   }
+                 />
+     
+                 <button
+                   type="button"
+                   onClick={() => {
+     
+                     setUseCustomLocation(false);
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       locationData: {
+                         ...prev.locationData,
+                         locationRef: "",
+                         locationName: "",
+                         customLocation: "",
+                       },
+                     }));
+                   }}
+                   className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
+                 >
+                   Cancel
+                 </button>
+               </div>
+             )}
+           </div>
+     
+           {/* ADDRESS */}
+           <input
+             className="input mb-4"
+             placeholder="Full Property Address"
+             value={form.locationData.address || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "address",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* MAP URL */}
+           <input
+             className="input"
+             placeholder="Google Maps Embed URL"
+             value={form.locationData.mapEmbedUrl || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "mapEmbedUrl",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= SECTION CONTENT ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Section Content
+           </h3>
+     
+           {/* SECTION NUMBER */}
+           <input
+             className="input mb-4"
+             placeholder="Section Number"
+             value={form.locationData.sectionNumber || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "sectionNumber",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TOP LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="Top Label"
+             value={form.locationData.topLabel || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "topLabel",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING LINE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Line 1"
+             value={form.locationData.headingLine1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "headingLine1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING HIGHLIGHT */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Highlight"
+             value={form.locationData.headingHighlight || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "headingHighlight",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* DESCRIPTION */}
+           <textarea
+             className="input min-h-[140px]"
+             placeholder="Section Description"
+             value={form.locationData.description || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "description",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= LEFT CARD ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Left Card Content
+           </h3>
+     
+           {/* SMALL LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="Left Card Small Label"
+             value={form.locationData.leftCardTag || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "leftCardTag",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TITLE LINE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Left Card Title Line 1"
+             value={form.locationData.leftCardTitleLine1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "leftCardTitleLine1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TITLE LINE 2 */}
+           <input
+             className="input mb-4"
+             placeholder="Left Card Title Line 2"
+             value={form.locationData.leftCardTitleLine2 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "leftCardTitleLine2",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* DESCRIPTION */}
+           <textarea
+             className="input min-h-[120px]"
+             placeholder="Left Card Description"
+             value={form.locationData.leftCardDescription || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "leftCardDescription",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= MAP SECTION ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Map Section
+           </h3>
+     
+           {/* MAP TAG */}
+           <input
+             className="input mb-4"
+             placeholder="Map Section Tag"
+             value={form.locationData.mapSectionTag || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "mapSectionTag",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* MAP TITLE */}
+           <input
+             className="input"
+             placeholder="Map Section Title"
+             value={form.locationData.mapSectionTitle || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "mapSectionTitle",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= BADGE ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Badge Content
+           </h3>
+     
+           {/* BADGE TITLE */}
+           <input
+             className="input mb-4"
+             placeholder="Badge Title"
+             value={form.locationData.badgeTitle || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "badgeTitle",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* BADGE SUBTITLE */}
+           <input
+             className="input"
+             placeholder="Badge Subtitle"
+             value={form.locationData.badgeSubtitle || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "badgeSubtitle",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= FLOATING CARD ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Floating Card
+           </h3>
+     
+           {/* TAG */}
+           <input
+             className="input mb-4"
+             placeholder="Floating Card Tag"
+             value={form.locationData.floatingCardTag || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "floatingCardTag",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TITLE */}
+           <input
+             className="input mb-4"
+             placeholder="Floating Card Title"
+             value={form.locationData.floatingCardTitle || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "floatingCardTitle",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* DESCRIPTION */}
+           <textarea
+             className="input min-h-[120px]"
+             placeholder="Floating Card Description"
+             value={form.locationData.floatingCardDescription || ""}
+             onChange={(e) =>
+               handleChange(
+                 "locationData",
+                 "floatingCardDescription",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= LANDMARKS ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               Nearby Landmarks
+             </h3>
+     
+             <button
+               type="button"
+               onClick={() => {
+     
+                 const updated = [
+                   ...(form.locationData.landmarks || []),
+                   {
+                     name: "",
+                     distance: "",
+                     subtitle: "",
+                     icon: "✦",
+                   },
+                 ];
+     
+                 handleChange(
+                   "locationData",
+                   "landmarks",
+                   updated
+                 );
+               }}
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+             >
+               + Add Landmark
+             </button>
+           </div>
+     
+           {(form.locationData.landmarks || []).map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+               >
+     
+                 {/* TOP */}
+                 <div className="flex items-center justify-between mb-4">
+     
+                   <h4 className="font-semibold text-white">
+                     Landmark #{index + 1}
+                   </h4>
+     
+                   <button
+                     type="button"
+                     onClick={() => {
+     
+                       const updated =
+                         form.locationData.landmarks.filter(
+                           (_, i) => i !== index
+                         );
+     
+                       handleChange(
+                         "locationData",
+                         "landmarks",
+                         updated
+                       );
+                     }}
+                     className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   >
+                     Delete
+                   </button>
+                 </div>
+     
+                 {/* NAME */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Landmark Name"
+                   value={item.name || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.landmarks,
+                     ];
+     
+                     updated[index].name =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "landmarks",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* DISTANCE */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Distance"
+                   value={item.distance || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.landmarks,
+                     ];
+     
+                     updated[index].distance =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "landmarks",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* SUBTITLE */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Subtitle"
+                   value={item.subtitle || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.landmarks,
+                     ];
+     
+                     updated[index].subtitle =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "landmarks",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* ICON */}
+                 <input
+                   className="input"
+                   placeholder="Icon (✦ ⌂ ➜ ☁)"
+                   value={item.icon || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.landmarks,
+                     ];
+     
+                     updated[index].icon =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "landmarks",
+                       updated
+                     );
+                   }}
+                 />
+               </div>
+             )
+           )}
+         </div>
+     
+         {/* ================= BOTTOM STRIP ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               Bottom Strip Features
+             </h3>
+     
+             <button
+               type="button"
+               onClick={() => {
+     
+                 const updated = [
+                   ...(form.locationData.bottomStrip || []),
+                   {
+                     title: "",
+                     desc: "",
+                     icon: "✦",
+                   },
+                 ];
+     
+                 handleChange(
+                   "locationData",
+                   "bottomStrip",
+                   updated
+                 );
+               }}
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+             >
+               + Add Feature
+             </button>
+           </div>
+     
+           {(form.locationData.bottomStrip || []).map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+               >
+     
+                 {/* TOP */}
+                 <div className="flex items-center justify-between mb-4">
+     
+                   <h4 className="font-semibold text-white">
+                     Feature #{index + 1}
+                   </h4>
+     
+                   <button
+                     type="button"
+                     onClick={() => {
+     
+                       const updated =
+                         form.locationData.bottomStrip.filter(
+                           (_, i) => i !== index
+                         );
+     
+                       handleChange(
+                         "locationData",
+                         "bottomStrip",
+                         updated
+                       );
+                     }}
+                     className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   >
+                     Delete
+                   </button>
+                 </div>
+     
+                 {/* TITLE */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Feature Title"
+                   value={item.title || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.bottomStrip,
+                     ];
+     
+                     updated[index].title =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* DESCRIPTION */}
+                 <textarea
+                   className="input min-h-[100px] mb-4"
+                   placeholder="Feature Description"
+                   value={item.desc || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.bottomStrip,
+                     ];
+     
+                     updated[index].desc =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* ICON */}
+                 <input
+                   className="input"
+                   placeholder="Icon (✦ ◈ ⌂ ▣)"
+                   value={item.icon || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.locationData.bottomStrip,
+                     ];
+     
+                     updated[index].icon =
+                       e.target.value;
+     
+                     handleChange(
+                       "locationData",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+               </div>
+             )
+           )}
+         </div>
+       </div>
+     )}
+     
+     
+            {/* ================= STEP 6 ================= */}
+     {step === 6 && (
+       <div className="section space-y-8">
+     
+         {/* ================= HEADING ================= */}
+         <div>
+           <h2 className="section-title">
+             Master Plan Section
+           </h2>
+     
+           <p className="text-sm text-gray-400 mt-2">
+             Configure premium master plan section content
+           </p>
+         </div>
+     
+         {/* ================= BROCHURE ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Brochure PDF
+           </h3>
+     
+           <input
+             className="input"
+             placeholder="Brochure PDF URL (Google Drive / CDN link)"
+             value={form.gatedContent.brochurePdfUrl || ""}
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 gatedContent: {
+                   ...prev.gatedContent,
+                   brochurePdfUrl: e.target.value,
+                 },
+               }))
+             }
+           />
+         </div>
+     
+         {/* ================= MASTER PLAN CONTENT ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <h3 className="font-semibold text-xl mb-5 text-white">
+             Master Plan Content
+           </h3>
+     
+           {/* SECTION NUMBER */}
+           <input
+             className="input mb-4"
+             placeholder="Section Number"
+             value={form.masterPlanSection?.sectionNumber || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "sectionNumber",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TOP LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="Top Label"
+             value={form.masterPlanSection?.topLabel || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "topLabel",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING LINE 1 */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Line 1"
+             value={form.masterPlanSection?.headingLine1 || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "headingLine1",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* HEADING HIGHLIGHT */}
+           <input
+             className="input mb-4"
+             placeholder="Heading Highlight"
+             value={form.masterPlanSection?.headingHighlight || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "headingHighlight",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* DESCRIPTION */}
+           <textarea
+             className="input min-h-[120px] mb-4"
+             placeholder="Section Description"
+             value={form.masterPlanSection?.description || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "description",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* TOP FLOATING LABEL */}
+           <input
+             className="input mb-4"
+             placeholder="Top Floating Label"
+             value={form.masterPlanSection?.topFloatingLabel || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "topFloatingLabel",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* CENTER TITLE */}
+           <input
+             className="input mb-4"
+             placeholder="Center Title"
+             value={form.masterPlanSection?.centerTitle || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "centerTitle",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* CENTER DESCRIPTION */}
+           <textarea
+             className="input min-h-[120px] mb-4"
+             placeholder="Center Description"
+             value={form.masterPlanSection?.centerDescription || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "centerDescription",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* BUTTON TEXT */}
+           <input
+             className="input mb-4"
+             placeholder="Button Text"
+             value={form.masterPlanSection?.buttonText || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "buttonText",
+                 e.target.value
+               )
+             }
+           />
+     
+           {/* IMAGE */}
+           <input
+             className="input"
+             placeholder="Master Plan Image URL"
+             value={form.masterPlanSection?.masterPlanImage || ""}
+             onChange={(e) =>
+               handleChange(
+                 "masterPlanSection",
+                 "masterPlanImage",
+                 e.target.value
+               )
+             }
+           />
+         </div>
+     
+         {/* ================= BOTTOM STRIP ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               Bottom Strip Features
+             </h3>
+     
+             <button
+               type="button"
+               onClick={() => {
+     
+                 const updated = [
+                   ...(form.masterPlanSection?.bottomStrip || []),
+                   {
+                     title: "",
+                     desc: "",
+                     icon: "✦",
+                   },
+                 ];
+     
+                 handleChange(
+                   "masterPlanSection",
+                   "bottomStrip",
+                   updated
+                 );
+               }}
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+             >
+               + Add Feature
+             </button>
+           </div>
+     
+           {(form.masterPlanSection?.bottomStrip || []).map(
+             (item, index) => (
+               <div
+                 key={index}
+                 className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+               >
+     
+                 {/* TOP */}
+                 <div className="flex items-center justify-between mb-4">
+     
+                   <h4 className="font-semibold text-white">
+                     Feature #{index + 1}
+                   </h4>
+     
+                   <button
+                     type="button"
+                     onClick={() => {
+     
+                       const updated =
+                         form.masterPlanSection.bottomStrip.filter(
+                           (_, i) => i !== index
+                         );
+     
+                       handleChange(
+                         "masterPlanSection",
+                         "bottomStrip",
+                         updated
+                       );
+                     }}
+                     className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   >
+                     Delete
+                   </button>
+                 </div>
+     
+                 {/* TITLE */}
+                 <input
+                   className="input mb-4"
+                   placeholder="Feature Title"
+                   value={item.title || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.masterPlanSection.bottomStrip,
+                     ];
+     
+                     updated[index].title =
+                       e.target.value;
+     
+                     handleChange(
+                       "masterPlanSection",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* DESCRIPTION */}
+                 <textarea
+                   className="input min-h-[100px] mb-4"
+                   placeholder="Feature Description"
+                   value={item.desc || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.masterPlanSection.bottomStrip,
+                     ];
+     
+                     updated[index].desc =
+                       e.target.value;
+     
+                     handleChange(
+                       "masterPlanSection",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+     
+                 {/* ICON */}
+                 <input
+                   className="input"
+                   placeholder="Icon (✦ ◈ ↗ ▣)"
+                   value={item.icon || ""}
+                   onChange={(e) => {
+     
+                     const updated = [
+                       ...form.masterPlanSection.bottomStrip,
+                     ];
+     
+                     updated[index].icon =
+                       e.target.value;
+     
+                     handleChange(
+                       "masterPlanSection",
+                       "bottomStrip",
+                       updated
+                     );
+                   }}
+                 />
+               </div>
+             )
+           )}
+         </div>
+       </div>
+     )}
+     
+     {/* ================= STEP 7 ================= */}
+     {step === 7 && (
+       <div className="section space-y-8">
+     
+         {/* ================= HEADING ================= */}
+         <div>
+           <h2 className="section-title">
+             FAQs Section
+           </h2>
+     
+           <p className="text-sm text-gray-400 mt-2">
+             Fully dynamic FAQ content for property preview page
+           </p>
+         </div>
+     
+         {/* ================= FAQ SECTION SETTINGS ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10 space-y-5">
+     
+           <h3 className="font-semibold text-xl text-white">
+             FAQ Section Content
+           </h3>
+     
+           {/* SECTION NUMBER */}
+           <div>
+             <label className="block text-sm text-gray-300 mb-2">
+               Section Number
+             </label>
+     
              <input
-               className="input flex-1"
-               placeholder="Enter custom location"
-               value={form.locationData.customLocation || ""}
+               className="input"
+               placeholder="09"
+               value={form.faqSection?.sectionNumber || ""}
                onChange={(e) =>
                  setForm((prev) => ({
                    ...prev,
-                   locationData: {
-                     ...prev.locationData,
-                     customLocation: e.target.value,
+                   faqSection: {
+                     ...prev.faqSection,
+                     sectionNumber: e.target.value,
                    },
                  }))
                }
              />
- 
-             <button
-               type="button"
-               onClick={() => {
- 
-                 setUseCustomLocation(false);
- 
+           </div>
+     
+           {/* TOP LABEL */}
+           <div>
+             <label className="block text-sm text-gray-300 mb-2">
+               Top Label
+             </label>
+     
+             <input
+               className="input"
+               placeholder="FAQ"
+               value={form.faqSection?.topLabel || ""}
+               onChange={(e) =>
                  setForm((prev) => ({
                    ...prev,
-                   locationData: {
-                     ...prev.locationData,
-                     locationRef: "",
-                     locationName: "",
-                     customLocation: "",
+                   faqSection: {
+                     ...prev.faqSection,
+                     topLabel: e.target.value,
                    },
-                 }));
-               }}
-               className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
-             >
-               Cancel
-             </button>
+                 }))
+               }
+             />
            </div>
-         )}
-       </div>
- 
-       {/* ADDRESS */}
-       <input
-         className="input mb-4"
-         placeholder="Full Property Address"
-         value={form.locationData.address || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "address",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* MAP URL */}
-       <input
-         className="input"
-         placeholder="Google Maps Embed URL"
-         value={form.locationData.mapEmbedUrl || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "mapEmbedUrl",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= SECTION CONTENT ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Section Content
-       </h3>
- 
-       {/* SECTION NUMBER */}
-       <input
-         className="input mb-4"
-         placeholder="Section Number"
-         value={form.locationData.sectionNumber || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "sectionNumber",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TOP LABEL */}
-       <input
-         className="input mb-4"
-         placeholder="Top Label"
-         value={form.locationData.topLabel || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "topLabel",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* HEADING LINE 1 */}
-       <input
-         className="input mb-4"
-         placeholder="Heading Line 1"
-         value={form.locationData.headingLine1 || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "headingLine1",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* HEADING HIGHLIGHT */}
-       <input
-         className="input mb-4"
-         placeholder="Heading Highlight"
-         value={form.locationData.headingHighlight || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "headingHighlight",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* DESCRIPTION */}
-       <textarea
-         className="input min-h-[140px]"
-         placeholder="Section Description"
-         value={form.locationData.description || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "description",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= LEFT CARD ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Left Card Content
-       </h3>
- 
-       {/* SMALL LABEL */}
-       <input
-         className="input mb-4"
-         placeholder="Left Card Small Label"
-         value={form.locationData.leftCardTag || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "leftCardTag",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TITLE LINE 1 */}
-       <input
-         className="input mb-4"
-         placeholder="Left Card Title Line 1"
-         value={form.locationData.leftCardTitleLine1 || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "leftCardTitleLine1",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TITLE LINE 2 */}
-       <input
-         className="input mb-4"
-         placeholder="Left Card Title Line 2"
-         value={form.locationData.leftCardTitleLine2 || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "leftCardTitleLine2",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* DESCRIPTION */}
-       <textarea
-         className="input min-h-[120px]"
-         placeholder="Left Card Description"
-         value={form.locationData.leftCardDescription || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "leftCardDescription",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= MAP SECTION ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Map Section
-       </h3>
- 
-       {/* MAP TAG */}
-       <input
-         className="input mb-4"
-         placeholder="Map Section Tag"
-         value={form.locationData.mapSectionTag || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "mapSectionTag",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* MAP TITLE */}
-       <input
-         className="input"
-         placeholder="Map Section Title"
-         value={form.locationData.mapSectionTitle || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "mapSectionTitle",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= BADGE ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Badge Content
-       </h3>
- 
-       {/* BADGE TITLE */}
-       <input
-         className="input mb-4"
-         placeholder="Badge Title"
-         value={form.locationData.badgeTitle || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "badgeTitle",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* BADGE SUBTITLE */}
-       <input
-         className="input"
-         placeholder="Badge Subtitle"
-         value={form.locationData.badgeSubtitle || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "badgeSubtitle",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= FLOATING CARD ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Floating Card
-       </h3>
- 
-       {/* TAG */}
-       <input
-         className="input mb-4"
-         placeholder="Floating Card Tag"
-         value={form.locationData.floatingCardTag || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "floatingCardTag",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TITLE */}
-       <input
-         className="input mb-4"
-         placeholder="Floating Card Title"
-         value={form.locationData.floatingCardTitle || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "floatingCardTitle",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* DESCRIPTION */}
-       <textarea
-         className="input min-h-[120px]"
-         placeholder="Floating Card Description"
-         value={form.locationData.floatingCardDescription || ""}
-         onChange={(e) =>
-           handleChange(
-             "locationData",
-             "floatingCardDescription",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= LANDMARKS ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-       <div className="flex items-center justify-between mb-5">
- 
-         <h3 className="font-semibold text-xl text-white">
-           Nearby Landmarks
-         </h3>
- 
-         <button
-           type="button"
-           onClick={() => {
- 
-             const updated = [
-               ...(form.locationData.landmarks || []),
-               {
-                 name: "",
-                 distance: "",
-                 subtitle: "",
-                 icon: "✦",
-               },
-             ];
- 
-             handleChange(
-               "locationData",
-               "landmarks",
-               updated
-             );
-           }}
-           className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-         >
-           + Add Landmark
-         </button>
-       </div>
- 
-       {(form.locationData.landmarks || []).map(
-         (item, index) => (
-           <div
-             key={index}
-             className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-           >
- 
-             {/* TOP */}
-             <div className="flex items-center justify-between mb-4">
- 
-               <h4 className="font-semibold text-white">
-                 Landmark #{index + 1}
-               </h4>
- 
-               <button
-                 type="button"
-                 onClick={() => {
- 
-                   const updated =
-                     form.locationData.landmarks.filter(
-                       (_, i) => i !== index
-                     );
- 
-                   handleChange(
-                     "locationData",
-                     "landmarks",
-                     updated
-                   );
-                 }}
-                 className="bg-red-500 text-white px-3 py-1 rounded-lg"
-               >
-                 Delete
-               </button>
-             </div>
- 
-             {/* NAME */}
-             <input
-               className="input mb-4"
-               placeholder="Landmark Name"
-               value={item.name || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.landmarks,
-                 ];
- 
-                 updated[index].name =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "landmarks",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* DISTANCE */}
-             <input
-               className="input mb-4"
-               placeholder="Distance"
-               value={item.distance || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.landmarks,
-                 ];
- 
-                 updated[index].distance =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "landmarks",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* SUBTITLE */}
-             <input
-               className="input mb-4"
-               placeholder="Subtitle"
-               value={item.subtitle || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.landmarks,
-                 ];
- 
-                 updated[index].subtitle =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "landmarks",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* ICON */}
+     
+           {/* HEADING */}
+           <div>
+             <label className="block text-sm text-gray-300 mb-2">
+               Main Heading
+             </label>
+     
              <input
                className="input"
-               placeholder="Icon (✦ ⌂ ➜ ☁)"
-               value={item.icon || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.landmarks,
-                 ];
- 
-                 updated[index].icon =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "landmarks",
-                   updated
-                 );
-               }}
-             />
-           </div>
-         )
-       )}
-     </div>
- 
-     {/* ================= BOTTOM STRIP ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10">
- 
-       <div className="flex items-center justify-between mb-5">
- 
-         <h3 className="font-semibold text-xl text-white">
-           Bottom Strip Features
-         </h3>
- 
-         <button
-           type="button"
-           onClick={() => {
- 
-             const updated = [
-               ...(form.locationData.bottomStrip || []),
-               {
-                 title: "",
-                 desc: "",
-                 icon: "✦",
-               },
-             ];
- 
-             handleChange(
-               "locationData",
-               "bottomStrip",
-               updated
-             );
-           }}
-           className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-         >
-           + Add Feature
-         </button>
-       </div>
- 
-       {(form.locationData.bottomStrip || []).map(
-         (item, index) => (
-           <div
-             key={index}
-             className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-           >
- 
-             {/* TOP */}
-             <div className="flex items-center justify-between mb-4">
- 
-               <h4 className="font-semibold text-white">
-                 Feature #{index + 1}
-               </h4>
- 
-               <button
-                 type="button"
-                 onClick={() => {
- 
-                   const updated =
-                     form.locationData.bottomStrip.filter(
-                       (_, i) => i !== index
-                     );
- 
-                   handleChange(
-                     "locationData",
-                     "bottomStrip",
-                     updated
-                   );
-                 }}
-                 className="bg-red-500 text-white px-3 py-1 rounded-lg"
-               >
-                 Delete
-               </button>
-             </div>
- 
-             {/* TITLE */}
-             <input
-               className="input mb-4"
-               placeholder="Feature Title"
-               value={item.title || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.bottomStrip,
-                 ];
- 
-                 updated[index].title =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* DESCRIPTION */}
-             <textarea
-               className="input min-h-[100px] mb-4"
-               placeholder="Feature Description"
-               value={item.desc || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.bottomStrip,
-                 ];
- 
-                 updated[index].desc =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* ICON */}
-             <input
-               className="input"
-               placeholder="Icon (✦ ◈ ⌂ ▣)"
-               value={item.icon || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.locationData.bottomStrip,
-                 ];
- 
-                 updated[index].icon =
-                   e.target.value;
- 
-                 handleChange(
-                   "locationData",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
-           </div>
-         )
-       )}
-     </div>
-   </div>
- )}
- 
- 
-        {/* ================= STEP 6 ================= */}
- {step === 6 && (
-   <div className="section space-y-8">
- 
-     {/* ================= HEADING ================= */}
-     <div>
-       <h2 className="section-title">
-         Master Plan Section
-       </h2>
- 
-       <p className="text-sm text-gray-400 mt-2">
-         Configure premium master plan section content
-       </p>
-     </div>
- 
-     {/* ================= BROCHURE ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Brochure PDF
-       </h3>
- 
-       <input
-         className="input"
-         placeholder="Brochure PDF URL (Google Drive / CDN link)"
-         value={form.gatedContent.brochurePdfUrl || ""}
-         onChange={(e) =>
-           setForm((prev) => ({
-             ...prev,
-             gatedContent: {
-               ...prev.gatedContent,
-               brochurePdfUrl: e.target.value,
-             },
-           }))
-         }
-       />
-     </div>
- 
-     {/* ================= MASTER PLAN CONTENT ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10">
- 
-       <h3 className="font-semibold text-xl mb-5 text-white">
-         Master Plan Content
-       </h3>
- 
-       {/* SECTION NUMBER */}
-       <input
-         className="input mb-4"
-         placeholder="Section Number"
-         value={form.masterPlanSection?.sectionNumber || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "sectionNumber",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TOP LABEL */}
-       <input
-         className="input mb-4"
-         placeholder="Top Label"
-         value={form.masterPlanSection?.topLabel || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "topLabel",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* HEADING LINE 1 */}
-       <input
-         className="input mb-4"
-         placeholder="Heading Line 1"
-         value={form.masterPlanSection?.headingLine1 || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "headingLine1",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* HEADING HIGHLIGHT */}
-       <input
-         className="input mb-4"
-         placeholder="Heading Highlight"
-         value={form.masterPlanSection?.headingHighlight || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "headingHighlight",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* DESCRIPTION */}
-       <textarea
-         className="input min-h-[120px] mb-4"
-         placeholder="Section Description"
-         value={form.masterPlanSection?.description || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "description",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* TOP FLOATING LABEL */}
-       <input
-         className="input mb-4"
-         placeholder="Top Floating Label"
-         value={form.masterPlanSection?.topFloatingLabel || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "topFloatingLabel",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* CENTER TITLE */}
-       <input
-         className="input mb-4"
-         placeholder="Center Title"
-         value={form.masterPlanSection?.centerTitle || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "centerTitle",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* CENTER DESCRIPTION */}
-       <textarea
-         className="input min-h-[120px] mb-4"
-         placeholder="Center Description"
-         value={form.masterPlanSection?.centerDescription || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "centerDescription",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* BUTTON TEXT */}
-       <input
-         className="input mb-4"
-         placeholder="Button Text"
-         value={form.masterPlanSection?.buttonText || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "buttonText",
-             e.target.value
-           )
-         }
-       />
- 
-       {/* IMAGE */}
-       <input
-         className="input"
-         placeholder="Master Plan Image URL"
-         value={form.masterPlanSection?.masterPlanImage || ""}
-         onChange={(e) =>
-           handleChange(
-             "masterPlanSection",
-             "masterPlanImage",
-             e.target.value
-           )
-         }
-       />
-     </div>
- 
-     {/* ================= BOTTOM STRIP ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10">
- 
-       <div className="flex items-center justify-between mb-5">
- 
-         <h3 className="font-semibold text-xl text-white">
-           Bottom Strip Features
-         </h3>
- 
-         <button
-           type="button"
-           onClick={() => {
- 
-             const updated = [
-               ...(form.masterPlanSection?.bottomStrip || []),
-               {
-                 title: "",
-                 desc: "",
-                 icon: "✦",
-               },
-             ];
- 
-             handleChange(
-               "masterPlanSection",
-               "bottomStrip",
-               updated
-             );
-           }}
-           className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-         >
-           + Add Feature
-         </button>
-       </div>
- 
-       {(form.masterPlanSection?.bottomStrip || []).map(
-         (item, index) => (
-           <div
-             key={index}
-             className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-           >
- 
-             {/* TOP */}
-             <div className="flex items-center justify-between mb-4">
- 
-               <h4 className="font-semibold text-white">
-                 Feature #{index + 1}
-               </h4>
- 
-               <button
-                 type="button"
-                 onClick={() => {
- 
-                   const updated =
-                     form.masterPlanSection.bottomStrip.filter(
-                       (_, i) => i !== index
-                     );
- 
-                   handleChange(
-                     "masterPlanSection",
-                     "bottomStrip",
-                     updated
-                   );
-                 }}
-                 className="bg-red-500 text-white px-3 py-1 rounded-lg"
-               >
-                 Delete
-               </button>
-             </div>
- 
-             {/* TITLE */}
-             <input
-               className="input mb-4"
-               placeholder="Feature Title"
-               value={item.title || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.masterPlanSection.bottomStrip,
-                 ];
- 
-                 updated[index].title =
-                   e.target.value;
- 
-                 handleChange(
-                   "masterPlanSection",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* DESCRIPTION */}
-             <textarea
-               className="input min-h-[100px] mb-4"
-               placeholder="Feature Description"
-               value={item.desc || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.masterPlanSection.bottomStrip,
-                 ];
- 
-                 updated[index].desc =
-                   e.target.value;
- 
-                 handleChange(
-                   "masterPlanSection",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
- 
-             {/* ICON */}
-             <input
-               className="input"
-               placeholder="Icon (✦ ◈ ↗ ▣)"
-               value={item.icon || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...form.masterPlanSection.bottomStrip,
-                 ];
- 
-                 updated[index].icon =
-                   e.target.value;
- 
-                 handleChange(
-                   "masterPlanSection",
-                   "bottomStrip",
-                   updated
-                 );
-               }}
-             />
-           </div>
-         )
-       )}
-     </div>
-   </div>
- )}
- 
- {/* ================= STEP 7 ================= */}
- {step === 7 && (
-   <div className="section space-y-8">
- 
-     {/* ================= HEADING ================= */}
-     <div>
-       <h2 className="section-title">
-         FAQs Section
-       </h2>
- 
-       <p className="text-sm text-gray-400 mt-2">
-         Fully dynamic FAQ content for property preview page
-       </p>
-     </div>
- 
-     {/* ================= FAQ SECTION SETTINGS ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10 space-y-5">
- 
-       <h3 className="font-semibold text-xl text-white">
-         FAQ Section Content
-       </h3>
- 
-       {/* SECTION NUMBER */}
-       <div>
-         <label className="block text-sm text-gray-300 mb-2">
-           Section Number
-         </label>
- 
-         <input
-           className="input"
-           placeholder="09"
-           value={form.faqSection?.sectionNumber || ""}
-           onChange={(e) =>
-             setForm((prev) => ({
-               ...prev,
-               faqSection: {
-                 ...prev.faqSection,
-                 sectionNumber: e.target.value,
-               },
-             }))
-           }
-         />
-       </div>
- 
-       {/* TOP LABEL */}
-       <div>
-         <label className="block text-sm text-gray-300 mb-2">
-           Top Label
-         </label>
- 
-         <input
-           className="input"
-           placeholder="FAQ"
-           value={form.faqSection?.topLabel || ""}
-           onChange={(e) =>
-             setForm((prev) => ({
-               ...prev,
-               faqSection: {
-                 ...prev.faqSection,
-                 topLabel: e.target.value,
-               },
-             }))
-           }
-         />
-       </div>
- 
-       {/* HEADING */}
-       <div>
-         <label className="block text-sm text-gray-300 mb-2">
-           Main Heading
-         </label>
- 
-         <input
-           className="input"
-           placeholder="Frequently Asked Questions"
-           value={form.faqSection?.heading || ""}
-           onChange={(e) =>
-             setForm((prev) => ({
-               ...prev,
-               faqSection: {
-                 ...prev.faqSection,
-                 heading: e.target.value,
-               },
-             }))
-           }
-         />
-       </div>
- 
-       {/* SUBHEADING */}
-       <div>
-         <label className="block text-sm text-gray-300 mb-2">
-           Subheading
-         </label>
- 
-         <textarea
-           className="input min-h-[100px]"
-           placeholder="Find answers to common questions about the project and your journey to your dream home."
-           value={form.faqSection?.subheading || ""}
-           onChange={(e) =>
-             setForm((prev) => ({
-               ...prev,
-               faqSection: {
-                 ...prev.faqSection,
-                 subheading: e.target.value,
-               },
-             }))
-           }
-         />
-       </div>
- 
-       {/* ================= LEFT CARD ================= */}
- 
-       <div className="border-t border-white/10 pt-6">
-         <h3 className="font-semibold text-lg text-white mb-5">
-           Left Developer Card
-         </h3>
- 
-         {/* CONTACT TITLE */}
-         <div className="mb-5">
-           <label className="block text-sm text-gray-300 mb-2">
-             Contact Card Title
-           </label>
- 
-           <input
-             className="input"
-             placeholder="Still have questions?"
-             value={form.faqSection?.contactTitle || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   contactTitle: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
- 
-         {/* CONTACT DESCRIPTION */}
-         <div className="mb-5">
-           <label className="block text-sm text-gray-300 mb-2">
-             Contact Description
-           </label>
- 
-           <textarea
-             className="input min-h-[120px]"
-             placeholder="Connect with our luxury property specialists and discover every detail crafted for elevated living."
-             value={form.faqSection?.contactDescription || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   contactDescription: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
- 
-         {/* PHONE */}
-         <div className="mb-5">
-           <label className="block text-sm text-gray-300 mb-2">
-             Contact Number
-           </label>
- 
-           <input
-             className="input"
-             placeholder="+91 99999 99999"
-             value={form.faqSection?.contactPhone || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   contactPhone: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
- 
-         {/* TIMINGS */}
-         <div>
-           <label className="block text-sm text-gray-300 mb-2">
-             Working Hours
-           </label>
- 
-           <input
-             className="input"
-             placeholder="Monday — Sunday | 10 AM — 7 PM"
-             value={form.faqSection?.contactTiming || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   contactTiming: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
-       </div>
- 
-       {/* ================= BOTTOM CTA ================= */}
- 
-       <div className="border-t border-white/10 pt-6">
-         <h3 className="font-semibold text-lg text-white mb-5">
-           Bottom CTA Section
-         </h3>
- 
-         {/* CTA TITLE */}
-         <div className="mb-5">
-           <label className="block text-sm text-gray-300 mb-2">
-             CTA Heading
-           </label>
- 
-           <input
-             className="input"
-             placeholder="Ready to experience your dream home?"
-             value={form.faqSection?.ctaTitle || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   ctaTitle: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
- 
-         {/* CTA DESCRIPTION */}
-         <div className="mb-5">
-           <label className="block text-sm text-gray-300 mb-2">
-             CTA Description
-           </label>
- 
-           <textarea
-             className="input min-h-[100px]"
-             placeholder="Book a site visit and take the first step towards your dream home."
-             value={form.faqSection?.ctaDescription || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   ctaDescription: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
- 
-         {/* CTA BUTTON */}
-         <div>
-           <label className="block text-sm text-gray-300 mb-2">
-             CTA Button Text
-           </label>
- 
-           <input
-             className="input"
-             placeholder="Book A Site Visit"
-             value={form.faqSection?.ctaButtonText || ""}
-             onChange={(e) =>
-               setForm((prev) => ({
-                 ...prev,
-                 faqSection: {
-                   ...prev.faqSection,
-                   ctaButtonText: e.target.value,
-                 },
-               }))
-             }
-           />
-         </div>
-       </div>
-     </div>
- 
-     {/* ================= FAQS ================= */}
-     <div className="glass p-6 rounded-2xl border border-white/10">
- 
-       <div className="flex items-center justify-between mb-5">
- 
-         <h3 className="font-semibold text-xl text-white">
-           FAQs
-         </h3>
- 
-         <button
-           type="button"
-           onClick={() =>
-             setForm((prev) => ({
-               ...prev,
-               faqs: [
-   ...(prev.faqs || []),
-                 {
-                   question: "",
-                   answer: "",
-                 },
-               ],
-             }))
-           }
-           className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-         >
-           + Add FAQ
-         </button>
-       </div>
- 
-       {(form.faqs || []).map((f, i) => (
- 
-         <div
-           key={i}
-           className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-         >
- 
-           {/* TOP */}
-           <div className="flex items-center justify-between mb-4">
- 
-             <h4 className="font-semibold text-white">
-               FAQ #{i + 1}
-             </h4>
- 
-             <button
-               type="button"
-               onClick={() => {
- 
-                 const arr =
-                   form.faqs.filter(
-                     (_, idx) => idx !== i
-                   );
- 
+               placeholder="Frequently Asked Questions"
+               value={form.faqSection?.heading || ""}
+               onChange={(e) =>
                  setForm((prev) => ({
                    ...prev,
-                   faqs: arr,
-                 }));
-               }}
-               className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                   faqSection: {
+                     ...prev.faqSection,
+                     heading: e.target.value,
+                   },
+                 }))
+               }
+             />
+           </div>
+     
+           {/* SUBHEADING */}
+           <div>
+             <label className="block text-sm text-gray-300 mb-2">
+               Subheading
+             </label>
+     
+             <textarea
+               className="input min-h-[100px]"
+               placeholder="Find answers to common questions about the project and your journey to your dream home."
+               value={form.faqSection?.subheading || ""}
+               onChange={(e) =>
+                 setForm((prev) => ({
+                   ...prev,
+                   faqSection: {
+                     ...prev.faqSection,
+                     subheading: e.target.value,
+                   },
+                 }))
+               }
+             />
+           </div>
+     
+           {/* ================= LEFT CARD ================= */}
+     
+           <div className="border-t border-white/10 pt-6">
+             <h3 className="font-semibold text-lg text-white mb-5">
+               Left Developer Card
+             </h3>
+     
+             {/* CONTACT TITLE */}
+             <div className="mb-5">
+               <label className="block text-sm text-gray-300 mb-2">
+                 Contact Card Title
+               </label>
+     
+               <input
+                 className="input"
+                 placeholder="Still have questions?"
+                 value={form.faqSection?.contactTitle || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       contactTitle: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+     
+             {/* CONTACT DESCRIPTION */}
+             <div className="mb-5">
+               <label className="block text-sm text-gray-300 mb-2">
+                 Contact Description
+               </label>
+     
+               <textarea
+                 className="input min-h-[120px]"
+                 placeholder="Connect with our luxury property specialists and discover every detail crafted for elevated living."
+                 value={form.faqSection?.contactDescription || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       contactDescription: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+     
+             {/* PHONE */}
+             <div className="mb-5">
+               <label className="block text-sm text-gray-300 mb-2">
+                 Contact Number
+               </label>
+     
+               <input
+                 className="input"
+                 placeholder="+91 99999 99999"
+                 value={form.faqSection?.contactPhone || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       contactPhone: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+     
+             {/* TIMINGS */}
+             <div>
+               <label className="block text-sm text-gray-300 mb-2">
+                 Working Hours
+               </label>
+     
+               <input
+                 className="input"
+                 placeholder="Monday — Sunday | 10 AM — 7 PM"
+                 value={form.faqSection?.contactTiming || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       contactTiming: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+           </div>
+     
+           {/* ================= BOTTOM CTA ================= */}
+     
+           <div className="border-t border-white/10 pt-6">
+             <h3 className="font-semibold text-lg text-white mb-5">
+               Bottom CTA Section
+             </h3>
+     
+             {/* CTA TITLE */}
+             <div className="mb-5">
+               <label className="block text-sm text-gray-300 mb-2">
+                 CTA Heading
+               </label>
+     
+               <input
+                 className="input"
+                 placeholder="Ready to experience your dream home?"
+                 value={form.faqSection?.ctaTitle || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       ctaTitle: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+     
+             {/* CTA DESCRIPTION */}
+             <div className="mb-5">
+               <label className="block text-sm text-gray-300 mb-2">
+                 CTA Description
+               </label>
+     
+               <textarea
+                 className="input min-h-[100px]"
+                 placeholder="Book a site visit and take the first step towards your dream home."
+                 value={form.faqSection?.ctaDescription || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       ctaDescription: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+     
+             {/* CTA BUTTON */}
+             <div>
+               <label className="block text-sm text-gray-300 mb-2">
+                 CTA Button Text
+               </label>
+     
+               <input
+                 className="input"
+                 placeholder="Book A Site Visit"
+                 value={form.faqSection?.ctaButtonText || ""}
+                 onChange={(e) =>
+                   setForm((prev) => ({
+                     ...prev,
+                     faqSection: {
+                       ...prev.faqSection,
+                       ctaButtonText: e.target.value,
+                     },
+                   }))
+                 }
+               />
+             </div>
+           </div>
+         </div>
+     
+         {/* ================= FAQS ================= */}
+         <div className="glass p-6 rounded-2xl border border-white/10">
+     
+           <div className="flex items-center justify-between mb-5">
+     
+             <h3 className="font-semibold text-xl text-white">
+               FAQs
+             </h3>
+     
+             <button
+               type="button"
+               onClick={() =>
+                 setForm((prev) => ({
+                   ...prev,
+                   faqs: [
+       ...(prev.faqs || []),
+                     {
+                       question: "",
+                       answer: "",
+                     },
+                   ],
+                 }))
+               }
+               className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
              >
-               Delete
+               + Add FAQ
              </button>
            </div>
- 
-           {/* QUESTION */}
-           <input
-             className="input mb-4"
-             value={f.question || ""}
-             placeholder="Question"
-             onChange={(e) => {
- 
-               const arr = [...form.faqs];
- 
-               arr[i].question =
-                 e.target.value;
- 
-               setForm((prev) => ({
-                 ...prev,
-                 faqs: arr,
-               }));
-             }}
-           />
- 
-           {/* ANSWER */}
-           <textarea
-             className="input min-h-[120px]"
-             value={f.answer || ""}
-             placeholder="Answer"
-             onChange={(e) => {
- 
-               const arr = [...form.faqs];
- 
-               arr[i].answer =
-                 e.target.value;
- 
-               setForm((prev) => ({
-                 ...prev,
-                 faqs: arr,
-               }));
-             }}
-           />
+     
+           {(form.faqs || []).map((f, i) => (
+     
+             <div
+               key={i}
+               className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+             >
+     
+               {/* TOP */}
+               <div className="flex items-center justify-between mb-4">
+     
+                 <h4 className="font-semibold text-white">
+                   FAQ #{i + 1}
+                 </h4>
+     
+                 <button
+                   type="button"
+                   onClick={() => {
+     
+                     const arr =
+                       form.faqs.filter(
+                         (_, idx) => idx !== i
+                       );
+     
+                     setForm((prev) => ({
+                       ...prev,
+                       faqs: arr,
+                     }));
+                   }}
+                   className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                 >
+                   Delete
+                 </button>
+               </div>
+     
+               {/* QUESTION */}
+               <input
+                 className="input mb-4"
+                 value={f.question || ""}
+                 placeholder="Question"
+                 onChange={(e) => {
+     
+                   const arr = [...form.faqs];
+     
+                   arr[i].question =
+                     e.target.value;
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     faqs: arr,
+                   }));
+                 }}
+               />
+     
+               {/* ANSWER */}
+               <textarea
+                 className="input min-h-[120px]"
+                 value={f.answer || ""}
+                 placeholder="Answer"
+                 onChange={(e) => {
+     
+                   const arr = [...form.faqs];
+     
+                   arr[i].answer =
+                     e.target.value;
+     
+                   setForm((prev) => ({
+                     ...prev,
+                     faqs: arr,
+                   }));
+                 }}
+               />
+             </div>
+           ))}
          </div>
-       ))}
-     </div>
-   </div>
- )}
- 
        </div>
- 
-       <div className="flex justify-between mt-10 max-w-4xl mx-auto">
-         {step > 1 && <button onClick={goPrev}>Back</button>}
- 
-         {step < 7 ? (
-           <button onClick={goNext}>Next</button>
-         ) : (
-           <button onClick={handleUpdate}>🚀 Publish</button>
-         )}
+     )}
+     
+           </div>
+     
+           <div className="flex justify-between mt-10 max-w-4xl mx-auto">
+             {step > 1 && <button onClick={goPrev}>Back</button>}
+     
+             {step < 7 ? (
+               <button onClick={goNext}>Next</button>
+             ) : (
+               <button onClick={handleSubmit}>🚀 Publish</button>
+             )}
+         </div>
+       </div>
+     
+        {/* RIGHT SIDE — LIVE PREVIEW */}
+       {!fullFormMode && (
+       <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
+       <PropertyPreview
+         form={previewData}
+         insideAdmin={true}
+       />
      </div>
-   </div>
- 
-    {/* RIGHT SIDE — LIVE PREVIEW */}
-   {!fullFormMode && (
-   <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
-   <PropertyPreview
-     form={previewData}
-     insideAdmin={true}
-   />
- </div>
- )}
+     )}
 
 
 </div>

@@ -599,30 +599,161 @@ const getNestedValue = (obj, path) => {
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
 };
 
-  // ================= NAVIGATION =================
-  const goNext = () => {
-  const requiredFields = [
-    { path: "slug", label: "Slug" },
-    { path: "coreDetails.title", label: "Project Title" },
-  ];
+// ================= NAVIGATION =================
+const goNext = () => {
 
   const missing = [];
 
-  requiredFields.forEach((field) => {
-    const value = getNestedValue(form, field.path);
+  // ================= STEP 1 VALIDATION =================
+  if (step === 1) {
 
-    if (!value || value.toString().trim() === "") {
-      missing.push(field.label);
+    // SLUG
+    if (!form.slug?.trim()) {
+      missing.push({
+        path: "slug",
+        label: "Slug",
+      });
     }
-  });
 
+    // TITLE
+    if (!form.coreDetails.title?.trim()) {
+      missing.push({
+        path: "coreDetails.title",
+        label: "Project Title",
+      });
+    }
+
+    // ================= DEVELOPER VALIDATION =================
+    if (useCustomDeveloper) {
+
+      if (!form.coreDetails.developerName?.trim()) {
+        missing.push({
+          path: "coreDetails.developerRef",
+          label: "Developer",
+        });
+      }
+
+    } else {
+
+      if (!form.coreDetails.developerRef?.trim()) {
+        missing.push({
+          path: "coreDetails.developerRef",
+          label: "Developer",
+        });
+      }
+    }
+
+    // ================= CATEGORY VALIDATION =================
+    if (useCustomCategory) {
+
+      if (!form.categoryData.customCategory?.trim()) {
+        missing.push({
+          path: "categoryData.categoryRef",
+          label: "Category",
+        });
+      }
+
+    } else {
+
+      if (!form.categoryData.categoryRef?.trim()) {
+        missing.push({
+          path: "categoryData.categoryRef",
+          label: "Category",
+        });
+      }
+    }
+
+    // ================= HERO DESCRIPTION =================
+    if (!form.heroSection.heroDescription?.trim()) {
+      missing.push({
+        path: "heroSection.heroDescription",
+        label: "Hero Description",
+      });
+    }
+  }
+
+  // ================= STEP 2 VALIDATION =================
+  if (step === 2) {
+
+    // ABOUT DESCRIPTION
+    if (!form.overview.description?.trim()) {
+      missing.push({
+        path: "overview.description",
+        label: "About Description",
+      });
+    }
+
+    // ABOUT IMAGE
+    if (!form.overview.aboutImageUrl?.trim()) {
+      missing.push({
+        path: "overview.aboutImageUrl",
+        label: "About Image",
+      });
+    }
+
+    // HIGHLIGHTS HEADING
+    if (!form.overview.highlightsHeading?.trim()) {
+      missing.push({
+        path: "overview.highlightsHeading",
+        label: "Highlights Heading",
+      });
+    }
+
+    // HIGHLIGHTS SUBHEADING
+    if (!form.overview.highlightsSubheading?.trim()) {
+      missing.push({
+        path: "overview.highlightsSubheading",
+        label: "Highlights Subheading",
+      });
+    }
+
+    // HIGHLIGHT CARDS
+    if (
+      !form.overview.highlights ||
+      form.overview.highlights.length === 0
+    ) {
+      missing.push({
+        path: "overview.highlights",
+        label: "Highlight Cards",
+      });
+    }
+
+    // CHECK EMPTY HIGHLIGHT CARDS
+    form.overview.highlights?.forEach((item, index) => {
+
+      if (!item.heading?.trim()) {
+        missing.push({
+          path: `overview.highlights.${index}.heading`,
+          label: `Highlight Card ${index + 1} Heading`,
+        });
+      }
+
+      if (!item.subheading?.trim()) {
+        missing.push({
+          path: `overview.highlights.${index}.subheading`,
+          label: `Highlight Card ${index + 1} Description`,
+        });
+      }
+    });
+  }
+
+  // ================= ERROR UI =================
   if (missing.length > 0) {
+
+    const newErrors = {};
+
+    missing.forEach((field) => {
+      newErrors[field.path] = true;
+    });
+
+    setErrors(newErrors);
+
     toast.error(
       `Please fill required fields:\n${missing
-        .map((e) => `• ${e}`)
+        .map((e) => `• ${e.label}`)
         .join("\n")}`,
       {
-        duration: 4000,
+        duration: 5000,
         style: {
           whiteSpace: "pre-line",
           background: "#1f1f1f",
@@ -635,6 +766,10 @@ const getNestedValue = (obj, path) => {
     return;
   }
 
+  // ================= CLEAR OLD ERRORS =================
+  setErrors({});
+
+  // ================= NEXT STEP =================
   setStep((prev) => prev + 1);
 };
   const goPrev = () => setStep((prev) => prev - 1);
@@ -751,7 +886,7 @@ const handleSubmit = async () => {
 const fieldErrors = {};
 const errorMessages = [];
 
-let firstStep = 1;
+let firstStep = Infinity;
 
 missing.forEach((field) => {
   fieldErrors[field] = true;
@@ -760,6 +895,7 @@ missing.forEach((field) => {
   errorMessages.push(label);
 
   const stepNo = fieldStepMap?.[field];
+
   if (stepNo && stepNo < firstStep) {
     firstStep = stepNo;
   }
@@ -769,7 +905,9 @@ setErrors(fieldErrors);
 setErrorList(errorMessages);
 
 toast.error(
-  `Missing required fields:\n${errorMessages.map((e) => `• ${e}`).join("\n")}`,
+  `Missing required fields:\n${errorMessages
+    .map((e) => `• ${e}`)
+    .join("\n")}`,
   {
     duration: 6000,
     style: {
@@ -780,6 +918,10 @@ toast.error(
     },
   }
 );
+
+if (firstStep !== Infinity) {
+  setStep(firstStep);
+}
 
 // optional fallback log
 if (data.message) {
@@ -835,6 +977,11 @@ const fieldStepMap = {
   "keyMetrics.totalTowers": 1,
   "keyMetrics.floors": 1,
   "keyMetrics.reraNumber": 1,
+
+  "overview.description": 2,
+"overview.aboutImageUrl": 2,
+"overview.highlightsHeading": 2,
+"overview.highlights": 2,
 };
 
 const labelMap = {
@@ -842,6 +989,8 @@ const labelMap = {
   "coreDetails.title": "Project Title",
   "coreDetails.developerRef": "Developer",
   "categoryData.categoryRef": "Category",
+
+
   "heroSection.heroDescription": "Hero Description",
   "keyMetrics.possession": "Possession",
   "keyMetrics.landArea": "Land Area",
@@ -849,10 +998,128 @@ const labelMap = {
   "keyMetrics.totalTowers": "Total Towers",
   "keyMetrics.floors": "Floors",
   "keyMetrics.reraNumber": "RERA Number",
-};
 
+  "overview.description": "About Description",
+"overview.aboutImageUrl": "About Image",
+"overview.highlightsHeading": "Highlights Heading",
+"overview.highlights": "Highlight Cards",
+};
  return (
+
+  
   <div className="app-bg p-4 md:p-6 lg:p-10 overflow-x-hidden min-h-screen">
+
+    {/* ================= PREMIUM STEPPER ================= */}
+
+<div className="mb-8 overflow-x-auto">
+  <div className="min-w-[900px] bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+
+    <div className="flex items-center justify-between relative">
+
+      {[
+        {
+          no: "01",
+          title: "Core Details",
+          sub: "Basic Information",
+        },
+        {
+          no: "02",
+          title: "About Project",
+          sub: "Project Overview",
+        },
+        {
+          no: "03",
+          title: "Amenities",
+          sub: "Lifestyle Features",
+        },
+        {
+          no: "04",
+          title: "Gallery and Floor Plans",
+          sub: "Media & Visuals",
+        },
+        {
+          no: "05",
+          title: "Location",
+          sub: "Connectivity",
+        },
+        {
+          no: "06",
+          title: "Master Plan",
+          sub: "brochure & features",
+        },
+        {
+          no: "07",
+          title: "FAQ Section",
+          sub: "FAQ & Publish",
+        },
+      ].map((item, index) => {
+        const currentStep = index + 1;
+        const active = step === currentStep;
+        const completed = step > currentStep;
+
+        return (
+          <div
+            key={index}
+            className="flex-1 flex items-center relative"
+          >
+            {/* CONNECTOR */}
+            {index !== 0 && (
+              <div
+                className={`absolute left-[-50%] top-6 h-[2px] w-full
+                ${
+                  step > currentStep
+                    ? "bg-gradient-to-r from-[#c8a45d] to-[#f5d488]"
+                    : "bg-white/10"
+                }`}
+              />
+            )}
+
+            {/* STEP */}
+            <div className="relative z-10 flex flex-col items-center text-center w-full">
+
+              {/* CIRCLE */}
+              <div
+                className={`
+                w-14 h-14 rounded-full flex items-center justify-center
+                text-sm font-bold transition-all duration-300 border
+
+                ${
+                  active
+                    ? "bg-gradient-to-br from-[#c8a45d] to-[#f5d488] text-black border-[#f5d488] scale-110 shadow-[0_0_30px_rgba(245,212,136,0.4)]"
+                    : completed
+                    ? "bg-[#c8a45d] text-black border-[#c8a45d]"
+                    : "bg-white/5 text-gray-400 border-white/10"
+                }
+              `}
+              >
+                {completed ? "✓" : item.no}
+              </div>
+
+              {/* TEXT */}
+              <div className="mt-3">
+                <p
+                  className={`text-sm font-semibold ${
+                    active
+                      ? "text-white"
+                      : completed
+                      ? "text-[#f5d488]"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {item.title}
+                </p>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  {item.sub}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
 
     {/* HEADER */}
     <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10">
@@ -993,7 +1260,11 @@ const labelMap = {
 
       {!useCustomDeveloper ? (
         <select
-          className="input"
+  className={`input transition-all duration-200 ${
+    hasError("coreDetails.developerRef")
+      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+      : ""
+  }`}
           value={form.coreDetails.developerRef || ""}
           onChange={(e) => {
             if (e.target.value === "OTHER") {
@@ -1047,6 +1318,7 @@ const labelMap = {
             + Add Custom Developer
           </option>
         </select>
+        
       ) : (
         <div className="flex gap-2">
           <input
@@ -1086,6 +1358,12 @@ const labelMap = {
       )}
     </div>
 
+    {hasError("coreDetails.developerRef") && (
+  <p className="text-red-400 text-sm">
+    Developer is required
+  </p>
+)}
+
     {/* ================= CATEGORY ================= */}
     <div className="space-y-2">
       <label className="text-sm text-white/70 font-medium">
@@ -1094,7 +1372,11 @@ const labelMap = {
 
       {!useCustomCategory ? (
         <select
-          className="input"
+  className={`input transition-all duration-200 ${
+    hasError("categoryData.categoryRef")
+      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+      : ""
+  }`}
           value={form.categoryData.categoryRef || ""}
           onChange={(e) => {
             if (e.target.value === "OTHER") {
@@ -1187,6 +1469,12 @@ const labelMap = {
       )}
     </div>
 
+    {hasError("categoryData.categoryRef") && (
+  <p className="text-red-400 text-sm">
+    Category is required
+  </p>
+)}
+
     <input
       className="input"
       placeholder="Starting Price"
@@ -1237,8 +1525,12 @@ const labelMap = {
         />
 
         <textarea
-          className="input min-h-[120px]"
-          placeholder="Hero Description"
+  className={`input min-h-[120px] ${
+    hasError("heroSection.heroDescription")
+      ? "border-red-500 ring-2 ring-red-500"
+      : ""
+  }`}
+          placeholder="Hero Description *"
           value={
             form.heroSection
               ?.heroDescription || ""
@@ -1251,6 +1543,12 @@ const labelMap = {
             )
           }
         />
+
+        {hasError("heroSection.heroDescription") && (
+  <p className="text-red-400 text-sm">
+    Hero Description is required
+  </p>
+)}
 
         <input
           className="input"
@@ -1558,7 +1856,11 @@ const labelMap = {
 
       {/* ABOUT DESCRIPTION */}
       <textarea
-        className="input min-h-[140px] mb-4"
+        className={`input min-h-[140px] mb-4 transition-all duration-200 ${
+  hasError("overview.description")
+    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+    : ""
+}`}
         placeholder="About Description"
         value={form.overview.description || ""}
         onChange={(e) =>
@@ -1569,6 +1871,12 @@ const labelMap = {
           )
         }
       />
+
+      {hasError("overview.description") && (
+  <p className="text-red-400 text-sm">
+    About Description is required
+  </p>
+)}
 
       {/* SECOND PARAGRAPH */}
       <textarea
@@ -1593,7 +1901,11 @@ const labelMap = {
 
   {/* UPLOAD BUTTON */}
   <div
-    className="upload-box cursor-pointer"
+    className={`upload-box cursor-pointer transition-all duration-200 ${
+  hasError("overview.aboutImageUrl")
+    ? "border border-red-500 ring-2 ring-red-500"
+    : ""
+}`}
     onClick={() =>
       document
         .getElementById("aboutImageUpload")
@@ -1602,6 +1914,12 @@ const labelMap = {
   >
     Upload About Image
   </div>
+
+  {hasError("overview.aboutImageUrl") && (
+  <p className="text-red-400 text-sm mt-2">
+    About Image is required
+  </p>
+)}
 
   {/* INPUT */}
   <input
@@ -1777,7 +2095,11 @@ const labelMap = {
 
             {/* TITLE */}
             <input
-              className="input mb-4"
+              className={`input mb-4 transition-all duration-200 ${
+  hasError("overview.highlightsHeading")
+    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+    : ""
+}`}
               placeholder="Feature Title"
               value={item.title || ""}
               onChange={(e) => {
@@ -1796,6 +2118,12 @@ const labelMap = {
                 );
               }}
             />
+
+            {hasError("overview.highlightsHeading") && (
+  <p className="text-red-400 text-sm mb-3">
+    Highlights Heading is required
+  </p>
+)}
 
             {/* DESCRIPTION */}
             <textarea
@@ -1893,6 +2221,12 @@ const labelMap = {
         <h3 className="font-semibold text-xl text-white">
           Highlight Cards
         </h3>
+
+        {hasError("overview.highlights") && (
+  <p className="text-red-400 text-sm mt-2">
+    At least 1 Highlight Card is required
+  </p>
+)}
 
         <button
           type="button"
