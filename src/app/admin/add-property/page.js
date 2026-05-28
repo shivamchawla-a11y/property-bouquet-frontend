@@ -1005,191 +1005,202 @@ const labelMap = {
 "overview.highlights": "Highlight Cards",
 };
  return (
+  <div className="app-bg min-h-screen overflow-x-hidden px-4 md:px-6 xl:px-8 py-6">
 
-  
-  <div className="app-bg p-4 md:p-6 lg:p-10 overflow-x-hidden min-h-screen">
+    {/* ================= PREMIUM TOP SECTION ================= */}
+    <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-gradient-to-br from-[#06281f] via-[#0b3b2f] to-[#0d4a39] p-5 md:p-7 xl:p-8 shadow-[0_20px_70px_rgba(0,0,0,0.45)] mb-8">
 
-    {/* ================= PREMIUM STEPPER ================= */}
+      {/* GLOW EFFECTS */}
+      <div className="absolute top-[-120px] right-[-80px] w-[260px] h-[260px] rounded-full bg-[#f5d488]/10 blur-3xl" />
+      <div className="absolute bottom-[-120px] left-[-80px] w-[220px] h-[220px] rounded-full bg-emerald-400/10 blur-3xl" />
 
-<div className="mb-8 overflow-x-auto">
-  <div className="min-w-[900px] bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+      <div className="relative z-10">
 
-    <div className="flex items-center justify-between relative">
+        {/* ================= HEADER ================= */}
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
 
-      {[
-        {
-          no: "01",
-          title: "Core Details",
-          sub: "Basic Information",
-        },
-        {
-          no: "02",
-          title: "About Project",
-          sub: "Project Overview",
-        },
-        {
-          no: "03",
-          title: "Amenities",
-          sub: "Lifestyle Features",
-        },
-        {
-          no: "04",
-          title: "Gallery and Floor Plans",
-          sub: "Media & Visuals",
-        },
-        {
-          no: "05",
-          title: "Location",
-          sub: "Connectivity",
-        },
-        {
-          no: "06",
-          title: "Master Plan",
-          sub: "brochure & features",
-        },
-        {
-          no: "07",
-          title: "FAQ Section",
-          sub: "FAQ & Publish",
-        },
-      ].map((item, index) => {
-        const currentStep = index + 1;
-        const active = step === currentStep;
-        const completed = step > currentStep;
+          {/* LEFT */}
+          <div className="flex items-start gap-5">
 
-        return (
-          <div
-            key={index}
-            className="flex-1 flex items-center relative"
-          >
-            {/* CONNECTOR */}
-            {index !== 0 && (
-              <div
-                className={`absolute left-[-50%] top-6 h-[2px] w-full
-                ${
-                  step > currentStep
-                    ? "bg-gradient-to-r from-[#c8a45d] to-[#f5d488]"
-                    : "bg-white/10"
-                }`}
-              />
-            )}
+            {/* ICON */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_40px_rgba(245,212,136,0.35)]">
+              <span className="text-3xl">🏢</span>
+            </div>
 
-            {/* STEP */}
-            <div className="relative z-10 flex flex-col items-center text-center w-full">
+            {/* TEXT */}
+            <div>
 
-              {/* CIRCLE */}
-              <div
-                className={`
-                w-14 h-14 rounded-full flex items-center justify-center
-                text-sm font-bold transition-all duration-300 border
+              <div className="flex items-center gap-3 flex-wrap">
 
-                ${
-                  active
-                    ? "bg-gradient-to-br from-[#c8a45d] to-[#f5d488] text-black border-[#f5d488] scale-110 shadow-[0_0_30px_rgba(245,212,136,0.4)]"
-                    : completed
-                    ? "bg-[#c8a45d] text-black border-[#c8a45d]"
-                    : "bg-white/5 text-gray-400 border-white/10"
-                }
-              `}
-              >
-                {completed ? "✓" : item.no}
+                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">
+                  Add Property
+                </h1>
+
+                <div className="px-3 py-1 rounded-full border border-[#f5d488]/30 bg-[#f5d488]/10 text-[#f5d488] text-sm font-semibold">
+                  Step {step} / 7
+                </div>
+
               </div>
 
-              {/* TEXT */}
-              <div className="mt-3">
-                <p
-                  className={`text-sm font-semibold ${
-                    active
-                      ? "text-white"
-                      : completed
-                      ? "text-[#f5d488]"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {item.title}
-                </p>
+              <p className="text-gray-300 mt-3 max-w-2xl text-sm md:text-base leading-relaxed">
+                Create premium property listings with galleries, floor plans,
+                amenities, location highlights, master plans and FAQs.
+              </p>
 
-                <p className="text-xs text-gray-500 mt-1">
-                  {item.sub}
-                </p>
-              </div>
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-</div>
 
-    {/* HEADER */}
-    <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10">
+          {/* RIGHT ACTIONS */}
+          <div className="flex flex-wrap items-center gap-3">
 
-      {/* LEFT */}
-      <div>
-        <h1 className="text-4xl font-bold text-white">
-          Add Property
-        </h1>
+            {/* PREVIEW BUTTON */}
+            <button
+              onClick={() => setPreviewMode(!previewMode)}
+              className="group relative overflow-hidden px-5 py-3 rounded-2xl bg-white text-black font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_10px_30px_rgba(255,255,255,0.18)]"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {previewMode ? "← Back to Edit" : "👁 Full Preview"}
+              </span>
+            </button>
 
-        <p className="text-gray-300">
-          Step {step} of 7
-        </p>
-      </div>
+            {/* FORM MODE BUTTON */}
+            <button
+              onClick={() => setFullFormMode(!fullFormMode)}
+              className="px-5 py-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white font-semibold hover:bg-white/10 transition-all duration-300"
+            >
+              {fullFormMode ? "↔ Split View" : "📝 Full Form"}
+            </button>
 
-      {/* RIGHT */}
-      <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
-
-        {/* BUTTONS */}
-        <div className="flex flex-wrap gap-3">
-
-          {/* PREVIEW BUTTON */}
-          <button
-            onClick={() =>
-              setPreviewMode(!previewMode)
-            }
-            className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
-          >
-            {previewMode
-              ? "← Back to Edit"
-              : "👁 Full Preview"}
-          </button>
-
-          {/* FORM MODE BUTTON */}
-          <button
-            onClick={() =>
-              setFullFormMode(!fullFormMode)
-            }
-            className="bg-white text-black px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
-          >
-            {fullFormMode
-              ? "↔ Split View"
-              : "📝 Full Form"}
-          </button>
+          </div>
         </div>
 
-        {/* PROGRESS */}
-        <div className="w-full md:w-64 bg-white/20 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-gold h-2 rounded-full transition-all"
-            style={{
-              width: `${(step / 7) * 100}%`,
-            }}
-          />
+        {/* ================= PREMIUM STEPPER ================= */}
+        <div className="relative">
+
+          {/* MAIN LINE */}
+          <div className="absolute top-7 left-0 w-full h-[3px] bg-white/10 rounded-full overflow-hidden">
+
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#c8a45d] to-[#f5d488] transition-all duration-500"
+              style={{
+                width: `${((step - 1) / 6) * 100}%`,
+              }}
+            />
+
+          </div>
+
+          {/* STEPS */}
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-y-8 gap-x-4 relative z-10">
+
+            {[
+              {
+                no: "01",
+                title: "Core Details",
+                sub: "Basic Info",
+              },
+              {
+                no: "02",
+                title: "About Project",
+                sub: "Overview",
+              },
+              {
+                no: "03",
+                title: "Amenities",
+                sub: "Lifestyle",
+              },
+              {
+                no: "04",
+                title: "Gallery & Plans",
+                sub: "Media",
+              },
+              {
+                no: "05",
+                title: "Location",
+                sub: "Connectivity",
+              },
+              {
+                no: "06",
+                title: "Master Plan",
+                sub: "Brochure",
+              },
+              {
+                no: "07",
+                title: "FAQ & Publish",
+                sub: "Finalize",
+              },
+            ].map((item, index) => {
+
+              const currentStep = index + 1;
+              const active = step === currentStep;
+              const completed = step > currentStep;
+
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center text-center relative"
+                >
+
+                  {/* STEP CIRCLE */}
+                  <div
+                    className={`
+                      w-14 h-14 rounded-2xl flex items-center justify-center
+                      text-sm font-bold border transition-all duration-300
+
+                      ${
+                        active
+                          ? "bg-gradient-to-br from-[#c8a45d] to-[#f5d488] border-[#f5d488] text-black scale-110 shadow-[0_0_35px_rgba(245,212,136,0.45)]"
+                          : completed
+                          ? "bg-[#c8a45d] border-[#c8a45d] text-black"
+                          : "bg-white/5 border-white/10 text-gray-400 backdrop-blur-xl"
+                      }
+                    `}
+                  >
+                    {completed ? "✓" : item.no}
+                  </div>
+
+                  {/* TEXT */}
+                  <div className="mt-4">
+
+                    <p
+                      className={`text-sm font-semibold leading-tight ${
+                        active
+                          ? "text-white"
+                          : completed
+                          ? "text-[#f5d488]"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {item.title}
+                    </p>
+
+                    <p className="text-xs text-gray-500 mt-1">
+                      {item.sub}
+                    </p>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        
       </div>
     </div>
 
     {previewMode ? (
 
       // ================= FULL PREVIEW =================
-      <div className="w-full max-w-full h-[80vh] overflow-y-auto overflow-x-hidden bg-white rounded-xl p-2 md:p-4">
+      <div className="w-full rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-xl p-3 md:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
 
-        <div className="w-full overflow-x-hidden">
+        <div className="h-[82vh] overflow-y-auto rounded-2xl bg-white overflow-x-hidden">
+
           <PropertyPreview
-  form={previewData}
-  insideAdmin={true}
-/>
-        </div>
+            form={previewData}
+            insideAdmin={true}
+          />
 
+        </div>
       </div>
 
     ) : (
@@ -1199,14 +1210,29 @@ const labelMap = {
 
         {/* ================= LEFT SIDE ================= */}
         <div
-          className={`${
-            fullFormMode
-              ? "w-full"
-              : "xl:w-1/2 w-full"
-          } overflow-y-auto overflow-x-hidden h-[80vh] pr-2 min-w-0`}
+          className={`
+            ${
+              fullFormMode
+                ? "w-full"
+                : "xl:w-1/2 w-full"
+            }
+
+            overflow-y-auto
+            overflow-x-hidden
+            h-[80vh]
+            min-w-0
+
+            rounded-[30px]
+            border border-white/10
+            bg-white/5
+            backdrop-blur-xl
+            shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+
+            px-5 md:px-7 py-7
+          `}
         >
 
-    <div className="space-y-8">
+          <div className="space-y-8">
 
         {/* ================= STEP 1 ================= */}
 {step === 1 && (
@@ -4267,15 +4293,7 @@ const labelMap = {
 
       </div>
 
-      <div className="flex justify-between mt-10 max-w-4xl mx-auto">
-        {step > 1 && <button onClick={goPrev}>Back</button>}
-
-        {step < 7 ? (
-          <button onClick={goNext}>Next</button>
-        ) : (
-          <button onClick={handleSubmit}>🚀 Publish</button>
-        )}
-    </div>
+     
   </div>
 
    {/* RIGHT SIDE — LIVE PREVIEW */}
@@ -4291,7 +4309,86 @@ const labelMap = {
   
 
 </div>
+
+
 )}
+
+ {/* ================= STICKY BOTTOM ACTION BAR ================= */}
+<div className="sticky bottom-0 left-0 z-50 mt-10">
+
+  <div className="backdrop-blur-2xl bg-[#07251d]/85 border border-white/10 rounded-3xl px-5 md:px-7 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.35)]">
+
+    <div className="flex items-center justify-between gap-4 flex-wrap">
+
+      {/* LEFT INFO */}
+      <div>
+        <p className="text-white font-semibold text-lg">
+          Step {step} of 7
+        </p>
+
+        <p className="text-sm text-gray-400">
+          Complete all required property details
+        </p>
+      </div>
+
+      {/* RIGHT BUTTONS */}
+      <div className="flex items-center gap-3 ml-auto">
+
+        {/* BACK BUTTON */}
+        {step > 1 && (
+          <button
+            onClick={goPrev}
+            className="
+              px-6 py-3 rounded-2xl
+              border border-white/10
+              bg-white/5
+              text-white
+              font-semibold
+              hover:bg-white/10
+              transition-all duration-300
+            "
+          >
+            ← Back
+          </button>
+        )}
+
+        {/* NEXT / PUBLISH */}
+        {step < 7 ? (
+          <button
+            onClick={goNext}
+            className="
+              px-7 py-3 rounded-2xl
+              bg-gradient-to-r from-[#c8a45d] to-[#f5d488]
+              text-black
+              font-bold
+              shadow-[0_10px_30px_rgba(245,212,136,0.25)]
+              hover:scale-[1.03]
+              transition-all duration-300
+            "
+          >
+            Next Step →
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            className="
+              px-7 py-3 rounded-2xl
+              bg-gradient-to-r from-emerald-500 to-green-400
+              text-black
+              font-bold
+              shadow-[0_10px_30px_rgba(16,185,129,0.3)]
+              hover:scale-[1.03]
+              transition-all duration-300
+            "
+          >
+            🚀 Publish Property
+          </button>
+        )}
+
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
   );
