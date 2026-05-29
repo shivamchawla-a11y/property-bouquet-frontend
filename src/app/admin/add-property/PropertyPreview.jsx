@@ -2662,12 +2662,7 @@ id="amenities"
             )?.icon || Home;
 
           // ================= DESCRIPTION =================
-          const amenityDescription =
-            typeof h === "string"
-              ? "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living."
-              : h?.subheading ||
-                "Luxury-crafted spaces designed for elevated comfort, timeless sophistication and effortless modern living.";
-
+          
           return (
             <motion.div
               key={i}
@@ -2742,23 +2737,7 @@ id="amenities"
               {/* GOLD LINE */}
               <div className="relative w-10 h-[1px] bg-[#c9a64b] mx-auto my-4" />
 
-              {/* DESCRIPTION */}
-              <p
-                className="
-                  relative
-                  text-white/65
-                  text-[13px]
-                  leading-[1.9]
-                  max-w-[260px]
-                  mx-auto
-                "
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: 300,
-                }}
-              >
-                {amenityDescription}
-              </p>
+              
             </motion.div>
           );
         })}

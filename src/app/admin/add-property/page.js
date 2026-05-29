@@ -643,6 +643,26 @@ const goNext = () => {
       }
     }
 
+    // ================= LOCATION VALIDATION =================
+if (useCustomLocation) {
+
+  if (!form.locationData.customLocation?.trim()) {
+    missing.push({
+      path: "locationData.locationRef",
+      label: "Location",
+    });
+  }
+
+} else {
+
+  if (!form.locationData.locationRef?.trim()) {
+    missing.push({
+      path: "locationData.locationRef",
+      label: "Location",
+    });
+  }
+}
+
     // ================= CATEGORY VALIDATION =================
     if (useCustomCategory) {
 
@@ -968,6 +988,7 @@ const fieldStepMap = {
   slug: 1,
   "coreDetails.title": 1,
   "coreDetails.developerRef": 1,
+  "locationData.locationRef": 1,
   "categoryData.categoryRef": 1,
 
   "heroSection.heroDescription": 1,
@@ -988,6 +1009,7 @@ const labelMap = {
   slug: "Slug",
   "coreDetails.title": "Project Title",
   "coreDetails.developerRef": "Developer",
+  "locationData.locationRef": "Location",
   "categoryData.categoryRef": "Category",
 
 
@@ -995,7 +1017,7 @@ const labelMap = {
   "keyMetrics.possession": "Possession",
   "keyMetrics.landArea": "Land Area",
   "keyMetrics.totalUnits": "Total Units",
-  "keyMetrics.totalTowers": "Total Towers",
+  "keyMetrics.totalTowers": "Total Towers", 
   "keyMetrics.floors": "Floors",
   "keyMetrics.reraNumber": "RERA Number",
 
@@ -1389,6 +1411,127 @@ const labelMap = {
     Developer is required
   </p>
 )}
+
+{/* LOCATION SELECT */}
+<div className="mb-5">
+
+  <label className="block text-sm text-white/70 mb-2">
+    Select Location
+  </label>
+
+  {!useCustomLocation ? (
+
+    <select
+      className={`input transition-all duration-200 ${
+        hasError("locationData.locationRef")
+          ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+          : ""
+      }`}
+      value={form.locationData.locationRef || ""}
+      onChange={(e) => {
+
+        if (e.target.value === "OTHER") {
+
+          setUseCustomLocation(true);
+
+          setForm((prev) => ({
+            ...prev,
+            locationData: {
+              ...prev.locationData,
+              locationRef: "",
+              locationName: "",
+              customLocation: "",
+            },
+          }));
+
+        } else {
+
+          const selected = buildOptions(locations).find(
+            (l) => l._id === e.target.value
+          );
+
+          setUseCustomLocation(false);
+
+          setForm((prev) => ({
+            ...prev,
+            locationData: {
+              ...prev.locationData,
+              locationRef: selected?._id || "",
+              locationName: selected?.label || "",
+              customLocation: "",
+            },
+          }));
+        }
+      }}
+    >
+      <option value="">
+        Select Location
+      </option>
+
+      {buildOptions(locations).map((loc) => (
+        <option key={loc._id} value={loc._id}>
+          {loc.label}
+        </option>
+      ))}
+
+      <option value="OTHER">
+        + Add Custom Location
+      </option>
+    </select>
+
+  ) : (
+
+    <div className="flex flex-col md:flex-row gap-3">
+
+      <input
+        className={`input flex-1 transition-all duration-200 ${
+          hasError("locationData.locationRef")
+            ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+            : ""
+        }`}
+        placeholder="Enter custom location"
+        value={form.locationData.customLocation || ""}
+        onChange={(e) =>
+          setForm((prev) => ({
+            ...prev,
+            locationData: {
+              ...prev.locationData,
+              customLocation: e.target.value,
+            },
+          }))
+        }
+      />
+
+      <button
+        type="button"
+        onClick={() => {
+
+          setUseCustomLocation(false);
+
+          setForm((prev) => ({
+            ...prev,
+            locationData: {
+              ...prev.locationData,
+              locationRef: "",
+              locationName: "",
+              customLocation: "",
+            },
+          }));
+        }}
+        className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+
+  {hasError("locationData.locationRef") && (
+    <p className="text-red-400 text-sm mt-2">
+      Location is required
+    </p>
+  )}
+</div>
+
 
     {/* ================= CATEGORY ================= */}
     <div className="space-y-2">
@@ -2873,112 +3016,6 @@ const labelMap = {
       <h3 className="font-semibold text-xl mb-5 text-white">
         Basic Location Details
       </h3>
-
-      {/* LOCATION SELECT */}
-      <div className="mb-5">
-
-        <label className="block text-sm text-white/70 mb-2">
-          Select Location
-        </label>
-
-        {!useCustomLocation ? (
-
-          <select
-            className="input"
-            value={form.locationData.locationRef || ""}
-            onChange={(e) => {
-
-              if (e.target.value === "OTHER") {
-
-                setUseCustomLocation(true);
-
-                setForm((prev) => ({
-                  ...prev,
-                  locationData: {
-                    ...prev.locationData,
-                    locationRef: "",
-                    locationName: "",
-                    customLocation: "",
-                  },
-                }));
-
-              } else {
-
-                const selected = buildOptions(locations).find(
-                  (l) => l._id === e.target.value
-                );
-
-                setUseCustomLocation(false);
-
-                setForm((prev) => ({
-                  ...prev,
-                  locationData: {
-                    ...prev.locationData,
-                    locationRef: selected?._id || "",
-                    locationName: selected?.label || "",
-                    customLocation: "",
-                  },
-                }));
-              }
-            }}
-          >
-            <option value="">
-              Select Location
-            </option>
-
-            {buildOptions(locations).map((loc) => (
-              <option key={loc._id} value={loc._id}>
-                {loc.label}
-              </option>
-            ))}
-
-            <option value="OTHER">
-              + Add Custom Location
-            </option>
-          </select>
-
-        ) : (
-
-          <div className="flex flex-col md:flex-row gap-3">
-
-            <input
-              className="input flex-1"
-              placeholder="Enter custom location"
-              value={form.locationData.customLocation || ""}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  locationData: {
-                    ...prev.locationData,
-                    customLocation: e.target.value,
-                  },
-                }))
-              }
-            />
-
-            <button
-              type="button"
-              onClick={() => {
-
-                setUseCustomLocation(false);
-
-                setForm((prev) => ({
-                  ...prev,
-                  locationData: {
-                    ...prev.locationData,
-                    locationRef: "",
-                    locationName: "",
-                    customLocation: "",
-                  },
-                }));
-              }}
-              className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* ADDRESS */}
       <input
