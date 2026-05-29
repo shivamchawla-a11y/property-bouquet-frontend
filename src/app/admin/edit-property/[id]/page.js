@@ -557,123 +557,453 @@ const [errorList, setErrorList] = useState([]);
       if (res.ok) {
   const property = data.data;
 
-  // ✅ SAFE NORMALIZATION (NO CRASHES)
-  const safeForm = {
-    ...property,
 
-    coreDetails: {
-      title: "",
-      developerRef: "",
-      developerName: "",
-      startingPrice: "",
-      maxPrice: "",
-      ...property.coreDetails,
-    },
+// ✅ SAFE NORMALIZATION (NO CRASHES)
+const safeForm = {
+  slug: property.slug || "",
 
-    keyMetrics: {
-      landArea: "",
-      possession: "",
-      status: "",
-      totalUnits: "",
-      totalTowers: "",
-      floors: "",
-      reraNumber: "",
-      ...property.keyMetrics,
-    },
+  marketType: property.marketType || "Primary",
 
-   overview: {
-  description: "",
-  aboutImageUrl: "",
+  // ================= CORE DETAILS =================
+  coreDetails: {
+    title: property.coreDetails?.title || "",
 
-  highlights:
-    property.overview?.highlights?.length > 0
-      ? property.overview.highlights.map((h) => {
+    developerRef:
+      typeof property.coreDetails?.developerRef === "object"
+        ? property.coreDetails?.developerRef?._id || ""
+        : property.coreDetails?.developerRef || "",
 
-          if (typeof h === "string") {
+    developerName:
+      property.coreDetails?.developerName || "",
+
+    developerLogo:
+      property.coreDetails?.developerLogo || "",
+
+    developerImage:
+      property.coreDetails?.developerImage || "",
+
+    startingPrice:
+      property.coreDetails?.startingPrice || "",
+
+    maxPrice:
+      property.coreDetails?.maxPrice || "",
+  },
+
+  // ================= CATEGORY =================
+  categoryData: {
+    categoryRef:
+      typeof property.categoryData?.categoryRef === "object"
+        ? property.categoryData?.categoryRef?._id || ""
+        : property.categoryData?.categoryRef || "",
+
+    categoryName:
+      property.categoryData?.categoryName || "",
+
+    customCategory:
+      property.categoryData?.customCategory || "",
+  },
+
+  // ================= HERO =================
+  heroSection: {
+    propertyStatus:
+      property.heroSection?.propertyStatus ||
+      "PRIVATE DIGITAL MANDATE",
+
+    heroDescription:
+      property.heroSection?.heroDescription || "",
+
+    brochureButtonText:
+      property.heroSection?.brochureButtonText ||
+      "DOWNLOAD BROCHURE",
+
+    videoButtonText:
+      property.heroSection?.videoButtonText ||
+      "WATCH PROJECT VIDEO",
+
+    taglineItems:
+      property.heroSection?.taglineItems || [],
+  },
+
+  // ================= KEY METRICS =================
+  keyMetrics: {
+    landArea:
+      property.keyMetrics?.landArea || "",
+
+    possession:
+      property.keyMetrics?.possession || "",
+
+    status:
+      property.keyMetrics?.status || "",
+
+    totalUnits:
+      property.keyMetrics?.totalUnits || "",
+
+    totalTowers:
+      property.keyMetrics?.totalTowers || "",
+
+    floors:
+      property.keyMetrics?.floors || "",
+
+    reraNumber:
+      property.keyMetrics?.reraNumber || "",
+  },
+
+  // ================= OVERVIEW =================
+  overview: {
+    aboutSectionNumber:
+      property.overview?.aboutSectionNumber || "02",
+
+    aboutLabel:
+      property.overview?.aboutLabel ||
+      "About The Project",
+
+    aboutTitleLine1:
+      property.overview?.aboutTitleLine1 ||
+      "A Vision That",
+
+    aboutTitleLine2:
+      property.overview?.aboutTitleLine2 ||
+      "Transcends the Ordinary",
+
+    description:
+      property.overview?.description || "",
+
+    aboutParagraph2:
+      property.overview?.aboutParagraph2 || "",
+
+    aboutImageUrl:
+      property.overview?.aboutImageUrl || "",
+
+    featureBar:
+      property.overview?.featureBar || [],
+
+    highlightsHeading:
+      property.overview?.highlightsHeading ||
+      "Crafted for Elevated",
+
+    highlightsSubheading:
+      property.overview?.highlightsSubheading ||
+      "Modern Living",
+
+    // ✅ FIX HIGHLIGHTS
+    highlights:
+      property.overview?.highlights?.length > 0
+        ? property.overview.highlights.map((h) => {
+
+            if (typeof h === "string") {
+              return {
+                heading: h,
+                subheading: "",
+                icon: "Home",
+              };
+            }
+
             return {
-              name: h,
-              icon: h,
+              heading: h.heading || "",
+              subheading: h.subheading || "",
+              icon: h.icon || "Home",
             };
-          }
+          })
+        : [],
 
-          return h;
-        })
-      : [],
+    // ✅ FIX AMENITIES
+    amenities:
+      property.overview?.amenities?.length > 0
+        ? property.overview.amenities.map((a) => {
 
-  amenities:
-  property.overview?.amenities?.length > 0
-    ? property.overview.amenities.map((a) => {
+            if (typeof a === "string") {
+              return {
+                heading: a,
+                subheading: "",
+                icon: "Home",
+              };
+            }
 
-        // OLD STRING FORMAT
-        if (typeof a === "string") {
-          return {
-            heading: a,
-            icon: "Home",
-          };
-        }
+            return {
+              heading: a.heading || "",
+              subheading: a.subheading || "",
+              icon: a.icon || "Home",
+            };
+          })
+        : [],
 
-        return a;
-      })
-    : [],
+    highlightQuote:
+      property.overview?.highlightQuote || "",
 
-  ...property.overview,
-},
+    amenitiesSectionNumber:
+      property.overview?.amenitiesSectionNumber ||
+      "04",
 
-    unitConfigurations:
-      property.unitConfigurations?.length > 0
-        ? property.unitConfigurations
-        : [{ unitType: "", area: "", price: "", paymentPlan: "" }],
+    amenitiesSectionLabel:
+      property.overview?.amenitiesSectionLabel ||
+      "Project Amenities",
 
-    media: {
-      heroImageUrl: "",
-      gallery: property.media?.gallery || [],
-      walkthroughUrl: "",
-      ...property.media,
-    },
+    amenitiesHeadingLine1:
+      property.overview?.amenitiesHeadingLine1 ||
+      "Every Detail.",
 
-    locationData: {
-      locationRef: "",
-      locationName: "",
-      customLocation: "",
-      address: "",
-      mapEmbedUrl: "",
-      landmarks:
-        property.locationData?.landmarks?.length > 0
-          ? property.locationData.landmarks
-          : [{ name: "", distance: "" }],
-      ...property.locationData,
-    },
+    amenitiesHeadingLine2:
+      property.overview?.amenitiesHeadingLine2 ||
+      "Elevated",
 
-    gatedContent: {
-      brochurePdfUrl: "",
-      floorPlans:
-        property.gatedContent?.floorPlans?.length > 0
-          ? property.gatedContent.floorPlans
-          : [{ title: "", image: "" }],
-      ...property.gatedContent,
-    },
+    amenitiesHeadingLine3:
+      property.overview?.amenitiesHeadingLine3 ||
+      "Beyond Expectation.",
 
-    categoryData: {
-      categoryRef: "",
-      categoryName: "",
-      customCategory: "",
-      ...property.categoryData,
-    },
+    amenitiesSubheading:
+      property.overview?.amenitiesSubheading || "",
 
-    seoEngine: {
-      metaTitle: "",
-      metaDescription: "",
-      ...property.seoEngine,
-    },
+    bottomStripTitle1:
+      property.overview?.bottomStripTitle1 ||
+      "Thoughtfully by Design.",
 
-    faqs:
-      property.faqs?.length > 0
-        ? property.faqs
-        : [{ question: "", answer: "" }],
-  };
+    bottomStripTitle2:
+      property.overview?.bottomStripTitle2 ||
+      "Crafted for the Exceptional.",
 
-  setForm(safeForm);
-  setPreviewData(safeForm);
+    bottomStripFeature1:
+      property.overview?.bottomStripFeature1 ||
+      "Premium Specifications",
+
+    bottomStripFeature2:
+      property.overview?.bottomStripFeature2 ||
+      "Finest Quality Materials",
+
+    bottomStripFeature3:
+      property.overview?.bottomStripFeature3 ||
+      "Curated for Discerning Families",
+  },
+
+  // ================= CONFIGURATION SECTION =================
+  configurationSection: {
+    sectionNumber:
+      property.configurationSection?.sectionNumber ||
+      "05",
+
+    sectionLabel:
+      property.configurationSection?.sectionLabel ||
+      "Residence Configurations",
+
+    titleLine1:
+      property.configurationSection?.titleLine1 ||
+      "Residences Tailored",
+
+    titleLine2:
+      property.configurationSection?.titleLine2 ||
+      "to Your Lifestyle",
+
+    subheading:
+      property.configurationSection?.subheading ||
+      "",
+
+    features:
+      property.configurationSection?.features || [],
+
+    buttonText:
+      property.configurationSection?.buttonText ||
+      "View Details",
+  },
+
+  // ================= UNIT CONFIGURATIONS =================
+  unitConfigurations:
+    property.unitConfigurations?.length > 0
+      ? property.unitConfigurations.map((u) => ({
+          unitType: u.unitType || "",
+          area: u.area || "",
+          price: u.price || "",
+          paymentPlan: u.paymentPlan || "",
+          bedrooms: u.bedrooms || "",
+          bathrooms: u.bathrooms || "",
+          balconies: u.balconies || "",
+        }))
+      : [
+          {
+            unitType: "",
+            area: "",
+            price: "",
+            paymentPlan: "",
+            bedrooms: "",
+            bathrooms: "",
+            balconies: "",
+          },
+        ],
+
+  // ================= MEDIA =================
+  media: {
+    heroImageUrl:
+      property.media?.heroImageUrl || "",
+
+    gallery:
+      property.media?.gallery || [],
+
+    walkthroughUrl:
+      property.media?.walkthroughUrl || "",
+  },
+
+  // ================= LOCATION =================
+  locationData: {
+    locationRef:
+      typeof property.locationData?.locationRef === "object"
+        ? property.locationData?.locationRef?._id || ""
+        : property.locationData?.locationRef || "",
+
+    locationName:
+      property.locationData?.locationName || "",
+
+    customLocation:
+      property.locationData?.customLocation || "",
+
+    address:
+      property.locationData?.address || "",
+
+    mapEmbedUrl:
+      property.locationData?.mapEmbedUrl || "",
+
+    landmarks:
+      property.locationData?.landmarks?.length > 0
+        ? property.locationData.landmarks.map((l) => ({
+            name: l.name || "",
+            distance: l.distance || "",
+            subtitle:
+              l.subtitle || "Premium Connectivity",
+            icon: l.icon || "✦",
+          }))
+        : [
+            {
+              name: "",
+              distance: "",
+              subtitle: "Premium Connectivity",
+              icon: "✦",
+            },
+          ],
+
+    bottomStrip:
+      property.locationData?.bottomStrip || [],
+  },
+
+  // ================= MASTER PLAN =================
+  masterPlanSection: {
+    ...property.masterPlanSection,
+
+    masterPlanImage:
+      property.masterPlanSection?.masterPlanImage || "",
+  },
+
+  // ================= GATED =================
+  gatedContent: {
+    brochurePdfUrl:
+      property.gatedContent?.brochurePdfUrl || "",
+
+    requireLogin:
+      property.gatedContent?.requireLogin ?? true,
+
+    floorPlans:
+      property.gatedContent?.floorPlans?.length > 0
+        ? property.gatedContent.floorPlans.map((f) => ({
+            unitType: f.unitType || "",
+            area: f.area || "",
+            price: f.price || "",
+            paymentPlan: f.paymentPlan || "",
+            bedrooms: f.bedrooms || "",
+            bathrooms: f.bathrooms || "",
+            balconies: f.balconies || "",
+            image: f.image || "",
+          }))
+        : [
+            {
+              unitType: "",
+              area: "",
+              price: "",
+              paymentPlan: "",
+              bedrooms: "",
+              bathrooms: "",
+              balconies: "",
+              image: "",
+            },
+          ],
+  },
+
+  // ================= SEO =================
+  seoEngine: {
+    metaTitle:
+      property.seoEngine?.metaTitle || "",
+
+    metaDescription:
+      property.seoEngine?.metaDescription || "",
+  },
+
+  // ================= FAQ SECTION =================
+  faqSection: {
+    sectionNumber:
+      property.faqSection?.sectionNumber || "09",
+
+    topLabel:
+      property.faqSection?.topLabel || "FAQ",
+
+    headingLine1:
+      property.faqSection?.headingLine1 ||
+      "Frequently Asked Questions",
+
+    headingHighlight:
+      property.faqSection?.headingHighlight || "",
+
+    description:
+      property.faqSection?.description || "",
+
+    developerLabel:
+      property.faqSection?.developerLabel ||
+      "Luxury Developer",
+
+    contactTitle:
+      property.faqSection?.contactTitle ||
+      "Still have questions?",
+
+    contactDescription:
+      property.faqSection?.contactDescription || "",
+
+    phone:
+      property.faqSection?.phone || "",
+
+    timing:
+      property.faqSection?.timing || "",
+
+    ctaTitle:
+      property.faqSection?.ctaTitle || "",
+
+    ctaDescription:
+      property.faqSection?.ctaDescription || "",
+
+    ctaButtonText:
+      property.faqSection?.ctaButtonText ||
+      "Book A Site Visit",
+
+    callLabel:
+      property.faqSection?.callLabel ||
+      "Call Us",
+
+    whatsappLabel:
+      property.faqSection?.whatsappLabel ||
+      "WhatsApp",
+  },
+
+  // ================= FAQS =================
+  faqs:
+    property.faqs?.length > 0
+      ? property.faqs.map((f) => ({
+          question: f.question || "",
+          answer: f.answer || "",
+        }))
+      : [
+          {
+            question: "",
+            answer: "",
+          },
+        ],
+};
+
+setForm(safeForm);
+setPreviewData(safeForm);
+
 
   // ✅ toggles
   if (!property.coreDetails?.developerRef) setUseCustomDeveloper(true);
@@ -751,8 +1081,9 @@ const [errorList, setErrorList] = useState([]);
 const getNestedValue = (obj, path) => {
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
 };
-  // ================= NAVIGATION =================
-  const goNext = () => {
+
+// ================= NAVIGATION =================
+const goNext = () => {
 
   const missing = [];
 
@@ -787,7 +1118,11 @@ const getNestedValue = (obj, path) => {
 
     } else {
 
-      if (!form.coreDetails.developerRef?.trim()) {
+      if (
+        !form.coreDetails.developerRef ||
+        (typeof form.coreDetails.developerRef === "string" &&
+          !form.coreDetails.developerRef.trim())
+      ) {
         missing.push({
           path: "coreDetails.developerRef",
           label: "Developer",
@@ -796,24 +1131,28 @@ const getNestedValue = (obj, path) => {
     }
 
     // ================= LOCATION VALIDATION =================
-if (useCustomLocation) {
+    if (useCustomLocation) {
 
-  if (!form.locationData.customLocation?.trim()) {
-    missing.push({
-      path: "locationData.locationRef",
-      label: "Location",
-    });
-  }
+      if (!form.locationData.customLocation?.trim()) {
+        missing.push({
+          path: "locationData.locationRef",
+          label: "Location",
+        });
+      }
 
-} else {
+    } else {
 
-  if (!form.locationData.locationRef?.trim()) {
-    missing.push({
-      path: "locationData.locationRef",
-      label: "Location",
-    });
-  }
-}
+      if (
+        !form.locationData.locationRef ||
+        (typeof form.locationData.locationRef === "string" &&
+          !form.locationData.locationRef.trim())
+      ) {
+        missing.push({
+          path: "locationData.locationRef",
+          label: "Location",
+        });
+      }
+    }
 
     // ================= CATEGORY VALIDATION =================
     if (useCustomCategory) {
@@ -827,7 +1166,11 @@ if (useCustomLocation) {
 
     } else {
 
-      if (!form.categoryData.categoryRef?.trim()) {
+      if (
+        !form.categoryData.categoryRef ||
+        (typeof form.categoryData.categoryRef === "string" &&
+          !form.categoryData.categoryRef.trim())
+      ) {
         missing.push({
           path: "categoryData.categoryRef",
           label: "Category",
@@ -969,19 +1312,37 @@ const handleUpdate = async () => {
       return;
     }
 
-    const cleanedConfigurations =
-      form.unitConfigurations.filter(
-        (u) =>
-          u.unitType?.trim() ||
-          u.area?.trim() ||
-          u.price?.trim() ||
-          u.paymentPlan?.trim() ||
-          u.bedrooms?.trim() ||
-          u.bathrooms?.trim() ||
-          u.balconies?.trim()
-      );
+    
+// 🔥 CLEAN CONFIGS SAFELY
+const cleanedConfigurations =
+  (form.unitConfigurations || []).filter((u) => {
 
-    const validConfigurations = cleanedConfigurations;
+    return (
+      String(u.unitType || "").trim() ||
+      String(u.area || "").trim() ||
+      String(u.price || "").trim() ||
+      String(u.paymentPlan || "").trim() ||
+      String(u.bedrooms || "").trim() ||
+      String(u.bathrooms || "").trim() ||
+      String(u.balconies || "").trim()
+    );
+  });
+
+// ✅ PREVENT EMPTY ARRAY
+const validConfigurations =
+  cleanedConfigurations.length > 0
+    ? cleanedConfigurations
+    : [
+        {
+          unitType: "",
+          area: "",
+          price: "",
+          paymentPlan: "",
+          bedrooms: "",
+          bathrooms: "",
+          balconies: "",
+        },
+      ];
 
     const normalizedHighlights =
       form.overview.highlights.map((h) => {
@@ -4614,7 +4975,7 @@ if (loading) {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={handleUpdate}
               className="
                 px-7 py-3 rounded-2xl
                 bg-gradient-to-r from-emerald-500 to-green-400

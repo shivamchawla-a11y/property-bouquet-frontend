@@ -901,6 +901,23 @@ const handleSubmit = async () => {
       return;
     }
 
+    // ================= NON-VALIDATION ERRORS =================
+if (
+  !data.missingFields ||
+  data.missingFields.length === 0
+) {
+  toast.error(
+    data.message || "Something went wrong ❌"
+  );
+
+  console.error(
+    "Server Error:",
+    data.message
+  );
+
+  return;
+}
+
    const missing = data.missingFields || [];
 
 const fieldErrors = {};
@@ -2062,47 +2079,186 @@ const labelMap = {
       />
 
       {/* ================= ABOUT IMAGE ================= */}
-<div className="mt-4">
-
-  <p className="text-white font-semibold mb-3">
+<div className="mt-6">
+  <label className="block text-white font-semibold mb-3">
     About Section Image
-  </p>
+  </label>
 
-  {/* UPLOAD BUTTON */}
   <div
-    className={`upload-box cursor-pointer transition-all duration-200 ${
-  hasError("overview.aboutImageUrl")
-    ? "border border-red-500 ring-2 ring-red-500"
-    : ""
-}`}
     onClick={() =>
       document
         .getElementById("aboutImageUpload")
         .click()
     }
+    className={`
+      relative
+      group
+      cursor-pointer
+      overflow-hidden
+      rounded-2xl
+      border-2
+      border-dashed
+      transition-all
+      duration-300
+      ${
+        hasError("overview.aboutImageUrl")
+          ? "border-red-500 bg-red-500/10"
+          : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
+      }
+    `}
   >
-    Upload About Image
+    {/* IMAGE EXISTS */}
+    {form.overview?.aboutImageUrl ? (
+      <div className="relative">
+        <img
+          src={form.overview.aboutImageUrl}
+          alt="About Preview"
+          className="
+            w-full
+            h-[260px]
+            object-cover
+          "
+        />
+
+        {/* Overlay */}
+        <div
+          className="
+            absolute
+            inset-0
+            bg-black/50
+            opacity-0
+            group-hover:opacity-100
+            transition-all
+            duration-300
+            flex
+            flex-col
+            items-center
+            justify-center
+          "
+        >
+          <svg
+            className="w-8 h-8 text-white mb-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+            />
+          </svg>
+
+          <p className="text-white font-medium">
+            Change Image
+          </p>
+        </div>
+
+        {/* Remove Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+
+            setForm((prev) => ({
+              ...prev,
+              overview: {
+                ...prev.overview,
+                aboutImageUrl: "",
+              },
+            }));
+          }}
+          className="
+            absolute
+            top-3
+            right-3
+            h-9
+            w-9
+            rounded-full
+            bg-red-500
+            text-white
+            flex
+            items-center
+            justify-center
+            shadow-lg
+            hover:scale-110
+            transition
+          "
+        >
+          ✕
+        </button>
+      </div>
+    ) : (
+      /* EMPTY STATE */
+      <div
+        className="
+          py-14
+          px-6
+          flex
+          flex-col
+          items-center
+          justify-center
+          text-center
+        "
+      >
+        <div
+          className="
+            h-16
+            w-16
+            rounded-full
+            bg-white/10
+            flex
+            items-center
+            justify-center
+            mb-4
+          "
+        >
+          <svg
+            className="w-8 h-8 text-[#C6A15B]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+        </div>
+
+        <h4 className="text-white font-semibold text-lg">
+          Upload About Image
+        </h4>
+
+        <p className="text-gray-400 text-sm mt-2">
+          Drag & drop or click to upload
+        </p>
+
+        <p className="text-gray-500 text-xs mt-1">
+          JPG, PNG, WEBP • Max 5MB
+        </p>
+      </div>
+    )}
   </div>
 
   {hasError("overview.aboutImageUrl") && (
-  <p className="text-red-400 text-sm mt-2">
-    About Image is required
-  </p>
-)}
+    <p className="text-red-400 text-sm mt-2">
+      About Image is required
+    </p>
+  )}
 
-  {/* INPUT */}
   <input
     id="aboutImageUpload"
     type="file"
     hidden
     accept="image/*"
     onChange={async (e) => {
-
       const file = e.target.files[0];
-
       if (!file) return;
 
-      // ================= VALIDATION =================
       if (!file.type.startsWith("image/")) {
         alert("Only image files allowed ❌");
         return;
@@ -2114,10 +2270,8 @@ const labelMap = {
       }
 
       try {
-
         setUploading(true);
 
-        // ================= UPLOAD =================
         const data = new FormData();
         data.append("file", file);
 
@@ -2137,7 +2291,6 @@ const labelMap = {
           );
         }
 
-        // ================= SAVE URL =================
         setForm((prev) => ({
           ...prev,
           overview: {
@@ -2145,51 +2298,16 @@ const labelMap = {
             aboutImageUrl: result.url,
           },
         }));
-
       } catch (err) {
-
-        console.error("Upload Error:", err);
-
+        console.error(err);
         alert("Upload failed ❌");
-
       } finally {
-
         setUploading(false);
       }
 
       e.target.value = "";
-
     }}
   />
-
-  {/* IMAGE PREVIEW */}
-  {form.overview?.aboutImageUrl?.trim() && (
-    <div className="relative mt-4">
-
-      <img
-        src={form.overview.aboutImageUrl}
-        className="preview-img"
-        alt="About"
-      />
-
-      {/* REMOVE BUTTON */}
-      <button
-        type="button"
-        onClick={() =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutImageUrl: "",
-            },
-          }))
-        }
-        className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-      >
-        ✕
-      </button>
-    </div>
-  )}
 </div>
     </div>
 
