@@ -34,7 +34,7 @@ export default function PropertiesPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 8;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const router = useRouter();
 
@@ -44,8 +44,8 @@ export default function PropertiesPage() {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, filter, tagFilter]);
+  setCurrentPage(1);
+}, [search, filter, tagFilter, itemsPerPage]);
 
   // ================= FETCH =================
   const fetchProperties = async () => {
@@ -580,98 +580,127 @@ export default function PropertiesPage() {
         </table>
 
         {/* ================= PAGINATION ================= */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-white">
+{totalPages > 1 && (
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-4 border-t border-gray-200 bg-white">
 
-            <p className="text-sm text-gray-600 font-medium">
-              Showing{" "}
-              <span className="font-bold">
-                {startIndex + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-bold">
-                {Math.min(
-                  startIndex + itemsPerPage,
-                  filtered.length
-                )}
-              </span>{" "}
-              of{" "}
-              <span className="font-bold">
-                {filtered.length}
-              </span>{" "}
-              properties
-            </p>
+    {/* LEFT */}
+    <div className="flex items-center gap-4 flex-wrap">
 
-            <div className="flex items-center gap-2">
+      <p className="text-sm text-gray-600 font-medium">
+        Showing{" "}
+        <span className="font-bold">
+          {startIndex + 1}
+        </span>{" "}
+        to{" "}
+        <span className="font-bold">
+          {Math.min(
+            startIndex + itemsPerPage,
+            filtered.length
+          )}
+        </span>{" "}
+        of{" "}
+        <span className="font-bold">
+          {filtered.length}
+        </span>{" "}
+        properties
+      </p>
+      
 
-              {/* PREV */}
-              <button
-                disabled={currentPage === 1}
-                onClick={() =>
-                  setCurrentPage((prev) => prev - 1)
-                }
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  currentPage === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                Prev
-              </button>
+      {/* ITEMS PER PAGE */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600 font-medium">
+          Show:
+        </span>
 
-              {/* PAGE NUMBERS */}
-              {Array.from(
-                {
-                  length: Math.min(totalPages, 5),
-                },
-                (_, i) => {
-                  let page;
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+        >
+          <option value={10}>10</option>
+          <option value={25}>25</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
+      </div>
 
-                  if (currentPage <= 3) {
-                    page = i + 1;
-                  } else if (
-                    currentPage >=
-                    totalPages - 2
-                  ) {
-                    page =
-                      totalPages - 4 + i;
-                  } else {
-                    page = currentPage - 2 + i;
-                  }
+    </div>
 
-                  return page;
-                }
-              ).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
-                    currentPage === page
-                      ? "bg-[#0f3b2e] text-white"
-                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+    {/* RIGHT */}
+    <div className="flex items-center gap-2 flex-wrap">
 
-              {/* NEXT */}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => prev + 1)
-                }
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  currentPage === totalPages
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+      {/* PREV */}
+      <button
+        disabled={currentPage === 1}
+        onClick={() =>
+          setCurrentPage((prev) => prev - 1)
+        }
+        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+          currentPage === 1
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+        }`}
+      >
+        Prev
+      </button>
+
+      {/* PAGE NUMBERS */}
+      {Array.from(
+        {
+          length: Math.min(totalPages, 5),
+        },
+        (_, i) => {
+          let page;
+
+          if (currentPage <= 3) {
+            page = i + 1;
+          } else if (
+            currentPage >=
+            totalPages - 2
+          ) {
+            page =
+              totalPages - 4 + i;
+          } else {
+            page = currentPage - 2 + i;
+          }
+
+          return page;
+        }
+      ).map((page) => (
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
+            currentPage === page
+              ? "bg-[#0f3b2e] text-white"
+              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+
+      {/* NEXT */}
+      <button
+        disabled={currentPage === totalPages}
+        onClick={() =>
+          setCurrentPage((prev) => prev + 1)
+        }
+        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+          currentPage === totalPages
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+        }`}
+      >
+        Next
+      </button>
+
+    </div>
+  </div>
+)}
       </div>
 
       {/* ================= FEATURE MODAL ================= */}
