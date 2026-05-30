@@ -402,121 +402,222 @@ export default function StepMedia({ form, setForm }) {
         </div>
       </div>
 
-      {/* ================= HERO ================= */}
-      <div>
-
-        <p className="text-white font-semibold mb-3">
-          Hero Image
-        </p>
-
-        <div
-          className="upload-box cursor-pointer"
-          onClick={() =>
-            document
-              .getElementById("heroUpload")
-              .click()
-          }
-        >
-          Upload Hero Image
-        </div>
-
-        <input
-          id="heroUpload"
-          type="file"
-          hidden
-          accept="image/*"
-          onChange={(e) => {
-            handleHeroUpload(
-              e.target.files[0]
-            );
-
-            e.target.value = "";
-          }}
-        />
-
-        {form.media?.heroImageUrl?.trim() && (
-          <div className="relative mt-4">
-
-            <img
-              src={form.media.heroImageUrl}
-              className="preview-img"
-              alt=""
-            />
-
-            <button
-              onClick={removeHero}
-              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* ================= GALLERY ================= */}
-      <div>
+<div className="mt-8">
 
-        <p className="text-white font-semibold mb-3">
-          Gallery
-        </p>
+  <label className="block text-white font-semibold mb-3">
+    Property Gallery
+  </label>
 
-        <div
-          className="upload-box cursor-pointer"
-          onClick={() =>
-            document
-              .getElementById("galleryUpload")
-              .click()
-          }
+  {/* Upload Area */}
+  <div
+    onClick={() =>
+      document
+        .getElementById("galleryUpload")
+        .click()
+    }
+    className="
+      relative
+      group
+      cursor-pointer
+      overflow-hidden
+      rounded-2xl
+      border-2
+      border-dashed
+      border-white/20
+      bg-white/5
+      hover:border-[#C6A15B]
+      hover:bg-white/10
+      transition-all
+      duration-300
+    "
+  >
+
+    <div
+      className="
+        py-14
+        px-6
+        flex
+        flex-col
+        items-center
+        justify-center
+        text-center
+      "
+    >
+      <div
+        className="
+          h-16
+          w-16
+          rounded-full
+          bg-white/10
+          flex
+          items-center
+          justify-center
+          mb-4
+        "
+      >
+        <svg
+          className="w-8 h-8 text-[#C6A15B]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
         >
-          Upload Images
-        </div>
-
-        <input
-          id="galleryUpload"
-          type="file"
-          hidden
-          multiple
-          accept="image/*"
-          onChange={(e) => {
-            handleGalleryUpload(
-              Array.from(e.target.files)
-            );
-
-            e.target.value = "";
-          }}
-        />
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-
-          {(form.media?.gallery || [])
-            .filter(
-              (img) => img && img.trim()
-            )
-            .map((img, i) => (
-              <div
-                key={i}
-                className="relative group"
-              >
-
-                <img
-                  src={img}
-                  className="preview-thumb"
-                  alt=""
-                />
-
-                <button
-                  onClick={() =>
-                    removeImage(i)
-                  }
-                  className="absolute top-1 right-1 bg-red-500 text-white px-2 py-1 rounded text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-        </div>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
       </div>
 
+      <h4 className="text-white font-semibold text-lg">
+        Upload Gallery Images
+      </h4>
+
+      <p className="text-gray-400 text-sm mt-2">
+        Upload multiple images for the property
+      </p>
+
+      <p className="text-gray-500 text-xs mt-1">
+        JPG, PNG, WEBP • Max 5MB each
+      </p>
+    </div>
+  </div>
+
+  <input
+    id="galleryUpload"
+    type="file"
+    hidden
+    multiple
+    accept="image/*"
+    onChange={(e) => {
+      handleGalleryUpload(
+        Array.from(e.target.files)
+      );
+
+      e.target.value = "";
+    }}
+  />
+
+  {/* Gallery Preview Grid */}
+  {(form.media?.gallery || []).length > 0 && (
+
+    <div className="mt-6">
+
+      <div className="flex items-center justify-between mb-4">
+
+        <p className="text-white font-medium">
+          Uploaded Images
+        </p>
+
+        <span className="text-xs text-white/50">
+          {(form.media?.gallery || []).length}
+          {" "}
+          Images
+        </span>
+
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+        {(form.media?.gallery || [])
+          .filter(
+            (img) =>
+              img && img.trim()
+          )
+          .map((img, i) => (
+
+            <div
+              key={i}
+              className="
+                relative
+                group
+                overflow-hidden
+                rounded-2xl
+                border
+                border-white/10
+              "
+            >
+
+              <img
+                src={img}
+                alt=""
+                className="
+                  w-full
+                  h-[180px]
+                  object-cover
+                  transition-all
+                  duration-500
+                  group-hover:scale-110
+                "
+              />
+
+              {/* Hover Overlay */}
+              <div
+                className="
+                  absolute
+                  inset-0
+                  bg-black/50
+                  opacity-0
+                  group-hover:opacity-100
+                  transition-all
+                  duration-300
+                "
+              />
+
+              {/* Image Number */}
+              <div
+                className="
+                  absolute
+                  bottom-3
+                  left-3
+                  px-2
+                  py-1
+                  rounded-lg
+                  bg-black/60
+                  text-white
+                  text-xs
+                "
+              >
+                #{i + 1}
+              </div>
+
+              {/* Remove Button */}
+              <button
+                type="button"
+                onClick={() =>
+                  removeImage(i)
+                }
+                className="
+                  absolute
+                  top-3
+                  right-3
+                  h-8
+                  w-8
+                  rounded-full
+                  bg-red-500
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                  shadow-lg
+                  opacity-0
+                  group-hover:opacity-100
+                  transition-all
+                "
+              >
+                ✕
+              </button>
+
+            </div>
+          ))}
+      </div>
+    </div>
+  )}
+
+</div>
       {/* ================= FLOOR PLANS ================= */}
 <div>
   <p className="text-white font-semibold mb-4">
@@ -721,68 +822,203 @@ export default function StepMedia({ form, setForm }) {
           }}
         />
 
-        {/* IMAGE UPLOAD */}
-        <div
-          className="upload-box cursor-pointer"
-          onClick={() =>
-            document
-              .getElementById(`fp-${i}`)
-              .click()
-          }
-        >
-          Upload Floor Plan Image
-        </div>
+        {/* ================= FLOOR PLAN IMAGE ================= */}
+<div>
+  <label className="block text-white font-semibold mb-3">
+    Floor Plan Image
+  </label>
 
-        <input
-          id={`fp-${i}`}
-          type="file"
-          hidden
-          accept="image/*"
-          onChange={(e) => {
-            handleFloorPlanUpload(
-              e.target.files[0],
-              i
-            );
+  <div
+    onClick={() =>
+      document
+        .getElementById(`fp-${i}`)
+        .click()
+    }
+    className={`
+      relative
+      group
+      cursor-pointer
+      overflow-hidden
+      rounded-2xl
+      border-2
+      border-dashed
+      border-white/20
+      bg-white/5
+      hover:border-[#C6A15B]
+      hover:bg-white/10
+      transition-all
+      duration-300
+    `}
+  >
 
-            e.target.value = "";
-          }}
+    {/* IMAGE EXISTS */}
+    {fp.image ? (
+
+      <div className="relative">
+
+        <img
+          src={fp.image}
+          alt="Floor Plan"
+          className="
+            w-full
+            h-[260px]
+            object-cover
+          "
         />
 
-        {/* IMAGE PREVIEW */}
-        {fp.image && (
-          <div className="relative">
-            <img
-              src={fp.image}
-              className="preview-thumb"
-              alt=""
+        {/* Overlay */}
+        <div
+          className="
+            absolute
+            inset-0
+            bg-black/50
+            opacity-0
+            group-hover:opacity-100
+            transition-all
+            duration-300
+            flex
+            flex-col
+            items-center
+            justify-center
+          "
+        >
+          <svg
+            className="w-8 h-8 text-white mb-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
             />
+          </svg>
 
-            <button
-              onClick={() => {
-                const arr = [
-                  ...(form.gatedContent
-                    ?.floorPlans || []),
-                ];
+          <p className="text-white font-medium">
+            Change Image
+          </p>
+        </div>
 
-                arr[i] = {
-                  ...fp,
-                  image: "",
-                };
+        {/* Remove Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
 
-                setForm((prev) => ({
-                  ...prev,
-                  gatedContent: {
-                    ...prev.gatedContent,
-                    floorPlans: arr,
-                  },
-                }));
-              }}
-              className="absolute top-1 right-1 bg-red-500 text-white px-2 py-1 rounded text-xs"
-            >
-              ✕
-            </button>
-          </div>
-        )}
+            const arr = [
+              ...(form.gatedContent?.floorPlans || []),
+            ];
+
+            arr[i] = {
+              ...fp,
+              image: "",
+            };
+
+            setForm((prev) => ({
+              ...prev,
+              gatedContent: {
+                ...prev.gatedContent,
+                floorPlans: arr,
+              },
+            }));
+          }}
+          className="
+            absolute
+            top-3
+            right-3
+            h-9
+            w-9
+            rounded-full
+            bg-red-500
+            text-white
+            flex
+            items-center
+            justify-center
+            shadow-lg
+            hover:scale-110
+            transition
+          "
+        >
+          ✕
+        </button>
+
+      </div>
+
+    ) : (
+
+      <div
+        className="
+          py-14
+          px-6
+          flex
+          flex-col
+          items-center
+          justify-center
+          text-center
+        "
+      >
+
+        <div
+          className="
+            h-16
+            w-16
+            rounded-full
+            bg-white/10
+            flex
+            items-center
+            justify-center
+            mb-4
+          "
+        >
+          <svg
+            className="w-8 h-8 text-[#C6A15B]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+        </div>
+
+        <h4 className="text-white font-semibold text-lg">
+          Upload Floor Plan
+        </h4>
+
+        <p className="text-gray-400 text-sm mt-2">
+          Drag & drop or click to upload
+        </p>
+
+        <p className="text-gray-500 text-xs mt-1">
+          JPG, PNG, WEBP • Max 5MB
+        </p>
+
+      </div>
+
+    )}
+  </div>
+
+  <input
+    id={`fp-${i}`}
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={(e) => {
+      handleFloorPlanUpload(
+        e.target.files[0],
+        i
+      );
+
+      e.target.value = "";
+    }}
+  />
+</div>
 
         {/* REMOVE FLOOR PLAN */}
         <button
@@ -834,7 +1070,17 @@ export default function StepMedia({ form, setForm }) {
         },
       }))
     }
-    className="text-gold"
+    className="
+mt-4
+px-5
+py-3
+rounded-2xl
+bg-[#C6A15B]
+text-black
+font-semibold
+hover:scale-[1.02]
+transition
+"
   >
     + Add Floor Plan
   </button>

@@ -5,6 +5,7 @@ import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
 import PropertyPreview from "./PropertyPreview";
 import toast from "react-hot-toast";
+import HeroImageUpload from "./HeroImageUpload";
 
 import {
   Waves,
@@ -1126,7 +1127,7 @@ const labelMap = {
               {
                 no: "02",
                 title: "About Project",
-                sub: "Overview",
+                sub: "Highlights",
               },
               {
                 no: "03",
@@ -1135,7 +1136,7 @@ const labelMap = {
               },
               {
                 no: "04",
-                title: "Gallery & Plans",
+                title: "Gallery & Floor Plans",
                 sub: "Media",
               },
               {
@@ -1302,6 +1303,322 @@ const labelMap = {
     {hasError("coreDetails.title") && (
   <p className="text-red-400 text-sm">Title is required</p>
 )}
+
+{/* ================= HERO SECTION ================= */}
+    <div className="mt-8">
+      <h3 className="font-semibold mb-4 text-white">
+        Hero Section
+      </h3>
+
+      <div className="grid grid-cols-1 gap-4">
+        <input
+          className="input"
+          placeholder="propertyStatus Text"
+          value={
+            form.heroSection
+              ?.propertyStatus || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "propertyStatus",
+              e.target.value
+            )
+          }
+        />
+
+        <textarea
+  className={`input min-h-[120px] ${
+    hasError("heroSection.heroDescription")
+      ? "border-red-500 ring-2 ring-red-500"
+      : ""
+  }`}
+          placeholder="Hero Description *"
+          value={
+            form.heroSection
+              ?.heroDescription || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "heroDescription",
+              e.target.value
+            )
+          }
+        />
+
+        {hasError("heroSection.heroDescription") && (
+  <p className="text-red-400 text-sm">
+    Hero Description is required
+  </p>
+)}
+
+        <input
+          className="input"
+          placeholder="Brochure Button Text"
+          value={
+            form.heroSection
+              ?.brochureButtonText || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "brochureButtonText",
+              e.target.value
+            )
+          }
+        />
+
+        <input
+          className="input"
+          placeholder="Video Button Text"
+          value={
+            form.heroSection
+              ?.videoButtonText || ""
+          }
+          onChange={(e) =>
+            handleChange(
+              "heroSection",
+              "videoButtonText",
+              e.target.value
+            )
+          }
+        />
+      </div>
+    </div>
+
+    {/* ================= HERO IMAGE ================= */}
+<div className="mt-8">
+  <label className="block text-white font-semibold mb-3">
+    Hero Image
+  </label>
+
+  <div
+    onClick={() =>
+      document
+        .getElementById("heroImageUpload")
+        .click()
+    }
+    className={`
+      relative
+      group
+      cursor-pointer
+      overflow-hidden
+      rounded-2xl
+      border-2
+      border-dashed
+      transition-all
+      duration-300
+      ${
+        hasError("media.heroImageUrl")
+          ? "border-red-500 bg-red-500/10"
+          : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
+      }
+    `}
+  >
+
+    {/* IMAGE EXISTS */}
+    {form.media?.heroImageUrl ? (
+      <div className="relative">
+        <img
+          src={form.media.heroImageUrl}
+          alt="Hero Preview"
+          className="
+            w-full
+            h-[300px]
+            object-cover
+          "
+        />
+
+        {/* Overlay */}
+        <div
+          className="
+            absolute
+            inset-0
+            bg-black/50
+            opacity-0
+            group-hover:opacity-100
+            transition-all
+            duration-300
+            flex
+            flex-col
+            items-center
+            justify-center
+          "
+        >
+          <svg
+            className="w-8 h-8 text-white mb-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+            />
+          </svg>
+
+          <p className="text-white font-medium">
+            Change Hero Image
+          </p>
+        </div>
+
+        {/* Remove Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+
+            setForm((prev) => ({
+              ...prev,
+              media: {
+                ...prev.media,
+                heroImageUrl: "",
+              },
+            }));
+          }}
+          className="
+            absolute
+            top-3
+            right-3
+            h-9
+            w-9
+            rounded-full
+            bg-red-500
+            text-white
+            flex
+            items-center
+            justify-center
+            shadow-lg
+            hover:scale-110
+            transition
+          "
+        >
+          ✕
+        </button>
+      </div>
+    ) : (
+      /* EMPTY STATE */
+      <div
+        className="
+          py-16
+          px-6
+          flex
+          flex-col
+          items-center
+          justify-center
+          text-center
+        "
+      >
+        <div
+          className="
+            h-16
+            w-16
+            rounded-full
+            bg-white/10
+            flex
+            items-center
+            justify-center
+            mb-4
+          "
+        >
+          <svg
+            className="w-8 h-8 text-[#C6A15B]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+        </div>
+
+        <h4 className="text-white font-semibold text-lg">
+          Upload Hero Image
+        </h4>
+
+        <p className="text-gray-400 text-sm mt-2">
+          Click to upload your property hero image
+        </p>
+
+        <p className="text-gray-500 text-xs mt-1">
+          JPG, PNG, WEBP • Max 5MB
+        </p>
+      </div>
+    )}
+  </div>
+
+  {hasError("media.heroImageUrl") && (
+    <p className="text-red-400 text-sm mt-2">
+      Hero Image is required
+    </p>
+  )}
+
+  <input
+    id="heroImageUpload"
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("Only image files allowed ❌");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Max file size is 5MB ❌");
+        return;
+      }
+
+      try {
+        setUploading(true);
+
+        const data = new FormData();
+        data.append("file", file);
+
+        const res = await fetch(
+          "https://property-bouquet-backend.onrender.com/api/upload",
+          {
+            method: "POST",
+            body: data,
+          }
+        );
+
+        const result = await res.json();
+
+        if (!res.ok || !result.url) {
+          throw new Error(
+            result.message || "Upload failed"
+          );
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          media: {
+            ...prev.media,
+            heroImageUrl: result.url,
+          },
+        }));
+      } catch (err) {
+        console.error(err);
+        alert("Upload failed ❌");
+      } finally {
+        setUploading(false);
+      }
+
+      e.target.value = "";
+    }}
+  />
+</div>
 
     {/* ================= DEVELOPER ================= */}
     <div className="space-y-2">
@@ -1647,9 +1964,17 @@ const labelMap = {
   </p>
 )}
 
+    {/* ================= KEY METRICS ================= */}
+<div className="mt-6">
+  <h3 className="font-semibold mb-2 text-white">
+    Key Metrics
+  </h3>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
     <input
       className="input"
-      placeholder="Starting Price"
+      placeholder="Starting Price (e.g. ₹2 Cr)"
       value={form.coreDetails.startingPrice}
       onChange={(e) =>
         handleChange(
@@ -1662,7 +1987,7 @@ const labelMap = {
 
     <input
       className="input"
-      placeholder="Max Price"
+      placeholder="Max Price (e.g. ₹10 Cr)"
       value={form.coreDetails.maxPrice}
       onChange={(e) =>
         handleChange(
@@ -1673,88 +1998,60 @@ const labelMap = {
       }
     />
 
-    {/* ================= HERO SECTION ================= */}
-    <div className="mt-8">
-      <h3 className="font-semibold mb-4 text-white">
-        Hero Section
-      </h3>
+    <input
+      className="input"
+      placeholder="Possession (e.g. 2028)"
+      value={form.keyMetrics.possession}
+      onChange={(e) =>
+        handleChange(
+          "keyMetrics",
+          "possession",
+          e.target.value
+        )
+      }
+    />
 
-      <div className="grid grid-cols-1 gap-4">
-        <input
-          className="input"
-          placeholder="propertyStatus Text"
-          value={
-            form.heroSection
-              ?.propertyStatus || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "propertyStatus",
-              e.target.value
-            )
-          }
-        />
+    <input
+      className="input"
+      placeholder="Land Area (e.g. 10 Acres)"
+      value={form.keyMetrics.landArea}
+      onChange={(e) =>
+        handleChange(
+          "keyMetrics",
+          "landArea",
+          e.target.value
+        )
+      }
+    />
 
-        <textarea
-  className={`input min-h-[120px] ${
-    hasError("heroSection.heroDescription")
-      ? "border-red-500 ring-2 ring-red-500"
-      : ""
-  }`}
-          placeholder="Hero Description *"
-          value={
-            form.heroSection
-              ?.heroDescription || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "heroDescription",
-              e.target.value
-            )
-          }
-        />
+    <input
+      className="input"
+      placeholder="Total Units"
+      value={form.keyMetrics.totalUnits || ""}
+      onChange={(e) =>
+        handleChange(
+          "keyMetrics",
+          "totalUnits",
+          e.target.value
+        )
+      }
+    />
 
-        {hasError("heroSection.heroDescription") && (
-  <p className="text-red-400 text-sm">
-    Hero Description is required
-  </p>
-)}
+    <input
+      className="input"
+      placeholder="Total Towers"
+      value={form.keyMetrics.totalTowers || ""}
+      onChange={(e) =>
+        handleChange(
+          "keyMetrics",
+          "totalTowers",
+          e.target.value
+        )
+      }
+    />
 
-        <input
-          className="input"
-          placeholder="Brochure Button Text"
-          value={
-            form.heroSection
-              ?.brochureButtonText || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "brochureButtonText",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Video Button Text"
-          value={
-            form.heroSection
-              ?.videoButtonText || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "heroSection",
-              "videoButtonText",
-              e.target.value
-            )
-          }
-        />
-      </div>
-    </div>
+  </div>
+</div>
 
     {/* ================= TAGLINES ================= */}
     <div className="mt-6">
@@ -1836,105 +2133,6 @@ const labelMap = {
       >
         + Add Tagline
       </button>
-    </div>
-
-    {/* ================= KEY METRICS ================= */}
-    <div className="mt-6">
-      <h3 className="font-semibold mb-2 text-white">
-        Key Metrics
-      </h3>
-
-      <div className="grid grid-cols-2 gap-4">
-
-        <input
-          className="input"
-          placeholder="Possession (e.g. 2028)"
-          value={form.keyMetrics.possession}
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "possession",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Land Area (e.g. 10 Acres)"
-          value={form.keyMetrics.landArea}
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "landArea",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Total Units"
-          value={
-            form.keyMetrics.totalUnits ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "totalUnits",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Total Towers"
-          value={
-            form.keyMetrics.totalTowers ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "totalTowers",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input"
-          placeholder="Floors"
-          value={
-            form.keyMetrics.floors || ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "floors",
-              e.target.value
-            )
-          }
-        />
-
-        <input
-          className="input col-span-2"
-          placeholder="RERA Number"
-          value={
-            form.keyMetrics.reraNumber ||
-            ""
-          }
-          onChange={(e) =>
-            handleChange(
-              "keyMetrics",
-              "reraNumber",
-              e.target.value
-            )
-          }
-        />
-      </div>
     </div>
   </div>
 )}
