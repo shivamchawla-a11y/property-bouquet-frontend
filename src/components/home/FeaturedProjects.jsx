@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { formatPrice } from "@/utils/formatPrice";
 
 import {
   ArrowRight,
@@ -11,45 +14,35 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const featuredProperties = [
-  {
-    id: 1,
-    title: "The Crest Penthouse",
-    location: "DLF Camellias, Gurgaon",
-    image: "/project1.webp",
-    beds: "6 Beds",
-    baths: "6 Baths",
-    sqft: "12,000 Sq.Ft.",
-    price: "₹48.75 Cr++",
-    appreciation: "28% - 34%",
-  },
-
-  {
-    id: 2,
-    title: "Aralias Estate",
-    location: "Nandi Hills, Bengaluru",
-    image: "/project2.webp",
-    beds: "5 Beds",
-    baths: "7 Baths",
-    sqft: "9,500 Sq.Ft.",
-    price: "₹32.40 Cr++",
-    appreciation: "26% - 31%",
-  },
-
-  {
-    id: 3,
-    title: "Trump Residences",
-    location: "Worli, Mumbai",
-    image: "/project3.webp",
-    beds: "4 Beds",
-    baths: "5 Baths",
-    sqft: "6,200 Sq.Ft.",
-    price: "₹38.90 Cr++",
-    appreciation: "24% - 30%",
-  },
-];
-
 export default function FeaturedProjects() {
+  const [featuredProperties, setFeaturedProperties] =
+    useState([]);
+
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+  const fetchFeaturedProperties = async () => {
+    try {
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/properties?propertyTag=Featured",
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setFeaturedProperties(data.data || []);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFeaturedProperties();
+}, []);
   return (
     <section className="bg-[#f6f3ee] py-16 overflow-hidden">
 
@@ -98,115 +91,245 @@ export default function FeaturedProjects() {
             </div>
 
             {/* CARDS */}
-            <div className="grid md:grid-cols-3 gap-5">
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+
+  {loading && (
+    <p className="col-span-3 text-center">
+      Loading featured properties...
+    </p>
+  )}
+
+  {!loading &&
+    featuredProperties.length === 0 && (
+      <p className="col-span-3 text-center">
+        No featured properties found.
+      </p>
+    )}
 
               {featuredProperties.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    delay: index * 0.1,
-                  }}
-                  viewport={{
-                    once: true,
-                  }}
-                  whileHover={{
-                    y: -5,
-                  }}
-                  className="bg-white rounded-[18px] overflow-hidden border border-black/5 shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
-                >
+  <Link
+    key={item._id}
+    href={`/${item.slug}`}
+    className="block h-full"
+  >
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+      }}
+      viewport={{
+        once: true,
+      }}
+      whileHover={{
+        y: -8,
+      }}
+      className="
+group
+bg-white
+rounded-[22px]
+overflow-hidden
+border
+border-[#e7e2d8]
+shadow-[0_15px_45px_rgba(0,0,0,0.06)]
+h-full
+flex
+flex-col
+transition-all
+duration-500
+hover:shadow-[0_25px_60px_rgba(0,0,0,0.12)]
+"
+    >
+      {/* IMAGE */}
+      <div className="relative h-[260px] overflow-hidden">
+        <img
+          src={
+            item?.media?.heroImageUrl ||
+            "/placeholder-property.jpg"
+          }
+          alt={item?.coreDetails?.title}
+          className="
+w-full
+h-full
+object-cover
+transition-transform
+duration-700
+group-hover:scale-110
+"
+        />
 
-                  {/* IMAGE */}
-                  <div className="relative h-[220px] overflow-hidden">
+        {/* GRADIENT */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition duration-700 hover:scale-105"
-                    />
+        {/* BADGE */}
+        <div
+          className="
+            absolute
+            top-4
+            left-4
+            bg-[#c89948]
+            text-white
+            text-[10px]
+            tracking-[1.5px]
+            px-4
+            py-2
+            rounded-full
+            font-semibold
+          "
+        >
+          FEATURED
+        </div>
+      </div>
 
-                    {/* BADGE */}
-                    <div className="absolute top-4 left-4 bg-[#c89948] text-white text-[9px] tracking-[1px] px-3 py-2 rounded-full font-semibold font-body">
-                      EXCLUSIVE MANDATE
-                    </div>
-                  </div>
+      <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
 
-                  {/* CONTENT */}
-                  <div className="p-5">
+      {/* CONTENT */}
+      <div className="p-6 flex flex-col flex-1">
+        {/* TITLE */}
+        <h3
+          className="
+            text-[24px]
+xl:text-[28px]
+            text-[#171717]
+            font-heading
+            leading-[1.15]
+            h-[70px]
+            overflow-hidden
+          "
+        >
+          {item?.coreDetails?.title}
+        </h3>
 
-                    <h3 className="text-[24px] text-[#171717] font-heading leading-tight">
-                      {item.title}
-                    </h3>
+        {/* LOCATION */}
+        <div className="flex items-center gap-2 text-black/60 mt-3">
+          <MapPin size={15} />
 
-                    <div className="flex items-center gap-2 text-black/55 mt-2 font-body">
+          <span
+  className="
+  text-[14px]
+  leading-relaxed
+  line-clamp-2
+"
+>
+            {item?.locationData?.locationName ||
+              item?.locationData?.customLocation ||
+              "Prime Location"}
+          </span>
+        </div>
 
-                      <MapPin size={14} />
+        {/* DETAILS */}
+        <div
+          className="
+            flex
+            items-center
+            flex-wrap
+            gap-4
+            mt-6
+            text-black/65
+            min-h-[28px]
+          "
+        >
+          <div className="flex items-center gap-2">
+            <BedDouble size={15} />
 
-                      <span className="text-[13px]">
-                        {item.location}
-                      </span>
-                    </div>
+            <span className="text-[13px]">
+              {item?.unitConfigurations?.[0]?.bedrooms
+                ? `${item.unitConfigurations[0].bedrooms} Beds`
+                : "Luxury"}
+            </span>
+          </div>
 
-                    {/* DETAILS */}
-                    <div className="flex flex-wrap gap-4 mt-5 text-black/60">
+          <div className="flex items-center gap-2">
+            <Bath size={15} />
 
-                      <div className="flex items-center gap-1.5">
+            <span className="text-[13px]">
+              {item?.unitConfigurations?.[0]?.bathrooms
+                ? `${item.unitConfigurations[0].bathrooms} Baths`
+                : "Residence"}
+            </span>
+          </div>
 
-                        <BedDouble size={15} />
+          <div className="text-[13px]">
+            {item?.unitConfigurations?.[0]?.area
+              ? `${item.unitConfigurations[0].area} Sq.Ft.`
+              : "Premium"}
+          </div>
+        </div>
 
-                        <span className="text-[12px] font-body">
-                          {item.beds}
-                        </span>
-                      </div>
+        {/* DIVIDER */}
+        <div className="mt-6 border-t border-[#ece7df]" />
 
-                      <div className="flex items-center gap-1.5">
+        {/* PRICE */}
+        <div className="mt-5">
+          <p
+            className="
+              text-[11px]
+              uppercase
+              tracking-[1px]
+              text-black/45
+              mb-2
+            "
+          >
+            Starting Price
+          </p>
 
-                        <Bath size={15} />
+          <h4
+  className="
+  text-[22px]
+  xl:text-[26px]
+  font-semibold
+  text-[#111]
+  font-body
+"
+>
+  ₹{formatPrice(
+    item?.coreDetails?.startingPrice ||
+      item?.unitConfigurations?.[0]?.price ||
+      0
+  )}
+</h4>
+        </div>
 
-                        <span className="text-[12px] font-body">
-                          {item.baths}
-                        </span>
-                      </div>
+        {/* CTA */}
+        <div
+  className="
+  mt-auto
+  pt-6
+  flex
+  items-center
+  justify-between
+  border-t
+  border-[#ece7df]
+"
+>
+          <span
+            className="
+              text-[12px]
+              tracking-[1.5px]
+              uppercase
+              text-[#bf8b37]
+              font-semibold
+            "
+          >
+            View Property
+          </span>
 
-                      <div className="text-[12px] font-body">
-                        {item.sqft}
-                      </div>
-                    </div>
-
-                    {/* BOTTOM */}
-                    <div className="grid grid-cols-2 gap-5 mt-6 pt-5 border-t border-black/5">
-
-                      <div>
-                        <p className="text-[11px] text-black/45 font-body mb-1">
-                          Starting Price
-                        </p>
-
-                        <h4 className="text-[24px] font-semibold text-[#111] font-body">
-                          {item.price}
-                        </h4>
-                      </div>
-
-                      <div>
-                        <p className="text-[11px] text-black/45 font-body mb-1">
-                          Est. Appreciation (5Y)
-                        </p>
-
-                        <h4 className="text-[24px] font-semibold text-[#111] font-body">
-                          {item.appreciation}
-                        </h4>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+          <ArrowRight
+            size={18}
+            className="text-[#bf8b37]"
+          />
+        </div>
+      </div>
+    </motion.div>
+  </Link>
+))}
             </div>
           </div>
         </div>

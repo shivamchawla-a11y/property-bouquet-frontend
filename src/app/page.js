@@ -7,6 +7,7 @@ import ExploreLocations from "@/components/home/ExploreLocations";
 import Footer from "@/components/home/Footer";
 import PremiumPartners from "@/components/home/PremiumPartners";
 import LuxuryInsightsSection from "@/components/home/LuxuryInsightsSection";
+import RecommendedProjects from "@/components/home/RecommendedProperties";
 
 export default function HomePage() {
   return (
@@ -15,6 +16,8 @@ export default function HomePage() {
       <Navbar />
 
       <HeroSection />
+
+      <RecommendedProjects/>
 
       {/* FEATURED */}
       <FeaturedProjects />
