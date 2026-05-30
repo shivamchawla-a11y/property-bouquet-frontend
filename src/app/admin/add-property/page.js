@@ -1056,62 +1056,48 @@ const labelMap = {
       <div className="relative z-10">
 
         {/* ================= HEADER ================= */}
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
+<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
 
-          {/* LEFT */}
-          <div className="flex items-start gap-5">
+  {/* LEFT */}
+  <div className="flex items-start gap-4">
 
-            {/* ICON */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_40px_rgba(245,212,136,0.35)]">
-              <span className="text-3xl">🏢</span>
-            </div>
+    {/* ICON (smaller) */}
+    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_30px_rgba(245,212,136,0.25)]">
+      <span className="text-2xl">🏢</span>
+    </div>
 
-            {/* TEXT */}
-            <div>
+    {/* TEXT */}
+    <div>
+      <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-none">
+        Add Property
+      </h1>
+    </div>
 
-              <div className="flex items-center gap-3 flex-wrap">
+  </div>
 
-                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">
-                  Add Property
-                </h1>
+  {/* RIGHT ACTIONS */}
+  <div className="flex flex-wrap items-center gap-3">
 
-                <div className="px-3 py-1 rounded-full border border-[#f5d488]/30 bg-[#f5d488]/10 text-[#f5d488] text-sm font-semibold">
-                  Step {step} / 7
-                </div>
+    {/* PREVIEW BUTTON */}
+    <button
+      onClick={() => setPreviewMode(!previewMode)}
+      className="group relative overflow-hidden px-5 py-3 rounded-2xl bg-white text-black font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_10px_30px_rgba(255,255,255,0.18)]"
+    >
+      <span className="relative z-10 flex items-center gap-2">
+        {previewMode ? "← Back to Edit" : "👁 Full Preview"}
+      </span>
+    </button>
 
-              </div>
+    {/* FORM MODE BUTTON */}
+    <button
+      onClick={() => setFullFormMode(!fullFormMode)}
+      className="px-5 py-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white font-semibold hover:bg-white/10 transition-all duration-300"
+    >
+      {fullFormMode ? "↔ Split View" : "📝 Full Form"}
+    </button>
 
-              <p className="text-gray-300 mt-3 max-w-2xl text-sm md:text-base leading-relaxed">
-                Create premium property listings with galleries, floor plans,
-                amenities, location highlights, master plans and FAQs.
-              </p>
-
-            </div>
-          </div>
-
-          {/* RIGHT ACTIONS */}
-          <div className="flex flex-wrap items-center gap-3">
-
-            {/* PREVIEW BUTTON */}
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="group relative overflow-hidden px-5 py-3 rounded-2xl bg-white text-black font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_10px_30px_rgba(255,255,255,0.18)]"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                {previewMode ? "← Back to Edit" : "👁 Full Preview"}
-              </span>
-            </button>
-
-            {/* FORM MODE BUTTON */}
-            <button
-              onClick={() => setFullFormMode(!fullFormMode)}
-              className="px-5 py-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white font-semibold hover:bg-white/10 transition-all duration-300"
-            >
-              {fullFormMode ? "↔ Split View" : "📝 Full Form"}
-            </button>
-
-          </div>
-        </div>
+  </div>
+</div>
 
         {/* ================= PREMIUM STEPPER ================= */}
         <div className="relative">
