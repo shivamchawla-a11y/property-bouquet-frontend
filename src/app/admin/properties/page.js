@@ -545,7 +545,10 @@ export default function PropertiesPage() {
                       {/* VIEW */}
                       <button
                         onClick={() =>
-                          router.push(`/property/${property.slug}`)
+                          window.open(
+                            `/property/${property.slug}`,
+                            "_blank"
+                          )
                         }
                         className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm"
                       >

@@ -20,7 +20,9 @@ export default function PropertyViewPage() {
     const fetchData = async () => {
       try {
         // 🔥 Fetch property by slug
-        const res = await fetch(`${API}/properties/slug/${slug}`);
+        const res = await fetch(
+  `${API}/properties/preview/${slug}`
+);
         const data = await res.json();
 
         if (res.ok) {
