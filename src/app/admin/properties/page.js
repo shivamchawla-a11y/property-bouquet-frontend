@@ -22,12 +22,10 @@ export default function PropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
 
-  const [filter, setFilter] = useState("active"); // active | inactive | all
+  const [filter, setFilter] = useState("all"); // active | inactive | all
 
   // 🔥 TAG FILTER
   const [tagFilter, setTagFilter] = useState("All");
-
-  const [user, setUser] = useState(null);
 
   // 🔥 FEATURE MODAL
   const [featureModal, setFeatureModal] = useState(null);
@@ -39,52 +37,37 @@ export default function PropertiesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const u = JSON.parse(localStorage.getItem("user"));
-    setUser(u);
-  }, []);
-
-  useEffect(() => {
   setCurrentPage(1);
 }, [search, filter, tagFilter, itemsPerPage]);
 
   // ================= FETCH =================
   const fetchProperties = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const query =
-        filter === "all"
-          ? "?all=true"
-          : filter === "inactive"
-          ? "?inactive=true"
-          : "";
-
-      const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/properties${query}`,
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setProperties(data.data || []);
-      } else {
-        alert(data.message || "Failed to fetch properties");
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/properties?all=true",
+      {
+        credentials: "include",
+        cache: "no-store",
       }
-    } catch (err) {
-      console.error(err);
-      alert("Server error ❌");
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setProperties(data.data || []);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
-    fetchProperties();
-  }, [filter]);
+  fetchProperties();
+}, []);
 
   // ================= FEATURE UPDATE =================
   const updatePropertyTag = async (id, tag) => {
@@ -148,7 +131,7 @@ export default function PropertiesPage() {
       if (res.ok) {
         setProperties((prev) =>
           prev.map((item) =>
-            item._id === id ? { ...item, isActive: false } : item
+            item._id === id ? { ...item, status: "draft" } : item
           )
         );
       } else {
@@ -180,7 +163,9 @@ export default function PropertiesPage() {
       if (res.ok) {
         setProperties((prev) =>
           prev.map((item) =>
-            item._id === id ? { ...item, isActive: true } : item
+            item._id === id
+              ? { ...item, status: "published" }
+              : item
           )
         );
       } else {
@@ -196,21 +181,33 @@ export default function PropertiesPage() {
 
   // ================= FILTER =================
   const filtered = properties.filter((p) => {
-    const titleMatch = p?.coreDetails?.title
-      ?.toLowerCase()
-      .includes(search.toLowerCase());
 
-    const tagMatch =
-      tagFilter === "All" ||
-      (p.propertyTag || "Normal") === tagFilter;
+  const titleMatch =
+  (p?.coreDetails?.title || "")
+    .toLowerCase()
+    .includes(search.toLowerCase());
 
-    return titleMatch && tagMatch;
-  });
+  const tagMatch =
+    tagFilter === "All" ||
+    (p.propertyTag || "Normal") === tagFilter;
+
+  const statusMatch =
+    filter === "all"
+      ? true
+      : p.status === filter;
+
+  return (
+    titleMatch &&
+    tagMatch &&
+    statusMatch
+  );
+});
 
   // ================= PAGINATION =================
-  const totalPages = Math.ceil(
-    filtered.length / itemsPerPage
-  );
+  const totalPages = Math.max(
+  1,
+  Math.ceil(filtered.length / itemsPerPage)
+);
 
   const startIndex =
     (currentPage - 1) * itemsPerPage;
@@ -261,38 +258,38 @@ export default function PropertiesPage() {
           {/* FILTER TABS */}
           <div className="flex border border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm">
 
-            <button
-              onClick={() => setFilter("active")}
-              className={`px-4 py-2 text-sm font-semibold transition ${
-                filter === "active"
-                  ? "bg-[#0f3b2e] text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Active
-            </button>
+           <button
+  onClick={() => setFilter("all")}
+  className={`px-4 py-2 text-sm font-semibold transition ${
+    filter === "all"
+      ? "bg-[#0f3b2e] text-white"
+      : "bg-white text-gray-700 hover:bg-gray-100"
+  }`}
+>
+  All
+          </button>
 
-            <button
-              onClick={() => setFilter("inactive")}
-              className={`px-4 py-2 text-sm font-semibold transition ${
-                filter === "inactive"
-                  ? "bg-[#0f3b2e] text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Inactive
-            </button>
+          <button
+            onClick={() => setFilter("published")}
+            className={`px-4 py-2 text-sm font-semibold transition ${
+              filter === "published"
+                ? "bg-[#0f3b2e] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Live
+          </button>
 
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-4 py-2 text-sm font-semibold transition ${
-                filter === "all"
-                  ? "bg-[#0f3b2e] text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              All
-            </button>
+          <button
+            onClick={() => setFilter("draft")}
+            className={`px-4 py-2 text-sm font-semibold transition ${
+              filter === "draft"
+                ? "bg-[#0f3b2e] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Draft
+          </button>
           </div>
 
           {/* REFRESH */}
@@ -315,7 +312,52 @@ export default function PropertiesPage() {
       </div>
 
       {/* ================= SEARCH + TAG FILTER ================= */}
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="mb-4">
+
+            {/* COUNTERS */}
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+
+  <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+    <p className="text-xs text-gray-500 font-medium">
+      Total Properties
+    </p>
+
+    <h3 className="text-2xl font-bold text-[#0f3b2e] mt-1">
+      {properties.length}
+    </h3>
+  </div>
+
+  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+    <p className="text-xs text-emerald-700 font-medium">
+      Live Properties
+    </p>
+
+    <h3 className="text-2xl font-bold text-emerald-700 mt-1">
+      {
+        properties.filter(
+          (p) => p.status === "published"
+        ).length
+      }
+    </h3>
+  </div>
+
+  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+    <p className="text-xs text-amber-700 font-medium">
+      Draft Properties
+    </p>
+
+    <h3 className="text-2xl font-bold text-amber-700 mt-1">
+      {
+        properties.filter(
+          (p) => p.status === "draft"
+        ).length
+      }
+    </h3>
+  </div>
+
+</div>
+
+        <div className="flex flex-wrap gap-3">
 
         <input
           placeholder="Search by property title..."
@@ -337,6 +379,8 @@ export default function PropertiesPage() {
           <option value="New">New</option>
           <option value="Normal">Normal</option>
         </select>
+
+      </div>
 
       </div>
 
@@ -465,26 +509,33 @@ export default function PropertiesPage() {
                   <td className="p-3">
                     <span
                       className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${
-                        property.isActive
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
+                      property.status === "draft"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}
                     >
                       <span
-                        className={`w-2 h-2 rounded-full ${
-                          property.isActive
-                            ? "bg-emerald-500"
-                            : "bg-amber-500"
-                        }`}
-                      />
+                      className={`w-2 h-2 rounded-full ${
+                        property.status === "draft"
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
+                      }`}
+                    />
 
-                      {property.isActive ? "LIVE" : "DRAFT"}
+                      {property.status === "draft" ? "DRAFT" : "LIVE"}
                     </span>
                   </td>
 
                   {/* CREATED */}
                   <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
-                    {new Date(property.createdAt).toLocaleDateString()}
+                    {new Date(property.createdAt).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        }
+                      )}
                   </td>
 
                   {/* ACTIONS */}
@@ -502,7 +553,7 @@ export default function PropertiesPage() {
                       </button>
 
                       {/* LIVE WEBSITE */}
-                      {property.isActive && (
+                      {property.status !== "draft" && (
                         <button
                           onClick={() =>
                             window.open(
@@ -537,7 +588,7 @@ export default function PropertiesPage() {
                       </button>
 
                       {/* DELETE / RESTORE */}
-                      {property.isActive ? (
+                      {property.status === "published" ? (
                         <button
                           disabled={actionId === property._id}
                           onClick={() =>
@@ -649,39 +700,37 @@ export default function PropertiesPage() {
 
       {/* PAGE NUMBERS */}
       {Array.from(
-        {
-          length: Math.min(totalPages, 5),
-        },
-        (_, i) => {
-          let page;
+  {
+    length: Math.min(totalPages, 5),
+  },
+  (_, i) => {
+    let startPage = 1;
 
-          if (currentPage <= 3) {
-            page = i + 1;
-          } else if (
-            currentPage >=
-            totalPages - 2
-          ) {
-            page =
-              totalPages - 4 + i;
-          } else {
-            page = currentPage - 2 + i;
-          }
+    if (totalPages <= 5) {
+      startPage = 1;
+    } else if (currentPage <= 3) {
+      startPage = 1;
+    } else if (currentPage >= totalPages - 2) {
+      startPage = totalPages - 4;
+    } else {
+      startPage = currentPage - 2;
+    }
 
-          return page;
-        }
-      ).map((page) => (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
-            currentPage === page
-              ? "bg-[#0f3b2e] text-white"
-              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
+    return startPage + i;
+  }
+).map((page) => (
+  <button
+    key={page}
+    onClick={() => setCurrentPage(page)}
+    className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
+      currentPage === page
+        ? "bg-[#0f3b2e] text-white"
+        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+    }`}
+  >
+    {page}
+  </button>
+))}
 
       {/* NEXT */}
       <button

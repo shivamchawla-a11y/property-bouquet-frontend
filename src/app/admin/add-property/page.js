@@ -534,6 +534,7 @@ export default function AddProperty() {
 ] = useState("");
 const [errors, setErrors] = useState({});
 const [errorList, setErrorList] = useState([]);
+const [draftId, setDraftId] = useState(null);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -974,6 +975,72 @@ window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
     console.error(err);
     alert("Server error ❌");
+  }
+};
+
+const handleSaveDraft = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const payload = {
+  ...form,
+  draftId,
+
+  coreDetails: {
+    ...form.coreDetails,
+    developerRef:
+      form.coreDetails.developerRef || null,
+  },
+
+  categoryData: {
+    ...form.categoryData,
+    categoryRef:
+      form.categoryData.categoryRef || null,
+  },
+
+  locationData: {
+    ...form.locationData,
+    locationRef:
+      form.locationData.locationRef || null,
+  },
+};
+
+    const res = await fetch(
+  "https://property-bouquet-backend.onrender.com/api/properties/draft",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  }
+);
+
+    const responseText = await res.text();
+
+console.log("Status:", res.status);
+console.log("Response:", responseText);
+
+let data = {};
+
+try {
+  data = JSON.parse(responseText);
+} catch (e) {
+  toast.error("Backend returned HTML instead of JSON");
+  return;
+}
+
+    if (res.ok) {
+      setDraftId(data.data._id);
+
+      toast.success("Draft saved ✅");
+    } else {
+      toast.error(data.message);
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to save draft");
   }
 };
 
@@ -4672,6 +4739,21 @@ const labelMap = {
 
       {/* RIGHT BUTTONS */}
       <div className="flex items-center gap-3 ml-auto">
+
+        <button
+  onClick={handleSaveDraft}
+  className="
+    px-6 py-3 rounded-2xl
+    bg-white/10
+    border border-white/10
+    text-white
+    font-semibold
+    hover:bg-white/15
+    transition-all duration-300
+  "
+>
+  💾 Save Draft
+</button>
 
         {/* BACK BUTTON */}
         {step > 1 && (
