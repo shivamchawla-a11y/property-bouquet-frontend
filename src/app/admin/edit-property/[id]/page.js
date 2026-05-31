@@ -1607,48 +1607,48 @@ if (loading) {
         <div className="relative z-10">
   
           {/* ================= HEADER ================= */}
-<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
-
-  {/* LEFT */}
-  <div className="flex items-start gap-4">
-
-    {/* ICON (smaller) */}
-    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_30px_rgba(245,212,136,0.25)]">
-      <span className="text-2xl">🏢</span>
+  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
+  
+    {/* LEFT */}
+    <div className="flex items-start gap-4">
+  
+      {/* ICON (smaller) */}
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_30px_rgba(245,212,136,0.25)]">
+        <span className="text-2xl">🏢</span>
+      </div>
+  
+      {/* TEXT */}
+      <div>
+        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-none">
+          Add Property
+        </h1>
+      </div>
+  
     </div>
-
-    {/* TEXT */}
-    <div>
-      <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-none">
-        Edit Property
-      </h1>
+  
+    {/* RIGHT ACTIONS */}
+    <div className="flex flex-wrap items-center gap-3">
+  
+      {/* PREVIEW BUTTON */}
+      <button
+        onClick={() => setPreviewMode(!previewMode)}
+        className="group relative overflow-hidden px-5 py-3 rounded-2xl bg-white text-black font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_10px_30px_rgba(255,255,255,0.18)]"
+      >
+        <span className="relative z-10 flex items-center gap-2">
+          {previewMode ? "← Back to Edit" : "👁 Full Preview"}
+        </span>
+      </button>
+  
+      {/* FORM MODE BUTTON */}
+      <button
+        onClick={() => setFullFormMode(!fullFormMode)}
+        className="px-5 py-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white font-semibold hover:bg-white/10 transition-all duration-300"
+      >
+        {fullFormMode ? "↔ Split View" : "📝 Full Form"}
+      </button>
+  
     </div>
-
   </div>
-
-  {/* RIGHT ACTIONS */}
-  <div className="flex flex-wrap items-center gap-3">
-
-    {/* PREVIEW BUTTON */}
-    <button
-      onClick={() => setPreviewMode(!previewMode)}
-      className="group relative overflow-hidden px-5 py-3 rounded-2xl bg-white text-black font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_10px_30px_rgba(255,255,255,0.18)]"
-    >
-      <span className="relative z-10 flex items-center gap-2">
-        {previewMode ? "← Back to Edit" : "👁 Full Preview"}
-      </span>
-    </button>
-
-    {/* FORM MODE BUTTON */}
-    <button
-      onClick={() => setFullFormMode(!fullFormMode)}
-      className="px-5 py-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white font-semibold hover:bg-white/10 transition-all duration-300"
-    >
-      {fullFormMode ? "↔ Split View" : "📝 Full Form"}
-    </button>
-
-  </div>
-</div>
   
           {/* ================= PREMIUM STEPPER ================= */}
           <div className="relative">
@@ -1677,7 +1677,7 @@ if (loading) {
                 {
                   no: "02",
                   title: "About Project",
-                  sub: "Overview",
+                  sub: "Highlights",
                 },
                 {
                   no: "03",
@@ -1686,7 +1686,7 @@ if (loading) {
                 },
                 {
                   no: "04",
-                  title: "Gallery & Plans",
+                  title: "Gallery & Floor Plans",
                   sub: "Media",
                 },
                 {
@@ -1780,7 +1780,7 @@ if (loading) {
         </div>
   
       ) : (
-  
+   
         // ================= EDIT MODE =================
         <div className="flex flex-col xl:flex-row gap-6 w-full overflow-hidden">
   
@@ -1853,6 +1853,322 @@ if (loading) {
       {hasError("coreDetails.title") && (
     <p className="text-red-400 text-sm">Title is required</p>
   )}
+  
+  {/* ================= HERO SECTION ================= */}
+      <div className="mt-8">
+        <h3 className="font-semibold mb-4 text-white">
+          Hero Section
+        </h3>
+  
+        <div className="grid grid-cols-1 gap-4">
+          <input
+            className="input"
+            placeholder="propertyStatus Text"
+            value={
+              form.heroSection
+                ?.propertyStatus || ""
+            }
+            onChange={(e) =>
+              handleChange(
+                "heroSection",
+                "propertyStatus",
+                e.target.value
+              )
+            }
+          />
+  
+          <textarea
+    className={`input min-h-[120px] ${
+      hasError("heroSection.heroDescription")
+        ? "border-red-500 ring-2 ring-red-500"
+        : ""
+    }`}
+            placeholder="Hero Description *"
+            value={
+              form.heroSection
+                ?.heroDescription || ""
+            }
+            onChange={(e) =>
+              handleChange(
+                "heroSection",
+                "heroDescription",
+                e.target.value
+              )
+            }
+          />
+  
+          {hasError("heroSection.heroDescription") && (
+    <p className="text-red-400 text-sm">
+      Hero Description is required
+    </p>
+  )}
+  
+          <input
+            className="input"
+            placeholder="Brochure Button Text"
+            value={
+              form.heroSection
+                ?.brochureButtonText || ""
+            }
+            onChange={(e) =>
+              handleChange(
+                "heroSection",
+                "brochureButtonText",
+                e.target.value
+              )
+            }
+          />
+  
+          <input
+            className="input"
+            placeholder="Video Button Text"
+            value={
+              form.heroSection
+                ?.videoButtonText || ""
+            }
+            onChange={(e) =>
+              handleChange(
+                "heroSection",
+                "videoButtonText",
+                e.target.value
+              )
+            }
+          />
+        </div>
+      </div>
+  
+      {/* ================= HERO IMAGE ================= */}
+  <div className="mt-8">
+    <label className="block text-white font-semibold mb-3">
+      Hero Image
+    </label>
+  
+    <div
+      onClick={() =>
+        document
+          .getElementById("heroImageUpload")
+          .click()
+      }
+      className={`
+        relative
+        group
+        cursor-pointer
+        overflow-hidden
+        rounded-2xl
+        border-2
+        border-dashed
+        transition-all
+        duration-300
+        ${
+          hasError("media.heroImageUrl")
+            ? "border-red-500 bg-red-500/10"
+            : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
+        }
+      `}
+    >
+  
+      {/* IMAGE EXISTS */}
+      {form.media?.heroImageUrl ? (
+        <div className="relative">
+          <img
+            src={form.media.heroImageUrl}
+            alt="Hero Preview"
+            className="
+              w-full
+              h-[300px]
+              object-cover
+            "
+          />
+  
+          {/* Overlay */}
+          <div
+            className="
+              absolute
+              inset-0
+              bg-black/50
+              opacity-0
+              group-hover:opacity-100
+              transition-all
+              duration-300
+              flex
+              flex-col
+              items-center
+              justify-center
+            "
+          >
+            <svg
+              className="w-8 h-8 text-white mb-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+              />
+            </svg>
+  
+            <p className="text-white font-medium">
+              Change Hero Image
+            </p>
+          </div>
+  
+          {/* Remove Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+  
+              setForm((prev) => ({
+                ...prev,
+                media: {
+                  ...prev.media,
+                  heroImageUrl: "",
+                },
+              }));
+            }}
+            className="
+              absolute
+              top-3
+              right-3
+              h-9
+              w-9
+              rounded-full
+              bg-red-500
+              text-white
+              flex
+              items-center
+              justify-center
+              shadow-lg
+              hover:scale-110
+              transition
+            "
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        /* EMPTY STATE */
+        <div
+          className="
+            py-16
+            px-6
+            flex
+            flex-col
+            items-center
+            justify-center
+            text-center
+          "
+        >
+          <div
+            className="
+              h-16
+              w-16
+              rounded-full
+              bg-white/10
+              flex
+              items-center
+              justify-center
+              mb-4
+            "
+          >
+            <svg
+              className="w-8 h-8 text-[#C6A15B]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </div>
+  
+          <h4 className="text-white font-semibold text-lg">
+            Upload Hero Image
+          </h4>
+  
+          <p className="text-gray-400 text-sm mt-2">
+            Click to upload your property hero image
+          </p>
+  
+          <p className="text-gray-500 text-xs mt-1">
+            JPG, PNG, WEBP • Max 5MB
+          </p>
+        </div>
+      )}
+    </div>
+  
+    {hasError("media.heroImageUrl") && (
+      <p className="text-red-400 text-sm mt-2">
+        Hero Image is required
+      </p>
+    )}
+  
+    <input
+      id="heroImageUpload"
+      type="file"
+      hidden
+      accept="image/*"
+      onChange={async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+  
+        if (!file.type.startsWith("image/")) {
+          alert("Only image files allowed ❌");
+          return;
+        }
+  
+        if (file.size > 5 * 1024 * 1024) {
+          alert("Max file size is 5MB ❌");
+          return;
+        }
+  
+        try {
+          setUploading(true);
+  
+          const data = new FormData();
+          data.append("file", file);
+  
+          const res = await fetch(
+            "https://property-bouquet-backend.onrender.com/api/upload",
+            {
+              method: "POST",
+              body: data,
+            }
+          );
+  
+          const result = await res.json();
+  
+          if (!res.ok || !result.url) {
+            throw new Error(
+              result.message || "Upload failed"
+            );
+          }
+  
+          setForm((prev) => ({
+            ...prev,
+            media: {
+              ...prev.media,
+              heroImageUrl: result.url,
+            },
+          }));
+        } catch (err) {
+          console.error(err);
+          alert("Upload failed ❌");
+        } finally {
+          setUploading(false);
+        }
+  
+        e.target.value = "";
+      }}
+    />
+  </div>
   
       {/* ================= DEVELOPER ================= */}
       <div className="space-y-2">
@@ -2198,9 +2514,17 @@ if (loading) {
     </p>
   )}
   
+      {/* ================= KEY METRICS ================= */}
+  <div className="mt-6">
+    <h3 className="font-semibold mb-2 text-white">
+      Key Metrics
+    </h3>
+  
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  
       <input
         className="input"
-        placeholder="Starting Price"
+        placeholder="Starting Price (e.g. ₹2 Cr)"
         value={form.coreDetails.startingPrice}
         onChange={(e) =>
           handleChange(
@@ -2213,7 +2537,7 @@ if (loading) {
   
       <input
         className="input"
-        placeholder="Max Price"
+        placeholder="Max Price (e.g. ₹10 Cr)"
         value={form.coreDetails.maxPrice}
         onChange={(e) =>
           handleChange(
@@ -2224,88 +2548,60 @@ if (loading) {
         }
       />
   
-      {/* ================= HERO SECTION ================= */}
-      <div className="mt-8">
-        <h3 className="font-semibold mb-4 text-white">
-          Hero Section
-        </h3>
+      <input
+        className="input"
+        placeholder="Possession (e.g. 2028)"
+        value={form.keyMetrics.possession}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "possession",
+            e.target.value
+          )
+        }
+      />
   
-        <div className="grid grid-cols-1 gap-4">
-          <input
-            className="input"
-            placeholder="propertyStatus Text"
-            value={
-              form.heroSection
-                ?.propertyStatus || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "propertyStatus",
-                e.target.value
-              )
-            }
-          />
+      <input
+        className="input"
+        placeholder="Land Area (e.g. 10 Acres)"
+        value={form.keyMetrics.landArea}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "landArea",
+            e.target.value
+          )
+        }
+      />
   
-          <textarea
-    className={`input min-h-[120px] ${
-      hasError("heroSection.heroDescription")
-        ? "border-red-500 ring-2 ring-red-500"
-        : ""
-    }`}
-            placeholder="Hero Description *"
-            value={
-              form.heroSection
-                ?.heroDescription || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "heroDescription",
-                e.target.value
-              )
-            }
-          />
+      <input
+        className="input"
+        placeholder="Total Units"
+        value={form.keyMetrics.totalUnits || ""}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "totalUnits",
+            e.target.value
+          )
+        }
+      />
   
-          {hasError("heroSection.heroDescription") && (
-    <p className="text-red-400 text-sm">
-      Hero Description is required
-    </p>
-  )}
+      <input
+        className="input"
+        placeholder="Total Towers"
+        value={form.keyMetrics.totalTowers || ""}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "totalTowers",
+            e.target.value
+          )
+        }
+      />
   
-          <input
-            className="input"
-            placeholder="Brochure Button Text"
-            value={
-              form.heroSection
-                ?.brochureButtonText || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "brochureButtonText",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Video Button Text"
-            value={
-              form.heroSection
-                ?.videoButtonText || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "videoButtonText",
-                e.target.value
-              )
-            }
-          />
-        </div>
-      </div>
+    </div>
+  </div>
   
       {/* ================= TAGLINES ================= */}
       <div className="mt-6">
@@ -2388,105 +2684,6 @@ if (loading) {
           + Add Tagline
         </button>
       </div>
-  
-      {/* ================= KEY METRICS ================= */}
-      <div className="mt-6">
-        <h3 className="font-semibold mb-2 text-white">
-          Key Metrics
-        </h3>
-  
-        <div className="grid grid-cols-2 gap-4">
-  
-          <input
-            className="input"
-            placeholder="Possession (e.g. 2028)"
-            value={form.keyMetrics.possession}
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "possession",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Land Area (e.g. 10 Acres)"
-            value={form.keyMetrics.landArea}
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "landArea",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Total Units"
-            value={
-              form.keyMetrics.totalUnits ||
-              ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "totalUnits",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Total Towers"
-            value={
-              form.keyMetrics.totalTowers ||
-              ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "totalTowers",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Floors"
-            value={
-              form.keyMetrics.floors || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "floors",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input col-span-2"
-            placeholder="RERA Number"
-            value={
-              form.keyMetrics.reraNumber ||
-              ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "keyMetrics",
-                "reraNumber",
-                e.target.value
-              )
-            }
-          />
-        </div>
-      </div>
     </div>
   )}
   
@@ -2494,716 +2691,716 @@ if (loading) {
   
           {/* ================= STEP 2 ================= */}
   {/* ================= STEP 2 ================= */}
-{step === 2 && (
-  <div className="section">
-
-    {/* ================= LOADER ================= */}
-{uploading && (
-  <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center">
-    <p className="text-white text-lg animate-pulse">
-      Uploading...
-    </p>
-  </div>
-)}
-
-    <h2 className="section-title">
-      About & Property Highlights
-    </h2>
-
-    {/* ================= ABOUT SECTION ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        About Section
-      </h3>
-
-      {/* SECTION NUMBER */}
-      <input
-        className="input mb-4"
-        placeholder="Section Number (Example: 02)"
-        value={form.overview.aboutSectionNumber || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutSectionNumber",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ABOUT LABEL */}
-      <input
-        className="input mb-4"
-        placeholder="About Label"
-        value={form.overview.aboutLabel || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutLabel",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ABOUT TITLE LINE 1 */}
-      <input
-        className="input mb-4"
-        placeholder="About Title Line 1"
-        value={form.overview.aboutTitleLine1 || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutTitleLine1: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* ABOUT TITLE LINE 2 */}
-      <input
-        className="input mb-4"
-        placeholder="About Title Line 2"
-        value={form.overview.aboutTitleLine2 || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              aboutTitleLine2: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* ABOUT DESCRIPTION */}
-      <textarea
-        className={`input min-h-[140px] mb-4 transition-all duration-200 ${
-  hasError("overview.description")
-    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-    : ""
-}`}
-        placeholder="About Description"
-        value={form.overview.description || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "description",
-            e.target.value
-          )
-        }
-      />
-
-      {hasError("overview.description") && (
-  <p className="text-red-400 text-sm">
-    About Description is required
-  </p>
-)}
-
-      {/* SECOND PARAGRAPH */}
-      <textarea
-        className="input min-h-[120px] mb-4"
-        placeholder="Second Paragraph"
-        value={form.overview.aboutParagraph2 || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "aboutParagraph2",
-            e.target.value
-          )
-        }
-      />
-
-      {/* ================= ABOUT IMAGE ================= */}
-<div className="mt-6">
-  <label className="block text-white font-semibold mb-3">
-    About Section Image
-  </label>
-
-  <div
-    onClick={() =>
-      document
-        .getElementById("aboutImageUpload")
-        .click()
-    }
-    className={`
-      relative
-      group
-      cursor-pointer
-      overflow-hidden
-      rounded-2xl
-      border-2
-      border-dashed
-      transition-all
-      duration-300
-      ${
-        hasError("overview.aboutImageUrl")
-          ? "border-red-500 bg-red-500/10"
-          : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
-      }
-    `}
-  >
-    {/* IMAGE EXISTS */}
-    {form.overview?.aboutImageUrl ? (
-      <div className="relative">
-        <img
-          src={form.overview.aboutImageUrl}
-          alt="About Preview"
-          className="
-            w-full
-            h-[260px]
-            object-cover
-          "
+  {step === 2 && (
+    <div className="section">
+  
+      {/* ================= LOADER ================= */}
+  {uploading && (
+    <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center">
+      <p className="text-white text-lg animate-pulse">
+        Uploading...
+      </p>
+    </div>
+  )}
+  
+      <h2 className="section-title">
+        About & Property Highlights
+      </h2>
+  
+      {/* ================= ABOUT SECTION ================= */}
+      <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+  
+        <h3 className="font-semibold text-xl mb-5 text-white">
+          About Section
+        </h3>
+  
+        {/* SECTION NUMBER */}
+        <input
+          className="input mb-4"
+          placeholder="Section Number (Example: 02)"
+          value={form.overview.aboutSectionNumber || ""}
+          onChange={(e) =>
+            handleChange(
+              "overview",
+              "aboutSectionNumber",
+              e.target.value
+            )
+          }
         />
-
-        {/* Overlay */}
-        <div
-          className="
-            absolute
-            inset-0
-            bg-black/50
-            opacity-0
-            group-hover:opacity-100
-            transition-all
-            duration-300
-            flex
-            flex-col
-            items-center
-            justify-center
-          "
-        >
-          <svg
-            className="w-8 h-8 text-white mb-2"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
-            />
-          </svg>
-
-          <p className="text-white font-medium">
-            Change Image
-          </p>
-        </div>
-
-        {/* Remove Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-
+  
+        {/* ABOUT LABEL */}
+        <input
+          className="input mb-4"
+          placeholder="About Label"
+          value={form.overview.aboutLabel || ""}
+          onChange={(e) =>
+            handleChange(
+              "overview",
+              "aboutLabel",
+              e.target.value
+            )
+          }
+        />
+  
+        {/* ABOUT TITLE LINE 1 */}
+        <input
+          className="input mb-4"
+          placeholder="About Title Line 1"
+          value={form.overview.aboutTitleLine1 || ""}
+          onChange={(e) =>
             setForm((prev) => ({
               ...prev,
               overview: {
                 ...prev.overview,
-                aboutImageUrl: "",
+                aboutTitleLine1: e.target.value,
               },
-            }));
-          }}
-          className="
-            absolute
-            top-3
-            right-3
-            h-9
-            w-9
-            rounded-full
-            bg-red-500
-            text-white
-            flex
-            items-center
-            justify-center
-            shadow-lg
-            hover:scale-110
-            transition
-          "
-        >
-          ✕
-        </button>
-      </div>
-    ) : (
-      /* EMPTY STATE */
-      <div
-        className="
-          py-14
-          px-6
-          flex
-          flex-col
-          items-center
-          justify-center
-          text-center
-        "
-      >
-        <div
-          className="
-            h-16
-            w-16
-            rounded-full
-            bg-white/10
-            flex
-            items-center
-            justify-center
-            mb-4
-          "
-        >
-          <svg
-            className="w-8 h-8 text-[#C6A15B]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-        </div>
-
-        <h4 className="text-white font-semibold text-lg">
-          Upload About Image
-        </h4>
-
-        <p className="text-gray-400 text-sm mt-2">
-          Drag & drop or click to upload
-        </p>
-
-        <p className="text-gray-500 text-xs mt-1">
-          JPG, PNG, WEBP • Max 5MB
-        </p>
-      </div>
-    )}
-  </div>
-
-  {hasError("overview.aboutImageUrl") && (
-    <p className="text-red-400 text-sm mt-2">
-      About Image is required
-    </p>
-  )}
-
-  <input
-    id="aboutImageUpload"
-    type="file"
-    hidden
-    accept="image/*"
-    onChange={async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        alert("Only image files allowed ❌");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Max file size is 5MB ❌");
-        return;
-      }
-
-      try {
-        setUploading(true);
-
-        const data = new FormData();
-        data.append("file", file);
-
-        const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/upload",
-          {
-            method: "POST",
-            body: data,
+            }))
           }
-        );
-
-        const result = await res.json();
-
-        if (!res.ok || !result.url) {
-          throw new Error(
-            result.message || "Upload failed"
-          );
-        }
-
-        setForm((prev) => ({
-          ...prev,
-          overview: {
-            ...prev.overview,
-            aboutImageUrl: result.url,
-          },
-        }));
-      } catch (err) {
-        console.error(err);
-        alert("Upload failed ❌");
-      } finally {
-        setUploading(false);
-      }
-
-      e.target.value = "";
-    }}
-  />
-</div>
-    </div>
-
-    {/* ================= FEATURE BAR ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <div className="flex items-center justify-between mb-5">
-
-        <h3 className="font-semibold text-xl text-white">
-          Feature Bar
-        </h3>
-
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.overview.featureBar || []),
-              {
-                title: "",
-                desc: "",
-                icon: "✦",
+        />
+  
+        {/* ABOUT TITLE LINE 2 */}
+        <input
+          className="input mb-4"
+          placeholder="About Title Line 2"
+          value={form.overview.aboutTitleLine2 || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              overview: {
+                ...prev.overview,
+                aboutTitleLine2: e.target.value,
               },
-            ];
-
+            }))
+          }
+        />
+  
+        {/* ABOUT DESCRIPTION */}
+        <textarea
+          className={`input min-h-[140px] mb-4 transition-all duration-200 ${
+    hasError("overview.description")
+      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+      : ""
+  }`}
+          placeholder="About Description"
+          value={form.overview.description || ""}
+          onChange={(e) =>
             handleChange(
               "overview",
-              "featureBar",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Feature
-        </button>
-      </div>
-
-      {(form.overview.featureBar || []).map(
-        (item, index) => (
+              "description",
+              e.target.value
+            )
+          }
+        />
+  
+        {hasError("overview.description") && (
+    <p className="text-red-400 text-sm">
+      About Description is required
+    </p>
+  )}
+  
+        {/* SECOND PARAGRAPH */}
+        <textarea
+          className="input min-h-[120px] mb-4"
+          placeholder="Second Paragraph"
+          value={form.overview.aboutParagraph2 || ""}
+          onChange={(e) =>
+            handleChange(
+              "overview",
+              "aboutParagraph2",
+              e.target.value
+            )
+          }
+        />
+  
+        {/* ================= ABOUT IMAGE ================= */}
+  <div className="mt-6">
+    <label className="block text-white font-semibold mb-3">
+      About Section Image
+    </label>
+  
+    <div
+      onClick={() =>
+        document
+          .getElementById("aboutImageUpload")
+          .click()
+      }
+      className={`
+        relative
+        group
+        cursor-pointer
+        overflow-hidden
+        rounded-2xl
+        border-2
+        border-dashed
+        transition-all
+        duration-300
+        ${
+          hasError("overview.aboutImageUrl")
+            ? "border-red-500 bg-red-500/10"
+            : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
+        }
+      `}
+    >
+      {/* IMAGE EXISTS */}
+      {form.overview?.aboutImageUrl ? (
+        <div className="relative">
+          <img
+            src={form.overview.aboutImageUrl}
+            alt="About Preview"
+            className="
+              w-full
+              h-[260px]
+              object-cover
+            "
+          />
+  
+          {/* Overlay */}
           <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+            className="
+              absolute
+              inset-0
+              bg-black/50
+              opacity-0
+              group-hover:opacity-100
+              transition-all
+              duration-300
+              flex
+              flex-col
+              items-center
+              justify-center
+            "
           >
-
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
-
-              <h4 className="font-semibold text-white">
-                Feature #{index + 1}
-              </h4>
-
-              <button
-                type="button"
-                onClick={() => {
-
-                  const updated =
-                    form.overview.featureBar.filter(
-                      (_, i) => i !== index
+            <svg
+              className="w-8 h-8 text-white mb-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+              />
+            </svg>
+  
+            <p className="text-white font-medium">
+              Change Image
+            </p>
+          </div>
+  
+          {/* Remove Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+  
+              setForm((prev) => ({
+                ...prev,
+                overview: {
+                  ...prev.overview,
+                  aboutImageUrl: "",
+                },
+              }));
+            }}
+            className="
+              absolute
+              top-3
+              right-3
+              h-9
+              w-9
+              rounded-full
+              bg-red-500
+              text-white
+              flex
+              items-center
+              justify-center
+              shadow-lg
+              hover:scale-110
+              transition
+            "
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        /* EMPTY STATE */
+        <div
+          className="
+            py-14
+            px-6
+            flex
+            flex-col
+            items-center
+            justify-center
+            text-center
+          "
+        >
+          <div
+            className="
+              h-16
+              w-16
+              rounded-full
+              bg-white/10
+              flex
+              items-center
+              justify-center
+              mb-4
+            "
+          >
+            <svg
+              className="w-8 h-8 text-[#C6A15B]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </div>
+  
+          <h4 className="text-white font-semibold text-lg">
+            Upload About Image
+          </h4>
+  
+          <p className="text-gray-400 text-sm mt-2">
+            Drag & drop or click to upload
+          </p>
+  
+          <p className="text-gray-500 text-xs mt-1">
+            JPG, PNG, WEBP • Max 5MB
+          </p>
+        </div>
+      )}
+    </div>
+  
+    {hasError("overview.aboutImageUrl") && (
+      <p className="text-red-400 text-sm mt-2">
+        About Image is required
+      </p>
+    )}
+  
+    <input
+      id="aboutImageUpload"
+      type="file"
+      hidden
+      accept="image/*"
+      onChange={async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+  
+        if (!file.type.startsWith("image/")) {
+          alert("Only image files allowed ❌");
+          return;
+        }
+  
+        if (file.size > 5 * 1024 * 1024) {
+          alert("Max file size is 5MB ❌");
+          return;
+        }
+  
+        try {
+          setUploading(true);
+  
+          const data = new FormData();
+          data.append("file", file);
+  
+          const res = await fetch(
+            "https://property-bouquet-backend.onrender.com/api/upload",
+            {
+              method: "POST",
+              body: data,
+            }
+          );
+  
+          const result = await res.json();
+  
+          if (!res.ok || !result.url) {
+            throw new Error(
+              result.message || "Upload failed"
+            );
+          }
+  
+          setForm((prev) => ({
+            ...prev,
+            overview: {
+              ...prev.overview,
+              aboutImageUrl: result.url,
+            },
+          }));
+        } catch (err) {
+          console.error(err);
+          alert("Upload failed ❌");
+        } finally {
+          setUploading(false);
+        }
+  
+        e.target.value = "";
+      }}
+    />
+  </div>
+      </div>
+  
+      {/* ================= FEATURE BAR ================= */}
+      <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+  
+        <div className="flex items-center justify-between mb-5">
+  
+          <h3 className="font-semibold text-xl text-white">
+            Feature Bar
+          </h3>
+  
+          <button
+            type="button"
+            onClick={() => {
+  
+              const updated = [
+                ...(form.overview.featureBar || []),
+                {
+                  title: "",
+                  desc: "",
+                  icon: "✦",
+                },
+              ];
+  
+              handleChange(
+                "overview",
+                "featureBar",
+                updated
+              );
+            }}
+            className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+          >
+            + Add Feature
+          </button>
+        </div>
+  
+        {(form.overview.featureBar || []).map(
+          (item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+            >
+  
+              {/* TOP */}
+              <div className="flex items-center justify-between mb-4">
+  
+                <h4 className="font-semibold text-white">
+                  Feature #{index + 1}
+                </h4>
+  
+                <button
+                  type="button"
+                  onClick={() => {
+  
+                    const updated =
+                      form.overview.featureBar.filter(
+                        (_, i) => i !== index
+                      );
+  
+                    handleChange(
+                      "overview",
+                      "featureBar",
+                      updated
                     );
-
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+  
+              {/* TITLE */}
+              <input
+                className={`input mb-4 transition-all duration-200 ${
+    hasError("overview.highlightsHeading")
+      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+      : ""
+  }`}
+                placeholder="Feature Title"
+                value={item.title || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.featureBar,
+                  ];
+  
+                  updated[index].title =
+                    e.target.value;
+  
                   handleChange(
                     "overview",
                     "featureBar",
                     updated
                   );
                 }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
+              />
+  
+              {hasError("overview.highlightsHeading") && (
+    <p className="text-red-400 text-sm mb-3">
+      Highlights Heading is required
+    </p>
+  )}
+  
+              {/* DESCRIPTION */}
+              <textarea
+                className="input min-h-[100px] mb-4"
+                placeholder="Feature Description"
+                value={item.desc || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.featureBar,
+                  ];
+  
+                  updated[index].desc =
+                    e.target.value;
+  
+                  handleChange(
+                    "overview",
+                    "featureBar",
+                    updated
+                  );
+                }}
+              />
+  
+              {/* ICON */}
+              <input
+                className="input"
+                placeholder="Icon (✦ ◈ ⌂ ▣)"
+                value={item.icon || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.featureBar,
+                  ];
+  
+                  updated[index].icon =
+                    e.target.value;
+  
+                  handleChange(
+                    "overview",
+                    "featureBar",
+                    updated
+                  );
+                }}
+              />
             </div>
-
-            {/* TITLE */}
-            <input
-              className={`input mb-4 transition-all duration-200 ${
-  hasError("overview.highlightsHeading")
-    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-    : ""
-}`}
-              placeholder="Feature Title"
-              value={item.title || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].title =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-
-            {hasError("overview.highlightsHeading") && (
-  <p className="text-red-400 text-sm mb-3">
-    Highlights Heading is required
-  </p>
-)}
-
-            {/* DESCRIPTION */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Feature Description"
-              value={item.desc || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].desc =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ⌂ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
-
-    {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        Property Highlights Header
-      </h3>
-
-      {/* FIXED ISSUE */}
-      <input
-        className="input mb-4"
-        placeholder="Highlights Heading"
-        value={form.overview.highlightsHeading || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              highlightsHeading: e.target.value,
-            },
-          }))
-        }
-      />
-
-      {/* FIXED ISSUE */}
-      <input
-        className="input"
-        placeholder="Highlights Subheading"
-        value={form.overview.highlightsSubheading || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            overview: {
-              ...prev.overview,
-              highlightsSubheading: e.target.value,
-            },
-          }))
-        }
-      />
-    </div>
-
-    {/* ================= HIGHLIGHTS CARDS ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-
-      <div className="flex items-center justify-between mb-5">
-
-        <h3 className="font-semibold text-xl text-white">
-          Highlight Cards
-        </h3>
-
-        {hasError("overview.highlights") && (
-  <p className="text-red-400 text-sm mt-2">
-    At least 1 Highlight Card is required
-  </p>
-)}
-
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.overview.highlights || []),
-              {
-                heading: "",
-                subheading: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "overview",
-              "highlights",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Highlight
-        </button>
+          )
+        )}
       </div>
-
-      {(form.overview.highlights || []).map(
-        (item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+  
+      {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
+      <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+  
+        <h3 className="font-semibold text-xl mb-5 text-white">
+          Property Highlights Header
+        </h3>
+  
+        {/* FIXED ISSUE */}
+        <input
+          className="input mb-4"
+          placeholder="Highlights Heading"
+          value={form.overview.highlightsHeading || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              overview: {
+                ...prev.overview,
+                highlightsHeading: e.target.value,
+              },
+            }))
+          }
+        />
+  
+        {/* FIXED ISSUE */}
+        <input
+          className="input"
+          placeholder="Highlights Subheading"
+          value={form.overview.highlightsSubheading || ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              overview: {
+                ...prev.overview,
+                highlightsSubheading: e.target.value,
+              },
+            }))
+          }
+        />
+      </div>
+  
+      {/* ================= HIGHLIGHTS CARDS ================= */}
+      <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+  
+        <div className="flex items-center justify-between mb-5">
+  
+          <h3 className="font-semibold text-xl text-white">
+            Highlight Cards
+          </h3>
+  
+          {hasError("overview.highlights") && (
+    <p className="text-red-400 text-sm mt-2">
+      At least 1 Highlight Card is required
+    </p>
+  )}
+  
+          <button
+            type="button"
+            onClick={() => {
+  
+              const updated = [
+                ...(form.overview.highlights || []),
+                {
+                  heading: "",
+                  subheading: "",
+                  icon: "✦",
+                },
+              ];
+  
+              handleChange(
+                "overview",
+                "highlights",
+                updated
+              );
+            }}
+            className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
           >
-
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
-
-              <h4 className="font-semibold text-white">
-                Highlight #{index + 1}
-              </h4>
-
-              <button
-                type="button"
-                onClick={() => {
-
-                  const updated =
-                    form.overview.highlights.filter(
-                      (_, i) => i !== index
+            + Add Highlight
+          </button>
+        </div>
+  
+        {(form.overview.highlights || []).map(
+          (item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+            >
+  
+              {/* TOP */}
+              <div className="flex items-center justify-between mb-4">
+  
+                <h4 className="font-semibold text-white">
+                  Highlight #{index + 1}
+                </h4>
+  
+                <button
+                  type="button"
+                  onClick={() => {
+  
+                    const updated =
+                      form.overview.highlights.filter(
+                        (_, i) => i !== index
+                      );
+  
+                    handleChange(
+                      "overview",
+                      "highlights",
+                      updated
                     );
-
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+  
+              {/* HEADING */}
+              <input
+                className="input mb-4"
+                placeholder="Card Heading"
+                value={item.heading || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.highlights,
+                  ];
+  
+                  updated[index].heading =
+                    e.target.value;
+  
                   handleChange(
                     "overview",
                     "highlights",
                     updated
                   );
                 }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
+              />
+  
+              {/* SUBHEADING */}
+              <textarea
+                className="input min-h-[100px] mb-4"
+                placeholder="Card Description"
+                value={item.subheading || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.highlights,
+                  ];
+  
+                  updated[index].subheading =
+                    e.target.value;
+  
+                  handleChange(
+                    "overview",
+                    "highlights",
+                    updated
+                  );
+                }}
+              />
+  
+              {/* ICON */}
+              <input
+                className="input"
+                placeholder="Icon (✦ ◈ ↗ ▣)"
+                value={item.icon || ""}
+                onChange={(e) => {
+  
+                  const updated = [
+                    ...form.overview.highlights,
+                  ];
+  
+                  updated[index].icon =
+                    e.target.value;
+  
+                  handleChange(
+                    "overview",
+                    "highlights",
+                    updated
+                  );
+                }}
+              />
             </div>
-
-            {/* HEADING */}
-            <input
-              className="input mb-4"
-              placeholder="Card Heading"
-              value={item.heading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].heading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* SUBHEADING */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Card Description"
-              value={item.subheading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].subheading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ↗ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
-
-    {/* ================= QUOTE SECTION ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10">
-
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        Quote Section
-      </h3>
-
-      <textarea
-        className="input min-h-[120px]"
-        placeholder="Highlight Quote"
-        value={form.overview.highlightQuote || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "highlightQuote",
-            e.target.value
           )
-        }
-      />
+        )}
+      </div>
+  
+      {/* ================= QUOTE SECTION ================= */}
+      <div className="glass p-6 rounded-2xl border border-white/10">
+  
+        <h3 className="font-semibold text-xl mb-5 text-white">
+          Quote Section
+        </h3>
+  
+        <textarea
+          className="input min-h-[120px]"
+          placeholder="Highlight Quote"
+          value={form.overview.highlightQuote || ""}
+          onChange={(e) =>
+            handleChange(
+              "overview",
+              "highlightQuote",
+              e.target.value
+            )
+          }
+        />
+      </div>
     </div>
-  </div>
-)}
+  )}
   
     {/* ================= STEP 3 ================= */}
   {step === 3 && (
