@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const API_URL =
+  "https://property-bouquet-backend.onrender.com/api/properties";
+
 export default function PropertiesPage() {
   const [search, setSearch] = useState("");
   const [properties, setProperties] = useState([]);
@@ -192,9 +195,12 @@ export default function PropertiesPage() {
     (p.propertyTag || "Normal") === tagFilter;
 
   const statusMatch =
-    filter === "all"
-      ? true
-      : p.status === filter;
+  filter === "all"
+    ? !p.isDeleted
+    : filter === "trash"
+    ? p.isDeleted
+    : p.status === filter &&
+      !p.isDeleted;
 
   return (
     titleMatch &&
@@ -234,6 +240,102 @@ export default function PropertiesPage() {
 
     default:
       return "bg-gray-50 text-gray-700 border border-gray-200";
+  }
+};
+
+const moveToTrash = async (id) => {
+  try {
+
+    const res = await fetch(
+      `${API_URL}/${id}/trash`,
+      {
+        method: "PATCH",
+        credentials: "include",
+      }
+    );
+
+    if (res.ok) {
+
+      setProperties((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                isDeleted: true,
+              }
+            : item
+        )
+      );
+
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const restoreTrash = async (id) => {
+  try {
+
+    const res = await fetch(
+      `${API_URL}/${id}/restore-trash`,
+      {
+        method: "PATCH",
+        credentials: "include",
+      }
+    );
+
+    if (res.ok) {
+
+      setProperties((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                isDeleted: false,
+              }
+            : item
+        )
+      );
+
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const permanentDelete = async (id) => {
+
+  if (
+    !confirm(
+      "Delete permanently?"
+    )
+  )
+    return;
+
+  try {
+
+    const res = await fetch(
+      `${API_URL}/${id}/permanent-delete`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+
+    if (res.ok) {
+
+      setProperties((prev) =>
+        prev.filter(
+          (item) => item._id !== id
+        )
+      );
+
+    }
+
+  } catch (err) {
+    console.error(err);
   }
 };
 
@@ -290,6 +392,17 @@ export default function PropertiesPage() {
           >
             Draft
           </button>
+
+          <button
+  onClick={() => setFilter("trash")}
+  className={`px-4 py-2 text-sm font-semibold transition ${
+    filter === "trash"
+      ? "bg-red-600 text-white"
+      : "bg-white text-gray-700 hover:bg-gray-100"
+  }`}
+>
+  Trash
+</button>
           </div>
 
           {/* REFRESH */}
@@ -315,7 +428,7 @@ export default function PropertiesPage() {
       <div className="mb-4">
 
             {/* COUNTERS */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+ <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
 
   <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
     <p className="text-xs text-gray-500 font-medium">
@@ -354,6 +467,19 @@ export default function PropertiesPage() {
       }
     </h3>
   </div>
+  <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
+  <p className="text-xs text-red-700 font-medium">
+    Trash Properties
+  </p>
+
+  <h3 className="text-2xl font-bold text-red-700 mt-1">
+    {
+      properties.filter(
+  (p) => p.isDeleted
+).length
+    }
+  </h3>
+</div>
 
 </div>
 
@@ -506,118 +632,165 @@ export default function PropertiesPage() {
                   </td>
 
                   {/* STATUS */}
-                  <td className="p-3">
-                    <span
-                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${
-                      property.status === "draft"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-emerald-100 text-emerald-700"
-                    }`}
-                    >
-                      <span
-                      className={`w-2 h-2 rounded-full ${
-                        property.status === "draft"
-                          ? "bg-amber-500"
-                          : "bg-emerald-500"
-                      }`}
-                    />
+<td className="p-3">
 
-                      {property.status === "draft" ? "DRAFT" : "LIVE"}
-                    </span>
-                  </td>
+  {property.isDeleted ? (
 
-                  {/* CREATED */}
-                  <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
-                    {new Date(property.createdAt).toLocaleDateString(
-                        "en-IN",
-                        {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        }
-                      )}
-                  </td>
+    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
+      TRASH
+    </span>
 
-                  {/* ACTIONS */}
-                  <td className="p-3">
-                    <div className="flex justify-end gap-2 flex-wrap">
+  ) : property.status === "draft" ? (
 
-                      {/* VIEW */}
-                      <button
-                        onClick={() =>
-                          window.open(
-                            `/property/${property.slug}`,
-                            "_blank"
-                          )
-                        }
-                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm"
-                      >
-                        <Eye size={14} />
-                      </button>
+    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
+      DRAFT
+    </span>
 
-                      {/* LIVE WEBSITE */}
-                      {property.status !== "draft" && (
-                        <button
-                          onClick={() =>
-                            window.open(
-                              `/${property.slug}`,
-                              "_blank"
-                            )
-                          }
-                          className="h-9 w-9 flex items-center justify-center rounded-lg bg-black hover:bg-gray-800 text-white transition shadow-sm"
-                        >
-                          <Globe size={14} />
-                        </button>
-                      )}
+  ) : (
 
-                      {/* FEATURE BUTTON */}
-                      <button
-                        onClick={() => setFeatureModal(property)}
-                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-sm"
-                      >
-                        <Star size={14} />
-                      </button>
+    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+      LIVE
+    </span>
 
-                      {/* EDIT */}
-                      <button
-                        onClick={() =>
-                          router.push(
-                            `/admin/edit-property/${property._id}`
-                          )
-                        }
-                        className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#0f3b2e] hover:bg-[#145240] text-white transition shadow-sm"
-                      >
-                        <Pencil size={14} />
-                      </button>
+  )}
 
-                      {/* DELETE / RESTORE */}
-                      {property.status === "published" ? (
-                        <button
-                          disabled={actionId === property._id}
-                          onClick={() =>
-                            handleDelete(property._id)
-                          }
-                          className="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition whitespace-nowrap"
-                        >
-                          {actionId === property._id
-                            ? "..."
-                            : "Draft"}
-                        </button>
-                      ) : (
-                        <button
-                          disabled={actionId === property._id}
-                          onClick={() =>
-                            handleRestore(property._id)
-                          }
-                          className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap"
-                        >
-                          {actionId === property._id
-                            ? "..."
-                            : "Live"}
-                        </button>
-                      )}
-                    </div>
-                  </td>
+</td>
+
+{/* CREATED */}
+<td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
+  {new Date(property.createdAt).toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }
+  )}
+</td>
+
+{/* ACTIONS */}
+<td className="p-3">
+
+  <div className="flex justify-end gap-2 flex-wrap">
+
+    {!property.isDeleted && (
+      <>
+        {/* VIEW */}
+        <button
+          onClick={() =>
+            window.open(
+              `/property/${property.slug}`,
+              "_blank"
+            )
+          }
+          className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm"
+        >
+          <Eye size={14} />
+        </button>
+
+        {/* WEBSITE */}
+        {property.status !== "draft" && (
+          <button
+            onClick={() =>
+              window.open(
+                `/${property.slug}`,
+                "_blank"
+              )
+            }
+            className="h-9 w-9 flex items-center justify-center rounded-lg bg-black hover:bg-gray-800 text-white transition shadow-sm"
+          >
+            <Globe size={14} />
+          </button>
+        )}
+
+        {/* TAG */}
+        <button
+          onClick={() =>
+            setFeatureModal(property)
+          }
+          className="h-9 w-9 flex items-center justify-center rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-sm"
+        >
+          <Star size={14} />
+        </button>
+
+        {/* EDIT */}
+        <button
+          onClick={() =>
+            router.push(
+              `/admin/edit-property/${property._id}`
+            )
+          }
+          className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#0f3b2e] hover:bg-[#145240] text-white transition shadow-sm"
+        >
+          <Pencil size={14} />
+        </button>
+
+        {/* LIVE / DRAFT */}
+        {property.status === "published" ? (
+          <button
+            disabled={actionId === property._id}
+            onClick={() =>
+              handleDelete(property._id)
+            }
+            className="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition whitespace-nowrap"
+          >
+            {actionId === property._id
+              ? "..."
+              : "Draft"}
+          </button>
+        ) : (
+          <button
+            disabled={actionId === property._id}
+            onClick={() =>
+              handleRestore(property._id)
+            }
+            className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap"
+          >
+            {actionId === property._id
+              ? "..."
+              : "Live"}
+          </button>
+        )}
+
+        {/* MOVE TO TRASH */}
+        <button
+          onClick={() =>
+            moveToTrash(property._id)
+          }
+          className="h-9 w-9 rounded-lg bg-red-600 hover:bg-red-700 text-white"
+        >
+          🗑
+        </button>
+      </>
+    )}
+
+    {property.isDeleted && (
+      <>
+        {/* RESTORE */}
+        <button
+          onClick={() =>
+            restoreTrash(property._id)
+          }
+          className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
+        >
+          Restore
+        </button>
+
+        {/* DELETE FOREVER */}
+        <button
+          onClick={() =>
+            permanentDelete(property._id)
+          }
+          className="h-9 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold"
+        >
+          Delete Forever
+        </button>
+      </>
+    )}
+
+  </div>
+
+</td>
                 </tr>
               ))
             ) : (
