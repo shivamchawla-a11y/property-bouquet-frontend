@@ -13,6 +13,7 @@ import {
   BadgeCheck,
   Tag,
   X,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -753,14 +754,15 @@ const permanentDelete = async (id) => {
         )}
 
         {/* MOVE TO TRASH */}
-        <button
-          onClick={() =>
-            moveToTrash(property._id)
-          }
-          className="h-9 w-9 rounded-lg bg-red-600 hover:bg-red-700 text-white"
-        >
-          🗑
-        </button>
+<button
+  onClick={() =>
+    moveToTrash(property._id)
+  }
+  className="h-9 w-9 flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-700 text-white transition shadow-sm"
+  title="Move to Trash"
+>
+  <Trash2 size={15} />
+</button>
       </>
     )}
 
