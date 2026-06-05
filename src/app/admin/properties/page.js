@@ -808,126 +808,136 @@ const permanentDelete = async (id) => {
           </tbody>
         </table>
 
-        {/* ================= PAGINATION ================= */}
-{totalPages > 1 && (
-  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-4 border-t border-gray-200 bg-white">
+{/* ================= PAGINATION ================= */}
+<div className="flex items-center justify-between p-4 border-t border-gray-200 flex-wrap gap-4">
 
-    {/* LEFT */}
-    <div className="flex items-center gap-4 flex-wrap">
+  {/* LEFT */}
+  <div className="flex items-center gap-4 flex-wrap">
 
-      <p className="text-sm text-gray-600 font-medium">
-        Showing{" "}
-        <span className="font-bold">
-          {startIndex + 1}
-        </span>{" "}
-        to{" "}
-        <span className="font-bold">
-          {Math.min(
-            startIndex + itemsPerPage,
-            filtered.length
-          )}
-        </span>{" "}
-        of{" "}
-        <span className="font-bold">
-          {filtered.length}
-        </span>{" "}
-        properties
-      </p>
-      
+    <p className="text-sm text-gray-600 font-medium">
+      Showing{" "}
+      <span className="font-bold">
+        {filtered.length === 0 ? 0 : startIndex + 1}
+      </span>{" "}
+      to{" "}
+      <span className="font-bold">
+        {Math.min(
+          startIndex + itemsPerPage,
+          filtered.length
+        )}
+      </span>{" "}
+      of{" "}
+      <span className="font-bold">
+        {filtered.length}
+      </span>{" "}
+      properties
+    </p>
 
-      {/* ITEMS PER PAGE */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600 font-medium">
-          Show:
-        </span>
+    {/* ITEMS PER PAGE */}
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-gray-600 font-medium">
+        Show:
+      </span>
 
-        <select
-          value={itemsPerPage}
-          onChange={(e) => {
-            setItemsPerPage(Number(e.target.value));
-            setCurrentPage(1);
-          }}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0f3b2e]"
-        >
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
-        </select>
-      </div>
-
+      <select
+        value={itemsPerPage}
+        onChange={(e) => {
+          setItemsPerPage(Number(e.target.value));
+          setCurrentPage(1);
+        }}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium bg-white text-gray-800 min-w-[80px] focus:outline-none focus:ring-2 focus:ring-[#0f3b2e]"
+      >
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
     </div>
 
-    {/* RIGHT */}
-    <div className="flex items-center gap-2 flex-wrap">
-
-      {/* PREV */}
-      <button
-        disabled={currentPage === 1}
-        onClick={() =>
-          setCurrentPage((prev) => prev - 1)
-        }
-        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-          currentPage === 1
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-        }`}
-      >
-        Prev
-      </button>
-
-      {/* PAGE NUMBERS */}
-      {Array.from(
-  {
-    length: Math.min(totalPages, 5),
-  },
-  (_, i) => {
-    let startPage = 1;
-
-    if (totalPages <= 5) {
-      startPage = 1;
-    } else if (currentPage <= 3) {
-      startPage = 1;
-    } else if (currentPage >= totalPages - 2) {
-      startPage = totalPages - 4;
-    } else {
-      startPage = currentPage - 2;
-    }
-
-    return startPage + i;
-  }
-).map((page) => (
-  <button
-    key={page}
-    onClick={() => setCurrentPage(page)}
-    className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
-      currentPage === page
-        ? "bg-[#0f3b2e] text-white"
-        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-    }`}
-  >
-    {page}
-  </button>
-))}
-
-      {/* NEXT */}
-      <button
-        disabled={currentPage === totalPages}
-        onClick={() =>
-          setCurrentPage((prev) => prev + 1)
-        }
-        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-          currentPage === totalPages
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-        }`}
-      >
-        Next
-      </button>
-
-    </div>
   </div>
-)}
+
+  {/* RIGHT */}
+  <div className="flex items-center gap-2 flex-wrap">
+
+    {totalPages > 1 && (
+      <>
+        {/* PREV */}
+        <button
+          disabled={currentPage === 1}
+          onClick={() =>
+            setCurrentPage((prev) => prev - 1)
+          }
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            currentPage === 1
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+          }`}
+        >
+          Prev
+        </button>
+
+        {/* PAGE NUMBERS */}
+        {Array.from(
+          {
+            length: Math.min(totalPages, 5),
+          },
+          (_, i) => {
+            let startPage = 1;
+
+            if (totalPages <= 5) {
+              startPage = 1;
+            } else if (currentPage <= 3) {
+              startPage = 1;
+            } else if (
+              currentPage >= totalPages - 2
+            ) {
+              startPage = totalPages - 4;
+            } else {
+              startPage = currentPage - 2;
+            }
+
+            return startPage + i;
+          }
+        ).map((page) => (
+          <button
+            key={page}
+            onClick={() =>
+              setCurrentPage(page)
+            }
+            className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
+              currentPage === page
+                ? "bg-[#0f3b2e] text-white"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        {/* NEXT */}
+        <button
+          disabled={
+            currentPage === totalPages
+          }
+          onClick={() =>
+            setCurrentPage(
+              (prev) => prev + 1
+            )
+          }
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            currentPage === totalPages
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+          }`}
+        >
+          Next
+        </button>
+      </>
+    )}
+
+  </div>
+
+</div>
       </div>
 
       {/* ================= FEATURE MODAL ================= */}
