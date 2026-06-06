@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
 import PropertyPreview from "./PropertyPreview";
+import PropertyPreviewMobile from "./PropertyPreviewMobile";
 import toast from "react-hot-toast";
 import HeroImageUpload from "./HeroImageUpload";
 
@@ -34,6 +35,9 @@ import {
   Store,
   Phone,
   Wind,
+  Monitor,
+  Tablet,
+  Smartphone,
 } from "lucide-react";
 
 // ✅ Amenities with icons
@@ -535,6 +539,8 @@ export default function AddProperty() {
 const [errors, setErrors] = useState({});
 const [errorList, setErrorList] = useState([]);
 const [draftId, setDraftId] = useState(null);
+const [previewDevice, setPreviewDevice] =
+  useState("mobile");
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -1299,7 +1305,19 @@ const labelMap = {
     ) : (
 
       // ================= EDIT MODE =================
-      <div className="flex flex-col xl:flex-row gap-6 w-full overflow-hidden">
+      <div
+  className="
+    flex
+    flex-col
+    xl:flex-row
+    gap-6
+    w-full
+
+    h-[80vh]
+    min-h-0
+    overflow-hidden
+  "
+>
 
         {/* ================= LEFT SIDE ================= */}
         <div
@@ -4702,14 +4720,281 @@ const labelMap = {
      
   </div>
 
-   {/* RIGHT SIDE — LIVE PREVIEW */}
-  {!fullFormMode && (
-  <div className="w-1/2 overflow-y-auto h-[80vh] border-l pl-4 bg-white rounded-xl">
-  <PropertyPreview
-    form={previewData}
-    insideAdmin={true}
-  />
+{/* ================= LIVE PREVIEW ================= */}
+{!fullFormMode && (
+
+  <div className="flex flex-col h-full bg-[#041a14]">
+
+    {/* ================= PREMIUM TOP BAR ================= */}
+    <div
+      className="
+        sticky
+        top-0
+        z-30
+        backdrop-blur-2xl
+        bg-[#06281f]/95
+        border-b
+        border-white/10
+        px-5
+        py-4
+        shadow-[0_10px_30px_rgba(0,0,0,0.25)]
+      "
+    >
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+        {/* LEFT */}
+        <div>
+          <h3 className="text-white text-lg font-semibold">
+            Live Preview
+          </h3>
+
+          <p className="text-white/50 text-xs mt-1">
+            Preview exactly how your property page will appear across devices.
+          </p>
+        </div>
+
+        {/* DEVICE SWITCHER */}
+        <div
+          className="
+            flex
+            items-center
+            gap-1
+            p-1
+            rounded-2xl
+            bg-white/5
+            border
+            border-white/10
+            backdrop-blur-xl
+            w-fit
+          "
+        >
+
+          {/* DESKTOP */}
+          <button
+            onClick={() => setPreviewDevice("desktop")}
+            className={`
+              flex
+              items-center
+              gap-2
+              px-4
+              py-2.5
+              rounded-xl
+              text-sm
+              font-medium
+              transition-all
+              duration-300
+
+              ${
+                previewDevice === "desktop"
+                  ? "bg-[#c8a45d] text-black shadow-lg"
+                  : "text-white hover:bg-white/5"
+              }
+            `}
+          >
+            <Monitor size={16} />
+            Desktop
+          </button>
+
+          {/* TABLET */}
+          <button
+            onClick={() => setPreviewDevice("tablet")}
+            className={`
+              flex
+              items-center
+              gap-2
+              px-4
+              py-2.5
+              rounded-xl
+              text-sm
+              font-medium
+              transition-all
+              duration-300
+
+              ${
+                previewDevice === "tablet"
+                  ? "bg-[#c8a45d] text-black shadow-lg"
+                  : "text-white hover:bg-white/5"
+              }
+            `}
+          >
+            <Tablet size={16} />
+            Tablet
+          </button>
+
+          {/* MOBILE */}
+          <button
+            onClick={() => setPreviewDevice("mobile")}
+            className={`
+              flex
+              items-center
+              gap-2
+              px-4
+              py-2.5
+              rounded-xl
+              text-sm
+              font-medium
+              transition-all
+              duration-300
+
+              ${
+                previewDevice === "mobile"
+                  ? "bg-[#c8a45d] text-black shadow-lg"
+                  : "text-white hover:bg-white/5"
+              }
+            `}
+          >
+            <Smartphone size={16} />
+            Mobile
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+    {/* ================= PREVIEW AREA ================= */}
+<div
+  className="
+    flex-1
+    min-h-0
+    overflow-hidden
+
+    bg-gradient-to-br
+    from-[#031611]
+    via-[#06281f]
+    to-[#031611]
+  "
+>
+  <div
+    className="
+      h-full
+      overflow-y-auto
+      hide-scrollbar
+
+      px-6
+      py-6
+    "
+  >
+    <div
+      className={`
+        mx-auto
+        transition-all
+        duration-500
+
+        ${
+          previewDevice === "desktop"
+            ? "w-full"
+            : previewDevice === "tablet"
+            ? "w-[820px] max-w-full"
+            : "w-[390px] max-w-full"
+        }
+      `}
+    >
+
+      {/* ================= DESKTOP ================= */}
+      {previewDevice === "desktop" ? (
+
+        <div
+          className="
+            overflow-hidden
+            rounded-[32px]
+
+            border
+            border-white/10
+
+            bg-white
+
+            shadow-[0_50px_120px_rgba(0,0,0,0.45)]
+          "
+        >
+          <PropertyPreview
+            form={previewData}
+            insideAdmin={true}
+          />
+        </div>
+
+      ) : (
+
+        /* ================= DEVICE FRAME ================= */
+        <div
+          className="
+            relative
+
+            rounded-[42px]
+
+            bg-gradient-to-b
+            from-[#171717]
+            to-[#090909]
+
+            p-[10px]
+
+            border
+            border-white/10
+
+            shadow-[0_50px_150px_rgba(0,0,0,0.65)]
+
+            mx-auto
+          "
+        >
+
+          {/* OUTER GLOW */}
+          <div
+            className="
+              absolute
+              inset-0
+              rounded-[42px]
+              bg-[radial-gradient(circle_at_top,rgba(200,164,93,0.18),transparent_55%)]
+              pointer-events-none
+            "
+          />
+
+          {/* CAMERA ISLAND */}
+          <div
+            className="
+              absolute
+              top-[16px]
+              left-1/2
+              -translate-x-1/2
+              z-30
+
+              w-[120px]
+              h-[30px]
+
+              rounded-full
+              bg-black
+
+              flex
+              items-center
+              justify-center
+            "
+          >
+            <div className="w-2 h-2 rounded-full bg-white/30" />
+          </div>
+
+          {/* SCREEN */}
+          <div
+            className="
+              overflow-hidden
+              rounded-[32px]
+              bg-white
+            "
+          >
+            <PropertyPreviewMobile
+              form={previewData}
+              insideAdmin={true}
+            />
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+  </div>
 </div>
+
+  </div>
+
 )}
 
   
@@ -4719,48 +5004,101 @@ const labelMap = {
 
 )}
 
- {/* ================= STICKY BOTTOM ACTION BAR ================= */}
+{/* ================= PREMIUM STICKY ACTION BAR ================= */}
 <div className="sticky bottom-0 left-0 z-50 mt-10">
 
-  <div className="backdrop-blur-2xl bg-[#07251d]/85 border border-white/10 rounded-3xl px-5 md:px-7 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.35)]">
+  <div
+    className="
+      backdrop-blur-2xl
+      bg-[#031611]/95
+      border
+      border-white/10
+      rounded-[32px]
+      overflow-hidden
+      shadow-[0_-15px_50px_rgba(0,0,0,0.45)]
+    "
+  >
 
-    <div className="flex items-center justify-between gap-4 flex-wrap">
+    {/* GOLD TOP ACCENT */}
+    <div className="h-[3px] bg-gradient-to-r from-[#c8a45d] via-[#f5d488] to-[#c8a45d]" />
 
-      {/* LEFT INFO */}
-      <div>
-        <p className="text-white font-semibold text-lg">
-          Step {step} of 7
-        </p>
+    <div className="px-6 md:px-8 py-5">
 
-        <p className="text-sm text-gray-400">
-          Complete all required property details
-        </p>
-      </div>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 
-      {/* RIGHT BUTTONS */}
-      <div className="flex items-center gap-3 ml-auto">
+        {/* ================= LEFT ================= */}
+        <div className="flex-1">
 
-        <button
-  onClick={handleSaveDraft}
-  className="
-    px-6 py-3 rounded-2xl
-    bg-white/10
-    border border-white/10
-    text-white
-    font-semibold
-    hover:bg-white/15
-    transition-all duration-300
-  "
->
-  💾 Save Draft
-</button>
+          {/* STEP */}
+          <div className="flex items-center gap-3 mb-2">
 
-        {/* BACK BUTTON */}
-        {step > 1 && (
+            <span className="px-3 py-1 rounded-full bg-[#c8a45d]/15 border border-[#c8a45d]/30 text-[#f5d488] text-xs font-bold uppercase tracking-wider">
+              Step {step} of 7
+            </span>
+
+          </div>
+
+          {/* TITLE */}
+          <h3 className="text-white font-bold text-xl">
+            {
+              [
+                "Core Details",
+                "About Project",
+                "Amenities",
+                "Gallery & Floor Plans",
+                "Location",
+                "Master Plan",
+                "FAQ & Publish",
+              ][step - 1]
+            }
+          </h3>
+
+          {/* PROGRESS BAR */}
+          <div className="mt-4">
+
+            <div className="flex justify-between text-xs mb-2">
+
+              <span className="text-gray-400">
+                Progress
+              </span>
+
+              <span className="text-[#f5d488] font-semibold">
+                {Math.round((step / 7) * 100)}%
+              </span>
+
+            </div>
+
+            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+
+              <div
+                className="
+                  h-full
+                  bg-gradient-to-r
+                  from-[#c8a45d]
+                  to-[#f5d488]
+                  transition-all
+                  duration-500
+                "
+                style={{
+                  width: `${(step / 7) * 100}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ================= RIGHT ================= */}
+        <div className="flex items-center gap-3 flex-wrap lg:justify-end">
+
+          {/* SAVE DRAFT */}
           <button
-            onClick={goPrev}
+            onClick={handleSaveDraft}
             className="
-              px-6 py-3 rounded-2xl
+              px-6 py-3
+              rounded-2xl
               border border-white/10
               bg-white/5
               text-white
@@ -4769,46 +5107,75 @@ const labelMap = {
               transition-all duration-300
             "
           >
-            ← Back
+            💾 Save Draft
           </button>
-        )}
 
-        {/* NEXT / PUBLISH */}
-        {step < 7 ? (
-          <button
-            onClick={goNext}
-            className="
-              px-7 py-3 rounded-2xl
-              bg-gradient-to-r from-[#c8a45d] to-[#f5d488]
-              text-black
-              font-bold
-              shadow-[0_10px_30px_rgba(245,212,136,0.25)]
-              hover:scale-[1.03]
-              transition-all duration-300
-            "
-          >
-            Next Step →
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            className="
-              px-7 py-3 rounded-2xl
-              bg-gradient-to-r from-emerald-500 to-green-400
-              text-black
-              font-bold
-              shadow-[0_10px_30px_rgba(16,185,129,0.3)]
-              hover:scale-[1.03]
-              transition-all duration-300
-            "
-          >
-            🚀 Publish Property
-          </button>
-        )}
+          {/* BACK */}
+          {step > 1 && (
+            <button
+              onClick={goPrev}
+              className="
+                px-6 py-3
+                rounded-2xl
+                border border-white/10
+                bg-white/5
+                text-white
+                font-semibold
+                hover:bg-white/10
+                transition-all duration-300
+              "
+            >
+              ← Back
+            </button>
+          )}
+
+          {/* NEXT / PUBLISH */}
+          {step < 7 ? (
+            <button
+              onClick={goNext}
+              className="
+                px-7 py-3
+                rounded-2xl
+                bg-gradient-to-r
+                from-[#c8a45d]
+                to-[#f5d488]
+                text-black
+                font-bold
+                shadow-[0_10px_35px_rgba(245,212,136,0.25)]
+                hover:scale-[1.03]
+                transition-all duration-300
+              "
+            >
+              Next Step →
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="
+                px-7 py-3
+                rounded-2xl
+                bg-gradient-to-r
+                from-emerald-500
+                to-green-400
+                text-black
+                font-bold
+                shadow-[0_10px_35px_rgba(16,185,129,0.3)]
+                hover:scale-[1.03]
+                transition-all duration-300
+              "
+            >
+              🚀 Publish Property
+            </button>
+          )}
+
+        </div>
 
       </div>
+
     </div>
+
   </div>
+
 </div>
 </div>
 
