@@ -3562,86 +3562,102 @@ id="amenities"
               </motion.button>
             </div>
 
-            {/* ================= PREMIUM MASONRY GRID ================= */}
-            <div className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-5 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[260px]">
+            {/* ================= ULTRA LUXURY MASONRY ================= */}
+<div
+  className="
+    columns-1
+    sm:columns-2
+    lg:columns-3
+    xl:columns-4
+    gap-4
+    md:gap-5
+    [column-fill:_balance]
+  "
+>
 
-              {gallery.map((img, i) => {
+  {gallery.map((img, i) => (
+    <motion.div
+      key={i}
+      variants={fadeUp}
+      whileHover={{
+        y: -8,
+      }}
+      transition={{
+        duration: 0.4,
+      }}
+      onClick={() => {
+        setSelectedImage(img);
+        setSelectedIndex(i);
+      }}
+      className="
+        group
+        relative
+        overflow-hidden
+        cursor-pointer
+        rounded-[24px]
+        md:rounded-[30px]
+        bg-white
+        border
+        border-[#ebe1d4]
+        shadow-[0_18px_45px_rgba(0,0,0,0.08)]
+        hover:shadow-[0_35px_90px_rgba(0,0,0,0.16)]
+        transition-all
+        duration-500
+        mb-4
+        md:mb-5
+        break-inside-avoid
+      "
+    >
 
-                /* PREMIUM BALANCED LAYOUT */
-                let spanClass =
-                  "col-span-12 sm:col-span-6 lg:col-span-3 row-span-1";
+      {/* IMAGE */}
+      <img
+        src={img}
+        alt=""
+        loading="lazy"
+        className="
+          w-full
+          h-auto
+          object-contain
+          transition
+          duration-[1200ms]
+          ease-out
+          group-hover:scale-[1.04]
+        "
+      />
 
-                if (i % 7 === 0)
-                  spanClass =
-                    "col-span-12 lg:col-span-6 row-span-2";
+      {/* LUXURY OVERLAY */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
 
-                else if (i % 5 === 0)
-                  spanClass =
-                    "col-span-12 sm:col-span-6 lg:col-span-3 row-span-2";
+      {/* SHINE */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
 
-                return (
-                  <motion.div
-                    key={i}
-                    variants={fadeUp}
-                    whileHover={{
-                      y: -8,
-                    }}
-                    transition={{
-                      duration: 0.4,
-                    }}
-                    onClick={() => {
-                      setSelectedImage(img);
-                      setSelectedIndex(i);
-                    }}
-                    className={`group relative overflow-hidden cursor-pointer rounded-[22px] sm:rounded-[28px] md:rounded-[34px]
-                    bg-white
-                    border border-[#ebe1d4]
-                    shadow-[0_18px_45px_rgba(0,0,0,0.08)]
-                    hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
-                    transition-all duration-500
-                    ${spanClass}`}
-                  >
+      {/* VIEW BUTTON */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
 
-                    {/* IMAGE */}
-                    <img
-                      src={img}
-                      alt=""
-                      className="w-full h-full object-cover transition duration-[1200ms] ease-out group-hover:scale-110"
-                    />
+        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
 
-                    {/* SOFT OVERLAY */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6 md:w-7 md:h-7 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 12H9m0 0l3-3m-3 3l3 3"
+            />
+          </svg>
 
-                    {/* LUXURY SHINE */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+        </div>
 
-                    {/* VIEW ICON */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+      </div>
 
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
-
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={1.8}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 12H9m0 0l3-3m-3 3l3 3"
-                          />
-                        </svg>
-
-                      </div>
-                    </div>
-
-                  </motion.div>
-                );
-              })}
-            </div>
+    </motion.div>
+  ))}
+</div>
           </div>
         </div>
       </div>
@@ -3701,7 +3717,13 @@ id="amenities"
             }}
             src={selectedImage}
             alt=""
-            className="max-w-[92vw] sm:max-w-[94vw] max-h-[75vh] sm:max-h-[90vh] object-contain rounded-[18px] sm:rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.5)]"
+            className="
+  max-w-[96vw]
+  max-h-[92vh]
+  object-contain
+  rounded-[24px]
+  shadow-[0_40px_120px_rgba(0,0,0,0.65)]
+"
           />
 
           {/* RIGHT */}

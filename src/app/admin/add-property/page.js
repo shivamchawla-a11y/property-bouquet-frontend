@@ -898,16 +898,17 @@ const handleSubmit = async () => {
 
     const data = await res.json();
 
-    // ================= SUCCESS =================
-    if (res.ok) {
-      alert("Property Added ✅");
+   // ================= SUCCESS =================
+if (res.ok) {
+  alert("Property Added ✅");
 
-      // reset errors
-      setErrors({});
-      setErrorList([]);
+  setErrors({});
+  setErrorList([]);
 
-      return;
-    }
+  router.push("/admin/properties");
+
+  return;
+}
 
     // ================= NON-VALIDATION ERRORS =================
 if (
@@ -2770,32 +2771,90 @@ const labelMap = {
     </div>
 
     {/* ================= HIGHLIGHTS CARDS ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+<div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-      <div className="flex items-center justify-between mb-5">
+  {/* HEADER */}
+  <div className="mb-6">
 
-        <h3 className="font-semibold text-xl text-white">
-          Highlight Cards
-        </h3>
+    <h3 className="font-semibold text-xl text-white">
+      Highlight Cards
+    </h3>
 
-        {hasError("overview.highlights") && (
-  <p className="text-red-400 text-sm mt-2">
-    At least 1 Highlight Card is required
-  </p>
-)}
+    <p className="text-white/60 text-sm mt-1">
+      Add luxury property highlights shown in the About section.
+    </p>
 
-        <button
-          type="button"
-          onClick={() => {
+    {hasError("overview.highlights") && (
+      <p className="text-red-400 text-sm mt-2">
+        At least one highlight card is required
+      </p>
+    )}
+  </div>
+
+  {/* CARDS */}
+  {(form.overview.highlights || []).map(
+    (item, index) => (
+      <div
+        key={index}
+        className="
+          rounded-2xl
+          p-5
+          mb-5
+          bg-white/5
+          border
+          border-white/10
+        "
+      >
+
+        {/* TOP */}
+        <div className="flex items-center justify-between mb-4">
+
+          <h4 className="font-semibold text-white">
+            Highlight #{index + 1}
+          </h4>
+
+          <button
+            type="button"
+            onClick={() => {
+
+              const updated =
+                form.overview.highlights.filter(
+                  (_, i) => i !== index
+                );
+
+              handleChange(
+                "overview",
+                "highlights",
+                updated
+              );
+            }}
+            className="
+              bg-red-500
+              hover:bg-red-600
+              text-white
+              px-4
+              py-2
+              rounded-xl
+              transition
+            "
+          >
+            Delete
+          </button>
+        </div>
+
+        {/* HEADING */}
+        <input
+          className="input mb-4"
+          placeholder="Card Heading"
+          value={item.heading || ""}
+          onChange={(e) => {
 
             const updated = [
-              ...(form.overview.highlights || []),
-              {
-                heading: "",
-                subheading: "",
-                icon: "✦",
-              },
+              ...form.overview.highlights,
             ];
+
+            updated[index].heading =
+              e.target.value;
 
             handleChange(
               "overview",
@@ -2803,116 +2862,100 @@ const labelMap = {
               updated
             );
           }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Highlight
-        </button>
+        />
+
+        {/* DESCRIPTION */}
+        <textarea
+          className="input min-h-[120px] mb-4"
+          placeholder="Card Description"
+          value={item.subheading || ""}
+          onChange={(e) => {
+
+            const updated = [
+              ...form.overview.highlights,
+            ];
+
+            updated[index].subheading =
+              e.target.value;
+
+            handleChange(
+              "overview",
+              "highlights",
+              updated
+            );
+          }}
+        />
+
+        {/* ICON */}
+        <input
+          className="input"
+          placeholder="Icon (✦ ◈ ↗ ▣)"
+          value={item.icon || ""}
+          onChange={(e) => {
+
+            const updated = [
+              ...form.overview.highlights,
+            ];
+
+            updated[index].icon =
+              e.target.value;
+
+            handleChange(
+              "overview",
+              "highlights",
+              updated
+            );
+          }}
+        />
+
       </div>
+    )
+  )}
 
-      {(form.overview.highlights || []).map(
-        (item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-          >
+  {/* ADD BUTTON MOVED TO BOTTOM */}
+  <button
+    type="button"
+    onClick={() => {
 
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
+      const updated = [
+        ...(form.overview.highlights || []),
+        {
+          heading: "",
+          subheading: "",
+          icon: "✦",
+        },
+      ];
 
-              <h4 className="font-semibold text-white">
-                Highlight #{index + 1}
-              </h4>
+      handleChange(
+        "overview",
+        "highlights",
+        updated
+      );
 
-              <button
-                type="button"
-                onClick={() => {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }}
+    className="
+      w-full
+      py-4
+      rounded-2xl
+      bg-[#D4AF37]
+      text-black
+      font-semibold
+      text-lg
+      hover:opacity-90
+      transition
+      mt-2
+    "
+  >
+    + Add Highlight
+  </button>
 
-                  const updated =
-                    form.overview.highlights.filter(
-                      (_, i) => i !== index
-                    );
-
-                  handleChange(
-                    "overview",
-                    "highlights",
-                    updated
-                  );
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
-
-            {/* HEADING */}
-            <input
-              className="input mb-4"
-              placeholder="Card Heading"
-              value={item.heading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].heading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* SUBHEADING */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Card Description"
-              value={item.subheading || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].subheading =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ↗ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.overview.highlights,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "highlights",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
+</div>
 
     {/* ================= QUOTE SECTION ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10">
@@ -4015,29 +4058,162 @@ const labelMap = {
         Configure premium master plan section content
       </p>
     </div>
+{/* ================= BROCHURE IMAGE UPLOAD ================= */}
+<div className="mb-8">
 
-    {/* ================= BROCHURE ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10">
+  <h3 className="font-semibold text-xl mb-5 text-white">
+    Brochure Image
+  </h3>
 
-      <h3 className="font-semibold text-xl mb-5 text-white">
-        Brochure PDF
-      </h3>
+  {/* ================= UPLOAD BOX ================= */}
+  <div
+    onClick={() =>
+      document.getElementById("brochureUpload").click()
+    }
+    className="
+      relative
+      cursor-pointer
+      border-2
+      border-dashed
+      border-white/20
+      rounded-2xl
+      p-10
+      text-center
+      bg-white/5
+      hover:bg-white/10
+      transition
+    "
+  >
 
-      <input
-        className="input"
-        placeholder="Brochure PDF URL (Google Drive / CDN link)"
-        value={form.gatedContent.brochurePdfUrl || ""}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            gatedContent: {
-              ...prev.gatedContent,
-              brochurePdfUrl: e.target.value,
-            },
-          }))
+    <input
+      id="brochureUpload"
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const res = await fetch(
+            "https://property-bouquet-backend.onrender.com/api/upload",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+
+          const text = await res.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch (err) {
+            throw new Error("Invalid server response: " + text);
+          }
+
+          if (res.ok && data.success) {
+            setForm((prev) => ({
+              ...prev,
+              gatedContent: {
+                ...prev.gatedContent,
+                brochurePdfUrl: data.url,
+              },
+            }));
+          } else {
+            alert(data.message || "Upload failed ❌");
+          }
+        } catch (err) {
+          console.error("Upload Error:", err);
+          alert("Upload error ❌");
         }
-      />
+      }}
+    />
+
+    <div className="text-white/70">
+      <p className="text-lg font-medium">
+        Click to upload brochure image
+      </p>
+      <p className="text-sm mt-2 text-white/40">
+        PNG, JPG, WEBP • Max 5MB
+      </p>
     </div>
+  </div>
+
+  {/* ================= PREVIEW ================= */}
+  {form.gatedContent?.brochurePdfUrl && (
+    <div className="mt-6">
+
+      <p className="text-white/70 mb-3 text-sm">
+        Uploaded Brochure
+      </p>
+
+      <div className="relative group w-fit">
+
+        <img
+          src={form.gatedContent.brochurePdfUrl}
+          alt="Brochure"
+          className="
+            w-64
+            h-40
+            object-cover
+            rounded-2xl
+            border border-white/10
+            shadow-lg
+            transition
+            group-hover:scale-105
+          "
+        />
+
+        {/* Overlay */}
+        <div className="
+          absolute inset-0
+          bg-black/40
+          opacity-0
+          group-hover:opacity-100
+          transition
+          rounded-2xl
+          flex items-center justify-center
+        ">
+          <p className="text-white text-sm">
+            Preview
+          </p>
+        </div>
+
+        {/* Remove Button */}
+        <button
+          type="button"
+          onClick={() =>
+            setForm((prev) => ({
+              ...prev,
+              gatedContent: {
+                ...prev.gatedContent,
+                brochurePdfUrl: "",
+              },
+            }))
+          }
+          className="
+            absolute top-2 right-2
+            bg-red-500
+            text-white
+            w-7 h-7
+            rounded-full
+            flex items-center justify-center
+            text-sm
+            hover:scale-110
+            transition
+          "
+        >
+          ✕
+        </button>
+
+      </div>
+    </div>
+  )}
+</div>
 
     {/* ================= MASTER PLAN CONTENT ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10">
