@@ -91,7 +91,7 @@ export default function FeaturedProjects() {
             </div>
 
             {/* CARDS */}
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-5 items-stretch">
 
   {loading && (
     <p className="col-span-3 text-center">
@@ -191,19 +191,19 @@ group-hover:scale-110
       <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
 
       {/* CONTENT */}
-      <div className="p-6 flex flex-col flex-1">
+      <div className="p-5 flex flex-col flex-1">
         {/* TITLE */}
         <h3
-          className="
-            text-[24px]
-xl:text-[28px]
-            text-[#171717]
-            font-heading
-            leading-[1.15]
-            h-[70px]
-            overflow-hidden
-          "
-        >
+  className="
+    text-[21px]
+    xl:text-[24px]
+    text-[#171717]
+    font-heading
+    leading-[1.2]
+    h-[58px]
+    overflow-hidden
+  "
+>
           {item?.coreDetails?.title}
         </h3>
 

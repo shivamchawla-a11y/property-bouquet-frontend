@@ -100,50 +100,22 @@ const staggerContainer = {
   },
 };
 
-const amenityIcons = {
-  "Swimming Pool": <Waves size={28} />,
-  Gym: <Dumbbell size={28} />,
-  Clubhouse: <Building2 size={28} />,
-  Garden: <Trees size={28} />,
-  Parking: <Car size={28} />,
-  Lift: <ArrowUpCircle size={28} />,
-  Security: <ShieldCheck size={28} />,
-  "Power Backup": <Zap size={28} />,
-  Balcony: <Home size={28} />,
-  "Kids Play Area": <Baby size={28} />,
-  "Jogging Track": <Footprints size={28} />,
-  CCTV: <Camera size={28} />,
-  "Indoor Games": <Gamepad2 size={28} />,
-  Spa: <Sparkles size={28} />,
-  "Shopping Center": <ShoppingBag size={28} />,
-};
 
-const CUSTOM_ICONS = [
-  { name: "Home", icon: Home },
-  { name: "Swimming", icon: Waves },
-  { name: "Gym", icon: Dumbbell },
-  { name: "Club", icon: Building2 },
-  { name: "Garden", icon: Trees },
-  { name: "Parking", icon: Car },
-  { name: "Lift", icon: ArrowUpCircle },
-  { name: "Security", icon: ShieldCheck },
-  { name: "Power", icon: Zap },
-  { name: "Kids", icon: Baby },
-  { name: "Track", icon: Footprints },
-  { name: "CCTV", icon: Camera },
-  { name: "Games", icon: Gamepad2 },
-  { name: "Spa", icon: Sparkles },
-  { name: "Shopping", icon: ShoppingBag },
-  { name: "Cafe", icon: Coffee },
-  { name: "School", icon: School },
-  { name: "Hospital", icon: Hospital },
-  { name: "Wifi", icon: Wifi },
-  { name: "Restaurant", icon: Utensils },
-  { name: "Cinema", icon: Film },
-  { name: "Temple", icon: Landmark },
-  { name: "Bus", icon: Bus },
-  { name: "Store", icon: Store },
-];
+import * as FaIcons from "react-icons/fa";
+import * as MdIcons from "react-icons/md";
+import * as GiIcons from "react-icons/gi";
+import * as TbIcons from "react-icons/tb";
+import * as IoIcons from "react-icons/io5";
+import * as BsIcons from "react-icons/bs";
+
+const ICONS = {
+  ...FaIcons,
+  ...MdIcons,
+  ...GiIcons,
+  ...TbIcons,
+  ...IoIcons,
+  ...BsIcons,
+};
 
 export default function PropertyPreview({ form, insideAdmin = false, developers = [] }) {
   if (!form) return null;
@@ -2649,17 +2621,14 @@ id="amenities"
                 h?.icon ||
                 "Amenity";
 
-          // ================= ICON =================
           const iconKey =
-            typeof h === "string"
-              ? "Home"
-              : h?.icon || "Home";
+  typeof h === "string"
+    ? "FaHome"
+    : h?.icon || "FaHome";
 
-          const IconComponent =
-            CUSTOM_ICONS.find(
-              (item) =>
-                item.name === iconKey
-            )?.icon || Home;
+const IconComponent =
+  ICONS[iconKey] ||
+  FaIcons.FaHome;
 
           // ================= DESCRIPTION =================
           
@@ -2710,7 +2679,6 @@ id="amenities"
                   <IconComponent
                     size={34}
                     className="text-[#d7b367]"
-                    strokeWidth={1.5}
                   />
                 </div>
               </div>

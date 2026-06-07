@@ -65,32 +65,12 @@ const AMENITIES = [
   { name: "Air Conditioning", icon: Wind },
 ];
 
-const CUSTOM_ICONS = [
-  { name: "Home", icon: Home },
-  { name: "Swimming", icon: Waves },
-  { name: "Gym", icon: Dumbbell },
-  { name: "Club", icon: Building2 },
-  { name: "Garden", icon: Trees },
-  { name: "Parking", icon: Car },
-  { name: "Lift", icon: ArrowUpDown },
-  { name: "Security", icon: ShieldCheck },
-  { name: "Power", icon: Zap },
-  { name: "Kids", icon: Baby },
-  { name: "Track", icon: Footprints },
-  { name: "CCTV", icon: Camera },
-  { name: "Games", icon: Gamepad2 },
-  { name: "Spa", icon: Sparkles },
-  { name: "Shopping", icon: ShoppingBag },
-  { name: "Cafe", icon: Coffee },
-  { name: "School", icon: School },
-  { name: "Hospital", icon: Hospital },
-  { name: "Wifi", icon: Wifi },
-  { name: "Restaurant", icon: Utensils },
-  { name: "Cinema", icon: Film },
-  { name: "Temple", icon: Landmark },
-  { name: "Bus", icon: Bus },
-  { name: "Store", icon: Store },
-];
+import * as FaIcons from "react-icons/fa";
+import * as MdIcons from "react-icons/md";
+import * as GiIcons from "react-icons/gi";
+import * as TbIcons from "react-icons/tb";
+import * as IoIcons from "react-icons/io5";
+import * as BsIcons from "react-icons/bs";
 
 export default function AddProperty() {
   const [step, setStep] = useState(1);
@@ -530,7 +510,8 @@ export default function AddProperty() {
     const [useCustomCategory, setUseCustomCategory] = useState(false);
     const [customAmenity, setCustomAmenity] = useState("");
     const [fullFormMode, setFullFormMode] = useState(false);
-    const [selectedCustomIcon, setSelectedCustomIcon] = useState("Home");
+    const [selectedCustomIcon, setSelectedCustomIcon] =
+  useState("FaHome");
     const [uploading, setUploading] = useState(false);
     const [
   customAmenitySubheading,
@@ -541,6 +522,26 @@ const [errorList, setErrorList] = useState([]);
 const [draftId, setDraftId] = useState(null);
 const [previewDevice, setPreviewDevice] =
   useState("mobile");
+  const [iconSearch, setIconSearch] = useState("");
+
+// Massive icon library
+const ICONS = {
+  ...FaIcons,
+  ...MdIcons,
+  ...GiIcons,
+  ...TbIcons,
+  ...IoIcons,
+  ...BsIcons,
+};
+
+// Search results
+const filteredIcons = Object.keys(ICONS)
+  .filter((iconName) =>
+    iconName
+      .toLowerCase()
+      .includes(iconSearch.toLowerCase())
+  )
+  .slice(0, 200);
 
     const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -2584,36 +2585,13 @@ const labelMap = {
     {/* ================= FEATURE BAR ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5">
 
-        <h3 className="font-semibold text-xl text-white">
-          Feature Bar
-        </h3>
+  <h3 className="font-semibold text-xl text-white">
+    Feature Bar
+  </h3>
 
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.overview.featureBar || []),
-              {
-                title: "",
-                desc: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "overview",
-              "featureBar",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Feature
-        </button>
-      </div>
+</div>
 
       {(form.overview.featureBar || []).map(
         (item, index) => (
@@ -2728,6 +2706,49 @@ const labelMap = {
           </div>
         )
       )}
+
+      <button
+  type="button"
+  onClick={() => {
+
+    const updated = [
+      ...(form.overview.featureBar || []),
+      {
+        title: "",
+        desc: "",
+        icon: "✦",
+      },
+    ];
+
+    handleChange(
+      "overview",
+      "featureBar",
+      updated
+    );
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+
+  }}
+  className="
+    w-full
+    py-4
+    rounded-2xl
+    bg-[#D4AF37]
+    text-black
+    font-semibold
+    text-lg
+    hover:opacity-90
+    transition
+    mt-2
+  "
+>
+  + Add Feature
+</button>
     </div>
 
     {/* ================= PROPERTY HIGHLIGHTS HEADER ================= */}
@@ -3087,8 +3108,6 @@ const labelMap = {
         Select Amenities
       </h3>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-
         {AMENITIES.map((item) => {
 
           // ✅ FIXED → use amenities instead of highlights
@@ -3173,7 +3192,7 @@ const labelMap = {
             </label>
           );
         })}
-      </div>
+      
     </div>
 
     {/* ================= CUSTOM AMENITY ================= */}
@@ -3205,46 +3224,63 @@ const labelMap = {
       />
 
       {/* ICON SELECTOR */}
-      <div className="mt-6">
+<div className="mt-6">
 
-        <p className="text-sm text-white/60 mb-4">
-          Select Icon
-        </p>
+  <p className="text-sm text-white/60 mb-4">
+    Search & Select Icon
+  </p>
 
-        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+  <input
+    className="input mb-4"
+    placeholder="Search icons... (pool, gym, spa, golf, security)"
+    value={iconSearch}
+    onChange={(e) => setIconSearch(e.target.value)}
+  />
 
-          {CUSTOM_ICONS.map((item) => {
+  <div
+    className="
+      bg-black/20
+      border border-white/10
+      rounded-2xl
+      p-4
+      max-h-[500px]
+      overflow-y-auto
+    "
+  >
+    <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
 
-            const Icon = item.icon;
+      {filteredIcons.map((iconName) => {
+        const Icon = ICONS[iconName];
 
-            return (
-              <button
-                key={item.name}
-                type="button"
-                onClick={() =>
-                  setSelectedCustomIcon(
-                    item.name
-                  )
-                }
-                className={`
-                  p-4 rounded-2xl border
-                  flex flex-col items-center gap-2
-                  transition-all
-                  ${
-                    selectedCustomIcon ===
-                    item.name
-                      ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
-                      : "bg-white/5 border-white/10 text-white/70"
-                  }
-                `}
-              >
+        return (
+          <button
+  key={iconName}
+  type="button"
+  onClick={() => setSelectedCustomIcon(iconName)}
+  className={`
+    h-14
+    w-14
+    rounded-xl
+    border
+    flex
+    items-center
+    justify-center
+    transition-all
+    ${
+      selectedCustomIcon === iconName
+        ? "border-[#D4AF37] bg-[#D4AF37]/15 text-[#D4AF37]"
+        : "border-white/10 bg-white/5 text-white/80"
+    }
+  `}
+>
+  <Icon size={24} />
+</button>
+        );
+      })}
+    </div>
+  </div>
 
-                <Icon size={22} />
-              </button>
-            );
-          })}
-        </div>
-      </div>
+</div>
 
       {/* ADD BUTTON */}
       <button
