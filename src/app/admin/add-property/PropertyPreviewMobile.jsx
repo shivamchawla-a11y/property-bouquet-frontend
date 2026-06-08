@@ -44,8 +44,34 @@ import {
   Users,
   CalendarDays,
   IndianRupee,
+  ArrowUpDown,
+  Wind,
 
 } from "lucide-react";
+
+
+const PREDEFINED_AMENITY_ICONS = {
+  "Swimming Pool": Waves,
+  Gym: Dumbbell,
+  Clubhouse: Building2,
+  Garden: Trees,
+  Parking: Car,
+  Lift: ArrowUpDown,
+  Security: ShieldCheck,
+  "Power Backup": Zap,
+  Balcony: Home,
+  "Kids Play Area": Baby,
+  "Jogging Track": Footprints,
+  CCTV: Camera,
+  "Indoor Games": Gamepad2,
+  Spa: Sparkles,
+  "Shopping Center": ShoppingBag,
+  WiFi: Wifi,
+  "Fire Safety": ShieldCheck,
+  "Rainwater Harvesting": Trees,
+  Intercom: Phone,
+  "Air Conditioning": Wind,
+};
 
 const fadeUp = {
   hidden: {
@@ -1864,15 +1890,27 @@ const getShortLocation = (location) => {
                   "Amenity";
 
             const iconKey =
-              typeof h === "string"
-                ? "Home"
-                : h?.icon || "Home";
+  typeof h === "string"
+    ? h
+    : h?.icon || h?.heading;
 
-            const IconComponent =
-              CUSTOM_ICONS.find(
-                (item) =>
-                  item.name === iconKey
-              )?.icon || Home;
+let IconComponent;
+
+// OLD PREDEFINED AMENITIES
+if (PREDEFINED_AMENITY_ICONS[iconKey]) {
+  IconComponent =
+    PREDEFINED_AMENITY_ICONS[iconKey];
+}
+
+// CUSTOM REACT-ICON AMENITIES
+else if (ICONS[iconKey]) {
+  IconComponent = ICONS[iconKey];
+}
+
+// FALLBACK
+else {
+  IconComponent = Home;
+}
 
             return (
               <motion.div
@@ -1909,11 +1947,12 @@ const getShortLocation = (location) => {
                       justify-center
                     "
                   >
-                    <IconComponent
-                      size={24}
-                      className="text-[#d7b367]"
-                      strokeWidth={1.5}
-                    />
+                    {IconComponent && (
+                      <IconComponent
+                        size={34}
+                        className="text-[#d7b367]"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -2064,17 +2103,17 @@ const getShortLocation = (location) => {
       viewport={{ once: true, amount: 0.15 }}
       variants={staggerContainer}
       className="
-relative
-py-10
-sm:py-14
-md:py-24
-bg-[#f7f3ec]
-overflow-hidden
-"
+        relative
+        py-12
+        sm:py-14
+        md:py-20
+        bg-[#f7f3ec]
+        overflow-hidden
+        "
     >
 
       {/* SOFT GLOW */}
-      <div className="absolute top-0 left-0 w-[240px] sm:w-[420px] h-[240px] sm:h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
+      <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6">
 
@@ -2113,8 +2152,9 @@ overflow-hidden
             text-center
             text-[#183126]
             text-[28px]
-            sm:text-[42px]
-            md:text-[72px]
+            sm:text-[38px]
+            md:text-[56px]
+            lg:text-[72px]
             leading-[0.95]
             tracking-[-1px]
             md:tracking-[-2px]
@@ -2180,9 +2220,7 @@ overflow-hidden
         <motion.div
           variants={fadeUp}
           className="
-            mt-8
-            sm:mt-10
-            md:mt-14
+            mt-10
             md:mt-14
             bg-[#f9f7f3]
             border
@@ -2194,12 +2232,23 @@ overflow-hidden
           "
         >
 
-          <div className="grid lg:grid-cols-[280px_1fr]">
+          <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr]">
 
             {/* ================= LEFT TABS ================= */}
-            <div className="border-b lg:border-b-0 lg:border-r border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto scrollbar-hide">
+            <div className="border-b lg:border-b-0 lg:border-r border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
 
-              <div className="flex lg:block w-max lg:w-auto">
+              <div
+                className="
+                  flex
+                  lg:block
+                  gap-2
+                  lg:gap-0
+                  px-2
+                  lg:px-0
+                  overflow-x-auto
+                  scrollbar-hide
+                "
+              >
 
                 {gatedContent.floorPlans.map((u, i) => (
                   <button
@@ -2222,7 +2271,7 @@ overflow-hidden
                       transition-all
                       duration-300
                       min-w-[180px]
-                      sm:min-w-[220px]
+sm:min-w-[            220px]
                       lg:min-w-0
                       ${
                         activePlan === i
@@ -2299,9 +2348,19 @@ overflow-hidden
             </div>
 
             {/* ================= RIGHT CONTENT ================= */}
-            <div className="p-4 sm:p-6 lg:p-8">
+            <div className="p-5 sm:p-6 lg:p-8">
 
-              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-6 md:gap-8 lg:gap-10 items-start">
+              <div
+  className="
+    flex
+    flex-col-reverse
+    lg:grid
+    lg:grid-cols-[0.9fr_1.1fr]
+    gap-8
+    lg:gap-10
+    items-start
+  "
+>
 
                 {/* ================= DETAILS ================= */}
                 <div>
@@ -2309,9 +2368,9 @@ overflow-hidden
                   <h3
                     className="
                       text-[#1b3127]
-                      text-[26px]
-sm:text-[34px]
-md:text-[42px]
+                      text-[28px]
+                      sm:text-[34px]
+                      md:text-[42px]
                       leading-none
                     "
                     style={{
@@ -2336,7 +2395,7 @@ md:text-[42px]
                   <div className="w-14 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7 mb-6 sm:mb-7" />
 
                   {/* ================= METRICS ================= */}
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-4">
 
                     {[
                       {
@@ -2371,8 +2430,8 @@ md:text-[42px]
                         className="
                           border-r
                           even:border-r-0
-                          md:even:border-r
-                          md:last:border-r-0
+                          sm:even:border-r
+                          sm:last:border-r-0
                           border-[#e2d6c2]
                           pr-3
                         "
@@ -2385,9 +2444,8 @@ md:text-[42px]
                         <p
                           className="
                             text-[#1f352c]
-                            text-[14px]
-sm:text-[16px]
-lg:text-[18px]
+                            text-[16px]
+                            sm:text-[18px]
                             leading-snug
                             break-words
                           "
@@ -2441,8 +2499,8 @@ lg:text-[18px]
                         <p
                           className="
                             text-[#4f4f4f]
-                            text-[12px]
-sm:text-[14px]
+                            text-[13px]
+                            sm:text-[14px]
                             leading-[1.9]
                           "
                         >
@@ -2513,11 +2571,12 @@ sm:text-[14px]
         src={activeFloorPlan.image}
         alt="floor-plan"
         className="
-          w-full
-          h-[220px]
-          sm:h-[320px]
-          md:h-[500px]
-          object-contain
+        w-full
+        h-[220px]
+        sm:h-[320px]
+        md:h-[420px]
+        lg:h-[500px]
+        object-contain
         "
       />
 
@@ -2525,7 +2584,7 @@ sm:text-[14px]
 
       <>
         {/* PLACEHOLDER BLUR */}
-        <div className="relative h-[220px] sm:h-[320px] md:h-[500px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
+        <div className="relative h-[220px] sm:h-[320px] md:h-[420px] lg:h-[500px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
 
           {/* FAKE FLOOR PLAN LINES */}
           <div className="absolute inset-0 opacity-40">
@@ -2541,7 +2600,7 @@ sm:text-[14px]
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
 
             {/* LOCK ICON */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-2xl border border-white/50">
+            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-2xl border border-white/50">
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -2576,10 +2635,8 @@ sm:text-[14px]
               onClick={() => setShowModal(true)}
               className="
                 mt-7
-                h-[46px]
-                sm:h-[52px]
-                px-6
-                sm:px-8
+                h-[52px]
+                px-8
                 rounded-full
                 bg-[#03261d]
                 hover:bg-[#0a3328]

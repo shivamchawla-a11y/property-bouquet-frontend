@@ -44,8 +44,34 @@ import {
   Users,
   CalendarDays,
   IndianRupee,
+  ArrowUpDown,
+  Wind,
 
 } from "lucide-react";
+
+
+const PREDEFINED_AMENITY_ICONS = {
+  "Swimming Pool": Waves,
+  Gym: Dumbbell,
+  Clubhouse: Building2,
+  Garden: Trees,
+  Parking: Car,
+  Lift: ArrowUpDown,
+  Security: ShieldCheck,
+  "Power Backup": Zap,
+  Balcony: Home,
+  "Kids Play Area": Baby,
+  "Jogging Track": Footprints,
+  CCTV: Camera,
+  "Indoor Games": Gamepad2,
+  Spa: Sparkles,
+  "Shopping Center": ShoppingBag,
+  WiFi: Wifi,
+  "Fire Safety": ShieldCheck,
+  "Rainwater Harvesting": Trees,
+  Intercom: Phone,
+  "Air Conditioning": Wind,
+};
 
 const fadeUp = {
   hidden: {
@@ -2596,12 +2622,26 @@ id="amenities"
 
           const iconKey =
   typeof h === "string"
-    ? "FaHome"
-    : h?.icon || "FaHome";
+    ? h
+    : h?.icon || h?.heading;
 
-const IconComponent =
-  ICONS[iconKey] ||
-  FaIcons.FaHome;
+let IconComponent;
+
+// OLD PREDEFINED AMENITIES
+if (PREDEFINED_AMENITY_ICONS[iconKey]) {
+  IconComponent =
+    PREDEFINED_AMENITY_ICONS[iconKey];
+}
+
+// CUSTOM REACT-ICON AMENITIES
+else if (ICONS[iconKey]) {
+  IconComponent = ICONS[iconKey];
+}
+
+// FALLBACK
+else {
+  IconComponent = Home;
+}
 
           // ================= DESCRIPTION =================
           
@@ -2649,10 +2689,12 @@ const IconComponent =
                     justify-center
                   "
                 >
-                  <IconComponent
-                    size={34}
-                    className="text-[#d7b367]"
-                  />
+                  {IconComponent && (
+                    <IconComponent
+                      size={34}
+                      className="text-[#d7b367]"
+                    />
+                  )}
                 </div>
               </div>
 
