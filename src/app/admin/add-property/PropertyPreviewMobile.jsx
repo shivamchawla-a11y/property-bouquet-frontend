@@ -100,52 +100,24 @@ const staggerContainer = {
   },
 };
 
-const amenityIcons = {
-  "Swimming Pool": <Waves size={28} />,
-  Gym: <Dumbbell size={28} />,
-  Clubhouse: <Building2 size={28} />,
-  Garden: <Trees size={28} />,
-  Parking: <Car size={28} />,
-  Lift: <ArrowUpCircle size={28} />,
-  Security: <ShieldCheck size={28} />,
-  "Power Backup": <Zap size={28} />,
-  Balcony: <Home size={28} />,
-  "Kids Play Area": <Baby size={28} />,
-  "Jogging Track": <Footprints size={28} />,
-  CCTV: <Camera size={28} />,
-  "Indoor Games": <Gamepad2 size={28} />,
-  Spa: <Sparkles size={28} />,
-  "Shopping Center": <ShoppingBag size={28} />,
+
+import * as FaIcons from "react-icons/fa";
+import * as MdIcons from "react-icons/md";
+import * as GiIcons from "react-icons/gi";
+import * as TbIcons from "react-icons/tb";
+import * as IoIcons from "react-icons/io5";
+import * as BsIcons from "react-icons/bs";
+
+const ICONS = {
+  ...FaIcons,
+  ...MdIcons,
+  ...GiIcons,
+  ...TbIcons,
+  ...IoIcons,
+  ...BsIcons,
 };
 
-const CUSTOM_ICONS = [
-  { name: "Home", icon: Home },
-  { name: "Swimming", icon: Waves },
-  { name: "Gym", icon: Dumbbell },
-  { name: "Club", icon: Building2 },
-  { name: "Garden", icon: Trees },
-  { name: "Parking", icon: Car },
-  { name: "Lift", icon: ArrowUpCircle },
-  { name: "Security", icon: ShieldCheck },
-  { name: "Power", icon: Zap },
-  { name: "Kids", icon: Baby },
-  { name: "Track", icon: Footprints },
-  { name: "CCTV", icon: Camera },
-  { name: "Games", icon: Gamepad2 },
-  { name: "Spa", icon: Sparkles },
-  { name: "Shopping", icon: ShoppingBag },
-  { name: "Cafe", icon: Coffee },
-  { name: "School", icon: School },
-  { name: "Hospital", icon: Hospital },
-  { name: "Wifi", icon: Wifi },
-  { name: "Restaurant", icon: Utensils },
-  { name: "Cinema", icon: Film },
-  { name: "Temple", icon: Landmark },
-  { name: "Bus", icon: Bus },
-  { name: "Store", icon: Store },
-];
-
-export default function PropertyPreviewMobile({ form, insideAdmin = false, developers = [] }) {
+export default function PropertyPreview({ form, insideAdmin = false, developers = [] }) {
   if (!form) return null;
 
 const {
@@ -291,6 +263,41 @@ useEffect(() => {
 const gallery =
   media.gallery?.filter((img) => img && img.trim()) || [];
 
+  // ================= METRIC ICONS =================
+const metricIcons = {
+  ...FaIcons,
+  ...MdIcons,
+  ...GiIcons,
+  ...TbIcons,
+  ...IoIcons,
+  ...BsIcons,
+};
+
+// ================= METRICS (BACKWARD COMPATIBLE) =================
+const displayMetrics = [
+  {
+    label: "Acres",
+    value: keyMetrics?.landArea || "1.83",
+    icon: "FaThLarge",
+  },
+  {
+    label: "Towers",
+    value: keyMetrics?.totalTowers || "2",
+    icon: "FaBuilding",
+  },
+  {
+    label: "Units",
+    value: keyMetrics?.totalUnits || "95",
+    icon: "FaUsers",
+  },
+  {
+    label: "Possession",
+    value: keyMetrics?.possession || "May 2030",
+    icon: "FaCalendarAlt",
+  },
+
+  ...(keyMetrics?.customMetrics || []),
+];
   
 
 /* KEYBOARD NAVIGATION */
@@ -1154,57 +1161,68 @@ const getShortLocation = (location) => {
           "
         >
 
-          <div className="p-4 text-center border-r border-b border-white/10">
-            <LayoutGrid
-              size={15}
-              className="mx-auto mb-2 text-[#d8b46b]"
-            />
-            <p className="text-white text-[18px]">
-              {keyMetrics?.landArea || "1.83"}
-            </p>
-            <p className="text-white/60 text-[9px] uppercase">
-              Acres
-            </p>
-          </div>
+          {displayMetrics.map((metric, index) => {
+  const Icon =
+    metricIcons[metric.icon] || Home;
 
-          <div className="p-4 text-center border-b border-white/10">
-            <Building2
-              size={15}
-              className="mx-auto mb-2 text-[#d8b46b]"
-            />
-            <p className="text-white text-[18px]">
-              {keyMetrics?.totalTowers || "2"}
-            </p>
-            <p className="text-white/60 text-[9px] uppercase">
-              Towers
-            </p>
-          </div>
+  const isLastOdd =
+    displayMetrics.length % 2 !== 0 &&
+    index === displayMetrics.length - 1;
 
-          <div className="p-4 text-center border-r border-b border-white/10">
-            <Users
-              size={15}
-              className="mx-auto mb-2 text-[#d8b46b]"
-            />
-            <p className="text-white text-[18px]">
-              {keyMetrics?.totalUnits || "95"}
-            </p>
-            <p className="text-white/60 text-[9px] uppercase">
-              Units
-            </p>
-          </div>
+  return (
+    <div
+      key={index}
+      className={`
+        p-4
+        text-center
+        border-white/10
+        ${
+          index % 2 === 0
+            ? "border-r"
+            : ""
+        }
+        ${
+          index <
+          displayMetrics.length - 2
+            ? "border-b"
+            : ""
+        }
+        ${
+          isLastOdd
+            ? "col-span-2"
+            : ""
+        }
+      `}
+    >
+      <Icon
+        size={15}
+        className="mx-auto mb-2 text-[#d8b46b]"
+      />
 
-          <div className="p-4 text-center border-b border-white/10">
-            <CalendarDays
-              size={15}
-              className="mx-auto mb-2 text-[#d8b46b]"
-            />
-            <p className="text-white text-[16px]">
-              {keyMetrics?.possession || "2030"}
-            </p>
-            <p className="text-white/60 text-[9px] uppercase">
-              Possession
-            </p>
-          </div>
+      <p
+        className="text-white text-[18px]"
+        style={{
+          fontFamily:
+            "Georgia, Times New Roman, serif",
+        }}
+      >
+        {metric.value}
+      </p>
+
+      <p
+        className="
+          text-white/60
+          text-[9px]
+          uppercase
+          tracking-[1.5px]
+          mt-1
+        "
+      >
+        {metric.label}
+      </p>
+    </div>
+  );
+})}
 
           <div className="col-span-2 p-5 text-center">
             <IndianRupee

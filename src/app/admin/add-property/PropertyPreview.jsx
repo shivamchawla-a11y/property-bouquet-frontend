@@ -263,6 +263,41 @@ useEffect(() => {
 const gallery =
   media.gallery?.filter((img) => img && img.trim()) || [];
 
+  // ================= METRIC ICONS =================
+const metricIcons = {
+  ...FaIcons,
+  ...MdIcons,
+  ...GiIcons,
+  ...TbIcons,
+  ...IoIcons,
+  ...BsIcons,
+};
+
+// ================= METRICS (BACKWARD COMPATIBLE) =================
+const displayMetrics = [
+  {
+    label: "Acres",
+    value: keyMetrics?.landArea || "1.83",
+    icon: "FaThLarge",
+  },
+  {
+    label: "Towers",
+    value: keyMetrics?.totalTowers || "2",
+    icon: "FaBuilding",
+  },
+  {
+    label: "Units",
+    value: keyMetrics?.totalUnits || "95",
+    icon: "FaUsers",
+  },
+  {
+    label: "Possession",
+    value: keyMetrics?.possession || "May 2030",
+    icon: "FaCalendarAlt",
+  },
+
+  ...(keyMetrics?.customMetrics || []),
+];
   
 
 /* KEYBOARD NAVIGATION */
@@ -1530,136 +1565,74 @@ const getShortLocation = (location) => {
             }}
           />
 
-          <div className="
-            relative
-            z-10
-            grid
-            grid-cols-2
-            md:grid-cols-5
-          ">
+          <div
+  className="
+    relative
+    z-10
+    grid
+    grid-cols-2
+    md:grid-cols-5
+  "
+>
+  {displayMetrics.map((metric, index) => {
 
-            {/* ACRES */}
-            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-b md:border-b-0 border-white/10">
+    const Icon =
+      metricIcons[metric.icon] ||
+      FaIcons.FaHome;
 
-              <div className="flex justify-center mb-2">
-                <LayoutGrid
-                  size={16}
-                  className="text-[#d8b46b]"
-                />
-              </div>
+    return (
+      <div
+        key={index}
+        className="
+          py-4
+          lg:py-5
+          px-3
+          sm:px-4
+          text-center
+          border-r
+          border-white/10
+        "
+      >
+        <div className="flex justify-center mb-2">
+          <Icon
+            size={16}
+            className="text-[#d8b46b]"
+          />
+        </div>
 
-              <p
-                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                {keyMetrics?.landArea || "1.83"}
-              </p>
+        <p
+          className="
+            text-[20px]
+            sm:text-[22px]
+            md:text-[28px]
+            leading-none
+            text-white
+            font-light
+          "
+          style={{
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+          }}
+        >
+          {metric.value}
+        </p>
 
-              <p
-                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
-                Acres
-              </p>
-            </div>
-
-            {/* TOWERS */}
-            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-b md:border-b-0 md:border-r border-white/10">
-
-              <div className="flex justify-center mb-2">
-                <Building2
-                  size={16}
-                  className="text-[#d8b46b]"
-                />
-              </div>
-
-              <p
-                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                {keyMetrics?.totalTowers || "2"}
-              </p>
-
-              <p
-                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
-                Towers
-              </p>
-            </div>
-
-            {/* UNITS */}
-            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-white/10">
-
-              <div className="flex justify-center mb-2">
-                <Users
-                  size={16}
-                  className="text-[#d8b46b]"
-                />
-              </div>
-
-              <p
-                className="text-[20px] sm:text-[22px] md:text-[28px] leading-none text-white font-light"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                {keyMetrics?.totalUnits || "95"}
-              </p>
-
-              <p
-                className="mt-1 text-white/55 text-[9px] sm:text-[10px] tracking-[1.5px] sm:tracking-[2px] uppercase"
-                style={{
-                  fontFamily:
-                    "Inter, sans-serif",
-                }}
-              >
-                Units
-              </p>
-            </div>
-
-            {/* POSSESSION */}
-            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center border-r border-white/10">
-
-              <div className="flex justify-center mb-2">
-                <CalendarDays
-                  size={16}
-                  className="text-[#d8b46b]"
-                />
-              </div>
-
-              <p
-                className="text-white/60 text-[9px] sm:text-[10px] tracking-[1.2px] sm:tracking-[1.5px] uppercase mb-2"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                Possession
-              </p>
-
-              <p
-                className="text-[18px] sm:text-[20px] md:text-[28px] leading-none text-white font-[400]"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                {keyMetrics?.possession || "May 2030"}
-              </p>
-            </div>
+        <p
+          className="
+            mt-1
+            text-white/55
+            text-[9px]
+            sm:text-[10px]
+            tracking-[1.5px]
+            sm:tracking-[2px]
+            uppercase
+          "
+        >
+          {metric.label}
+        </p>
+      </div>
+    );
+  })}
 
             {/* PRICE */}
             <div className="py-4 lg:py-5 px-3 sm:px-4 text-center col-span-2 md:col-span-1">

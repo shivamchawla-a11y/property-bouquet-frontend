@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   ArrowRight,
   TrendingUp,
@@ -104,6 +105,38 @@ const advisoryPoints = [
 ];
 
 export default function LuxuryInsightsSection() {
+
+  const [investment, setInvestment] = useState(100000000); // 10 Cr
+const [years, setYears] = useState(5);
+const [appreciation, setAppreciation] = useState(20);
+
+const projectedValue =
+  investment *
+  Math.pow(
+    1 + appreciation / 100,
+    years
+  );
+
+const totalReturns =
+  projectedValue - investment;
+
+const roi =
+  ((projectedValue - investment) /
+    investment) *
+  100;
+
+  const formatCurrency = (value) => {
+  if (value >= 10000000) {
+    return `₹ ${(value / 10000000).toFixed(2)} Cr`;
+  }
+
+  if (value >= 100000) {
+    return `₹ ${(value / 100000).toFixed(2)} L`;
+  }
+
+  return `₹ ${value.toLocaleString("en-IN")}`;
+};
+  
   return (
     <section className="bg-[#f6f3ee] pb-24">
 
@@ -463,35 +496,81 @@ export default function LuxuryInsightsSection() {
 
         <div className="mt-10 space-y-8">
 
-          {[
-            "Investment Amount",
-            "Holding Period",
-            "Expected Appreciation",
-          ].map((item, index) => (
-            <div key={index}>
+          <div className="mt-10 space-y-8">
 
-              <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+  {/* INVESTMENT */}
+  <div>
+  <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+    <span>Investment Amount</span>
 
-                <span>{item}</span>
+    <span>
+      {formatCurrency(investment)}
+    </span>
+  </div>
 
-                <span>
-                  {index === 0
-                    ? "₹ 10,00,00,000"
-                    : index === 1
-                    ? "5 Years"
-                    : "20%"}
-                </span>
-              </div>
+  <input
+    type="range"
+    min="1000000"
+    max="500000000"
+    step="1000000"
+    value={investment}
+    onChange={(e) =>
+      setInvestment(Number(e.target.value))
+    }
+    className="
+      luxury-slider
+      w-full
+    "
+  />
+</div>
 
-              {/* SLIDER */}
-              <div className="relative h-[3px] rounded-full bg-white/10 overflow-visible">
+  {/* YEARS */}
+  <div>
+  <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+    <span>Holding Period</span>
 
-                <div className="absolute left-0 top-0 h-full w-[65%] bg-gradient-to-r from-[#b98b3c] to-[#d9b56c]" />
+    <span>{years} Years</span>
+  </div>
 
-                <div className="absolute left-[65%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#d4ae67] border-[3px] border-[#08201b] shadow-[0_0_15px_rgba(212,174,103,0.7)]" />
-              </div>
-            </div>
-          ))}
+  <input
+    type="range"
+    min="1"
+    max="20"
+    value={years}
+    onChange={(e) =>
+      setYears(Number(e.target.value))
+    }
+    className="
+      luxury-slider
+      w-full
+    "
+  />
+</div>
+
+  {/* APPRECIATION */}
+ <div>
+  <div className="flex items-center justify-between text-[12px] text-white/70 mb-3">
+    <span>Expected Appreciation</span>
+
+    <span>{appreciation}%</span>
+  </div>
+
+  <input
+    type="range"
+    min="1"
+    max="30"
+    value={appreciation}
+    onChange={(e) =>
+      setAppreciation(Number(e.target.value))
+    }
+    className="
+      luxury-slider
+      w-full
+    "
+  />
+</div>
+
+</div>
         </div>
       </div>
     </div>
@@ -512,7 +591,7 @@ export default function LuxuryInsightsSection() {
           </p>
 
           <h3 className="text-[#d4ae67] text-[48px] leading-none font-semibold mt-5">
-            ₹ 24.88 Cr*
+            {formatCurrency(projectedValue)}
           </h3>
         </div>
 
@@ -526,7 +605,7 @@ export default function LuxuryInsightsSection() {
             </span>
 
             <span className="text-[28px] text-white font-semibold">
-              ₹ 14.88 Cr
+              {formatCurrency(totalReturns)}
             </span>
           </div>
 
@@ -539,7 +618,7 @@ export default function LuxuryInsightsSection() {
             </span>
 
             <span className="text-[30px] text-[#d4ae67] font-semibold">
-              148.8%
+              {roi.toFixed(1)}%
             </span>
           </div>
         </div>

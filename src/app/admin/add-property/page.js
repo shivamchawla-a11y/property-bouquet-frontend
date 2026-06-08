@@ -126,20 +126,16 @@ export default function AddProperty() {
 
   // ================= KEY METRICS =================
   keyMetrics: {
-    landArea: "",
+  landArea: "",
+  possession: "",
+  status: "",
+  totalUnits: "",
+  totalTowers: "",
+  floors: "",
+  reraNumber: "",
 
-    possession: "",
-
-    status: "",
-
-    totalUnits: "",
-
-    totalTowers: "",
-
-    floors: "",
-
-    reraNumber: "",
-  },
+  customMetrics: [],
+},
 
   // ================= OVERVIEW =================
   overview: {
@@ -871,10 +867,17 @@ const handleSubmit = async () => {
       },
 
       keyMetrics: {
-        ...form.keyMetrics,
-        totalUnits: Number(form.keyMetrics.totalUnits) || 0,
-        totalTowers: Number(form.keyMetrics.totalTowers) || 0,
-      },
+  ...form.keyMetrics,
+
+  customMetrics:
+    form.keyMetrics.customMetrics || [],
+
+  totalUnits:
+    Number(form.keyMetrics.totalUnits) || 0,
+
+  totalTowers:
+    Number(form.keyMetrics.totalTowers) || 0,
+},
 
       configurationSection: {
         ...form.configurationSection,
@@ -993,6 +996,12 @@ const handleSaveDraft = async () => {
     const payload = {
   ...form,
   draftId,
+
+  keyMetrics: {
+  ...form.keyMetrics,
+  customMetrics:
+    form.keyMetrics.customMetrics || [],
+},
 
   coreDetails: {
     ...form.coreDetails,
@@ -2138,6 +2147,220 @@ const labelMap = {
     />
 
   </div>
+</div>
+
+{/* ================= CUSTOM KEY METRICS ================= */}
+
+<div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+
+  <div className="mb-5">
+    <h3 className="font-semibold text-xl text-white">
+      Custom Key Metrics
+    </h3>
+
+    <p className="text-white/50 text-sm mt-1">
+      Add unlimited metrics with icons
+    </p>
+  </div>
+
+  {(form.keyMetrics.customMetrics || []).map(
+    (item, index) => {
+
+      const SelectedIcon =
+        ICONS[item.icon] || FaIcons.FaBuilding;
+
+      return (
+        <div
+          key={index}
+          className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+        >
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-4">
+
+            <h4 className="font-semibold text-white">
+              Metric #{index + 1}
+            </h4>
+
+            <button
+              type="button"
+              onClick={() => {
+
+                const updated =
+                  form.keyMetrics.customMetrics.filter(
+                    (_, i) => i !== index
+                  );
+
+                handleChange(
+                  "keyMetrics",
+                  "customMetrics",
+                  updated
+                );
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-lg"
+            >
+              Delete
+            </button>
+          </div>
+
+          {/* LABEL */}
+          <input
+            className="input mb-4"
+            placeholder="Metric Label"
+            value={item.label || ""}
+            onChange={(e) => {
+
+              const updated = [
+                ...(form.keyMetrics.customMetrics || [])
+              ];
+
+              updated[index].label =
+                e.target.value;
+
+              handleChange(
+                "keyMetrics",
+                "customMetrics",
+                updated
+              );
+            }}
+          />
+
+          {/* VALUE */}
+          <input
+            className="input mb-4"
+            placeholder="Metric Value"
+            value={item.value || ""}
+            onChange={(e) => {
+
+              const updated = [
+                ...(form.keyMetrics.customMetrics || [])
+              ];
+
+              updated[index].value =
+                e.target.value;
+
+              handleChange(
+                "keyMetrics",
+                "customMetrics",
+                updated
+              );
+            }}
+          />
+
+          {/* SELECTED ICON */}
+          <div className="mb-4 flex items-center gap-3">
+
+            <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center">
+
+              <SelectedIcon
+                size={22}
+                className="text-[#D4AF37]"
+              />
+            </div>
+
+            <div>
+              <p className="text-white text-sm">
+                Selected Icon
+              </p>
+
+              <p className="text-white/50 text-xs">
+                {item.icon || "FaBuilding"}
+              </p>
+            </div>
+          </div>
+
+          {/* SEARCH ICON */}
+          <input
+            className="input mb-4"
+            placeholder="Search icon..."
+            value={iconSearch}
+            onChange={(e) =>
+              setIconSearch(e.target.value)
+            }
+          />
+
+          {/* ICON GRID */}
+          <div className="grid grid-cols-6 md:grid-cols-8 gap-3 max-h-[250px] overflow-y-auto p-2 rounded-xl bg-black/20 border border-white/10">
+
+            {filteredIcons.map((iconName) => {
+
+              const IconComponent =
+                ICONS[iconName];
+
+              return (
+                <button
+                  key={iconName}
+                  type="button"
+                  onClick={() => {
+
+                    const updated = [
+                      ...(form.keyMetrics
+                        .customMetrics || [])
+                    ];
+
+                    updated[index].icon =
+                      iconName;
+
+                    handleChange(
+                      "keyMetrics",
+                      "customMetrics",
+                      updated
+                    );
+                  }}
+                  className={`h-12 rounded-xl flex items-center justify-center transition border ${
+                    item.icon === iconName
+                      ? "border-[#D4AF37] bg-[#D4AF37]/20"
+                      : "border-white/10 bg-white/5 hover:bg-white/10"
+                  }`}
+                  title={iconName}
+                >
+                  <IconComponent
+                    size={18}
+                    className="text-white"
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+        </div>
+      );
+    }
+  )}
+
+  <button
+    type="button"
+    onClick={() => {
+
+      const updated = [
+        ...(form.keyMetrics.customMetrics || []),
+        {
+          label: "",
+          value: "",
+          icon: "FaBuilding",
+        },
+      ];
+
+      handleChange(
+        "keyMetrics",
+        "customMetrics",
+        updated
+      );
+    }}
+    className="
+      w-full
+      py-4
+      rounded-2xl
+      bg-[#D4AF37]
+      text-black
+      font-semibold
+      text-lg
+      hover:opacity-90
+      transition
+    "
+  >
+    + Add Metric
+  </button>
+
 </div>
 
     {/* ================= TAGLINES ================= */}
