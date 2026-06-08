@@ -112,196 +112,261 @@ export default function TrendingProjects() {
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
               {trendingProperties.map((item, index) => (
-                <Link
-                  key={item._id}
-                  href={`/${item.slug}`}
-                  className="block h-full"
-                >
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: 40,
-                    }}
-                    whileInView={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    transition={{
-                      duration: 0.6,
-                      delay: index * 0.1,
-                    }}
-                    viewport={{
-                      once: true,
-                    }}
-                    whileHover={{
-                      y: -8,
-                    }}
-                    className="
-                      group
-                      relative
-                      rounded-[24px]
-                      overflow-hidden
-                      border
-                      border-[#c89d58]/20
-                      h-full
-                    "
-                  >
+  <Link
+    key={item._id}
+    href={`/${item.slug}`}
+    className="block h-full"
+  >
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+      }}
+      viewport={{
+        once: true,
+      }}
+      whileHover={{
+        y: -10,
+        scale: 1.01,
+      }}
+      className="
+        group
+        bg-white
+        rounded-[24px]
+        overflow-hidden
+        border
+        border-[#ebe5da]
+        shadow-[0_12px_40px_rgba(0,0,0,0.05)]
+        flex
+        flex-col
+        h-full
+        transition-all
+        duration-500
+        hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+      "
+    >
+      {/* IMAGE */}
+      <div className="relative h-[220px] overflow-hidden">
 
-                    {/* IMAGE */}
-                    <div className="relative h-[520px]">
+        <img
+          src={
+            item?.media?.heroImageUrl ||
+            "/placeholder-property.jpg"
+          }
+          alt={item?.coreDetails?.title}
+          className="
+            w-full
+            h-full
+            object-cover
+            transition-transform
+            duration-700
+            group-hover:scale-110
+          "
+        />
 
-                      <img
-                        src={
-                          item?.media?.heroImageUrl ||
-                          "/placeholder-property.jpg"
-                        }
-                        alt={item?.coreDetails?.title}
-                        className="
-                          w-full
-                          h-full
-                          object-cover
-                          transition-transform
-                          duration-700
-                          group-hover:scale-110
-                        "
-                      />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                      {/* OVERLAY */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+        {/* TRENDING BADGE */}
+        <div
+          className="
+            absolute
+            top-4
+            left-4
+            bg-[#c89948]
+            text-white
+            text-[10px]
+            tracking-[1.5px]
+            px-4
+            py-2
+            rounded-full
+            font-semibold
+            flex
+            items-center
+            gap-2
+          "
+        >
+          <Star
+            size={10}
+            fill="currentColor"
+          />
+          TRENDING
+        </div>
 
-                      {/* BADGE */}
-                      <div
-                        className="
-                          absolute
-                          top-5
-                          left-5
-                          flex
-                          items-center
-                          gap-2
-                          bg-[#c89948]
-                          text-white
-                          px-4
-                          py-2
-                          rounded-full
-                          text-[11px]
-                          font-semibold
-                          tracking-[1px]
-                        "
-                      >
-                        <Star
-                          size={12}
-                          fill="currentColor"
-                        />
-                        TRENDING
-                      </div>
+      </div>
 
-                      {/* CONTENT */}
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
+      <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
 
-                        {/* TITLE */}
-                        <h3
-                          className="
-                            text-[28px]
-                            xl:text-[34px]
-                            text-white
-                            font-heading
-                            leading-tight
-                            
-                          "
-                        >
-                          {item?.coreDetails?.title}
-                        </h3>
+      {/* CONTENT */}
+      <div className="p-5 flex flex-col flex-1">
 
-                        {/* LOCATION */}
-                        <div className="flex items-center gap-2 mt-3 text-white/70">
+        {/* TITLE */}
+        <h3
+          className="
+            text-[22px]
+            xl:text-[24px]
+            text-[#171717]
+            font-heading
+            leading-tight
+            line-clamp-2
+          "
+        >
+          {item?.coreDetails?.title}
+        </h3>
 
-                          <MapPin size={14} />
+        {/* LOCATION */}
+        <div className="flex items-start gap-2 text-black/60 mt-2">
 
-                          <span className="text-[13px] line-clamp-2">
-                            {item?.locationData
-                              ?.locationName ||
-                              item?.locationData
-                                ?.customLocation ||
-                              "Prime Location"}
-                          </span>
+          <MapPin
+            size={15}
+            className="mt-[2px] shrink-0"
+          />
 
-                        </div>
+          <span
+            className="
+              text-[13px]
+              leading-snug
+              line-clamp-2
+            "
+          >
+            {item?.locationData?.locationName ||
+              item?.locationData?.customLocation ||
+              "Prime Location"}
+          </span>
 
-                        {/* TRENDING TEXT */}
-                        <div className="mt-5 flex items-center gap-2 text-[#f0bc63]">
+        </div>
 
-                          <Star
-                            size={15}
-                            fill="currentColor"
-                          />
+        {/* TRENDING LABEL */}
+        <div className="flex items-center gap-2 mt-3 text-[#bf8b37]">
 
-                          <span className="text-[13px] font-medium">
-                            Trending Investment Opportunity
-                          </span>
+          <Star
+            size={13}
+            fill="currentColor"
+          />
 
-                        </div>
+          <span className="text-[12px] font-medium">
+            Trending Investment Opportunity
+          </span>
 
-                        {/* STATS */}
-                        <div className="grid grid-cols-3 gap-4 mt-8 text-white">
+        </div>
 
-                          <div>
-                            <p className="text-[11px] text-white/45 uppercase tracking-[1px]">
-                              Price
-                            </p>
+        {/* DETAILS */}
+        <div
+          className="
+            flex
+            items-center
+            flex-wrap
+            gap-x-4
+            gap-y-2
+            mt-4
+            text-black/65
+          "
+        >
 
-                            <h4 className="text-[18px] font-semibold mt-2">
-                              ₹
-                              {formatPrice(
-                                item?.coreDetails
-                                  ?.startingPrice ||
-                                  item
-                                    ?.unitConfigurations?.[0]
-                                    ?.price ||
-                                  0
-                              )}
-                            </h4>
-                          </div>
+          <div className="text-[13px]">
+            {item?.unitConfigurations?.[0]?.bedrooms
+              ? `${item.unitConfigurations[0].bedrooms} Beds`
+              : "Luxury"}
+          </div>
 
-                          
+          <div className="text-[13px]">
+            {item?.unitConfigurations?.[0]?.bathrooms
+              ? `${item.unitConfigurations[0].bathrooms} Baths`
+              : "Residence"}
+          </div>
 
-                        </div>
+          <div className="text-[13px]">
+            {item?.unitConfigurations?.[0]?.area
+              ? `${item.unitConfigurations[0].area} Sq.Ft.`
+              : "Premium"}
+          </div>
 
-                        {/* CTA */}
-                        <div
-                          className="
-                            mt-8
-                            pt-5
-                            border-t
-                            border-white/10
-                            flex
-                            items-center
-                            justify-between
-                          "
-                        >
-                          <span
-                            className="
-                              text-[#d6a454]
-                              text-[12px]
-                              uppercase
-                              tracking-[1.5px]
-                              font-semibold
-                            "
-                          >
-                            Explore Investment
-                          </span>
+        </div>
 
-                          <ArrowRight
-                            size={18}
-                            className="text-[#d6a454]"
-                          />
-                        </div>
+        {/* DIVIDER */}
+        <div className="mt-4 border-t border-[#ece7df]" />
 
-                      </div>
-                    </div>
+        {/* PRICE */}
+        <div className="mt-3">
 
-                  </motion.div>
-                </Link>
-              ))}
+          <p
+            className="
+              text-[11px]
+              uppercase
+              tracking-[1px]
+              text-black/45
+              mb-2
+            "
+          >
+            Starting Price
+          </p>
+
+          <h4
+            className="
+              text-[24px]
+              font-bold
+              text-[#111]
+              leading-none
+            "
+          >
+            ₹
+            {formatPrice(
+              item?.coreDetails?.startingPrice ||
+                item?.unitConfigurations?.[0]?.price ||
+                0
+            )}
+          </h4>
+
+        </div>
+
+        {/* CTA */}
+        <div
+          className="
+            mt-4
+            pt-4
+            flex
+            items-center
+            justify-between
+            border-t
+            border-[#ece7df]
+          "
+        >
+
+          <span
+            className="
+              text-[12px]
+              tracking-[1.5px]
+              uppercase
+              text-[#bf8b37]
+              font-semibold
+            "
+          >
+            Explore Investment
+          </span>
+
+          <ArrowRight
+            size={18}
+            className="
+              text-[#bf8b37]
+              transition-transform
+              duration-300
+              group-hover:translate-x-1
+            "
+          />
+
+        </div>
+
+      </div>
+    </motion.div>
+  </Link>
+))}
 
             </div>
 

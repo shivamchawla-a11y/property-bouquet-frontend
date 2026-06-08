@@ -129,26 +129,27 @@ export default function FeaturedProjects() {
         once: true,
       }}
       whileHover={{
-        y: -8,
+        y: -10,
+        scale: 1.01,
       }}
       className="
-group
-bg-white
-rounded-[22px]
-overflow-hidden
-border
-border-[#e7e2d8]
-shadow-[0_15px_45px_rgba(0,0,0,0.06)]
-h-full
-flex
-flex-col
-transition-all
-duration-500
-hover:shadow-[0_25px_60px_rgba(0,0,0,0.12)]
-"
+        group
+        bg-white
+        rounded-[24px]
+        overflow-hidden
+        border
+        border-[#ebe5da]
+        shadow-[0_12px_40px_rgba(0,0,0,0.05)]
+        flex
+        flex-col
+        h-full
+        transition-all
+        duration-500
+        hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+      "
     >
       {/* IMAGE */}
-      <div className="relative h-[260px] overflow-hidden">
+      <div className="relative h-[220px] overflow-hidden">
         <img
           src={
             item?.media?.heroImageUrl ||
@@ -156,19 +157,17 @@ hover:shadow-[0_25px_60px_rgba(0,0,0,0.12)]
           }
           alt={item?.coreDetails?.title}
           className="
-w-full
-h-full
-object-cover
-transition-transform
-duration-700
-group-hover:scale-110
-"
+            w-full
+            h-full
+            object-cover
+            transition-transform
+            duration-700
+            group-hover:scale-110
+          "
         />
 
-        {/* GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-        {/* BADGE */}
         <div
           className="
             absolute
@@ -192,32 +191,35 @@ group-hover:scale-110
 
       {/* CONTENT */}
       <div className="p-5 flex flex-col flex-1">
+
         {/* TITLE */}
         <h3
-  className="
-    text-[21px]
-    xl:text-[24px]
-    text-[#171717]
-    font-heading
-    leading-[1.2]
-    h-[58px]
-    overflow-hidden
-  "
->
+          className="
+            text-[22px]
+            xl:text-[24px]
+            text-[#171717]
+            font-heading
+            leading-tight
+            line-clamp-2
+          "
+        >
           {item?.coreDetails?.title}
         </h3>
 
         {/* LOCATION */}
-        <div className="flex items-center gap-2 text-black/60 mt-3">
-          <MapPin size={15} />
+        <div className="flex items-start gap-2 text-black/60 mt-2">
+          <MapPin
+            size={15}
+            className="mt-[2px] shrink-0"
+          />
 
           <span
-  className="
-  text-[14px]
-  leading-relaxed
-  line-clamp-2
-"
->
+            className="
+              text-[13px]
+              leading-snug
+              line-clamp-2
+            "
+          >
             {item?.locationData?.locationName ||
               item?.locationData?.customLocation ||
               "Prime Location"}
@@ -230,10 +232,10 @@ group-hover:scale-110
             flex
             items-center
             flex-wrap
-            gap-4
-            mt-6
+            gap-x-4
+            gap-y-2
+            mt-4
             text-black/65
-            min-h-[28px]
           "
         >
           <div className="flex items-center gap-2">
@@ -264,10 +266,10 @@ group-hover:scale-110
         </div>
 
         {/* DIVIDER */}
-        <div className="mt-6 border-t border-[#ece7df]" />
+        <div className="mt-4 border-t border-[#ece7df]" />
 
         {/* PRICE */}
-        <div className="mt-5">
+        <div className="mt-3">
           <p
             className="
               text-[11px]
@@ -281,34 +283,34 @@ group-hover:scale-110
           </p>
 
           <h4
-  className="
-  text-[22px]
-  xl:text-[26px]
-  font-semibold
-  text-[#111]
-  font-body
-"
->
-  ₹{formatPrice(
-    item?.coreDetails?.startingPrice ||
-      item?.unitConfigurations?.[0]?.price ||
-      0
-  )}
-</h4>
+            className="
+              text-[24px]
+              font-bold
+              text-[#111]
+              leading-none
+            "
+          >
+            ₹
+            {formatPrice(
+              item?.coreDetails?.startingPrice ||
+                item?.unitConfigurations?.[0]?.price ||
+                0
+            )}
+          </h4>
         </div>
 
         {/* CTA */}
         <div
-  className="
-  mt-auto
-  pt-6
-  flex
-  items-center
-  justify-between
-  border-t
-  border-[#ece7df]
-"
->
+          className="
+            mt-4
+            pt-4
+            flex
+            items-center
+            justify-between
+            border-t
+            border-[#ece7df]
+          "
+        >
           <span
             className="
               text-[12px]
@@ -323,7 +325,12 @@ group-hover:scale-110
 
           <ArrowRight
             size={18}
-            className="text-[#bf8b37]"
+            className="
+              text-[#bf8b37]
+              transition-transform
+              duration-300
+              group-hover:translate-x-1
+            "
           />
         </div>
       </div>

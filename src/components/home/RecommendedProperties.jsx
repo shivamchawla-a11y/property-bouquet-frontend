@@ -98,7 +98,7 @@ export default function RecommendedProjects() {
           )}
 
         {/* CARDS */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-7">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
 
           {properties.map((item, index) => (
             <Link
@@ -107,205 +107,241 @@ export default function RecommendedProjects() {
               className="block h-full"
             >
               <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 40,
-                }}
-                whileInView={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.6,
-                  delay: index * 0.08,
-                }}
-                viewport={{
-                  once: true,
-                }}
-                whileHover={{
-                  y: -10,
-                }}
-                className="
+  initial={{
+    opacity: 0,
+    y: 40,
+  }}
+  whileInView={{
+    opacity: 1,
+    y: 0,
+  }}
+  transition={{
+    duration: 0.6,
+    delay: index * 0.08,
+  }}
+  viewport={{
+    once: true,
+  }}
+  whileHover={{
+    y: -10,
+    scale: 1.01,
+  }}
+  className="
 group
-relative
-h-full
-overflow-hidden
-rounded-[28px]
 bg-white
-shadow-[0_20px_60px_rgba(0,0,0,0.06)]
+rounded-[24px]
+overflow-hidden
 border
-border-[#ece5d8]
+border-[#ebe5da]
+shadow-[0_12px_40px_rgba(0,0,0,0.05)]
+flex
+flex-col
+h-full
+transition-all
+duration-500
+hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
 "
-              >
+>
+  {/* IMAGE */}
+  <div className="relative h-[220px] overflow-hidden">
 
-                {/* IMAGE */}
-                <div className="relative h-[340px] overflow-hidden">
-
-                  <img
-                    src={
-                      item?.media?.heroImageUrl ||
-                      "/placeholder-property.jpg"
-                    }
-                    alt={
-                      item?.coreDetails?.title
-                    }
-                    className="
+    <img
+      src={
+        item?.media?.heroImageUrl ||
+        "/placeholder-property.jpg"
+      }
+      alt={item?.coreDetails?.title}
+      className="
 w-full
 h-full
 object-cover
-duration-700
 transition-transform
+duration-700
 group-hover:scale-110
 "
-                  />
+    />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                  {/* BADGE */}
-                  <div
-                    className="
+    {/* BADGE */}
+    <div
+      className="
 absolute
-top-5
-left-5
-bg-white/90
-backdrop-blur-md
-rounded-full
+top-4
+left-4
+bg-[#c89948]
+text-white
+text-[10px]
+tracking-[1.5px]
 px-4
 py-2
-text-[10px]
+rounded-full
 font-semibold
-tracking-[1.5px]
+"
+    >
+      RECOMMENDED
+    </div>
+
+  </div>
+
+  {/* GOLD LINE */}
+  <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
+
+  {/* CONTENT */}
+  <div className="p-5 flex flex-col flex-1">
+
+    {/* TITLE */}
+    <h3
+      className="
+text-[22px]
+xl:text-[24px]
 text-[#171717]
-"
-                  >
-                    RECOMMENDED
-                  </div>
-
-                  {/* PRICE FLOAT */}
-                  <div
-                    className="
-absolute
-bottom-5
-left-5
-right-5
-bg-white/90
-backdrop-blur-xl
-rounded-2xl
-px-5
-py-4
-"
-                  >
-                    <p className="text-[10px] uppercase tracking-[1px] text-black/45">
-                      Starting Price
-                    </p>
-
-                    <h4 className="text-[24px] font-semibold text-[#111]">
-                      ₹
-                      {formatPrice(
-                        item?.coreDetails
-                          ?.startingPrice ||
-                          item
-                            ?.unitConfigurations?.[0]
-                            ?.price ||
-                          0
-                      )}
-                    </h4>
-                  </div>
-
-                </div>
-
-                {/* CONTENT */}
-                <div className="p-6 flex flex-col">
-
-                  <h3
-                    className="
 font-heading
-text-[28px]
-leading-[1.1]
-text-[#171717]
+leading-tight
 line-clamp-2
-min-h-[62px]
 "
-                  >
-                    {item?.coreDetails?.title}
-                  </h3>
+    >
+      {item?.coreDetails?.title}
+    </h3>
 
-                  <div className="flex items-center gap-2 mt-3 text-black/55">
+    {/* LOCATION */}
+    <div className="flex items-start gap-2 text-black/60 mt-2">
 
-                    <MapPin size={14} />
+      <MapPin
+        size={15}
+        className="mt-[2px] shrink-0"
+      />
 
-                    <span className="text-[13px] line-clamp-1">
-                      {item?.locationData
-                        ?.locationName ||
-                        item?.locationData
-                          ?.customLocation ||
-                        "Prime Location"}
-                    </span>
+      <span
+        className="
+text-[13px]
+leading-snug
+line-clamp-2
+"
+      >
+        {item?.locationData?.locationName ||
+          item?.locationData?.customLocation ||
+          "Prime Location"}
+      </span>
 
-                  </div>
+    </div>
 
-                  {/* SPECS */}
-                  <div className="flex items-center gap-5 mt-6 text-black/65">
+    {/* SPECS */}
+    <div
+      className="
+flex
+items-center
+flex-wrap
+gap-x-4
+gap-y-2
+mt-4
+text-black/65
+"
+    >
+      <div className="flex items-center gap-2">
 
-                    <div className="flex items-center gap-2">
+        <BedDouble size={15} />
 
-                      <BedDouble size={15} />
+        <span className="text-[13px]">
+          {item?.unitConfigurations?.[0]?.bedrooms
+            ? `${item.unitConfigurations[0].bedrooms} Beds`
+            : "Luxury"}
+        </span>
 
-                      <span className="text-[13px]">
-                        {item
-                          ?.unitConfigurations?.[0]
-                          ?.bedrooms || "-"}
-                        BHK
-                      </span>
+      </div>
 
-                    </div>
+      <div className="flex items-center gap-2">
 
-                    <div className="flex items-center gap-2">
+        <Bath size={15} />
 
-                      <Bath size={15} />
+        <span className="text-[13px]">
+          {item?.unitConfigurations?.[0]?.bathrooms
+            ? `${item.unitConfigurations[0].bathrooms} Baths`
+            : "Residence"}
+        </span>
 
-                      <span className="text-[13px]">
-                        {item
-                          ?.unitConfigurations?.[0]
-                          ?.bathrooms || "-"}
-                      </span>
+      </div>
 
-                    </div>
+      <div className="text-[13px]">
+        {item?.unitConfigurations?.[0]?.area
+          ? `${item.unitConfigurations[0].area} Sq.Ft.`
+          : "Premium"}
+      </div>
+    </div>
 
-                  </div>
+    {/* DIVIDER */}
+    <div className="mt-4 border-t border-[#ece7df]" />
 
-                  {/* GOLD LINE */}
-                  <div className="mt-6 h-[1px] bg-gradient-to-r from-[#c89d58] via-[#f1d38d] to-transparent" />
+    {/* PRICE */}
+    <div className="mt-3">
 
-                  {/* CTA */}
-                  <div className="mt-6 flex items-center justify-between">
-
-                    <span
-                      className="
-text-[12px]
+      <p
+        className="
+text-[11px]
 uppercase
-tracking-[1.5px]
-font-semibold
-text-[#c89d58]
+tracking-[1px]
+text-black/45
+mb-2
 "
-                    >
-                      Explore Residence
-                    </span>
+      >
+        Starting Price
+      </p>
 
-                    <ArrowRight
-                      size={18}
-                      className="
-text-[#c89d58]
+      <h4
+        className="
+text-[24px]
+font-bold
+text-[#111]
+leading-none
+"
+      >
+        ₹
+        {formatPrice(
+          item?.coreDetails?.startingPrice ||
+            item?.unitConfigurations?.[0]?.price ||
+            0
+        )}
+      </h4>
+
+    </div>
+
+    {/* CTA */}
+    <div
+      className="
+mt-4
+pt-4
+flex
+items-center
+justify-between
+border-t
+border-[#ece7df]
+"
+    >
+      <span
+        className="
+text-[12px]
+tracking-[1.5px]
+uppercase
+text-[#bf8b37]
+font-semibold
+"
+      >
+        Explore Residence
+      </span>
+
+      <ArrowRight
+        size={18}
+        className="
+text-[#bf8b37]
 transition-transform
+duration-300
 group-hover:translate-x-1
 "
-                    />
+      />
+    </div>
 
-                  </div>
-
-                </div>
-
-              </motion.div>
+  </div>
+</motion.div>
             </Link>
           ))}
 
