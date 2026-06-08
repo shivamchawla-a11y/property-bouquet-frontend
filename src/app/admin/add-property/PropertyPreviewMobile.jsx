@@ -2232,23 +2232,20 @@ else {
           "
         >
 
-          <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr]">
+         <div className="flex flex-col">
 
             {/* ================= LEFT TABS ================= */}
-            <div className="border-b lg:border-b-0 lg:border-r border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
+            <div className="border-b border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
 
               <div
-                className="
-                  flex
-                  lg:block
-                  gap-2
-                  lg:gap-0
-                  px-2
-                  lg:px-0
-                  overflow-x-auto
-                  scrollbar-hide
-                "
-              >
+  className="
+    flex
+    gap-2
+    px-2
+    overflow-x-auto
+    scrollbar-hide
+  "
+>
 
                 {gatedContent.floorPlans.map((u, i) => (
                   <button
@@ -2256,23 +2253,18 @@ else {
                     onClick={() => setActivePlan(i)}
                     className={`
                       group
-                      relative
-                      flex-shrink-0
-                      lg:w-full
-                      text-left
-                      px-5
-                      sm:px-6
-                      py-5
-                      lg:py-6
-                      border-r
-                      lg:border-r-0
-                      lg:border-b
-                      border-[#e6dccb]
-                      transition-all
-                      duration-300
-                      min-w-[180px]
-sm:min-w-[            220px]
-                      lg:min-w-0
+  relative
+  flex-shrink-0
+  text-left
+  px-5
+  sm:px-6
+  py-5
+  border-r
+  border-[#e6dccb]
+  transition-all
+  duration-300
+  min-w-[180px]
+  sm:min-w-[220px]
                       ${
                         activePlan === i
                           ? "bg-[#03261d] text-white"
@@ -2348,16 +2340,13 @@ sm:min-w-[            220px]
             </div>
 
             {/* ================= RIGHT CONTENT ================= */}
-            <div className="p-5 sm:p-6 lg:p-8">
+            <div className="p-5 sm:p-6">
 
               <div
   className="
     flex
     flex-col-reverse
-    lg:grid
-    lg:grid-cols-[0.9fr_1.1fr]
     gap-8
-    lg:gap-10
     items-start
   "
 >
@@ -2571,20 +2560,18 @@ sm:min-w-[            220px]
         src={activeFloorPlan.image}
         alt="floor-plan"
         className="
-        w-full
-        h-[220px]
-        sm:h-[320px]
-        md:h-[420px]
-        lg:h-[500px]
-        object-contain
-        "
+w-full
+h-[220px]
+sm:h-[320px]
+object-contain
+"
       />
 
     ) : (
 
       <>
         {/* PLACEHOLDER BLUR */}
-        <div className="relative h-[220px] sm:h-[320px] md:h-[420px] lg:h-[500px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
+        <div className="relative h-[220px] sm:h-[320px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
 
           {/* FAKE FLOOR PLAN LINES */}
           <div className="absolute inset-0 opacity-40">

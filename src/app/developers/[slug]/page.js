@@ -54,8 +54,14 @@ export default function DeveloperSlugPage() {
             );
 
             setProperties(
-              data.properties || []
-            );
+  (data.properties || []).filter((property) => {
+    return (
+      property?.status === "published" &&
+      property?.isDeleted !== true &&
+      property?.deletedFromStatus !== "trash"
+    );
+  })
+);
           } else {
             setDeveloper(null);
           }

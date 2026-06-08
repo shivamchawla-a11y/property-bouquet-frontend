@@ -4590,17 +4590,6 @@ else {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm">
-
-                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-                      ✦
-                    </div>
-
-                    <span className="text-white/90">
-                      {faqSection?.contactTiming ||
-                        "Monday — Sunday | 10 AM — 7 PM"}
-                    </span>
-                  </div>
 
                 </div>
               </div>
@@ -4763,11 +4752,11 @@ else {
                   </summary>
 
                   {/* ANSWER */}
-                  <div className="px-24 pb-7 text-[#666] text-[15px] leading-[1.9] border-t border-[#ece3d8]">
-                    <div className="pt-6 max-w-4xl">
-                      {f.answer}
-                    </div>
-                  </div>
+                  <div className="px-7 pb-7 text-[#666] text-[15px] leading-[1.9] border-t border-[#ece3d8]">
+  <div className="pt-6 w-full">
+    {f.answer}
+  </div>
+</div>
                 </details>
               )
           )}
@@ -5108,8 +5097,14 @@ else {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
 
         {developerProjects
-          .slice(0, 4)
-          .map((project, i) => (
+  ?.filter(
+    (project) =>
+      project?.status === "published" &&
+      project?.isDeleted !== true &&
+      project?.deletedFromStatus !== "trash"
+  )
+  .slice(0, 4)
+  .map((project, i) => (
 
             <motion.div
               key={project._id || i}
