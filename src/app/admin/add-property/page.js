@@ -519,6 +519,7 @@ const [draftId, setDraftId] = useState(null);
 const [previewDevice, setPreviewDevice] =
   useState("mobile");
   const [iconSearch, setIconSearch] = useState("");
+  const [isDirty, setIsDirty] = useState(false);
 
 // Massive icon library
 const ICONS = {
@@ -598,6 +599,10 @@ const filteredIcons = Object.keys(ICONS)
   }, 200);
 
   return () => clearTimeout(t);
+}, [form]);
+
+useEffect(() => {
+  setIsDirty(true);
 }, [form]);
 
 const getNestedValue = (obj, path) => {
@@ -909,6 +914,8 @@ if (res.ok) {
   setErrors({});
   setErrorList([]);
 
+  setIsDirty(false);
+
   router.push("/admin/properties");
 
   return;
@@ -989,6 +996,80 @@ window.scrollTo({ top: 0, behavior: "smooth" });
   }
 };
 
+const saveDraftSilently = () => {
+  try {
+    const payload = {
+      ...form,
+      draftId,
+
+      keyMetrics: {
+        ...form.keyMetrics,
+        customMetrics:
+          form.keyMetrics.customMetrics || [],
+      },
+
+      coreDetails: {
+        ...form.coreDetails,
+        developerRef:
+          form.coreDetails.developerRef || null,
+      },
+
+      categoryData: {
+        ...form.categoryData,
+        categoryRef:
+          form.categoryData.categoryRef || null,
+      },
+
+      locationData: {
+        ...form.locationData,
+        locationRef:
+          form.locationData.locationRef || null,
+      },
+    };
+
+    const blob = new Blob(
+      [JSON.stringify(payload)],
+      {
+        type: "application/json",
+      }
+    );
+
+    navigator.sendBeacon(
+      "https://property-bouquet-backend.onrender.com/api/properties/draft",
+      blob
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  const handleBeforeUnload = (e) => {
+    if (!isDirty) return;
+
+    saveDraftSilently();
+
+    e.preventDefault();
+
+    e.returnValue =
+      "You have unsaved changes. Save draft before leaving.";
+
+    return e.returnValue;
+  };
+
+  window.addEventListener(
+    "beforeunload",
+    handleBeforeUnload
+  );
+
+  return () => {
+    window.removeEventListener(
+      "beforeunload",
+      handleBeforeUnload
+    );
+  };
+}, [isDirty, form, draftId]);
+
 const handleSaveDraft = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -1049,10 +1130,12 @@ try {
 }
 
     if (res.ok) {
-      setDraftId(data.data._id);
+  setDraftId(data.data._id);
 
-      toast.success("Draft saved ✅");
-    } else {
+  setIsDirty(false);
+
+  toast.success("Draft saved ✅");
+} else {
       toast.error(data.message);
     }
   } catch (err) {
@@ -1060,6 +1143,16 @@ try {
     toast.error("Failed to save draft");
   }
 };
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (!isDirty) return;
+
+    handleSaveDraft();
+  }, 60000); // 1 minute
+
+  return () => clearInterval(interval);
+}, [isDirty, form, draftId]);
 
 
 const buildOptions = (nodes, prefix = "") => {
@@ -4002,37 +4095,13 @@ const labelMap = {
     {/* ================= LANDMARKS ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5">
 
-        <h3 className="font-semibold text-xl text-white">
-          Nearby Landmarks
-        </h3>
+  <h3 className="font-semibold text-xl text-white">
+    Nearby Landmarks
+  </h3>
 
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.locationData.landmarks || []),
-              {
-                name: "",
-                distance: "",
-                subtitle: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "locationData",
-              "landmarks",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Landmark
-        </button>
-      </div>
+</div>
 
       {(form.locationData.landmarks || []).map(
         (item, index) => (
@@ -4159,41 +4228,61 @@ const labelMap = {
           </div>
         )
       )}
+      <button
+  type="button"
+  onClick={() => {
+
+    const updated = [
+      ...(form.locationData.landmarks || []),
+      {
+        name: "",
+        distance: "",
+        subtitle: "",
+        icon: "✦",
+      },
+    ];
+
+    handleChange(
+      "locationData",
+      "landmarks",
+      updated
+    );
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+
+  }}
+  className="
+    w-full
+    py-4
+    rounded-2xl
+    bg-[#D4AF37]
+    text-black
+    font-semibold
+    text-lg
+    hover:opacity-90
+    transition
+    mt-2
+  "
+>
+  + Add Landmark
+</button>
     </div>
 
     {/* ================= BOTTOM STRIP ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10">
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5">
 
-        <h3 className="font-semibold text-xl text-white">
-          Bottom Strip Features
-        </h3>
+  <h3 className="font-semibold text-xl text-white">
+    Bottom Strip Features
+  </h3>
 
-        <button
-          type="button"
-          onClick={() => {
-
-            const updated = [
-              ...(form.locationData.bottomStrip || []),
-              {
-                title: "",
-                desc: "",
-                icon: "✦",
-              },
-            ];
-
-            handleChange(
-              "locationData",
-              "bottomStrip",
-              updated
-            );
-          }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Feature
-        </button>
-      </div>
+</div>
 
       {(form.locationData.bottomStrip || []).map(
         (item, index) => (
@@ -4298,6 +4387,48 @@ const labelMap = {
           </div>
         )
       )}
+      <button
+  type="button"
+  onClick={() => {
+
+    const updated = [
+      ...(form.locationData.bottomStrip || []),
+      {
+        title: "",
+        desc: "",
+        icon: "✦",
+      },
+    ];
+
+    handleChange(
+      "locationData",
+      "bottomStrip",
+      updated
+    );
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+
+  }}
+  className="
+    w-full
+    py-4
+    rounded-2xl
+    bg-[#D4AF37]
+    text-black
+    font-semibold
+    text-lg
+    hover:opacity-90
+    transition
+    mt-2
+  "
+>
+  + Add Feature
+</button>
     </div>
   </div>
 )}
@@ -4623,26 +4754,62 @@ const labelMap = {
     </div>
 
     {/* ================= BOTTOM STRIP ================= */}
-    <div className="glass p-6 rounded-2xl border border-white/10">
+<div className="glass p-6 rounded-2xl border border-white/10">
 
-      <div className="flex items-center justify-between mb-5">
+  <div className="mb-5">
+    <h3 className="font-semibold text-xl text-white">
+      Bottom Strip Features
+    </h3>
+  </div>
 
-        <h3 className="font-semibold text-xl text-white">
-          Bottom Strip Features
-        </h3>
+  {(form.masterPlanSection?.bottomStrip || []).map(
+    (item, index) => (
+      <div
+        key={index}
+        className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+      >
 
-        <button
-          type="button"
-          onClick={() => {
+        {/* TOP */}
+        <div className="flex items-center justify-between mb-4">
+
+          <h4 className="font-semibold text-white">
+            Feature #{index + 1}
+          </h4>
+
+          <button
+            type="button"
+            onClick={() => {
+
+              const updated =
+                form.masterPlanSection.bottomStrip.filter(
+                  (_, i) => i !== index
+                );
+
+              handleChange(
+                "masterPlanSection",
+                "bottomStrip",
+                updated
+              );
+            }}
+            className="bg-red-500 text-white px-3 py-1 rounded-lg"
+          >
+            Delete
+          </button>
+        </div>
+
+        {/* TITLE */}
+        <input
+          className="input mb-4"
+          placeholder="Feature Title"
+          value={item.title || ""}
+          onChange={(e) => {
 
             const updated = [
-              ...(form.masterPlanSection?.bottomStrip || []),
-              {
-                title: "",
-                desc: "",
-                icon: "✦",
-              },
+              ...form.masterPlanSection.bottomStrip,
             ];
+
+            updated[index].title =
+              e.target.value;
 
             handleChange(
               "masterPlanSection",
@@ -4650,116 +4817,99 @@ const labelMap = {
               updated
             );
           }}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Feature
-        </button>
+        />
+
+        {/* DESCRIPTION */}
+        <textarea
+          className="input min-h-[100px] mb-4"
+          placeholder="Feature Description"
+          value={item.desc || ""}
+          onChange={(e) => {
+
+            const updated = [
+              ...form.masterPlanSection.bottomStrip,
+            ];
+
+            updated[index].desc =
+              e.target.value;
+
+            handleChange(
+              "masterPlanSection",
+              "bottomStrip",
+              updated
+            );
+          }}
+        />
+
+        {/* ICON */}
+        <input
+          className="input"
+          placeholder="Icon (✦ ◈ ↗ ▣)"
+          value={item.icon || ""}
+          onChange={(e) => {
+
+            const updated = [
+              ...form.masterPlanSection.bottomStrip,
+            ];
+
+            updated[index].icon =
+              e.target.value;
+
+            handleChange(
+              "masterPlanSection",
+              "bottomStrip",
+              updated
+            );
+          }}
+        />
       </div>
+    )
+  )}
 
-      {(form.masterPlanSection?.bottomStrip || []).map(
-        (item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
-          >
+  <button
+    type="button"
+    onClick={() => {
 
-            {/* TOP */}
-            <div className="flex items-center justify-between mb-4">
+      const updated = [
+        ...(form.masterPlanSection?.bottomStrip || []),
+        {
+          title: "",
+          desc: "",
+          icon: "✦",
+        },
+      ];
 
-              <h4 className="font-semibold text-white">
-                Feature #{index + 1}
-              </h4>
+      handleChange(
+        "masterPlanSection",
+        "bottomStrip",
+        updated
+      );
 
-              <button
-                type="button"
-                onClick={() => {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
 
-                  const updated =
-                    form.masterPlanSection.bottomStrip.filter(
-                      (_, i) => i !== index
-                    );
+    }}
+    className="
+      w-full
+      py-4
+      rounded-2xl
+      bg-[#D4AF37]
+      text-black
+      font-semibold
+      text-lg
+      hover:opacity-90
+      transition
+      mt-2
+    "
+  >
+    + Add Feature
+  </button>
 
-                  handleChange(
-                    "masterPlanSection",
-                    "bottomStrip",
-                    updated
-                  );
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
-
-            {/* TITLE */}
-            <input
-              className="input mb-4"
-              placeholder="Feature Title"
-              value={item.title || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.masterPlanSection.bottomStrip,
-                ];
-
-                updated[index].title =
-                  e.target.value;
-
-                handleChange(
-                  "masterPlanSection",
-                  "bottomStrip",
-                  updated
-                );
-              }}
-            />
-
-            {/* DESCRIPTION */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Feature Description"
-              value={item.desc || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.masterPlanSection.bottomStrip,
-                ];
-
-                updated[index].desc =
-                  e.target.value;
-
-                handleChange(
-                  "masterPlanSection",
-                  "bottomStrip",
-                  updated
-                );
-              }}
-            />
-
-            {/* ICON */}
-            <input
-              className="input"
-              placeholder="Icon (✦ ◈ ↗ ▣)"
-              value={item.icon || ""}
-              onChange={(e) => {
-
-                const updated = [
-                  ...form.masterPlanSection.bottomStrip,
-                ];
-
-                updated[index].icon =
-                  e.target.value;
-
-                handleChange(
-                  "masterPlanSection",
-                  "bottomStrip",
-                  updated
-                );
-              }}
-            />
-          </div>
-        )
-      )}
-    </div>
+</div>
   </div>
 )}
 
@@ -5047,31 +5197,13 @@ const labelMap = {
     {/* ================= FAQS ================= */}
     <div className="glass p-6 rounded-2xl border border-white/10">
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5">
 
-        <h3 className="font-semibold text-xl text-white">
-          FAQs
-        </h3>
+  <h3 className="font-semibold text-xl text-white">
+    FAQs
+  </h3>
 
-        <button
-          type="button"
-          onClick={() =>
-            setForm((prev) => ({
-              ...prev,
-              faqs: [
-  ...(prev.faqs || []),
-                {
-                  question: "",
-                  answer: "",
-                },
-              ],
-            }))
-          }
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add FAQ
-        </button>
-      </div>
+</div>
 
       {(form.faqs || []).map((f, i) => (
 
@@ -5146,6 +5278,44 @@ const labelMap = {
           />
         </div>
       ))}
+      <button
+  type="button"
+  onClick={() => {
+
+    setForm((prev) => ({
+      ...prev,
+      faqs: [
+        ...(prev.faqs || []),
+        {
+          question: "",
+          answer: "",
+        },
+      ],
+    }));
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+
+  }}
+  className="
+    w-full
+    py-4
+    rounded-2xl
+    bg-[#D4AF37]
+    text-black
+    font-semibold
+    text-lg
+    hover:opacity-90
+    transition
+    mt-2 
+  "
+>
+  + Add FAQ
+</button>
     </div>
   </div>
 )}
