@@ -31,6 +31,7 @@ import {
   Utensils,
   Film,
   Landmark,
+  Search,
   Bus,
   Store,
   Phone,
@@ -520,6 +521,28 @@ const [previewDevice, setPreviewDevice] =
   useState("mobile");
   const [iconSearch, setIconSearch] = useState("");
   const [isDirty, setIsDirty] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+const [newLocationName, setNewLocationName] = useState("");
+
+const [newLocationParent, setNewLocationParent] = useState("");
+
+const [creatingLocation, setCreatingLocation] = useState(false);
+
+const [showLocationSearch, setShowLocationSearch] =
+  useState(false);
+
+const [locationSearch, setLocationSearch] =
+  useState("");
+
+  const [showDeveloperSearch, setShowDeveloperSearch] =
+  useState(false);
+
+const [developerSearch, setDeveloperSearch] =
+  useState("");
+
+const [showDeveloperModal, setShowDeveloperModal] =
+  useState(false);
 
 // Massive icon library
 const ICONS = {
@@ -559,20 +582,20 @@ const filteredIcons = Object.keys(ICONS)
   fetchCategories();
 }, []);
 
-    useEffect(() => {
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch(`${API}/locations/tree`);
-      const data = await res.json();
+    const fetchLocations = async () => {
+  try {
+    const res = await fetch(`${API}/locations/tree`);
+    const data = await res.json();
 
-      if (res.ok) {
-        setLocations(data.data || []);
-      }
-    } catch (err) {
-      console.error(err);
+    if (res.ok) {
+      setLocations(data.data || []);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
+useEffect(() => {
   fetchLocations();
 }, []);
 
@@ -1144,16 +1167,73 @@ try {
   }
 };
 
-useEffect(() => {
-  const interval = setInterval(() => {
-    if (!isDirty) return;
+// useEffect(() => {
+//   const interval = setInterval(() => {
+//     if (!isDirty) return;
 
-    handleSaveDraft();
-  }, 60000); // 1 minute
+//     handleSaveDraft();
+//   }, 60000); // 1 minute
 
-  return () => clearInterval(interval);
-}, [isDirty, form, draftId]);
+//   return () => clearInterval(interval);
+// }, [isDirty, form, draftId]);
 
+
+const handleCreateLocation = async () => {
+  try {
+    if (!newLocationName.trim()) {
+      toast.error("Location name required");
+      return;
+    }
+
+    setCreatingLocation(true);
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/locations`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: newLocationName,
+        parent: newLocationParent || null,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.message || "Failed to create location");
+      return;
+    }
+
+    const created = data.data;
+
+    await fetchLocations();
+
+    setForm((prev) => ({
+      ...prev,
+      locationData: {
+        ...prev.locationData,
+        locationRef: created._id,
+        locationName: created.name,
+      },
+    }));
+
+    toast.success("Location created successfully");
+
+    setShowLocationModal(false);
+    setNewLocationName("");
+    setNewLocationParent("");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to create location");
+  } finally {
+    setCreatingLocation(false);
+  }
+};
 
 const buildOptions = (nodes, prefix = "") => {
   let options = [];
@@ -1221,6 +1301,9 @@ const labelMap = {
 "overview.highlightsHeading": "Highlights Heading",
 "overview.highlights": "Highlight Cards",
 };
+
+
+
  return (
   <div className="app-bg min-h-screen overflow-x-hidden px-4 md:px-6 xl:px-8 py-6">
 
@@ -1816,65 +1899,119 @@ const labelMap = {
       </label>
 
       {!useCustomDeveloper ? (
-        <select
-  className={`input transition-all duration-200 ${
-    hasError("coreDetails.developerRef")
-      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-      : ""
-  }`}
-          value={form.coreDetails.developerRef || ""}
-          onChange={(e) => {
-            if (e.target.value === "OTHER") {
-              setUseCustomDeveloper(true);
+       <div className="flex gap-3">
 
-              setForm((prev) => ({
-                ...prev,
-                coreDetails: {
-                  ...prev.coreDetails,
-                  developerRef: "",
-                  developerName: "",
-                  developerLogo: "",
-                },
-              }));
-            } else {
-              const selectedDev = developers.find(
-                (d) => d._id === e.target.value
-              );
+  <select
+    className={`input flex-1 transition-all duration-200 ${
+      hasError("coreDetails.developerRef")
+        ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+        : ""
+    }`}
+    value={form.coreDetails.developerRef || ""}
+    onChange={(e) => {
+      const value = e.target.value;
 
-              setUseCustomDeveloper(false);
+      if (value === "CREATE_NEW") {
+        setShowDeveloperModal(true);
+        return;
+      }
 
-              setForm((prev) => ({
-                ...prev,
-                coreDetails: {
-                  ...prev.coreDetails,
-                  developerRef:
-                    selectedDev?._id || "",
-                  developerName:
-                    selectedDev?.name || "",
-                  developerLogo:
-                    selectedDev?.logo || "",
-                },
-              }));
-            }
-          }}
-        >
-          <option value="">
-            Select Developer
-          </option>
+      if (value === "OTHER") {
+        setUseCustomDeveloper(true);
 
-          {developers.map((dev) => (
-            <option
-              key={dev._id}
-              value={dev._id}
-            >
-              {dev.name}
-            </option>
-          ))}
+        setForm((prev) => ({
+          ...prev,
+          coreDetails: {
+            ...prev.coreDetails,
+            developerRef: "",
+            developerName: "",
+            developerLogo: "",
+          },
+        }));
 
-          <option value="OTHER">
-            + Add Custom Developer
-          </option>
-        </select>
+        return;
+      }
+
+      const selectedDev = developers.find(
+        (d) => d._id === value
+      );
+
+      setUseCustomDeveloper(false);
+
+      setForm((prev) => ({
+        ...prev,
+        coreDetails: {
+          ...prev.coreDetails,
+          developerRef: selectedDev?._id || "",
+          developerName: selectedDev?.name || "",
+          developerLogo: selectedDev?.logo || "",
+        },
+      }));
+    }}
+  >
+    <option value="">
+      Select Developer
+    </option>
+
+    {developers.map((dev) => (
+      <option key={dev._id} value={dev._id}>
+        {dev.name}
+      </option>
+    ))}
+
+    <option value="CREATE_NEW">
+      + Create New Developer
+    </option>
+
+    <option value="OTHER">
+      + Add Custom Developer
+    </option>
+  </select>
+
+  {/* SEARCH BUTTON */}
+  <button
+    type="button"
+    onClick={() => setShowDeveloperSearch(true)}
+    className="
+      h-[48px]
+      w-[48px]
+      flex
+      items-center
+      justify-center
+      rounded-xl
+      bg-white/10
+      border
+      border-white/10
+      text-white
+      hover:bg-white/20
+      transition
+      shrink-0
+    "
+  >
+    <Search size={18} />
+  </button>
+
+  {/* NEW BUTTON */}
+  <button
+    type="button"
+    onClick={() => setShowDeveloperModal(true)}
+    className="
+      h-[48px]
+      px-4
+      rounded-xl
+      bg-emerald-600
+      text-white
+      text-sm
+      font-medium
+      hover:bg-emerald-700
+      transition
+      shrink-0
+    "
+  >
+    + New
+  </button>
+
+</div>
         
       ) : (
         <div className="flex gap-2">
@@ -1929,9 +2066,9 @@ const labelMap = {
   </label>
 
   {!useCustomLocation ? (
-
+<div className="flex gap-3">
     <select
-      className={`input transition-all duration-200 ${
+      className={`input flex-1 transition-all duration-200 ${
         hasError("locationData.locationRef")
           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
           : ""
@@ -1939,39 +2076,49 @@ const labelMap = {
       value={form.locationData.locationRef || ""}
       onChange={(e) => {
 
-        if (e.target.value === "OTHER") {
+  const value = e.target.value;
 
-          setUseCustomLocation(true);
+  // CREATE NEW LOCATION
+  if (value === "CREATE_NEW") {
+    setShowLocationModal(true);
+    return;
+  }
 
-          setForm((prev) => ({
-            ...prev,
-            locationData: {
-              ...prev.locationData,
-              locationRef: "",
-              locationName: "",
-              customLocation: "",
-            },
-          }));
+  // CUSTOM LOCATION
+  if (value === "OTHER") {
 
-        } else {
+    setUseCustomLocation(true);
 
-          const selected = buildOptions(locations).find(
-            (l) => l._id === e.target.value
-          );
+    setForm((prev) => ({
+      ...prev,
+      locationData: {
+        ...prev.locationData,
+        locationRef: "",
+        locationName: "",
+        customLocation: "",
+      },
+    }));
 
-          setUseCustomLocation(false);
+    return;
+  }
 
-          setForm((prev) => ({
-            ...prev,
-            locationData: {
-              ...prev.locationData,
-              locationRef: selected?._id || "",
-              locationName: selected?.label || "",
-              customLocation: "",
-            },
-          }));
-        }
-      }}
+  // EXISTING LOCATION
+  const selected = buildOptions(locations).find(
+    (loc) => loc._id === value
+  );
+
+  setUseCustomLocation(false);
+
+  setForm((prev) => ({
+    ...prev,
+    locationData: {
+      ...prev.locationData,
+      locationRef: selected?._id || "",
+      locationName: selected?.label || "",
+      customLocation: "",
+    },
+  }));
+}}
     >
       <option value="">
         Select Location
@@ -1983,11 +2130,50 @@ const labelMap = {
         </option>
       ))}
 
-      <option value="OTHER">
-        + Add Custom Location
-      </option>
-    </select>
+      <option value="CREATE_NEW">
+  + Create New Location
+</option>
 
+<option value="OTHER">
+  + Add Custom Location
+</option>
+    </select>
+    <button
+  type="button"
+  onClick={() => setShowLocationSearch(true)}
+  className="
+    h-[48px]
+    w-[48px]
+    flex
+    items-center
+    justify-center
+    rounded-xl
+    bg-white/10
+    border
+    border-white/10
+    text-white
+    hover:bg-white/20
+    transition
+  "
+>
+  <Search size={18} />
+</button>
+<button
+  type="button"
+  onClick={() => setShowLocationModal(true)}
+  className="
+    px-4
+    rounded-xl
+    bg-emerald-600
+    text-white
+    text-sm
+    font-medium
+    hover:bg-emerald-700
+  "
+>
+  + New
+</button>
+</div>
   ) : (
 
     <div className="flex flex-col md:flex-row gap-3">
@@ -2057,35 +2243,45 @@ const labelMap = {
   }`}
           value={form.categoryData.categoryRef || ""}
           onChange={(e) => {
-            if (e.target.value === "OTHER") {
-              setUseCustomCategory(true);
+            if (e.target.value === "CREATE_NEW") {
 
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  categoryRef: "",
-                  categoryName: "",
-                  customCategory: "",
-                },
-              }));
-            } else {
-              const selected = categories.find(
-                (c) => c._id === e.target.value
-              );
+  setShowLocationModal(true);
 
-              setUseCustomCategory(false);
+  return;
+}
 
-              setForm((prev) => ({
-                ...prev,
-                categoryData: {
-                  categoryRef:
-                    selected?._id || "",
-                  categoryName:
-                    selected?.name || "",
-                  customCategory: "",
-                },
-              }));
-            }
+if (e.target.value === "OTHER") {
+
+  setUseCustomLocation(true);
+
+  setForm((prev) => ({
+    ...prev,
+    locationData: {
+      ...prev.locationData,
+      locationRef: "",
+      locationName: "",
+      customLocation: "",
+    },
+  }));
+
+} else {
+
+  const selected = buildOptions(locations).find(
+    (l) => l._id === e.target.value
+  );
+
+  setUseCustomLocation(false);
+
+  setForm((prev) => ({
+    ...prev,
+    locationData: {
+      ...prev.locationData,
+      locationRef: selected?._id || "",
+      locationName: selected?.label || "",
+      customLocation: "",
+    },
+  }));
+}
           }}
         >
           <option value="">
@@ -5782,7 +5978,305 @@ const labelMap = {
   </div>
 
 </div>
+{showLocationModal && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+
+    <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#071b16] p-6 shadow-2xl">
+
+      <h3 className="text-xl font-bold text-white mb-5">
+        Create New Location
+      </h3>
+
+      {/* LOCATION NAME */}
+      <div className="mb-4">
+        <label className="block text-white/70 text-sm mb-2">
+          Location Name
+        </label>
+
+        <input
+          value={newLocationName}
+          onChange={(e) =>
+            setNewLocationName(e.target.value)
+          }
+          className="input w-full"
+          placeholder="Example: Golf Course Extension Road"
+        />
+      </div>
+
+      {/* PARENT */}
+      <div className="mb-6">
+        <label className="block text-white/70 text-sm mb-2">
+          Parent Location (Optional)
+        </label>
+
+        <select
+          value={newLocationParent}
+          onChange={(e) =>
+            setNewLocationParent(e.target.value)
+          }
+          className="input w-full"
+        >
+          <option value="">
+            Root Location
+          </option>
+
+          {buildOptions(locations).map((loc) => (
+            <option
+              key={loc._id}
+              value={loc._id}
+            >
+              {loc.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex justify-end gap-3">
+
+        <button
+          onClick={() =>
+            setShowLocationModal(false)
+          }
+          className="
+            px-5
+            py-3
+            rounded-xl
+            bg-white/10
+            text-white
+          "
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleCreateLocation}
+          disabled={creatingLocation}
+          className="
+            px-5
+            py-3
+            rounded-xl
+            bg-[#c8a45d]
+            text-black
+            font-semibold
+          "
+        >
+          {creatingLocation
+            ? "Creating..."
+            : "Create Location"}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+{showLocationSearch && (
+  <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+
+    <div className="w-full max-w-xl rounded-3xl bg-[#111] border border-white/10 p-6">
+
+      <h3 className="text-xl font-semibold text-white mb-4">
+        Search Location
+      </h3>
+
+      <input
+        type="text"
+        placeholder="Type location..."
+        value={locationSearch}
+        onChange={(e) =>
+          setLocationSearch(e.target.value)
+        }
+        className="input w-full mb-4"
+      />
+
+      <div className="max-h-[400px] overflow-y-auto space-y-2">
+
+        {buildOptions(locations)
+          .filter((loc) =>
+            loc.label
+              .toLowerCase()
+              .includes(
+                locationSearch.toLowerCase()
+              )
+          )
+          .map((loc) => (
+            <button
+              key={loc._id}
+              type="button"
+              onClick={() => {
+
+                setForm((prev) => ({
+                  ...prev,
+                  locationData: {
+                    ...prev.locationData,
+                    locationRef: loc._id,
+                    locationName: loc.label,
+                    customLocation: "",
+                  },
+                }));
+
+                setShowLocationSearch(false);
+                setLocationSearch("");
+              }}
+              className="
+                w-full
+                text-left
+                px-4
+                py-3
+                rounded-xl
+                bg-white/5
+                hover:bg-white/10
+                text-white
+              "
+            >
+              {loc.label}
+            </button>
+          ))}
+      </div>
+
+      <div className="flex justify-end mt-5">
+        <button
+          onClick={() => {
+            setShowLocationSearch(false);
+            setLocationSearch("");
+          }}
+          className="
+            px-5
+            py-3
+            rounded-xl
+            bg-white/10
+            text-white
+          "
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+{showDeveloperSearch && (
+  <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+
+    <div className="w-full max-w-2xl rounded-3xl bg-[#0f0f0f] border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.6)] overflow-hidden">
+
+      <div className="p-6 border-b border-white/10">
+
+        <h3 className="text-xl font-semibold text-white">
+          Search Developer
+        </h3>
+
+        <p className="text-sm text-white/50 mt-1">
+          Find a developer instantly
+        </p>
+
+      </div>
+
+      <div className="p-6">
+
+        <input
+          type="text"
+          placeholder="Search developer..."
+          value={developerSearch}
+          onChange={(e) =>
+            setDeveloperSearch(e.target.value)
+          }
+          autoFocus
+          className="
+            w-full
+            h-12
+            px-4
+            rounded-xl
+            bg-white/5
+            border border-white/10
+            text-white
+            outline-none
+          "
+        />
+
+        <div className="mt-4 max-h-[400px] overflow-y-auto space-y-2">
+
+          {developers
+            .filter((dev) =>
+              dev.name
+                .toLowerCase()
+                .includes(
+                  developerSearch.toLowerCase()
+                )
+            )
+            .map((dev) => (
+              <button
+                key={dev._id}
+                type="button"
+                onClick={() => {
+
+                  setUseCustomDeveloper(false);
+
+                  setForm((prev) => ({
+                    ...prev,
+                    coreDetails: {
+                      ...prev.coreDetails,
+                      developerRef: dev._id,
+                      developerName: dev.name,
+                      developerLogo: dev.logo || "",
+                    },
+                  }));
+
+                  setShowDeveloperSearch(false);
+                  setDeveloperSearch("");
+                }}
+                className="
+                  w-full
+                  text-left
+                  p-4
+                  rounded-2xl
+                  bg-white/[0.03]
+                  border
+                  border-white/5
+                  hover:bg-white/[0.07]
+                  hover:border-white/10
+                  transition
+                "
+              >
+                <div className="font-medium text-white">
+                  {dev.name}
+                </div>
+              </button>
+            ))}
+
+        </div>
+
+      </div>
+
+      <div className="p-5 border-t border-white/10 flex justify-end">
+
+        <button
+          onClick={() => {
+            setShowDeveloperSearch(false);
+            setDeveloperSearch("");
+          }}
+          className="
+            px-5
+            py-2.5
+            rounded-xl
+            bg-white/10
+            text-white
+            hover:bg-white/15
+          "
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
 </div>
 
   );
+  
 }
