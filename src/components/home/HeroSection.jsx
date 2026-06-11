@@ -236,7 +236,7 @@ export default function HeroSection() {
                       <div className="absolute inset-0 bg-[#c89d58]/30 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
 
                       <div className="relative w-10 h-10 rounded-xl border border-white/10 bg-white/[0.06] backdrop-blur-xl flex items-center justify-center">
-
+ 
                         <Icon
                           size={18}
                           className="text-[#d4ae67]"

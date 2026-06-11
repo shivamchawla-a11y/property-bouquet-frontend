@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
+import PropertyFilters from "@/utils/propertyFilters";
 
 import {
   MapPin,
@@ -105,7 +106,7 @@ export default function DeveloperSlugPage() {
       <Navbar />
 
       {/* HERO */}
-      <section className="relative pt-36 pb-24 overflow-hidden bg-gradient-to-br from-[#081c15] via-[#1b4332] to-[#2d6a4f]">
+      <section className="relative pt-28 pb-14 overflow-hidden bg-gradient-to-br from-[#081c15] via-[#10281f] to-[#163b2c]">
 
         {/* DEVELOPER COVER IMAGE */}
         {developer?.image && (
@@ -139,7 +140,19 @@ export default function DeveloperSlugPage() {
             {/* LOGO */}
             <div className="mb-10">
 
-              <div className="w-36 h-36 rounded-[40px] bg-white shadow-2xl flex items-center justify-center p-6">
+              <div className="
+w-28 h-28 md:w-32 md:h-32
+rounded-[32px]
+bg-white
+shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+flex
+items-center
+justify-center
+p-5
+border
+border-white/30
+backdrop-blur-xl
+">
 
                 <img
                   src={developer.logo}
@@ -150,19 +163,19 @@ export default function DeveloperSlugPage() {
             </div>
 
             {/* NAME */}
-            <h1 className="text-5xl md:text-7xl font-black text-white leading-tight">
+            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
               {developer.name}
             </h1>
 
             {/* TEXT */}
-            <p className="mt-6 text-xl text-white/75 max-w-3xl leading-9">
+           <p className="mt-5 text-lg md:text-xl text-white/75 max-w-3xl leading-8">
               Explore iconic luxury residences and premium
               investment opportunities crafted by{" "}
               {developer.name}.
             </p>
 
             {/* STATS */}
-            <div className="flex flex-wrap gap-5 mt-10">
+            <div className="flex flex-wrap gap-4 mt-8">
 
               <div className="bg-white text-black px-7 h-14 rounded-2xl flex items-center font-bold shadow-2xl">
                 {properties.length} Luxury Projects
@@ -179,182 +192,12 @@ export default function DeveloperSlugPage() {
         </div>
       </section>
 
-      {/* ================= ABOUT DEVELOPER ================= */}
-      {developer?.description && (
-        <section className="max-w-7xl mx-auto px-4 pt-16">
-
-          <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-xl border border-gray-100">
-
-            <div className="flex items-center gap-3 mb-6">
-
-              <div className="h-12 w-12 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center">
-                <Building2 size={22} />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-[#0f3b2e] uppercase tracking-widest">
-                  About Developer
-                </p>
-
-                <h2 className="text-3xl md:text-4xl font-black text-[#081c15]">
-                  {developer.name}
-                </h2>
-              </div>
-            </div>
-
-            <div className="h-[2px] w-24 bg-[#d4af37] rounded-full mb-8" />
-
-            <div className="prose prose-lg max-w-none text-gray-700 leading-9">
-
-              <p className="whitespace-pre-line text-[17px] leading-[2.1]">
-                {developer.description}
-              </p>
-
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* MAIN */}
       <section className="max-w-[1500px] mx-auto px-4 py-16">
 
-        <div className="grid lg:grid-cols-[320px_1fr] gap-10">
+        <div className="grid lg:grid-cols-[400px_1fr] gap-12 items-start">
 
-          {/* SIDEBAR */}
-          <aside className="hidden lg:block">
-
-            <div className="sticky top-28 bg-white rounded-[32px] p-7 shadow-xl border border-gray-100">
-
-              {/* HEADER */}
-              <div className="flex items-center justify-between mb-8">
-
-                <div className="flex items-center gap-3">
-
-                  <SlidersHorizontal size={20} />
-
-                  <h3 className="text-2xl font-black">
-                    Filters
-                  </h3>
-                </div>
-
-                <button className="text-sm text-green-700 font-semibold">
-                  Reset
-                </button>
-              </div>
-
-              {/* SEARCH */}
-              <div className="relative mb-10">
-
-                <Search
-                  size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Search project..."
-                  className="w-full h-14 rounded-2xl border border-gray-200 pl-12 pr-4 outline-none focus:border-[#1b4332]"
-                />
-              </div>
-
-              {/* PROPERTY TYPES */}
-              <div className="mb-10">
-
-                <div className="flex items-center gap-2 mb-5">
-                  <Home size={18} />
-
-                  <h4 className="font-bold text-lg">
-                    Property Type
-                  </h4>
-                </div>
-
-                <div className="space-y-4 text-gray-600">
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Apartments
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Villas
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    Penthouse
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    Commercial
-                  </label>
-                </div>
-              </div>
-
-              {/* LOCATIONS */}
-              <div className="mb-10">
-
-                <div className="flex items-center gap-2 mb-5">
-                  <MapPin size={18} />
-
-                  <h4 className="font-bold text-lg">
-                    Prime Locations
-                  </h4>
-                </div>
-
-                <div className="space-y-4 text-gray-600">
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Golf Course Road
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Dwarka Expressway
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Sohna Road
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    New Gurgaon
-                  </label>
-                </div>
-              </div>
-
-              {/* STATUS */}
-              <div>
-
-                <div className="flex items-center gap-2 mb-5">
-                  <Building2 size={18} />
-
-                  <h4 className="font-bold text-lg">
-                    Project Status
-                  </h4>
-                </div>
-
-                <div className="space-y-4 text-gray-600">
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    New Launch
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" />
-                    Under Construction
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    Ready To Move
-                  </label>
-                </div>
-              </div>
-            </div>
-          </aside>
+        <PropertyFilters />
 
           {/* RIGHT */}
           <div>
@@ -496,7 +339,43 @@ export default function DeveloperSlugPage() {
               </div>
             )}
           </div>
+          
         </div>
+              {/* ================= ABOUT DEVELOPER ================= */}
+      {developer?.description && (
+        <section className="w-full px-4 lg:px-10 pt-20 pb-6">
+
+          <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-xl border border-gray-100">
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <div className="h-12 w-12 rounded-2xl bg-[#0f3b2e] text-white flex items-center justify-center">
+                <Building2 size={22} />
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-[#0f3b2e] uppercase tracking-widest">
+                  About Developer
+                </p>
+
+                <h2 className="text-3xl md:text-4xl font-black text-[#081c15]">
+                  {developer.name}
+                </h2>
+              </div>
+            </div>
+
+            <div className="h-[2px] w-24 bg-[#d4af37] rounded-full mb-8" />
+
+            <div className="prose prose-lg max-w-none text-gray-700 leading-9">
+
+              <p className="whitespace-pre-line text-[17px] leading-[2.1]">
+                {developer.description}
+              </p>
+
+            </div>
+          </div>
+        </section>
+      )}
       </section>
     </div>
   );
