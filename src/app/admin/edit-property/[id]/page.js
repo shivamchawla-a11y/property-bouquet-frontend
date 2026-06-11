@@ -543,6 +543,11 @@ export default function EditProperty() {
      
      const [showDeveloperModal, setShowDeveloperModal] =
        useState(false);
+
+         const [showIconPicker, setShowIconPicker] = useState(false);
+       const [activeMetricIndex, setActiveMetricIndex] = useState(null);
+       const [activeMetric, setActiveMetric] = useState(null);
+       const [expandedMetric, setExpandedMetric] = useState(null);
    
    // Massive icon library
    const ICONS = {
@@ -2724,7 +2729,7 @@ if (loading) {
 )}
 
     {/* ================= KEY METRICS ================= */}
-<div className="mt-6">
+{/* <div className="mt-6">
   <h3 className="font-semibold mb-2 text-white">
     Key Metrics
   </h3>
@@ -2810,7 +2815,7 @@ if (loading) {
     />
 
   </div>
-</div>
+</div> */}
 
 {/* ================= CUSTOM KEY METRICS ================= */}
 
@@ -2818,40 +2823,110 @@ if (loading) {
 
   <div className="mb-5">
     <h3 className="font-semibold text-xl text-white">
-      Custom Key Metrics
+      Key Metrics
     </h3>
-
-    <p className="text-white/50 text-sm mt-1">
-      Add unlimited metrics with icons
-    </p>
   </div>
 
-  {(form.keyMetrics.customMetrics || []).map(
-    (item, index) => {
+ {(form.keyMetrics.customMetrics || []).map(
+  (item, index) => {
 
-      const SelectedIcon =
-        ICONS[item.icon] || FaIcons.FaBuilding;
+    const SelectedIcon =
+      ICONS[item.icon] || FaIcons.FaBuilding;
 
-      return (
-        <div
-          key={index}
-          className="rounded-2xl p-5 mb-5 bg-white/5 border border-white/10"
+    const isOpen =
+      expandedMetric === index;
+
+    return (
+      <div
+        key={index}
+        className="
+          rounded-2xl
+          mb-4
+          overflow-hidden
+          border
+          border-white/10
+          bg-white/5
+        "
+      >
+
+        {/* COLLAPSED HEADER */}
+        <button
+          type="button"
+          onClick={() =>
+            setExpandedMetric(
+              isOpen ? null : index
+            )
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            p-4
+            text-left
+          "
         >
-          {/* HEADER */}
-          <div className="flex items-center justify-between mb-4">
 
-            <h4 className="font-semibold text-white">
-              Metric #{index + 1}
-            </h4>
+          <div className="flex items-center gap-4">
 
-            <button
-              type="button"
-              onClick={() => {
+            <div
+              className="
+                h-12
+                w-12
+                rounded-xl
+                bg-[#D4AF37]/20
+                border
+                border-[#D4AF37]/30
+                flex
+                items-center
+                justify-center
+              "
+            >
+              <SelectedIcon
+                size={20}
+                className="text-[#D4AF37]"
+              />
+            </div>
 
-                const updated =
-                  form.keyMetrics.customMetrics.filter(
-                    (_, i) => i !== index
-                  );
+            <div>
+
+              <h4 className="text-white font-medium">
+                {item.label ||
+                  `Metric #${index + 1}`}
+              </h4>
+
+              <p className="text-white/50 text-sm">
+                {item.value ||
+                  "No value entered"}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="text-white/60 text-xl">
+            {isOpen ? "−" : "+"}
+          </div>
+
+        </button>
+
+        {/* EXPANDED CONTENT */}
+        {isOpen && (
+          <div className="px-4 pb-4">
+
+            <input
+              className="input mb-4"
+              placeholder="Metric Label"
+              value={item.label || ""}
+              onChange={(e) => {
+
+                const updated = [
+                  ...(form.keyMetrics
+                    .customMetrics || [])
+                ];
+
+                updated[index].label =
+                  e.target.value;
 
                 handleChange(
                   "keyMetrics",
@@ -2859,170 +2934,128 @@ if (loading) {
                   updated
                 );
               }}
-              className="bg-red-500 text-white px-3 py-1 rounded-lg"
-            >
-              Delete
-            </button>
-          </div>
+            />
 
-          {/* LABEL */}
-          <input
-            className="input mb-4"
-            placeholder="Metric Label"
-            value={item.label || ""}
-            onChange={(e) => {
+            <input
+              className="input mb-4"
+              placeholder="Metric Value"
+              value={item.value || ""}
+              onChange={(e) => {
 
-              const updated = [
-                ...(form.keyMetrics.customMetrics || [])
-              ];
+                const updated = [
+                  ...(form.keyMetrics
+                    .customMetrics || [])
+                ];
 
-              updated[index].label =
-                e.target.value;
+                updated[index].value =
+                  e.target.value;
 
-              handleChange(
-                "keyMetrics",
-                "customMetrics",
-                updated
-              );
-            }}
-          />
+                handleChange(
+                  "keyMetrics",
+                  "customMetrics",
+                  updated
+                );
+              }}
+            />
 
-          {/* VALUE */}
-          <input
-            className="input mb-4"
-            placeholder="Metric Value"
-            value={item.value || ""}
-            onChange={(e) => {
+            <div className="flex gap-3">
 
-              const updated = [
-                ...(form.keyMetrics.customMetrics || [])
-              ];
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMetricIndex(index);
+                  setShowIconPicker(true);
+                }}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-[#D4AF37]
+                  text-black
+                  font-medium
+                "
+              >
+                Change Icon
+              </button>
 
-              updated[index].value =
-                e.target.value;
+              <button
+                type="button"
+                onClick={() => {
 
-              handleChange(
-                "keyMetrics",
-                "customMetrics",
-                updated
-              );
-            }}
-          />
-
-          {/* SELECTED ICON */}
-          <div className="mb-4 flex items-center gap-3">
-
-            <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center">
-
-              <SelectedIcon
-                size={22}
-                className="text-[#D4AF37]"
-              />
-            </div>
-
-            <div>
-              <p className="text-white text-sm">
-                Selected Icon
-              </p>
-
-              <p className="text-white/50 text-xs">
-                {item.icon || "FaBuilding"}
-              </p>
-            </div>
-          </div>
-
-          {/* SEARCH ICON */}
-          <input
-            className="input mb-4"
-            placeholder="Search icon..."
-            value={iconSearch}
-            onChange={(e) =>
-              setIconSearch(e.target.value)
-            }
-          />
-
-          {/* ICON GRID */}
-          <div className="grid grid-cols-6 md:grid-cols-8 gap-3 max-h-[250px] overflow-y-auto p-2 rounded-xl bg-black/20 border border-white/10">
-
-            {filteredIcons.map((iconName) => {
-
-              const IconComponent =
-                ICONS[iconName];
-
-              return (
-                <button
-                  key={iconName}
-                  type="button"
-                  onClick={() => {
-
-                    const updated = [
-                      ...(form.keyMetrics
-                        .customMetrics || [])
-                    ];
-
-                    updated[index].icon =
-                      iconName;
-
-                    handleChange(
-                      "keyMetrics",
-                      "customMetrics",
-                      updated
+                  const updated =
+                    form.keyMetrics.customMetrics.filter(
+                      (_, i) => i !== index
                     );
-                  }}
-                  className={`h-12 rounded-xl flex items-center justify-center transition border ${
-                    item.icon === iconName
-                      ? "border-[#D4AF37] bg-[#D4AF37]/20"
-                      : "border-white/10 bg-white/5 hover:bg-white/10"
-                  }`}
-                  title={iconName}
-                >
-                  <IconComponent
-                    size={18}
-                    className="text-white"
-                  />
-                </button>
-              );
-            })}
-          </div>
 
-        </div>
-      );
-    }
-  )}
+                  handleChange(
+                    "keyMetrics",
+                    "customMetrics",
+                    updated
+                  );
+
+                  if (
+                    expandedMetric === index
+                  ) {
+                    setExpandedMetric(null);
+                  }
+                }}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-red-500
+                  text-white
+                "
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    );
+  }
+)}
 
   <button
-    type="button"
-    onClick={() => {
+  type="button"
+  onClick={() => {
 
-      const updated = [
-        ...(form.keyMetrics.customMetrics || []),
-        {
-          label: "",
-          value: "",
-          icon: "FaBuilding",
-        },
-      ];
+    const updated = [
+      ...(form.keyMetrics.customMetrics || []),
+      {
+        label: "",
+        value: "",
+        icon: "FaBuilding",
+      },
+    ];
 
-      handleChange(
-        "keyMetrics",
-        "customMetrics",
-        updated
-      );
-    }}
-    className="
-      w-full
-      py-4
-      rounded-2xl
-      bg-[#D4AF37]
-      text-black
-      font-semibold
-      text-lg
-      hover:opacity-90
-      transition
-    "
-  >
-    + Add Metric
-  </button>
+    handleChange(
+      "keyMetrics",
+      "customMetrics",
+      updated
+    );
+
+    // Open only newly created metric
+    setExpandedMetric(updated.length - 1);
+  }}
+  className="
+    w-full
+    py-4
+    rounded-2xl
+    bg-[#D4AF37]
+    text-black
+    font-semibold
+    text-lg
+    hover:opacity-90
+    transition
+  "
+>
+  + Add Metric
+</button>
 
 </div>
 
@@ -3109,7 +3142,6 @@ if (loading) {
     </div>
   </div>
 )}
-
 
         
 
@@ -6631,6 +6663,119 @@ if (loading) {
 
     </div>
 
+  </div>
+)}
+{showIconPicker && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[999]
+      bg-black/70
+      backdrop-blur-sm
+      flex
+      items-center
+      justify-center
+      p-6
+    "
+  >
+    <div
+      className="
+        w-full
+        max-w-4xl
+        max-h-[80vh]
+        overflow-hidden
+        rounded-3xl
+        bg-[#111]
+        border
+        border-white/10
+      "
+    >
+
+      {/* HEADER */}
+      <div className="p-5 border-b border-white/10 flex justify-between items-center">
+        <h3 className="text-white font-semibold text-lg">
+          Select Icon
+        </h3>
+
+        <button
+          onClick={() => setShowIconPicker(false)}
+          className="text-white/60 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="p-5">
+        <input
+          className="input"
+          placeholder="Search icon..."
+          value={iconSearch}
+          onChange={(e) =>
+            setIconSearch(e.target.value)
+          }
+        />
+      </div>
+
+      {/* ICONS */}
+      <div className="p-5 overflow-y-auto max-h-[500px]">
+
+        <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
+
+          {filteredIcons.map((iconName) => {
+
+            const IconComponent =
+              ICONS[iconName];
+
+            return (
+              <button
+                key={iconName}
+                type="button"
+                onClick={() => {
+
+                  const updated = [
+                    ...(form.keyMetrics.customMetrics || [])
+                  ];
+
+                  updated[activeMetricIndex].icon =
+                    iconName;
+
+                  handleChange(
+                    "keyMetrics",
+                    "customMetrics",
+                    updated
+                  );
+
+                  setShowIconPicker(false);
+                }}
+                className="
+                  h-12
+                  rounded-xl
+                  flex
+                  items-center
+                  justify-center
+                  border
+                  border-white/10
+                  bg-white/5
+                  hover:bg-[#D4AF37]/20
+                  hover:border-[#D4AF37]
+                  transition
+                "
+              >
+                <IconComponent
+                  size={18}
+                  className="text-white"
+                />
+              </button>
+            );
+          })}
+
+        </div>
+
+      </div>
+
+    </div>
   </div>
 )}
 </div>

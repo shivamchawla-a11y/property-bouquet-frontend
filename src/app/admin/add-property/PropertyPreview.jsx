@@ -300,30 +300,57 @@ const metricIcons = {
 };
 
 // ================= METRICS (BACKWARD COMPATIBLE) =================
-const displayMetrics = [
-  {
-    label: "Acres",
-    value: keyMetrics?.landArea || "1.83",
-    icon: "FaThLarge",
-  },
-  {
-    label: "Towers",
-    value: keyMetrics?.totalTowers || "2",
-    icon: "FaBuilding",
-  },
-  {
-    label: "Units",
-    value: keyMetrics?.totalUnits || "95",
-    icon: "FaUsers",
-  },
-  {
-    label: "Possession",
-    value: keyMetrics?.possession || "May 2030",
-    icon: "FaCalendarAlt",
-  },
+const displayMetrics = (() => {
 
-  ...(keyMetrics?.customMetrics || []),
-];
+  const customMetrics =
+    keyMetrics?.customMetrics || [];
+
+  // If user has created ANY custom metric,
+  // use ONLY custom metrics
+  if (customMetrics.length > 0) {
+    return customMetrics;
+  }
+
+  // Old properties fallback
+  return [
+    keyMetrics?.possession && {
+      label: "Possession",
+      value: keyMetrics.possession,
+      icon: "FaCalendarAlt",
+    },
+
+    keyMetrics?.landArea && {
+      label: "Land Area",
+      value: keyMetrics.landArea,
+      icon: "FaMapMarkedAlt",
+    },
+
+    keyMetrics?.totalUnits && {
+      label: "Units",
+      value: keyMetrics.totalUnits,
+      icon: "FaBuilding",
+    },
+
+    keyMetrics?.totalTowers && {
+      label: "Towers",
+      value: keyMetrics.totalTowers,
+      icon: "FaCity",
+    },
+
+    keyMetrics?.floors && {
+      label: "Floors",
+      value: keyMetrics.floors,
+      icon: "FaLayerGroup",
+    },
+
+    keyMetrics?.reraNumber && {
+      label: "RERA",
+      value: keyMetrics.reraNumber,
+      icon: "FaCertificate",
+    },
+  ].filter(Boolean);
+
+})();
   
 
 /* KEYBOARD NAVIGATION */
@@ -1593,12 +1620,11 @@ const getShortLocation = (location) => {
 
           <div
   className="
-    relative
-    z-10
-    grid
-    grid-cols-2
-    md:grid-cols-5
-  "
+  relative
+  z-10
+  flex
+  flex-wrap
+"
 >
   {displayMetrics.map((metric, index) => {
 
@@ -1608,17 +1634,19 @@ const getShortLocation = (location) => {
 
     return (
       <div
-        key={index}
-        className="
-          py-4
-          lg:py-5
-          px-3
-          sm:px-4
-          text-center
-          border-r
-          border-white/10
-        "
-      >
+  key={index}
+  className="
+    flex-1
+    min-w-[140px]
+    py-4
+    lg:py-5
+    px-3
+    sm:px-4
+    text-center
+    border-r
+    border-white/10
+  "
+>
         <div className="flex justify-center mb-2">
           <Icon
             size={16}
