@@ -1688,35 +1688,7 @@ const getShortLocation = (location) => {
     );
   })}
 
-            {/* PRICE */}
-            <div className="py-4 lg:py-5 px-3 sm:px-4 text-center col-span-2 md:col-span-1">
-
-              <div className="flex justify-center mb-2">
-                <IndianRupee
-                  size={16}
-                  className="text-[#d8b46b]"
-                />
-              </div>
-
-              <p
-                className="text-white/60 text-[9px] sm:text-[10px] tracking-[1.2px] sm:tracking-[1.5px] uppercase mb-2"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                Starts At
-              </p>
-
-              <p
-                className="text-[22px] sm:text-[24px] md:text-[34px] leading-none text-[#dfbc67] font-[400]"
-                style={{
-                  fontFamily:
-                    "Georgia, Times New Roman, serif",
-                }}
-              >
-                ₹ {formatPrice(coreDetails?.startingPrice)}
-              </p>
-            </div>
+        
           </div>
         </div>
       </motion.div>

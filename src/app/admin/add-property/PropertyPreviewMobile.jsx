@@ -300,30 +300,57 @@ const metricIcons = {
 };
 
 // ================= METRICS (BACKWARD COMPATIBLE) =================
-const displayMetrics = [
-  {
-    label: "Acres",
-    value: keyMetrics?.landArea || "1.83",
-    icon: "FaThLarge",
-  },
-  {
-    label: "Towers",
-    value: keyMetrics?.totalTowers || "2",
-    icon: "FaBuilding",
-  },
-  {
-    label: "Units",
-    value: keyMetrics?.totalUnits || "95",
-    icon: "FaUsers",
-  },
-  {
-    label: "Possession",
-    value: keyMetrics?.possession || "May 2030",
-    icon: "FaCalendarAlt",
-  },
+const displayMetrics = (() => {
 
-  ...(keyMetrics?.customMetrics || []),
-];
+  const customMetrics =
+    keyMetrics?.customMetrics || [];
+
+  // If user has created ANY custom metric,
+  // use ONLY custom metrics
+  if (customMetrics.length > 0) {
+    return customMetrics;
+  }
+
+  // Old properties fallback
+  return [
+    keyMetrics?.possession && {
+      label: "Possession",
+      value: keyMetrics.possession,
+      icon: "FaCalendarAlt",
+    },
+
+    keyMetrics?.landArea && {
+      label: "Land Area",
+      value: keyMetrics.landArea,
+      icon: "FaMapMarkedAlt",
+    },
+
+    keyMetrics?.totalUnits && {
+      label: "Units",
+      value: keyMetrics.totalUnits,
+      icon: "FaBuilding",
+    },
+
+    keyMetrics?.totalTowers && {
+      label: "Towers",
+      value: keyMetrics.totalTowers,
+      icon: "FaCity",
+    },
+
+    keyMetrics?.floors && {
+      label: "Floors",
+      value: keyMetrics.floors,
+      icon: "FaLayerGroup",
+    },
+
+    keyMetrics?.reraNumber && {
+      label: "RERA",
+      value: keyMetrics.reraNumber,
+      icon: "FaCertificate",
+    },
+  ].filter(Boolean);
+
+})();
   
 
 /* KEYBOARD NAVIGATION */
@@ -1250,29 +1277,7 @@ const getShortLocation = (location) => {
   );
 })}
 
-          <div className="col-span-2 p-5 text-center">
-            <IndianRupee
-              size={15}
-              className="mx-auto mb-2 text-[#d8b46b]"
-            />
-
-            <p className="text-white/60 text-[9px] uppercase mb-2">
-              Starts At
-            </p>
-
-            <p
-              className="
-                text-[#dfbc67]
-                text-[24px]
-              "
-              style={{
-                fontFamily:
-                  "Georgia, Times New Roman, serif",
-              }}
-            >
-              ₹ {formatPrice(coreDetails?.startingPrice)}
-            </p>
-          </div>
+        
 
         </div>
       </motion.div>
