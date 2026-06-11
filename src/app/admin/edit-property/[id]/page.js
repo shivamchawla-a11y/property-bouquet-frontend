@@ -1637,12 +1637,12 @@ const fieldStepMap = {
   "categoryData.categoryRef": 1,
 
   "heroSection.heroDescription": 1,
-  "keyMetrics.possession": 1,
-  "keyMetrics.landArea": 1,
-  "keyMetrics.totalUnits": 1,
-  "keyMetrics.totalTowers": 1,
-  "keyMetrics.floors": 1,
-  "keyMetrics.reraNumber": 1,
+  // "keyMetrics.possession": 1,
+  // "keyMetrics.landArea": 1,
+  // "keyMetrics.totalUnits": 1,
+  // "keyMetrics.totalTowers": 1,
+  // "keyMetrics.floors": 1,
+  // "keyMetrics.reraNumber": 1,
 
   "overview.description": 2,
 "overview.aboutImageUrl": 2,
@@ -1659,12 +1659,12 @@ const labelMap = {
 
 
   "heroSection.heroDescription": "Hero Description",
-  "keyMetrics.possession": "Possession",
-  "keyMetrics.landArea": "Land Area",
-  "keyMetrics.totalUnits": "Total Units",
-  "keyMetrics.totalTowers": "Total Towers", 
-  "keyMetrics.floors": "Floors",
-  "keyMetrics.reraNumber": "RERA Number",
+  // "keyMetrics.possession": "Possession",
+  // "keyMetrics.landArea": "Land Area",
+  // "keyMetrics.totalUnits": "Total Units",
+  // "keyMetrics.totalTowers": "Total Towers", 
+  // "keyMetrics.floors": "Floors",
+  // "keyMetrics.reraNumber": "RERA Number",
 
   "overview.description": "About Description",
 "overview.aboutImageUrl": "About Image",
