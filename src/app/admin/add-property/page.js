@@ -615,20 +615,20 @@ useEffect(() => {
   fetchLocations();
 }, []);
 
-    useEffect(() => {
-  const fetchDevelopers = async () => {
-    try {
-      const res = await fetch(`${API}/developers`);
-      const data = await res.json();
+    const fetchDevelopers = async () => {
+  try {
+    const res = await fetch(`${API}/developers`);
+    const data = await res.json();
 
-      if (res.ok) {
-        setDevelopers(data.data || []);
-      }
-    } catch (err) {
-      console.error(err);
+    if (res.ok) {
+      setDevelopers(data.data || []);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
+useEffect(() => {
   fetchDevelopers();
 }, []);
 

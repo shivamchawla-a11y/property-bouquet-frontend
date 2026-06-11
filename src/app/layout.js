@@ -38,17 +38,20 @@ export default function RootLayout({ children }) {
 
         {/* 🔥 GLOBAL TOAST SYSTEM */}
         <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: "#1f1f1f",
-              color: "#fff",
-              border: "1px solid #333",
-              fontSize: "14px",
-            },
-          }}
-        />
+  position="top-right"
+  containerStyle={{
+    zIndex: 2147483647,
+  }}
+  toastOptions={{
+    duration: 4000,
+    style: {
+      background: "#1f1f1f",
+      color: "#fff",
+      border: "1px solid #333",
+      fontSize: "14px",
+    },
+  }}
+/>
       </body>
     </html>
   );
