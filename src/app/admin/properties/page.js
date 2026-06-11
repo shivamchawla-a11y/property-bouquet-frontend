@@ -22,6 +22,8 @@ const API_URL =
 
 export default function PropertiesPage() {
   const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("newest");
+    const [developerFilter, setDeveloperFilter] = useState("All");
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
@@ -38,11 +40,19 @@ export default function PropertiesPage() {
 
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+
   const router = useRouter();
 
-  useEffect(() => {
+useEffect(() => {
   setCurrentPage(1);
-}, [search, filter, tagFilter, itemsPerPage]);
+}, [
+  search,
+  filter,
+  tagFilter,
+  developerFilter,
+  itemsPerPage,
+  sortBy,
+]);
 
   // ================= FETCH =================
   const fetchProperties = async () => {
@@ -183,32 +193,99 @@ export default function PropertiesPage() {
     }
   };
 
-  // ================= FILTER =================
-  const filtered = properties.filter((p) => {
+// ================= FILTER + SORT =================
+const filtered = properties
+  .filter((p) => {
 
-  const titleMatch =
-  (p?.coreDetails?.title || "")
-    .toLowerCase()
-    .includes(search.toLowerCase());
+    const titleMatch =
+      (p?.coreDetails?.title || "")
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-  const tagMatch =
-    tagFilter === "All" ||
-    (p.propertyTag || "Normal") === tagFilter;
+    const tagMatch =
+      tagFilter === "All" ||
+      (p.propertyTag || "Normal") === tagFilter;
 
-  const statusMatch =
-  filter === "all"
-    ? !p.isDeleted
-    : filter === "trash"
-    ? p.isDeleted
-    : p.status === filter &&
-      !p.isDeleted;
+    const statusMatch =
+      filter === "all"
+        ? !p.isDeleted
+        : filter === "trash"
+        ? p.isDeleted
+        : p.status === filter &&
+          !p.isDeleted;
 
-  return (
-    titleMatch &&
-    tagMatch &&
-    statusMatch
-  );
-});
+           // ✅ DEVELOPER FILTER
+  const propertyDeveloperId =
+    typeof p?.coreDetails?.developerRef === "object"
+      ? p?.coreDetails?.developerRef?._id
+      : p?.coreDetails?.developerRef;
+
+  const developerMatch =
+    developerFilter === "All" ||
+    propertyDeveloperId === developerFilter ||
+    p?.developerRef === developerFilter;
+
+    return (
+  titleMatch &&
+  tagMatch &&
+  statusMatch &&
+  developerMatch
+);
+  })
+  .sort((a, b) => {
+
+    switch (sortBy) {
+
+      case "newest":
+        return (
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+        );
+
+      case "oldest":
+        return (
+          new Date(a.createdAt) -
+          new Date(b.createdAt)
+        );
+
+      case "name_asc":
+        return (
+          a?.coreDetails?.title || ""
+        ).localeCompare(
+          b?.coreDetails?.title || ""
+        );
+
+      case "name_desc":
+        return (
+          b?.coreDetails?.title || ""
+        ).localeCompare(
+          a?.coreDetails?.title || ""
+        );
+
+      case "published":
+        return (
+          b.status === "published"
+        ) - (
+          a.status === "published"
+        );
+
+      case "draft":
+        return (
+          b.status === "draft"
+        ) - (
+          a.status === "draft"
+        );
+
+      case "featured":
+        return (
+          (b.propertyTag === "Featured") -
+          (a.propertyTag === "Featured")
+        );
+
+      default:
+        return 0;
+    }
+  });
 
   // ================= PAGINATION =================
   const totalPages = Math.max(
@@ -339,6 +416,41 @@ const permanentDelete = async (id) => {
     console.error(err);
   }
 };
+const developerOptions = [
+  {
+    label: "All Developers",
+    value: "All",
+  },
+
+  ...Array.from(
+    new Map(
+      properties
+        .filter(
+          (p) =>
+            p?.coreDetails?.developerRef ||
+            p?.developerRef
+        )
+        .map((p) => {
+          const developerId =
+            p?.coreDetails?.developerRef?._id ||
+            p?.coreDetails?.developerRef ||
+            p?.developerRef;
+
+          const developerName =
+            p?.coreDetails?.developerName ||
+            `Developer ${String(developerId).slice(-6)}`;
+
+          return [
+            developerId,
+            {
+              label: developerName,
+              value: developerId,
+            },
+          ];
+        })
+    ).values()
+  ),
+];
 
   return (
     <div className="p-4 bg-[#f7f8f7] min-h-screen">
@@ -484,14 +596,65 @@ const permanentDelete = async (id) => {
 
 </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col xl:flex-row gap-3">
 
-        <input
-          placeholder="Search by property title..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-[320px] bg-white border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition shadow-sm"
-        />
+  <input
+  placeholder="Search properties..."
+  value={search}
+  onChange={(e) =>
+    setSearch(e.target.value)
+  }
+  className="
+    flex-1
+    px-4
+    py-3
+    rounded-xl
+    border
+    border-gray-200
+    bg-white
+    text-gray-900
+    placeholder:text-gray-400
+    text-sm
+    font-medium
+    outline-none
+    focus:ring-2
+    focus:ring-[#0f3b2e]/20
+    focus:border-[#0f3b2e]
+  "
+/>
+{/* SORT BY */}
+<div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 min-w-[230px]">
+  <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+    Sort By
+  </span>
+
+  <select
+  value={sortBy}
+  onChange={(e) => setSortBy(e.target.value)}
+  className="
+    bg-white
+    border
+    border-gray-200
+    rounded-xl
+    px-4
+    py-3
+    text-sm
+    font-medium
+    text-gray-700
+    min-w-[220px]
+    shadow-sm
+    outline-none
+  "
+>
+  <option value="newest">Sort: Newest First</option>
+  <option value="oldest">Sort: Oldest First</option>
+  <option value="name_asc">Sort: Name A → Z</option>
+  <option value="name_desc">Sort: Name Z → A</option>
+  <option value="published">Sort: Published First</option>
+  <option value="draft">Sort: Draft First</option>
+  <option value="featured">Sort: Featured First</option>
+</select>
+</div>
 
         {/* TAG FILTER */}
         <select
@@ -506,6 +669,43 @@ const permanentDelete = async (id) => {
           <option value="New">New</option>
           <option value="Normal">Normal</option>
         </select>
+
+        {/* DEVELOPER FILTER */}
+<select
+  value={developerFilter}
+  onChange={(e) =>
+    setDeveloperFilter(e.target.value)
+  }
+  className="
+    bg-white
+    border
+    border-gray-300
+    text-sm
+    text-gray-800
+    px-4
+    py-2.5
+    rounded-xl
+    focus:ring-2
+    focus:ring-[#0f3b2e]
+    outline-none
+    transition
+    shadow-sm
+    min-w-[220px]
+  "
+>
+  <option value="All">
+    All Developers
+  </option>
+
+  {developerOptions.map((dev) => (
+    <option
+  key={dev.value}
+  value={dev.value}
+>
+  {dev.label}
+</option>
+  ))}
+</select>
 
       </div>
 

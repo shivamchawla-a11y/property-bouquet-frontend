@@ -544,6 +544,17 @@ const [developerSearch, setDeveloperSearch] =
 const [showDeveloperModal, setShowDeveloperModal] =
   useState(false);
 
+const [developerLoading, setDeveloperLoading] =
+  useState(false);
+
+const [newDeveloper, setNewDeveloper] =
+  useState({
+    name: "",
+    logo: "",
+    image: "",
+    description: "",
+  });
+
   const [showIconPicker, setShowIconPicker] = useState(false);
 const [activeMetricIndex, setActiveMetricIndex] = useState(null);
 const [activeMetric, setActiveMetric] = useState(null);
@@ -1237,6 +1248,135 @@ const handleCreateLocation = async () => {
     toast.error("Failed to create location");
   } finally {
     setCreatingLocation(false);
+  }
+};
+
+// 👇 ADD validateFile HERE
+const validateFile = (file) => {
+  if (!file) return false;
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files allowed ❌");
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error("Max file size is 5MB ❌");
+    return false;
+  }
+
+  return true;
+};
+
+const uploadImage = async (file) => {
+  try {
+    setUploading(true);
+
+    const data = new FormData();
+
+    data.append("file", file);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(
+        result.message
+      );
+    }
+
+    return result.url;
+
+  } catch (err) {
+
+    toast.error(
+      "Upload failed ❌"
+    );
+
+    return null;
+
+  } finally {
+    setUploading(false);
+  }
+};
+
+const createDeveloper = async () => {
+  if (!newDeveloper.name.trim()) {
+    toast.error("Developer name required");
+    return;
+  }
+
+  try {
+    setDeveloperLoading(true);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/developers",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newDeveloper),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(
+        data.message || "Failed to create developer"
+      );
+      return;
+    }
+
+    toast.success("Developer created ✅");
+
+    const createdDeveloper =
+      data.data || data.developer;
+
+    // refresh dropdown
+    await fetchDevelopers();
+
+    // auto select
+    setForm((prev) => ({
+      ...prev,
+      coreDetails: {
+        ...prev.coreDetails,
+        developerRef:
+          createdDeveloper._id,
+        developerName:
+          createdDeveloper.name,
+        developerLogo:
+          createdDeveloper.logo,
+      },
+    }));
+
+    setUseCustomDeveloper(false);
+
+    setNewDeveloper({
+      name: "",
+      logo: "",
+      image: "",
+      description: "",
+    });
+
+    setShowDeveloperModal(false);
+
+  } catch (err) {
+    console.error(err);
+
+    toast.error(
+      "Failed to create developer"
+    );
+  } finally {
+    setDeveloperLoading(false);
   }
 };
 
@@ -2001,7 +2141,9 @@ const labelMap = {
   {/* NEW BUTTON */}
   <button
     type="button"
-    onClick={() => setShowDeveloperModal(true)}
+    onClick={() => {
+  setShowDeveloperModal(true);
+}}
     className="
       h-[48px]
       px-4
@@ -6424,6 +6566,263 @@ const labelMap = {
 
       </div>
 
+    </div>
+  </div>
+)}
+{/* ================= CREATE DEVELOPER MODAL ================= */}
+
+{showDeveloperModal && (
+  <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+
+    <div className="w-full max-w-3xl bg-[#111] border border-white/10 rounded-3xl overflow-hidden">
+
+      {/* HEADER */}
+
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+
+        <h3 className="text-xl font-semibold text-white">
+          Create New Developer
+        </h3>
+
+        <button
+          onClick={() =>
+            setShowDeveloperModal(false)
+          }
+          className="text-white/60 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* BODY */}
+
+      <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+
+        {/* NAME */}
+
+        <input
+          className="input"
+          placeholder="Developer Name"
+          value={newDeveloper.name}
+          onChange={(e) =>
+            setNewDeveloper((prev) => ({
+              ...prev,
+              name: e.target.value,
+            }))
+          }
+        />
+
+        {/* ================= LOGO UPLOAD ================= */}
+
+<div>
+
+  <label className="block text-sm text-white/70 mb-2">
+    Developer Logo
+  </label>
+
+  <div
+    onClick={() =>
+      document
+        .getElementById("developerLogoUpload")
+        .click()
+    }
+    className="
+      h-[52px]
+      rounded-xl
+      border
+      border-dashed
+      border-white/15
+      bg-white/5
+      flex
+      items-center
+      justify-center
+      text-white/70
+      cursor-pointer
+      hover:bg-white/10
+      transition
+    "
+  >
+    {newDeveloper.logo
+      ? "✓ Logo Uploaded"
+      : "Upload Logo"}
+  </div>
+
+  <input
+    id="developerLogoUpload"
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={async (e) => {
+
+      const file =
+        e.target.files?.[0];
+
+      if (!file) return;
+
+      if (!validateFile(file))
+        return;
+
+      const url =
+        await uploadImage(file);
+
+      if (url) {
+        setNewDeveloper((prev) => ({
+          ...prev,
+          logo: url,
+        }));
+
+        toast.success(
+          "Logo uploaded ✅"
+        );
+      }
+
+      e.target.value = "";
+    }}
+  />
+
+  {newDeveloper.logo && (
+    <img
+      src={newDeveloper.logo}
+      alt=""
+      className="
+        mt-3
+        h-16
+        w-16
+        rounded-xl
+        object-contain
+        bg-white
+        p-2
+      "
+    />
+  )}
+
+</div>
+
+{/* ================= DEVELOPER IMAGE ================= */}
+
+<div>
+
+  <label className="block text-sm text-white/70 mb-2">
+    Developer Image
+  </label>
+
+  <div
+    onClick={() =>
+      document
+        .getElementById("developerImageUpload")
+        .click()
+    }
+    className="
+      h-[52px]
+      rounded-xl
+      border
+      border-dashed
+      border-white/15
+      bg-white/5
+      flex
+      items-center
+      justify-center
+      text-white/70
+      cursor-pointer
+      hover:bg-white/10
+      transition
+    "
+  >
+    {newDeveloper.image
+      ? "✓ Image Uploaded"
+      : "Upload Developer Image"}
+  </div>
+
+  <input
+    id="developerImageUpload"
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={async (e) => {
+
+      const file =
+        e.target.files?.[0];
+
+      if (!file) return;
+
+      if (!validateFile(file))
+        return;
+
+      const url =
+        await uploadImage(file);
+
+      if (url) {
+        setNewDeveloper((prev) => ({
+          ...prev,
+          image: url,
+        }));
+
+        toast.success(
+          "Image uploaded ✅"
+        );
+      }
+
+      e.target.value = "";
+    }}
+  />
+
+  {newDeveloper.image && (
+    <img
+      src={newDeveloper.image}
+      alt=""
+      className="
+        mt-3
+        w-full
+        h-40
+        object-cover
+        rounded-2xl
+      "
+    />
+  )}
+
+</div>
+
+        {/* DESCRIPTION */}
+
+        <textarea
+          rows={8}
+          className="input min-h-[200px]"
+          placeholder="About Developer"
+          value={newDeveloper.description}
+          onChange={(e) =>
+            setNewDeveloper((prev) => ({
+              ...prev,
+              description:
+                e.target.value,
+            }))
+          }
+        />
+
+        {/* FOOTER */}
+
+        <div className="flex justify-end gap-3 pt-3">
+
+          <button
+            onClick={() =>
+              setShowDeveloperModal(false)
+            }
+            className="px-5 py-3 rounded-xl border border-white/10 text-white"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={createDeveloper}
+            disabled={developerLoading}
+            className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-medium"
+          >
+            {developerLoading
+              ? "Creating..."
+              : "Create Developer"}
+          </button>
+
+        </div>
+      </div>
     </div>
   </div>
 )}
