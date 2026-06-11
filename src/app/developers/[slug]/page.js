@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
-import PropertyFilters from "@/utils/propertyFilters";
+import PropertyFilters from "@/utils/PropertyFilters";
 
 import {
   MapPin,
