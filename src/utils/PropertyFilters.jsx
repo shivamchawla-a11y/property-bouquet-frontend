@@ -26,28 +26,28 @@ export default function PropertyFilters() {
   };
 
   const Pill = ({ label }) => (
-  <button
-    type="button"
-    className="
-      px-4
-      py-2.5
-      rounded-full
-      border
-      border-gray-200
-      bg-white
-      !text-[#111827]
-      hover:border-[#0f3b2e]
-      hover:!text-[#0f3b2e]
-      text-sm
-      font-medium
-      transition-all
-      duration-300
-      whitespace-nowrap
-    "
-  >
-    + {label}
-  </button>
-);
+    <button
+      type="button"
+      className="
+        px-4
+        py-2.5
+        rounded-full
+        border
+        border-gray-200
+        bg-white
+        text-gray-800
+        hover:border-[#0f3b2e]
+        hover:text-[#0f3b2e]
+        text-sm
+        font-medium
+        transition-all
+        duration-300
+        whitespace-nowrap
+      "
+    >
+      + {label}
+    </button>
+  );
 
   return (
     <aside
@@ -162,20 +162,16 @@ export default function PropertyFilters() {
               <div className="grid grid-cols-2 gap-3">
 
                 <select
-  className="
-    h-12
-    rounded-full
-    border
-    border-gray-200
-    px-4
-    bg-white
-    text-[#111827]
-    font-medium
-    outline-none
-    appearance-none
-    w-full
-  "
->
+                  className="
+                    h-12
+                    rounded-full
+                    border
+                    border-gray-200
+                    px-4
+                    bg-white
+                    text-gray-900
+                  "
+                >
                   <option>No Min</option>
                   <option>₹50 L</option>
                   <option>₹1 Cr</option>
@@ -183,20 +179,16 @@ export default function PropertyFilters() {
                 </select>
 
                 <select
-  className="
-    h-12
-    rounded-full
-    border
-    border-gray-200
-    px-4
-    bg-white
-    text-[#111827]
-    font-medium
-    outline-none
-    appearance-none
-    w-full
-  "
->
+                  className="
+                    h-12
+                    rounded-full
+                    border
+                    border-gray-200
+                    px-4
+                    bg-white
+                    text-gray-900
+                  "
+                >
                   <option>No Max</option>
                   <option>₹2 Cr</option>
                   <option>₹5 Cr</option>

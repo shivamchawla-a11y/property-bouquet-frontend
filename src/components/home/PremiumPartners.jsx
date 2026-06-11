@@ -73,7 +73,7 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
               x: ["0%", "-50%"],
             }}
             transition={{
-              duration: 35,
+              duration: 80,
               repeat: Infinity,
               ease: "linear",
             }}
@@ -141,7 +141,7 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
               x: ["-50%", "0%"],
             }}
             transition={{
-              duration: 35,
+              duration: 80,
               repeat: Infinity,
               ease: "linear",
             }}
