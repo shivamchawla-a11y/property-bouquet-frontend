@@ -1907,7 +1907,11 @@ const labelMap = {
         ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
         : ""
     }`}
-    value={form.coreDetails.developerRef || ""}
+    value={
+  typeof form.coreDetails.developerRef === "object"
+    ? form.coreDetails.developerRef?._id
+    : form.coreDetails.developerRef || ""
+}
     onChange={(e) => {
       const value = e.target.value;
 
@@ -2073,7 +2077,11 @@ const labelMap = {
           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
           : ""
       }`}
-      value={form.locationData.locationRef || ""}
+      value={
+  typeof form.locationData.locationRef === "object"
+    ? form.locationData.locationRef?._id
+    : form.locationData.locationRef || ""
+}
       onChange={(e) => {
 
   const value = e.target.value;
@@ -2241,48 +2249,48 @@ const labelMap = {
       ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
       : ""
   }`}
-          value={form.categoryData.categoryRef || ""}
-          onChange={(e) => {
-            if (e.target.value === "CREATE_NEW") {
-
-  setShowLocationModal(true);
-
-  return;
+          value={
+  typeof form.categoryData.categoryRef === "object"
+    ? form.categoryData.categoryRef?._id
+    : form.categoryData.categoryRef || ""
 }
+          onChange={(e) => {
 
-if (e.target.value === "OTHER") {
+  const value = e.target.value;
 
-  setUseCustomLocation(true);
+  if (value === "OTHER") {
 
-  setForm((prev) => ({
-    ...prev,
-    locationData: {
-      ...prev.locationData,
-      locationRef: "",
-      locationName: "",
-      customLocation: "",
-    },
-  }));
+    setUseCustomCategory(true);
 
-} else {
+    setForm((prev) => ({
+      ...prev,
+      categoryData: {
+        ...prev.categoryData,
+        categoryRef: "",
+        categoryName: "",
+        customCategory: "",
+      },
+    }));
 
-  const selected = buildOptions(locations).find(
-    (l) => l._id === e.target.value
+    return;
+  }
+
+  const selectedCategory = categories.find(
+    (cat) => cat._id === value
   );
 
-  setUseCustomLocation(false);
+  setUseCustomCategory(false);
 
   setForm((prev) => ({
     ...prev,
-    locationData: {
-      ...prev.locationData,
-      locationRef: selected?._id || "",
-      locationName: selected?.label || "",
-      customLocation: "",
+    categoryData: {
+      categoryRef: selectedCategory?._id || "",
+      categoryName: selectedCategory?.name || "",
+      customCategory: "",
     },
   }));
-}
-          }}
+
+}}
         >
           <option value="">
             Select Category
