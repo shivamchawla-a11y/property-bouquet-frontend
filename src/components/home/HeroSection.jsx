@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { motion } from "framer-motion";
+import SearchPanel from "./SearchPanel";
 
 const filters = [
   {
@@ -37,7 +38,7 @@ const filters = [
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen min-h-[820px] overflow-hidden bg-black">
+    <section className="relative h-screen min-h-[820px] overflow-visible bg-black">
 
       {/* BACKGROUND IMAGE */}
       <img
@@ -172,118 +173,11 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* SEARCH PANEL */}
-      <div className="absolute bottom-12 left-0 w-full z-40 px-5">
+{/* SEARCH PANEL */}
+<div className="absolute bottom-12 left-0 w-full z-[200] px-5 overflow-visible">
+  <SearchPanel />
+</div>
 
-        <div className="max-w-[1120px] mx-auto">
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 45,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.9,
-            }}
-            className="
-              relative
-              rounded-[26px]
-              overflow-hidden
-              border border-white/15
-              bg-white/[0.08]
-              backdrop-blur-[30px]
-              shadow-[0_25px_80px_rgba(0,0,0,0.55)]
-              before:absolute
-              before:inset-0
-              before:bg-gradient-to-br
-              before:from-white/10
-              before:via-white/[0.03]
-              before:to-transparent
-              before:pointer-events-none
-            "
-          >
-
-            {/* OUTER GLOW */}
-            <div className="absolute -inset-[1px] rounded-[26px] bg-gradient-to-r from-[#c89d58]/30 via-white/10 to-[#c89d58]/20 blur-xl opacity-60" />
-
-            {/* INNER SHINE */}
-            <div className="absolute top-0 left-[-120%] w-[40%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] animate-[shine_7s_linear_infinite]" />
-
-            {/* GRID */}
-            <div className="relative z-20 grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.15fr_1fr_88px]">
-
-              {filters.map((item, index) => {
-                const Icon = item.icon;
-
-                return (
-                  <div
-                    key={item.title}
-                    className={`group flex items-center gap-4 px-6 py-5 transition-all duration-300 hover:bg-white/[0.03] ${
-                      index !== filters.length - 1
-                        ? "lg:border-r border-white/10"
-                        : ""
-                    }`}
-                  >
-
-                    {/* ICON */}
-                    <div className="relative shrink-0">
-
-                      {/* ICON GLOW */}
-                      <div className="absolute inset-0 bg-[#c89d58]/30 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
-
-                      <div className="relative w-10 h-10 rounded-xl border border-white/10 bg-white/[0.06] backdrop-blur-xl flex items-center justify-center">
- 
-                        <Icon
-                          size={18}
-                          className="text-[#d4ae67]"
-                        />
-                      </div>
-                    </div>
-
-                    {/* TEXT */}
-                    <div className="flex-1 min-w-0">
-
-                      <p className="text-[8px] uppercase tracking-[2px] text-white/40 font-semibold mb-1">
-                        {item.title}
-                      </p>
-
-                      <button className="flex items-center gap-2 text-white text-[13px] font-medium">
-
-                        {item.value}
-
-                        <ChevronDown
-                          size={13}
-                          className="text-[#c89d58]"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* SEARCH BUTTON */}
-              <button className="relative overflow-hidden bg-gradient-to-b from-[#e3c176] to-[#c39031] hover:brightness-110 transition-all duration-300 flex items-center justify-center group">
-
-                {/* BUTTON GLOW */}
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition duration-300" />
-
-                <div className="relative flex items-center justify-center h-full min-h-[84px] w-full">
-
-                  <Search
-                    size={26}
-                    className="text-black group-hover:scale-110 transition duration-300"
-                    strokeWidth={2.5}
-                  />
-                </div>
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
     </section>
   );
 }
