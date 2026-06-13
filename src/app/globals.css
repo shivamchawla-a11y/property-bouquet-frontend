@@ -202,3 +202,39 @@ select.input option {
 
   cursor: pointer;
 }
+
+.luxury-range {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  outline: none;
+}
+
+.luxury-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    #e6c57b,
+    #be8c32
+  );
+  border: 2px solid rgba(255,255,255,0.25);
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(200,157,88,0.5);
+}
+
+.luxury-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    #e6c57b,
+    #be8c32
+  );
+}

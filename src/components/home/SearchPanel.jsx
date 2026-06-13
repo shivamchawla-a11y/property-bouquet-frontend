@@ -402,15 +402,15 @@ const developerOptions =
           {/* BUDGET */}
           <div className="lg:border-r border-white/10 hover:bg-white/[0.02] transition-all duration-300">
             <LuxuryDropdown
-              icon={SlidersHorizontal}
-              label="BUDGET"
-              placeholder="Select Budget"
-              value={filters.budget}
-              options={budgetRanges}
-              onChange={(value) =>
-                handleChange("budget", value)
-              }
-            />
+  icon={SlidersHorizontal}
+  label="BUDGET"
+  placeholder="Budget Range"
+  value={filters.budget}
+  budgetSlider={true}
+  onChange={(value) =>
+    handleChange("budget", value)
+  }
+/>
           </div>
 
           {/* LOCATION */}
