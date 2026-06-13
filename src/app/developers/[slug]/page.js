@@ -312,7 +312,7 @@ backdrop-blur-xl
 
                           <ArrowRight
                             size={18}
-                            className="group-hover:translate-x-1 transition"
+                            className="group-hover:translate-x-1 transition"  
                           />
                         </button>
                       </div>
