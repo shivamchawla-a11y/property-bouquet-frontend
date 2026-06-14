@@ -18,7 +18,7 @@ import {
 
 export default function PropertiesPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+  "https://property-bouquet-backend.onrender.com/api";
 
   const [properties, setProperties] =
     useState([]);
