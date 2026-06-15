@@ -97,6 +97,7 @@ export default function AddProperty() {
     startingPrice: "",
 
     maxPrice: "",
+    priceOnRequest: false,
   },
 
   // ================= CATEGORY =================
@@ -2591,6 +2592,27 @@ const formatIndianPrice = (value) => {
     Optional. Leave blank if pricing is not available.
   </p>
 </div>
+
+<label className="flex items-center gap-3 mt-4 cursor-pointer">
+  <input
+    type="checkbox"
+    checked={
+      form.coreDetails.priceOnRequest || false
+    }
+    onChange={(e) =>
+      handleChange(
+        "coreDetails",
+        "priceOnRequest",
+        e.target.checked
+      )
+    }
+    className="h-4 w-4"
+  />
+
+  <span className="text-white text-sm">
+    Price On Request
+  </span>
+</label>
 
     {/* ================= KEY METRICS ================= */}
 {/* <div className="mt-6">

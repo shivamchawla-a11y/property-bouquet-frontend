@@ -301,18 +301,59 @@ const metricIcons = {
 
 // ================= METRICS (BACKWARD COMPATIBLE) =================
 const displayMetrics = (() => {
-
   const customMetrics =
     keyMetrics?.customMetrics || [];
 
-  // If user has created ANY custom metric,
-  // use ONLY custom metrics
-  if (customMetrics.length > 0) {
-    return customMetrics;
+  const metrics = [];
+
+  // ================= PRICE METRICS =================
+
+  if (
+    coreDetails?.priceOnRequest === true
+  ) {
+    metrics.push({
+      label: "Price",
+      value: "On Request",
+      icon: "FaTag",
+    });
+  } else {
+    const startPrice =
+      coreDetails?.startingPrice;
+
+    const maxPrice =
+      coreDetails?.maxPrice;
+
+    if (startPrice && maxPrice) {
+      metrics.push({
+        label: "Price Range",
+        value: `${formatPrice(
+          startPrice
+        )} - ${formatPrice(maxPrice)}`,
+        icon: "FaTag",
+      });
+    } else if (startPrice) {
+      metrics.push({
+        label: "Starting Price",
+        value: formatPrice(startPrice),
+        icon: "FaTag",
+      });
+    }
   }
 
-  // Old properties fallback
+  // ================= CUSTOM METRICS =================
+
+  if (customMetrics.length > 0) {
+    return [
+      ...metrics,
+      ...customMetrics,
+    ];
+  }
+
+  // ================= OLD PROPERTY FALLBACK =================
+
   return [
+    ...metrics,
+
     keyMetrics?.possession && {
       label: "Possession",
       value: keyMetrics.possession,
@@ -349,7 +390,6 @@ const displayMetrics = (() => {
       icon: "FaCertificate",
     },
   ].filter(Boolean);
-
 })();
   
 

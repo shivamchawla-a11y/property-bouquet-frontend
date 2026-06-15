@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatPrice } from "./formatPrice";
 
 export default function PropertyFilters({
   properties = [],
@@ -24,20 +25,24 @@ export default function PropertyFilters({
   amenities: true,
 });
   const router = useRouter();
- const locations = [
-  "Golf Course Road",
-  "Golf Course Extension Road",
-  "Dwarka Expressway",
-  "New Gurgaon",
-  "Sohna Road",
-  "SPR",
-  "MG Road",
-];
+
 const [showDeveloperModal, setShowDeveloperModal] =
   useState(false);
 
 const [developerSearch, setDeveloperSearch] =
   useState("");
+
+  const [showAllLocations, setShowAllLocations] =
+  useState(false);
+
+const [locationSearch, setLocationSearch] =
+  useState("");
+
+  const [minBudget, setMinBudget] =
+  useState(50);
+
+const [maxBudget, setMaxBudget] =
+  useState(1000);
 
 const developers = [
   ...new Set(
@@ -49,6 +54,79 @@ const developers = [
       .filter(Boolean)
   ),
 ];
+
+const developerCounts =
+  properties.reduce(
+    (acc, property) => {
+
+      const dev =
+        property?.coreDetails
+          ?.developerName;
+
+      if (!dev) return acc;
+
+      acc[dev] =
+        (acc[dev] || 0) + 1;
+
+      return acc;
+    },
+    {}
+  );
+
+const locations = [
+  ...new Set(
+    properties.flatMap((property) => {
+      const location =
+        property?.locationData?.locationName;
+
+      if (!location) return [];
+
+      return location
+        .split(">")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    })
+  ),
+].sort();
+
+const filteredLocations =
+  locations.filter((location) =>
+    location
+      .toLowerCase()
+      .includes(locationSearch.toLowerCase())
+  );
+
+  const removeFilter = (type) => {
+  const params = new URLSearchParams();
+
+  if (
+    type !== "location" &&
+    selectedLocation
+  ) {
+    params.set(
+      "location",
+      selectedLocation
+    );
+  }
+
+  if (
+    type !== "developer" &&
+    selectedDeveloper
+  ) {
+    params.set(
+      "developer",
+      selectedDeveloper
+    );
+  }
+
+  router.push(
+    `/properties${
+      params.toString()
+        ? `?${params.toString()}`
+        : ""
+    }`
+  );
+};
 
   const toggleSection = (key) => {
     setOpenSections((prev) => ({
@@ -131,139 +209,189 @@ const developers = [
           {/* APPLIED FILTERS */}
           {(selectedLocation ||
   selectedDeveloper) && (
-  <div className="mb-10">
+  <div className="mb-8">
 
-            <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-4">
 
-              <h4 className="font-bold text-lg text-gray-900">
-                Applied Filters
-              </h4>
+      <h4 className="font-bold text-lg">
+        Applied Filters
+      </h4>
 
-              <button
-  onClick={() =>
-    router.push("/properties")
-  }
-  className="font-semibold text-[#0f3b2e]"
->
-  Clear All
-</button>
+      <button
+        onClick={() =>
+          router.push("/properties")
+        }
+        className="
+          text-xs
+          uppercase
+          tracking-[2px]
+          text-[#c89d58]
+          font-semibold
+        "
+      >
+        Clear All
+      </button>
 
-            </div>
-
-           <div className="flex flex-wrap gap-2">
-
-  {selectedLocation && (
-    <div
-      className="
-        px-4
-        py-2
-        rounded-full
-        bg-[#eef6f3]
-        border
-        border-[#cce3db]
-        flex
-        items-center
-        gap-2
-        text-sm
-        font-medium
-        text-gray-800
-      "
-    >
-      📍 {selectedLocation}
     </div>
-  )}
 
-  {selectedDeveloper && (
-    <div
-      className="
-        px-4
-        py-2
-        rounded-full
-        bg-[#eef6f3]
-        border
-        border-[#cce3db]
-        flex
-        items-center
-        gap-2
-        text-sm
-        font-medium
-        text-gray-800
-      "
-    >
-      🏢 {selectedDeveloper}
+    <div className="flex flex-wrap gap-2">
+
+      {selectedLocation && (
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+            px-4
+            py-2
+            rounded-full
+            bg-[#faf7f2]
+            border
+            border-[#c89d58]/15
+          "
+        >
+          <span>
+            📍 {selectedLocation}
+          </span>
+
+          <button
+            onClick={() =>
+              removeFilter(
+                "location"
+              )
+            }
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {selectedDeveloper && (
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+            px-4
+            py-2
+            rounded-full
+            bg-[#faf7f2]
+            border
+            border-[#c89d58]/15
+          "
+        >
+          <span>
+            🏢 {selectedDeveloper}
+          </span>
+
+          <button
+            onClick={() =>
+              removeFilter(
+                "developer"
+              )
+            }
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
     </div>
-  )}
 
-  {!selectedLocation &&
-    !selectedDeveloper && (
-      <span className="text-gray-400 text-sm">
-        No filters applied
-      </span>
-    )}
-
-</div>
-          </div>
+  </div>
 )}
 
           {/* BUDGET */}
-          <div className="border-t border-gray-100 pt-8">
+<div className="border-t border-gray-100 pt-8">
 
-            <button
-              onClick={() => toggleSection("budget")}
-              className="w-full flex items-center justify-between mb-5"
-            >
-              <h4 className="font-bold text-xl text-gray-900">
-                Budget
-              </h4>
+  <button
+    onClick={() => toggleSection("budget")}
+    className="w-full flex items-center justify-between mb-5"
+  >
+    <h4 className="font-bold text-xl text-gray-900">
+      Budget
+    </h4>
 
-              {openSections.budget ? (
-                <ChevronUp size={20} className="text-gray-900" />
-              ) : (
-                <ChevronDown size={20} className="text-gray-900" />
-              )}
-            </button>
+    {openSections.budget ? (
+      <ChevronUp size={20} />
+    ) : (
+      <ChevronDown size={20} />
+    )}
+  </button>
 
-            {openSections.budget && (
-              <div className="grid grid-cols-2 gap-3">
+  {openSections.budget && (
 
-                <select
-                  className="
-                    h-12
-                    rounded-full
-                    border
-                    border-gray-200
-                    px-4
-                    bg-white
-                    text-gray-900
-                  "
-                >
-                  <option>No Min</option>
-                  <option>₹50 L</option>
-                  <option>₹1 Cr</option>
-                  <option>₹2 Cr</option>
-                </select>
+    <div className="space-y-5">
 
-                <select
-                  className="
-                    h-12
-                    rounded-full
-                    border
-                    border-gray-200
-                    px-4
-                    bg-white
-                    text-gray-900
-                  "
-                >
-                  <option>No Max</option>
-                  <option>₹2 Cr</option>
-                  <option>₹5 Cr</option>
-                  <option>₹10 Cr</option>
-                </select>
+      <div className="flex items-center justify-between">
 
-              </div>
-            )}
-          </div>
+        <div>
+          <p className="text-xs text-gray-500">
+            Minimum
+          </p>
 
+          <p className="font-semibold text-[#0f3b2e] text-lg mt-1">
+  ₹{formatPrice(minBudget * 100000)}
+</p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-xs text-gray-500">
+            Maximum
+          </p>
+
+          <p className="font-semibold text-[#0f3b2e] text-lg mt-1">
+  {maxBudget >= 1000
+    ? "₹10 Cr+"
+    : `₹${formatPrice(maxBudget * 100000)}`}
+</p>
+        </div>
+
+      </div>
+
+      <div className="space-y-4">
+
+        <input
+          type="range"
+          min="50"
+          max="1000"
+          step="10"
+          value={minBudget}
+          onChange={(e) =>
+            setMinBudget(
+              Number(e.target.value)
+            )
+          }
+          className="
+            w-full
+            accent-[#c89d58]
+          "
+        />
+
+        <input
+          type="range"
+          min="50"
+          max="1000"
+          step="10"
+          value={maxBudget}
+          onChange={(e) =>
+            setMaxBudget(
+              Number(e.target.value)
+            )
+          }
+          className="
+            w-full
+            accent-[#c89d58]
+          "
+        />
+
+      </div>
+
+    </div>
+
+  )}
+
+</div>
           {/* BEDROOMS */}
           <div className="border-t border-gray-100 pt-8 mt-8">
 
@@ -350,7 +478,9 @@ const developers = [
             )}
           </div>
 
-          {/* LOCATIONS */}
+        
+{/* LOCATIONS */}
+
 <div className="border-t border-gray-100 pt-8 mt-8">
 
   <button
@@ -358,67 +488,124 @@ const developers = [
     className="w-full flex items-center justify-between mb-5"
   >
     <h4 className="font-bold text-xl text-gray-900">
-      Prime Locations
+      Locations
     </h4>
 
     {openSections.locations ? (
-      <ChevronUp size={20} className="text-gray-900" />
+      <ChevronUp size={20} />
     ) : (
-      <ChevronDown size={20} className="text-gray-900" />
+      <ChevronDown size={20} />
     )}
   </button>
 
   {openSections.locations && (
-  <div className="space-y-1">
+    <>
 
-    {locations.map((location) => (
-      <label
-        key={location}
+      {/* SEARCH */}
+
+      <input
+        value={locationSearch}
+        onChange={(e) =>
+          setLocationSearch(e.target.value)
+        }
+        placeholder="Search location..."
         className="
-          flex
-          items-center
-          gap-3
-          px-3
-          py-2.5
+          w-full
+          h-11
           rounded-xl
-          hover:bg-[#faf7f2]
-          cursor-pointer
-          transition-all
+          border
+          border-gray-200
+          px-4
+          mb-4
+          text-sm
         "
-      >
-        <input
-          type="radio"
-          checked={
-            selectedLocation === location
-          }
-          onChange={() =>
-            router.push(
-              `/properties?location=${encodeURIComponent(
-                location
-              )}${
-                selectedDeveloper
-                  ? `&developer=${encodeURIComponent(
-                      selectedDeveloper
-                    )}`
-                  : ""
-              }`
+      />
+
+      {/* LOCATIONS */}
+
+      <div className="space-y-1">
+
+        {(showAllLocations
+          ? filteredLocations
+          : filteredLocations.slice(0, 5)
+        ).map((location) => (
+          <label
+            key={location}
+            className="
+              flex
+              items-center
+              gap-3
+              px-3
+              py-2.5
+              rounded-xl
+              hover:bg-[#faf7f2]
+              cursor-pointer
+              transition-all
+            "
+          >
+            <input
+              type="radio"
+              checked={
+                selectedLocation === location
+              }
+              onChange={() =>
+                router.push(
+                  `/properties?location=${encodeURIComponent(
+                    location
+                  )}${
+                    selectedDeveloper
+                      ? `&developer=${encodeURIComponent(
+                          selectedDeveloper
+                        )}`
+                      : ""
+                  }`
+                )
+              }
+              className="
+                h-4
+                w-4
+                accent-[#c89d58]
+              "
+            />
+
+            <span className="text-sm font-medium">
+              {location}
+            </span>
+          </label>
+        ))}
+
+      </div>
+
+      {locations.length > 5 && (
+        <button
+          onClick={() =>
+            setShowAllLocations(
+              !showAllLocations
             )
           }
           className="
-            h-4
-            w-4
-            accent-[#c89d58]
+            mt-4
+            w-full
+            h-11
+            rounded-xl
+            border
+            border-[#c89d58]/20
+            bg-[#faf7f2]
+            text-[#0f3b2e]
+            font-semibold
+            text-sm
+            hover:bg-[#f5efe6]
+            transition-all
           "
-        />
+        >
+          {showAllLocations
+            ? "Show Less"
+            : `View All Locations (${locations.length})`}
+        </button>
+      )}
 
-        <span className="text-sm font-medium">
-          {location}
-        </span>
-      </label>
-    ))}
-
-  </div>
-)}
+    </>
+  )}
 </div>
 
           {/* DEVELOPERS */}
@@ -497,9 +684,19 @@ const developers = [
               "
             />
 
-            <span className="text-sm font-medium truncate">
-              {developer}
-            </span>
+           <div className="flex-1 flex items-center justify-between">
+
+  <span className="text-sm font-medium truncate">
+    {developer}
+  </span>
+
+  <span className="text-xs text-gray-400">
+    (
+    {developerCounts[developer]}
+    )
+  </span>
+
+</div>
           </label>
         ))}
 
@@ -523,7 +720,7 @@ const developers = [
         transition-all
       "
     >
-      View All Developers →
+      View All Developers ({developers.length})
     </button>
 
   </div>
