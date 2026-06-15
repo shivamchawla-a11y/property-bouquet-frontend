@@ -117,34 +117,28 @@ useEffect(() => {
     }));
   };
 
-  const handleSearch = () => {
-
+ const handleSearch = () => {
   // PROPERTY SEARCH
-  // PROPERTY SEARCH
-if (searchTerm.trim()) {
+  if (searchTerm.trim()) {
+    const property = suggestions?.[0];
 
-  const property =
-    suggestions?.[0];
-
-  if (property?.slug) {
-
-    router.push(
-      `/${property.slug}`
-    );
-
-    return;
+    if (property?.slug) {
+      router.push(`/${property.slug}`);
+      return;
+    }
   }
-}
 
-  // DEVELOPER SEARCH
-  if (filters.developer) {
+  const activeFilters = Object.values(filters).filter(Boolean);
 
-    const selectedDeveloper =
-      developers.find(
-        (developer) =>
-          developer.name ===
-          filters.developer
-      );
+  // ONLY DEVELOPER
+  if (
+    activeFilters.length === 1 &&
+    filters.developer
+  ) {
+    const selectedDeveloper = developers.find(
+      (developer) =>
+        developer.name === filters.developer
+    );
 
     if (selectedDeveloper?.slug) {
       router.push(
@@ -154,22 +148,65 @@ if (searchTerm.trim()) {
     }
   }
 
-  // LOCATION SEARCH
-  if (filters.location) {
-
-    const selectedLocation =
-      locations.find(
-        (location) =>
-          location.name ===
-          filters.location
-      );
+  // ONLY LOCATION
+  if (
+    activeFilters.length === 1 &&
+    filters.location
+  ) {
+    const selectedLocation = locations.find(
+      (location) =>
+        location.name === filters.location
+    );
 
     if (selectedLocation?.slug) {
       router.push(
         `/locations/${selectedLocation.slug}`
       );
+      return;
     }
   }
+
+  // MULTIPLE FILTERS
+  const params = new URLSearchParams();
+
+  if (filters.location) {
+    params.append(
+      "location",
+      filters.location
+    );
+  }
+
+  if (filters.developer) {
+    params.append(
+      "developer",
+      filters.developer
+    );
+  }
+
+  if (filters.propertyType) {
+    params.append(
+      "type",
+      filters.propertyType
+    );
+  }
+
+  if (filters.budget) {
+    params.append(
+      "budget",
+      filters.budget
+    );
+  }
+
+  if (filters.goal) {
+    params.append(
+      "goal",
+      filters.goal
+    );
+  }
+
+  router.push(
+    `/properties?${params.toString()}`
+  );
 };
 
 const developerOptions =
