@@ -864,9 +864,12 @@ const handleSubmit = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Session expired ❌ Please login again");
-      window.location.href = "/login";
-      return;
+      toast.error("Session expired. Please login again.");
+      setTimeout(() => {
+  window.location.href = "/login";
+}, 1500);
+
+return;
     }
 
     // 🔥 CLEAN CONFIGS
@@ -952,7 +955,7 @@ const handleSubmit = async () => {
 
    // ================= SUCCESS =================
 if (res.ok) {
-  alert("Property Added ✅");
+  toast.success("Property Added Successfully ✅");
 
   setErrors({});
   setErrorList([]);
@@ -1035,7 +1038,7 @@ setStep(firstStep);
 window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
   console.error(err);
-  alert("Server error ❌");
+  toast.error("Server Error ❌ Please try again");
 } finally {
   setIsSubmitting(false);
 }

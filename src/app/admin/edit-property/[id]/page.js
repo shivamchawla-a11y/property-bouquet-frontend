@@ -1332,9 +1332,13 @@ const handleUpdate = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Session expired ❌ Please login again");
-      window.location.href = "/login";
-      return;
+      toast.error("Session expired. Please login again.");
+
+setTimeout(() => {
+  window.location.href = "/login";
+}, 1500);
+
+return;
     }
 
     
@@ -1476,7 +1480,7 @@ const validConfigurations =
     // ================= SUCCESS =================
     if (res.ok) {
 
-      alert("Property Updated ✅");
+      toast.success("Property Updated Successfully ✅");
 
 setErrors({});
 setErrorList([]);
@@ -1553,7 +1557,7 @@ router.push("/admin/properties");
 
   setIsUpdating(false);
 
-  alert("Server error ❌");
+  toast.error("Server Error ❌ Please try again");
 } finally {
   setIsUpdating(false);
 }
