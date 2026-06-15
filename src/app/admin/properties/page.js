@@ -560,10 +560,12 @@ const developerOptions = [
 
     <h3 className="text-2xl font-bold text-emerald-700 mt-1">
       {
-        properties.filter(
-          (p) => p.status === "published"
-        ).length
-      }
+  properties.filter(
+    (p) =>
+      p.status === "published" &&
+      !p.isDeleted
+  ).length
+}
     </h3>
   </div>
 
@@ -574,10 +576,12 @@ const developerOptions = [
 
     <h3 className="text-2xl font-bold text-amber-700 mt-1">
       {
-        properties.filter(
-          (p) => p.status === "draft"
-        ).length
-      }
+  properties.filter(
+    (p) =>
+      p.status === "draft" &&
+      !p.isDeleted
+  ).length
+}
     </h3>
   </div>
   <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">

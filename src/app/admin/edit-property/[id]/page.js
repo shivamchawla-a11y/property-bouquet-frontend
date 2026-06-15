@@ -1816,6 +1816,26 @@ const labelMap = {
 "overview.highlights": "Highlight Cards",
 };
 
+const formatIndianPrice = (value) => {
+  const num = Number(value);
+
+  if (!num || isNaN(num)) return "";
+
+  if (num >= 10000000) {
+    return `₹${(num / 10000000).toFixed(2).replace(/\.00$/, "")} Cr`;
+  }
+
+  if (num >= 100000) {
+    return `₹${(num / 100000).toFixed(2).replace(/\.00$/, "")} Lakh`;
+  }
+
+  if (num >= 1000) {
+    return `₹${(num / 1000).toFixed(2).replace(/\.00$/, "")} K`;
+  }
+
+  return `₹${num}`;
+};
+
 if (loading) {
   return <div className="text-white p-10">Loading property...</div>;
 }
@@ -2873,6 +2893,67 @@ if (loading) {
       Category is required
     </p>
   )}
+  
+  {/* ================= PRICING ================= */}
+  <div className="space-y-2">
+    <label className="text-sm text-white/70 font-medium">
+      Pricing (Optional)
+    </label>
+  
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+    <input
+      type="number"
+      className="input"
+      placeholder="Starting Price"
+      value={form.coreDetails.startingPrice || ""}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "startingPrice",
+          e.target.value
+        )
+      }
+    />
+  
+    {form.coreDetails.startingPrice && (
+      <p className="mt-1 text-xs text-[#D4AF37] font-medium">
+        {formatIndianPrice(
+          form.coreDetails.startingPrice
+        )}
+      </p>
+    )}
+  </div>
+  
+     <div>
+    <input
+      type="number"
+      className="input"
+      placeholder="Max Price"
+      value={form.coreDetails.maxPrice || ""}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "maxPrice",
+          e.target.value
+        )
+      }
+    />
+  
+    {form.coreDetails.maxPrice && (
+      <p className="mt-1 text-xs text-[#D4AF37] font-medium">
+        {formatIndianPrice(
+          form.coreDetails.maxPrice
+        )}
+      </p>
+    )}
+  </div>
+    </div>
+  
+    <p className="text-xs text-white/40">
+      Optional. Leave blank if pricing is not available.
+    </p>
+  </div>
   
       {/* ================= KEY METRICS ================= */}
   {/* <div className="mt-6">
