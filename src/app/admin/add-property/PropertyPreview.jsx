@@ -306,39 +306,33 @@ const displayMetrics = (() => {
 
   const metrics = [];
 
-  // ================= PRICE METRICS =================
+ // ================= PRICE METRICS =================
 
-  if (
-    coreDetails?.priceOnRequest === true
-  ) {
+if (coreDetails?.priceOnRequest === true) {
+  metrics.push({
+    label: "Price",
+    value: "On Request",
+    icon: "FaTag",
+    isPriceRequest: true, // 👈 important
+  });
+} else {
+  const startPrice = coreDetails?.startingPrice;
+  const maxPrice = coreDetails?.maxPrice;
+
+  if (startPrice && maxPrice) {
     metrics.push({
-      label: "Price",
-      value: "On Request",
+      label: "Price Range",
+      value: `${formatPrice(startPrice)} - ${formatPrice(maxPrice)}`,
       icon: "FaTag",
     });
-  } else {
-    const startPrice =
-      coreDetails?.startingPrice;
-
-    const maxPrice =
-      coreDetails?.maxPrice;
-
-    if (startPrice && maxPrice) {
-      metrics.push({
-        label: "Price Range",
-        value: `${formatPrice(
-          startPrice
-        )} - ${formatPrice(maxPrice)}`,
-        icon: "FaTag",
-      });
-    } else if (startPrice) {
-      metrics.push({
-        label: "Starting Price",
-        value: formatPrice(startPrice),
-        icon: "FaTag",
-      });
-    }
+  } else if (startPrice) {
+    metrics.push({
+      label: "Starting Price",
+      value: formatPrice(startPrice),
+      icon: "FaTag",
+    });
   }
+}
 
   // ================= CUSTOM METRICS =================
 
@@ -1694,22 +1688,48 @@ const getShortLocation = (location) => {
           />
         </div>
 
-        <p
-          className="
-            text-[20px]
-            sm:text-[22px]
-            md:text-[28px]
-            leading-none
-            text-white
-            font-light
-          "
-          style={{
-            fontFamily:
-              "Georgia, Times New Roman, serif",
-          }}
-        >
-          {metric.value}
-        </p>
+        {metric.isPriceRequest ? (
+  <button
+    onClick={() => setShowModal(true)}
+    className="
+      text-[16px]
+      sm:text-[18px]
+      md:text-[22px]
+      px-4
+      py-2
+      rounded-full
+      border
+      border-[#d8b46b]/40
+      bg-[#d8b46b]/10
+      text-[#d8b46b]
+      hover:bg-[#d8b46b]
+      hover:text-black
+      transition-all
+      duration-300
+      cursor-pointer
+      font-medium
+    "
+  >
+    On Request
+  </button>
+) : (
+  <p
+    className="
+      text-[20px]
+      sm:text-[22px]
+      md:text-[28px]
+      leading-none
+      text-white
+      font-light
+    "
+    style={{
+      fontFamily:
+        "Georgia, Times New Roman, serif",
+    }}
+  >
+    {metric.value}
+  </p>
+)}
 
         <p
           className="

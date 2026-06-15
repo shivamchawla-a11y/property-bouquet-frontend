@@ -306,39 +306,33 @@ const displayMetrics = (() => {
 
   const metrics = [];
 
-  // ================= PRICE METRICS =================
+ // ================= PRICE METRICS =================
 
-  if (
-    coreDetails?.priceOnRequest === true
-  ) {
+if (coreDetails?.priceOnRequest === true) {
+  metrics.push({
+    label: "Price",
+    value: "On Request",
+    icon: "FaTag",
+    isPriceRequest: true, // 👈 important
+  });
+} else {
+  const startPrice = coreDetails?.startingPrice;
+  const maxPrice = coreDetails?.maxPrice;
+
+  if (startPrice && maxPrice) {
     metrics.push({
-      label: "Price",
-      value: "On Request",
+      label: "Price Range",
+      value: `${formatPrice(startPrice)} - ${formatPrice(maxPrice)}`,
       icon: "FaTag",
     });
-  } else {
-    const startPrice =
-      coreDetails?.startingPrice;
-
-    const maxPrice =
-      coreDetails?.maxPrice;
-
-    if (startPrice && maxPrice) {
-      metrics.push({
-        label: "Price Range",
-        value: `${formatPrice(
-          startPrice
-        )} - ${formatPrice(maxPrice)}`,
-        icon: "FaTag",
-      });
-    } else if (startPrice) {
-      metrics.push({
-        label: "Starting Price",
-        value: formatPrice(startPrice),
-        icon: "FaTag",
-      });
-    }
+  } else if (startPrice) {
+    metrics.push({
+      label: "Starting Price",
+      value: formatPrice(startPrice),
+      icon: "FaTag",
+    });
   }
+}
 
   // ================= CUSTOM METRICS =================
 
@@ -1254,68 +1248,93 @@ const getShortLocation = (location) => {
           "
         >
 
-          {displayMetrics.map((metric, index) => {
-  const Icon =
-    metricIcons[metric.icon] || Home;
-
-  const isLastOdd =
-    displayMetrics.length % 2 !== 0 &&
-    index === displayMetrics.length - 1;
-
-  return (
-    <div
-      key={index}
-      className={`
-        p-4
-        text-center
-        border-white/10
-        ${
-          index % 2 === 0
-            ? "border-r"
-            : ""
-        }
-        ${
-          index <
-          displayMetrics.length - 2
-            ? "border-b"
-            : ""
-        }
-        ${
-          isLastOdd
-            ? "col-span-2"
-            : ""
-        }
-      `}
-    >
-      <Icon
-        size={15}
-        className="mx-auto mb-2 text-[#d8b46b]"
-      />
-
-      <p
-        className="text-white text-[18px]"
-        style={{
-          fontFamily:
-            "Georgia, Times New Roman, serif",
-        }}
-      >
-        {metric.value}
-      </p>
-
-      <p
-        className="
-          text-white/60
-          text-[9px]
-          uppercase
-          tracking-[1.5px]
-          mt-1
-        "
-      >
-        {metric.label}
-      </p>
-    </div>
-  );
-})}
+         {displayMetrics.map((metric, index) => {
+         
+             const Icon =
+               metricIcons[metric.icon] ||
+               FaIcons.FaHome;
+         
+             return (
+               <div
+           key={index}
+           className="
+             flex-1
+             min-w-[140px]
+             py-4
+             lg:py-5
+             px-3
+             sm:px-4
+             text-center
+             border-r
+             border-white/10
+           "
+         >
+                 <div className="flex justify-center mb-2">
+                   <Icon
+                     size={16}
+                     className="text-[#d8b46b]"
+                   />
+                 </div>
+         
+                 {metric.isPriceRequest ? (
+           <button
+             onClick={() => setShowModal(true)}
+             className="
+               text-[16px]
+               sm:text-[18px]
+               md:text-[22px]
+               px-4
+               py-2
+               rounded-full
+               border
+               border-[#d8b46b]/40
+               bg-[#d8b46b]/10
+               text-[#d8b46b]
+               hover:bg-[#d8b46b]
+               hover:text-black
+               transition-all
+               duration-300
+               cursor-pointer
+               font-medium
+             "
+           >
+             On Request
+           </button>
+         ) : (
+           <p
+             className="
+               text-[20px]
+               sm:text-[22px]
+               md:text-[28px]
+               leading-none
+               text-white
+               font-light
+             "
+             style={{
+               fontFamily:
+                 "Georgia, Times New Roman, serif",
+             }}
+           >
+             {metric.value}
+           </p>
+         )}
+         
+                 <p
+                   className="
+                     mt-1
+                     text-white/55
+                     text-[9px]
+                     sm:text-[10px]
+                     tracking-[1.5px]
+                     sm:tracking-[2px]
+                     uppercase
+                   "
+                 >
+                   {metric.label}
+                 </p>
+               </div>
+             );
+           })}
 
         
 
@@ -4401,6 +4420,338 @@ object-contain
       </motion.div>
     </div>
   </section>
+)}
+  {/* ================= PREMIUM LEAD MODAL ================= */}
+{showModal && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
+
+    {/* BACKDROP */}
+    <div
+      className="
+        absolute
+        inset-0
+        bg-black/65
+        backdrop-blur-sm
+      "
+      onClick={() => setShowModal(false)}
+    />
+
+    {/* MODAL */}
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 20,
+        scale: 0.98,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: 1,
+      }}
+      transition={{
+        duration: 0.4,
+      }}
+      className="
+        relative
+        w-[92%]
+        max-w-md
+        overflow-hidden
+        rounded-[24px]
+        border
+        border-white/10
+        bg-[rgba(7,10,10,0.58)]
+        backdrop-blur-3xl
+        shadow-[0_20px_80px_rgba(0,0,0,0.55)]
+      "
+    >
+
+      {/* PREMIUM GLOW */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(201,166,75,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,166,75,0.10),transparent_30%)]" />
+
+      {/* BORDER SHINE */}
+      <div className="absolute inset-0 rounded-[24px] border border-white/5" />
+
+      {/* ================= HEADER ================= */}
+      <div className="relative z-10 px-6 pt-6 pb-5 border-b border-white/10">
+
+        {/* CLOSE BUTTON */}
+        <button
+          onClick={() => setShowModal(false)}
+          className="
+            absolute
+            right-5
+            top-5
+            w-8
+            h-8
+            rounded-full
+            bg-white/5
+            border
+            border-white/10
+            flex
+            items-center
+            justify-center
+            text-white/70
+            hover:text-white
+            hover:bg-white/10
+            transition-all
+            duration-300
+          "
+        >
+          ✕
+        </button>
+
+        {/* TOP LABEL */}
+        <div className="flex items-center gap-3 mb-4">
+
+          <div className="w-10 h-[1px] bg-[#d8b46b]" />
+
+          <p
+            className="
+              text-[#d8b46b]
+              text-[10px]
+              tracking-[3px]
+              uppercase
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Private Access
+          </p>
+        </div>
+
+        {/* TITLE */}
+        <h2
+          className="
+            text-white
+            text-[34px]
+            leading-[1]
+            tracking-[-1.5px]
+          "
+          style={{
+            fontFamily:
+              "Georgia, Times New Roman, serif",
+            fontWeight: 400,
+          }}
+        >
+          Download
+          <br />
+          Brochure
+        </h2>
+
+        {/* DESCRIPTION */}
+        <p
+          className="
+            mt-4
+            text-white/60
+            text-[13px]
+            leading-[1.9]
+            max-w-[320px]
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Get instant access to pricing, floor plans,
+          payment details and exclusive inventory.
+        </p>
+      </div>
+
+      {/* ================= FORM ================= */}
+      <div className="relative z-10 px-6 py-6 space-y-5">
+
+        {/* NAME FIELD */}
+        <div>
+
+          <label
+            className="
+              block
+              mb-2
+              text-[10px]
+              tracking-[2px]
+              uppercase
+              text-[#d8b46b]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Full Name
+          </label>
+
+          <input
+            type="text"
+            value={leadName}
+            onChange={(e) =>
+              setLeadName(e.target.value)
+            }
+            placeholder="Enter your full name"
+            className="
+              w-full
+              h-[52px]
+              px-4
+              rounded-[12px]
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              text-white
+              placeholder:text-white/30
+              outline-none
+              transition-all
+              duration-300
+              focus:border-[#d8b46b]
+              focus:bg-white/[0.07]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+            }}
+          />
+        </div>
+
+        {/* PHONE FIELD */}
+        <div>
+
+          <label
+            className="
+              block
+              mb-2
+              text-[10px]
+              tracking-[2px]
+              uppercase
+              text-[#d8b46b]
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Mobile Number
+          </label>
+
+          <div
+            className="
+              flex
+              items-center
+              h-[52px]
+              rounded-[12px]
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              overflow-hidden
+              transition-all
+              duration-300
+              focus-within:border-[#d8b46b]
+            "
+          >
+
+            {/* COUNTRY CODE */}
+            <div
+              className="
+                h-full
+                px-4
+                flex
+                items-center
+                border-r
+                border-white/10
+                text-white/70
+                text-sm
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              🇮🇳 +91
+            </div>
+
+            {/* INPUT */}
+            <input
+              type="tel"
+              value={leadPhone}
+              onChange={(e) =>
+                setLeadPhone(e.target.value)
+              }
+              placeholder="Enter mobile number"
+              className="
+                flex-1
+                h-full
+                bg-transparent
+                px-4
+                text-white
+                placeholder:text-white/30
+                outline-none
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* CTA BUTTON */}
+        <button
+          onClick={handleLeadSubmit}
+          disabled={submitting}
+          className="
+            group
+            relative
+            overflow-hidden
+            w-full
+            h-[52px]
+            rounded-[12px]
+            bg-[#c9a64b]
+            text-[#111]
+            text-[10px]
+            tracking-[2px]
+            uppercase
+            font-semibold
+            transition-all
+            duration-300
+            hover:brightness-110
+            shadow-[0_10px_30px_rgba(201,166,75,0.28)]
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+
+          {/* HOVER SHINE */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+
+          <div className="relative flex items-center justify-center gap-2">
+
+            {submitting ? (
+              "Processing..."
+            ) : (
+              <>
+                DOWNLOAD BROCHURE
+                <span>→</span>
+              </>
+            )}
+          </div>
+        </button>
+
+        {/* TRUST TEXT */}
+        <p
+          className="
+            text-center
+            text-white/40
+            text-[11px]
+            tracking-[1px]
+            pt-1
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Your information remains completely private.
+        </p>
+      </div>
+    </motion.div>
+  </div>
 )}
     </div>
   );
