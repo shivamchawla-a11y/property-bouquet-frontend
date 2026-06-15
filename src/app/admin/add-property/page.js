@@ -559,6 +559,7 @@ const [newDeveloper, setNewDeveloper] =
 const [activeMetricIndex, setActiveMetricIndex] = useState(null);
 const [activeMetric, setActiveMetric] = useState(null);
 const [expandedMetric, setExpandedMetric] = useState(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
 
 // Massive icon library
 const ICONS = {
@@ -856,7 +857,10 @@ if (useCustomLocation) {
 
  // ================= SUBMIT =================
 const handleSubmit = async () => {
+  if (isSubmitting) return;
+
   try {
+    setIsSubmitting(true);
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -974,7 +978,7 @@ if (
     data.message
   );
 
-  return;
+  return; // finally will run automatically
 }
 
    const missing = data.missingFields || [];
@@ -1030,9 +1034,11 @@ setStep(firstStep);
 // scroll to top
 window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
-    console.error(err);
-    alert("Server error ❌");
-  }
+  console.error(err);
+  alert("Server error ❌");
+} finally {
+  setIsSubmitting(false);
+}
 };
 
 const saveDraftSilently = () => {
@@ -6132,22 +6138,24 @@ const labelMap = {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
-              className="
-                px-7 py-3
-                rounded-2xl
-                bg-gradient-to-r
-                from-emerald-500
-                to-green-400
-                text-black
-                font-bold
-                shadow-[0_10px_35px_rgba(16,185,129,0.3)]
-                hover:scale-[1.03]
-                transition-all duration-300
-              "
-            >
-              🚀 Publish Property
-            </button>
+  onClick={handleSubmit}
+  disabled={isSubmitting}
+  className={`
+    px-7 py-3
+    rounded-2xl
+    text-black
+    font-bold
+    shadow-[0_10px_35px_rgba(16,185,129,0.3)]
+    transition-all duration-300
+    ${
+      isSubmitting
+        ? "bg-gray-400 cursor-not-allowed opacity-70"
+        : "bg-gradient-to-r from-emerald-500 to-green-400 hover:scale-[1.03]"
+    }
+  `}
+>
+  {isSubmitting ? "Publishing..." : "🚀 Publish Property"}
+</button>
           )}
 
         </div>

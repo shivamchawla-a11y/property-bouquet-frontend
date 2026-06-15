@@ -548,6 +548,7 @@ export default function EditProperty() {
        const [activeMetricIndex, setActiveMetricIndex] = useState(null);
        const [activeMetric, setActiveMetric] = useState(null);
        const [expandedMetric, setExpandedMetric] = useState(null);
+       const [isUpdating, setIsUpdating] = useState(false);
    
    // Massive icon library
    const ICONS = {
@@ -1069,20 +1070,19 @@ setPreviewData(safeForm);
   fetchCategories();
 }, []);
 
-    useEffect(() => {
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch(`${API}/locations/tree`);
-      const data = await res.json();
+const fetchLocations = async () => {
+  try {
+    const res = await fetch(`${API}/locations/tree`);
+    const data = await res.json();
 
-      if (res.ok) {
-        setLocations(data.data || []);
-      }
-    } catch (err) {
-      console.error(err);
+    if (res.ok) {
+      setLocations(data.data || []);
     }
-  };
-
+  } catch (err) {
+    console.error(err);
+  }
+};
+useEffect(() => {
   fetchLocations();
 }, []);
 
@@ -1324,7 +1324,11 @@ if (useCustomLocation) {
 
   // ================= SUBMIT =================
 const handleUpdate = async () => {
+  if (isUpdating) return;
+
   try {
+    setIsUpdating(true);
+
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -1474,11 +1478,12 @@ const validConfigurations =
 
       alert("Property Updated ✅");
 
-      // clear old errors
-      setErrors({});
-      setErrorList([]);
+setErrors({});
+setErrorList([]);
 
-      router.push("/admin/properties");
+setIsUpdating(false);
+
+router.push("/admin/properties");
 
       return;
     }
@@ -1505,6 +1510,8 @@ const validConfigurations =
         firstStep = stepNo;
       }
     });
+
+    setIsUpdating(false);
 
     setErrors(fieldErrors);
 
@@ -1542,10 +1549,14 @@ const validConfigurations =
     });
 
   } catch (err) {
-    console.error(err);
+  console.error(err);
 
-    alert("Server error ❌");
-  }
+  setIsUpdating(false);
+
+  alert("Server error ❌");
+} finally {
+  setIsUpdating(false);
+}
 };
 
 const handleCreateLocation = async () => {
@@ -6471,22 +6482,24 @@ if (loading) {
             </button>
           ) : (
             <button
-              onClick={handleUpdate}
-              className="
-                px-7 py-3
-                rounded-2xl
-                bg-gradient-to-r
-                from-emerald-500
-                to-green-400
-                text-black
-                font-bold
-                shadow-[0_10px_35px_rgba(16,185,129,0.3)]
-                hover:scale-[1.03]
-                transition-all duration-300
-              "
-            >
-              🚀 Publish Property
-            </button>
+  onClick={handleUpdate}
+  disabled={isUpdating}
+  className={`
+    px-7 py-3
+    rounded-2xl
+    text-black
+    font-bold
+    shadow-[0_10px_35px_rgba(16,185,129,0.3)]
+    transition-all duration-300
+    ${
+      isUpdating
+        ? "bg-gray-400 cursor-not-allowed opacity-70"
+        : "bg-gradient-to-r from-emerald-500 to-green-400 hover:scale-[1.03]"
+    }
+  `}
+>
+  {isUpdating ? "Updating..." : "🚀 Publish Property"}
+</button>
           )}
 
         </div>
