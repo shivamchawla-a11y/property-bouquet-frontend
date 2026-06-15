@@ -98,6 +98,7 @@ export default function EditProperty() {
       startingPrice: "",
   
       maxPrice: "",
+      priceOnRequest: false,
     },
   
     // ================= CATEGORY =================
@@ -599,28 +600,31 @@ const safeForm = {
 
   // ================= CORE DETAILS =================
   coreDetails: {
-    title: property.coreDetails?.title || "",
+  title: property.coreDetails?.title || "",
 
-    developerRef:
-      typeof property.coreDetails?.developerRef === "object"
-        ? property.coreDetails?.developerRef?._id || ""
-        : property.coreDetails?.developerRef || "",
+  developerRef:
+    typeof property.coreDetails?.developerRef === "object"
+      ? property.coreDetails?.developerRef?._id || ""
+      : property.coreDetails?.developerRef || "",
 
-    developerName:
-      property.coreDetails?.developerName || "",
+  developerName:
+    property.coreDetails?.developerName || "",
 
-    developerLogo:
-      property.coreDetails?.developerLogo || "",
+  developerLogo:
+    property.coreDetails?.developerLogo || "",
 
-    developerImage:
-      property.coreDetails?.developerImage || "",
+  developerImage:
+    property.coreDetails?.developerImage || "",
 
-    startingPrice:
-      property.coreDetails?.startingPrice || "",
+  startingPrice:
+    property.coreDetails?.startingPrice || "",
 
-    maxPrice:
-      property.coreDetails?.maxPrice || "",
-  },
+  maxPrice:
+    property.coreDetails?.maxPrice || "",
+
+  priceOnRequest:
+    property.coreDetails?.priceOnRequest || false,
+},
 
   // ================= CATEGORY =================
   categoryData: {
@@ -2068,905 +2072,848 @@ if (loading) {
           <div className="space-y-8">
 
           {/* ================= STEP 1 ================= */}
-  {step === 1 && (
-    <div className="section">
-      <h2 className="section-title">Core Details</h2>
-  
+ {step === 1 && (
+   <div className="section">
+     <h2 className="section-title">Core Details</h2>
+ 
+     <input
+       className={`input transition-all duration-200 ${
+   hasError("slug")
+     ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+     : ""
+ }`}
+   placeholder="Slug *"
+       value={form.slug}
+       onChange={(e) =>
+         setForm((prev) => ({
+           ...prev,
+           slug: e.target.value,
+         }))
+       }
+     />
+ 
+     {hasError("slug") && (
+   <p className="text-red-400 text-sm mt-1 animate-pulse">
+     Slug is required
+   </p>
+ )}
+ 
+     <input
+   className={`input transition-all duration-200 ${
+     hasError("coreDetails.title")
+       ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+       : ""
+   }`}
+   placeholder="Title *"
+   value={form.coreDetails.title}
+   onChange={(e) =>
+     handleChange("coreDetails", "title", e.target.value)
+   }
+ />
+ 
+     {hasError("coreDetails.title") && (
+   <p className="text-red-400 text-sm">Title is required</p>
+ )}
+ 
+ {/* ================= HERO SECTION ================= */}
+     <div className="mt-8">
+       <h3 className="font-semibold mb-4 text-white">
+         Hero Section
+       </h3>
+ 
+       <div className="grid grid-cols-1 gap-4">
+         <input
+           className="input"
+           placeholder="propertyStatus Text"
+           value={
+             form.heroSection
+               ?.propertyStatus || ""
+           }
+           onChange={(e) =>
+             handleChange(
+               "heroSection",
+               "propertyStatus",
+               e.target.value
+             )
+           }
+         />
+ 
+         <textarea
+   className={`input min-h-[120px] ${
+     hasError("heroSection.heroDescription")
+       ? "border-red-500 ring-2 ring-red-500"
+       : ""
+   }`}
+           placeholder="Hero Description *"
+           value={
+             form.heroSection
+               ?.heroDescription || ""
+           }
+           onChange={(e) =>
+             handleChange(
+               "heroSection",
+               "heroDescription",
+               e.target.value
+             )
+           }
+         />
+ 
+         {hasError("heroSection.heroDescription") && (
+   <p className="text-red-400 text-sm">
+     Hero Description is required
+   </p>
+ )}
+ 
+         <input
+           className="input"
+           placeholder="Brochure Button Text"
+           value={
+             form.heroSection
+               ?.brochureButtonText || ""
+           }
+           onChange={(e) =>
+             handleChange(
+               "heroSection",
+               "brochureButtonText",
+               e.target.value
+             )
+           }
+         />
+ 
+         <input
+           className="input"
+           placeholder="Video Button Text"
+           value={
+             form.heroSection
+               ?.videoButtonText || ""
+           }
+           onChange={(e) =>
+             handleChange(
+               "heroSection",
+               "videoButtonText",
+               e.target.value
+             )
+           }
+         />
+       </div>
+     </div>
+ 
+     {/* ================= HERO IMAGE ================= */}
+ <div className="mt-8">
+   <label className="block text-white font-semibold mb-3">
+     Hero Image
+   </label>
+ 
+   <div
+     onClick={() =>
+       document
+         .getElementById("heroImageUpload")
+         .click()
+     }
+     className={`
+       relative
+       group
+       cursor-pointer
+       overflow-hidden
+       rounded-2xl
+       border-2
+       border-dashed
+       transition-all
+       duration-300
+       ${
+         hasError("media.heroImageUrl")
+           ? "border-red-500 bg-red-500/10"
+           : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
+       }
+     `}
+   >
+ 
+     {/* IMAGE EXISTS */}
+     {form.media?.heroImageUrl ? (
+       <div className="relative">
+         <img
+           src={form.media.heroImageUrl}
+           alt="Hero Preview"
+           className="
+             w-full
+             h-[300px]
+             object-cover
+           "
+         />
+ 
+         {/* Overlay */}
+         <div
+           className="
+             absolute
+             inset-0
+             bg-black/50
+             opacity-0
+             group-hover:opacity-100
+             transition-all
+             duration-300
+             flex
+             flex-col
+             items-center
+             justify-center
+           "
+         >
+           <svg
+             className="w-8 h-8 text-white mb-2"
+             fill="none"
+             stroke="currentColor"
+             strokeWidth="2"
+             viewBox="0 0 24 24"
+           >
+             <path
+               strokeLinecap="round"
+               strokeLinejoin="round"
+               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+             />
+           </svg>
+ 
+           <p className="text-white font-medium">
+             Change Hero Image
+           </p>
+         </div>
+ 
+         {/* Remove Button */}
+         <button
+           type="button"
+           onClick={(e) => {
+             e.stopPropagation();
+ 
+             setForm((prev) => ({
+               ...prev,
+               media: {
+                 ...prev.media,
+                 heroImageUrl: "",
+               },
+             }));
+           }}
+           className="
+             absolute
+             top-3
+             right-3
+             h-9
+             w-9
+             rounded-full
+             bg-red-500
+             text-white
+             flex
+             items-center
+             justify-center
+             shadow-lg
+             hover:scale-110
+             transition
+           "
+         >
+           ✕
+         </button>
+       </div>
+     ) : (
+       /* EMPTY STATE */
+       <div
+         className="
+           py-16
+           px-6
+           flex
+           flex-col
+           items-center
+           justify-center
+           text-center
+         "
+       >
+         <div
+           className="
+             h-16
+             w-16
+             rounded-full
+             bg-white/10
+             flex
+             items-center
+             justify-center
+             mb-4
+           "
+         >
+           <svg
+             className="w-8 h-8 text-[#C6A15B]"
+             fill="none"
+             stroke="currentColor"
+             strokeWidth="2"
+             viewBox="0 0 24 24"
+           >
+             <path
+               strokeLinecap="round"
+               strokeLinejoin="round"
+               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+             />
+           </svg>
+         </div>
+ 
+         <h4 className="text-white font-semibold text-lg">
+           Upload Hero Image
+         </h4>
+ 
+         <p className="text-gray-400 text-sm mt-2">
+           Click to upload your property hero image
+         </p>
+ 
+         <p className="text-gray-500 text-xs mt-1">
+           JPG, PNG, WEBP • Max 5MB
+         </p>
+       </div>
+     )}
+   </div>
+ 
+   {hasError("media.heroImageUrl") && (
+     <p className="text-red-400 text-sm mt-2">
+       Hero Image is required
+     </p>
+   )}
+ 
+   <input
+     id="heroImageUpload"
+     type="file"
+     hidden
+     accept="image/*"
+     onChange={async (e) => {
+       const file = e.target.files[0];
+       if (!file) return;
+ 
+       if (!file.type.startsWith("image/")) {
+         alert("Only image files allowed ❌");
+         return;
+       }
+ 
+       if (file.size > 5 * 1024 * 1024) {
+         alert("Max file size is 5MB ❌");
+         return;
+       }
+ 
+       try {
+         setUploading(true);
+ 
+         const data = new FormData();
+         data.append("file", file);
+ 
+         const res = await fetch(
+           "https://property-bouquet-backend.onrender.com/api/upload",
+           {
+             method: "POST",
+             body: data,
+           }
+         );
+ 
+         const result = await res.json();
+ 
+         if (!res.ok || !result.url) {
+           throw new Error(
+             result.message || "Upload failed"
+           );
+         }
+ 
+         setForm((prev) => ({
+           ...prev,
+           media: {
+             ...prev.media,
+             heroImageUrl: result.url,
+           },
+         }));
+       } catch (err) {
+         console.error(err);
+         alert("Upload failed ❌");
+       } finally {
+         setUploading(false);
+       }
+ 
+       e.target.value = "";
+     }}
+   />
+ </div>
+ 
+     {/* ================= DEVELOPER ================= */}
+     <div className="space-y-2">
+       <label className="text-sm text-white/70 font-medium">
+         Developer
+       </label>
+ 
+       {!useCustomDeveloper ? (
+        <div className="flex gap-3">
+ 
+   <select
+     className={`input flex-1 transition-all duration-200 ${
+       hasError("coreDetails.developerRef")
+         ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+         : ""
+     }`}
+     value={
+   typeof form.coreDetails.developerRef === "object"
+     ? form.coreDetails.developerRef?._id
+     : form.coreDetails.developerRef || ""
+ }
+     onChange={(e) => {
+       const value = e.target.value;
+ 
+       if (value === "CREATE_NEW") {
+         setShowDeveloperModal(true);
+         return;
+       }
+ 
+       if (value === "OTHER") {
+         setUseCustomDeveloper(true);
+ 
+         setForm((prev) => ({
+           ...prev,
+           coreDetails: {
+             ...prev.coreDetails,
+             developerRef: "",
+             developerName: "",
+             developerLogo: "",
+           },
+         }));
+ 
+         return;
+       }
+ 
+       const selectedDev = developers.find(
+         (d) => d._id === value
+       );
+ 
+       setUseCustomDeveloper(false);
+ 
+       setForm((prev) => ({
+         ...prev,
+         coreDetails: {
+           ...prev.coreDetails,
+           developerRef: selectedDev?._id || "",
+           developerName: selectedDev?.name || "",
+           developerLogo: selectedDev?.logo || "",
+         },
+       }));
+     }}
+   >
+     <option value="">
+       Select Developer
+     </option>
+ 
+     {developers.map((dev) => (
+       <option key={dev._id} value={dev._id}>
+         {dev.name}
+       </option>
+     ))}
+ 
+     <option value="CREATE_NEW">
+       + Create New Developer
+     </option>
+ 
+     <option value="OTHER">
+       + Add Custom Developer
+     </option>
+   </select>
+ 
+   {/* SEARCH BUTTON */}
+   <button
+     type="button"
+     onClick={() => setShowDeveloperSearch(true)}
+     className="
+       h-[48px]
+       w-[48px]
+       flex
+       items-center
+       justify-center
+       rounded-xl
+       bg-white/10
+       border
+       border-white/10
+       text-white
+       hover:bg-white/20
+       transition
+       shrink-0
+     "
+   >
+     <Search size={18} />
+   </button>
+ 
+   {/* NEW BUTTON */}
+   <button
+     type="button"
+     onClick={() => {
+   setShowDeveloperModal(true);
+ }}
+     className="
+       h-[48px]
+       px-4
+       rounded-xl
+       bg-emerald-600
+       text-white
+       text-sm
+       font-medium
+       hover:bg-emerald-700
+       transition
+       shrink-0
+     "
+   >
+     + New
+   </button>
+ 
+ </div>
+         
+       ) : (
+         <div className="flex gap-2">
+           <input
+             className="input flex-1"
+             placeholder="Enter developer name"
+             value={
+               form.coreDetails.developerName
+             }
+             onChange={(e) =>
+               handleChange(
+                 "coreDetails",
+                 "developerName",
+                 e.target.value
+               )
+             }
+           />
+ 
+           <button
+             type="button"
+             onClick={() => {
+               setUseCustomDeveloper(false);
+ 
+               setForm((prev) => ({
+                 ...prev,
+                 coreDetails: {
+                   ...prev.coreDetails,
+                   developerRef: "",
+                   developerName: "",
+                 },
+               }));
+             }}
+             className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+           >
+             Cancel
+           </button>
+         </div>
+       )}
+     </div>
+ 
+     {hasError("coreDetails.developerRef") && (
+   <p className="text-red-400 text-sm">
+     Developer is required
+   </p>
+ )}
+ 
+ {/* LOCATION SELECT */}
+ <div className="mb-5">
+ 
+   <label className="block text-sm text-white/70 mb-2">
+     Select Location
+   </label>
+ 
+   {!useCustomLocation ? (
+ <div className="flex gap-3">
+     <select
+       className={`input flex-1 transition-all duration-200 ${
+         hasError("locationData.locationRef")
+           ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+           : ""
+       }`}
+       value={
+   typeof form.locationData.locationRef === "object"
+     ? form.locationData.locationRef?._id
+     : form.locationData.locationRef || ""
+ }
+       onChange={(e) => {
+ 
+   const value = e.target.value;
+ 
+   // CREATE NEW LOCATION
+   if (value === "CREATE_NEW") {
+     setShowLocationModal(true);
+     return;
+   }
+ 
+   // CUSTOM LOCATION
+   if (value === "OTHER") {
+ 
+     setUseCustomLocation(true);
+ 
+     setForm((prev) => ({
+       ...prev,
+       locationData: {
+         ...prev.locationData,
+         locationRef: "",
+         locationName: "",
+         customLocation: "",
+       },
+     }));
+ 
+     return;
+   }
+ 
+   // EXISTING LOCATION
+   const selected = buildOptions(locations).find(
+     (loc) => loc._id === value
+   );
+ 
+   setUseCustomLocation(false);
+ 
+   setForm((prev) => ({
+     ...prev,
+     locationData: {
+       ...prev.locationData,
+       locationRef: selected?._id || "",
+       locationName: selected?.label || "",
+       customLocation: "",
+     },
+   }));
+ }}
+     >
+       <option value="">
+         Select Location
+       </option>
+ 
+       {buildOptions(locations).map((loc) => (
+         <option key={loc._id} value={loc._id}>
+           {loc.label}
+         </option>
+       ))}
+ 
+       <option value="CREATE_NEW">
+   + Create New Location
+ </option>
+ 
+ <option value="OTHER">
+   + Add Custom Location
+ </option>
+     </select>
+     <button
+   type="button"
+   onClick={() => setShowLocationSearch(true)}
+   className="
+     h-[48px]
+     w-[48px]
+     flex
+     items-center
+     justify-center
+     rounded-xl
+     bg-white/10
+     border
+     border-white/10
+     text-white
+     hover:bg-white/20
+     transition
+   "
+ >
+   <Search size={18} />
+ </button>
+ <button
+   type="button"
+   onClick={() => setShowLocationModal(true)}
+   className="
+     px-4
+     rounded-xl
+     bg-emerald-600
+     text-white
+     text-sm
+     font-medium
+     hover:bg-emerald-700
+   "
+ >
+   + New
+ </button>
+ </div>
+   ) : (
+ 
+     <div className="flex flex-col md:flex-row gap-3">
+ 
+       <input
+         className={`input flex-1 transition-all duration-200 ${
+           hasError("locationData.locationRef")
+             ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+             : ""
+         }`}
+         placeholder="Enter custom location"
+         value={form.locationData.customLocation || ""}
+         onChange={(e) =>
+           setForm((prev) => ({
+             ...prev,
+             locationData: {
+               ...prev.locationData,
+               customLocation: e.target.value,
+             },
+           }))
+         }
+       />
+ 
+       <button
+         type="button"
+         onClick={() => {
+ 
+           setUseCustomLocation(false);
+ 
+           setForm((prev) => ({
+             ...prev,
+             locationData: {
+               ...prev.locationData,
+               locationRef: "",
+               locationName: "",
+               customLocation: "",
+             },
+           }));
+         }}
+         className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
+       >
+         Cancel
+       </button>
+     </div>
+   )}
+ 
+   {hasError("locationData.locationRef") && (
+     <p className="text-red-400 text-sm mt-2">
+       Location is required
+     </p>
+   )}
+ </div>
+ 
+ 
+     {/* ================= CATEGORY ================= */}
+     <div className="space-y-2">
+       <label className="text-sm text-white/70 font-medium">
+         Category
+       </label>
+ 
+       {!useCustomCategory ? (
+         <select
+   className={`input transition-all duration-200 ${
+     hasError("categoryData.categoryRef")
+       ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+       : ""
+   }`}
+           value={
+   typeof form.categoryData.categoryRef === "object"
+     ? form.categoryData.categoryRef?._id
+     : form.categoryData.categoryRef || ""
+ }
+           onChange={(e) => {
+ 
+   const value = e.target.value;
+ 
+   if (value === "OTHER") {
+ 
+     setUseCustomCategory(true);
+ 
+     setForm((prev) => ({
+       ...prev,
+       categoryData: {
+         ...prev.categoryData,
+         categoryRef: "",
+         categoryName: "",
+         customCategory: "",
+       },
+     }));
+ 
+     return;
+   }
+ 
+   const selectedCategory = categories.find(
+     (cat) => cat._id === value
+   );
+ 
+   setUseCustomCategory(false);
+ 
+   setForm((prev) => ({
+     ...prev,
+     categoryData: {
+       categoryRef: selectedCategory?._id || "",
+       categoryName: selectedCategory?.name || "",
+       customCategory: "",
+     },
+   }));
+ 
+ }}
+         >
+           <option value="">
+             Select Category
+           </option>
+ 
+           {categories.map((cat) => (
+             <option
+               key={cat._id}
+               value={cat._id}
+             >
+               {cat.name}
+             </option>
+           ))}
+ 
+           <option value="OTHER">
+             + Add Custom Category
+           </option>
+         </select>
+       ) : (
+         <div className="flex gap-2">
+           <input
+             className="input flex-1"
+             placeholder="Enter custom category"
+             value={
+               form.categoryData.customCategory
+             }
+             onChange={(e) =>
+               setForm((prev) => ({
+                 ...prev,
+                 categoryData: {
+                   ...prev.categoryData,
+                   customCategory:
+                     e.target.value,
+                 },
+               }))
+             }
+           />
+ 
+           <button
+             type="button"
+             onClick={() => {
+               setUseCustomCategory(false);
+ 
+               setForm((prev) => ({
+                 ...prev,
+                 categoryData: {
+                   categoryRef: "",
+                   categoryName: "",
+                   customCategory: "",
+                 },
+               }));
+             }}
+             className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+           >
+             Cancel
+           </button>
+         </div>
+       )}
+     </div>
+ 
+     {hasError("categoryData.categoryRef") && (
+   <p className="text-red-400 text-sm">
+     Category is required
+   </p>
+ )}
+ 
+ {/* ================= PRICING ================= */}
+<div className="space-y-3">
+
+  <label className="text-sm text-white/70 font-medium block">
+    Pricing (Optional)
+  </label>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div>
       <input
-        className={`input transition-all duration-200 ${
-    hasError("slug")
-      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-      : ""
-  }`}
-    placeholder="Slug *"
-        value={form.slug}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            slug: e.target.value,
-          }))
-        }
-      />
-  
-      {hasError("slug") && (
-    <p className="text-red-400 text-sm mt-1 animate-pulse">
-      Slug is required
-    </p>
-  )}
-  
-      <input
-    className={`input transition-all duration-200 ${
-      hasError("coreDetails.title")
-        ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-        : ""
-    }`}
-    placeholder="Title *"
-    value={form.coreDetails.title}
-    onChange={(e) =>
-      handleChange("coreDetails", "title", e.target.value)
-    }
-  />
-  
-      {hasError("coreDetails.title") && (
-    <p className="text-red-400 text-sm">Title is required</p>
-  )}
-  
-  {/* ================= HERO SECTION ================= */}
-      <div className="mt-8">
-        <h3 className="font-semibold mb-4 text-white">
-          Hero Section
-        </h3>
-  
-        <div className="grid grid-cols-1 gap-4">
-          <input
-            className="input"
-            placeholder="propertyStatus Text"
-            value={
-              form.heroSection
-                ?.propertyStatus || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "propertyStatus",
-                e.target.value
-              )
-            }
-          />
-  
-          <textarea
-    className={`input min-h-[120px] ${
-      hasError("heroSection.heroDescription")
-        ? "border-red-500 ring-2 ring-red-500"
-        : ""
-    }`}
-            placeholder="Hero Description *"
-            value={
-              form.heroSection
-                ?.heroDescription || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "heroDescription",
-                e.target.value
-              )
-            }
-          />
-  
-          {hasError("heroSection.heroDescription") && (
-    <p className="text-red-400 text-sm">
-      Hero Description is required
-    </p>
-  )}
-  
-          <input
-            className="input"
-            placeholder="Brochure Button Text"
-            value={
-              form.heroSection
-                ?.brochureButtonText || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "brochureButtonText",
-                e.target.value
-              )
-            }
-          />
-  
-          <input
-            className="input"
-            placeholder="Video Button Text"
-            value={
-              form.heroSection
-                ?.videoButtonText || ""
-            }
-            onChange={(e) =>
-              handleChange(
-                "heroSection",
-                "videoButtonText",
-                e.target.value
-              )
-            }
-          />
-        </div>
-      </div>
-  
-      {/* ================= HERO IMAGE ================= */}
-  <div className="mt-8">
-    <label className="block text-white font-semibold mb-3">
-      Hero Image
-    </label>
-  
-    <div
-      onClick={() =>
-        document
-          .getElementById("heroImageUpload")
-          .click()
-      }
-      className={`
-        relative
-        group
-        cursor-pointer
-        overflow-hidden
-        rounded-2xl
-        border-2
-        border-dashed
-        transition-all
-        duration-300
-        ${
-          hasError("media.heroImageUrl")
-            ? "border-red-500 bg-red-500/10"
-            : "border-white/20 bg-white/5 hover:border-[#C6A15B] hover:bg-white/10"
-        }
-      `}
-    >
-  
-      {/* IMAGE EXISTS */}
-      {form.media?.heroImageUrl ? (
-        <div className="relative">
-          <img
-            src={form.media.heroImageUrl}
-            alt="Hero Preview"
-            className="
-              w-full
-              h-[300px]
-              object-cover
-            "
-          />
-  
-          {/* Overlay */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-black/50
-              opacity-0
-              group-hover:opacity-100
-              transition-all
-              duration-300
-              flex
-              flex-col
-              items-center
-              justify-center
-            "
-          >
-            <svg
-              className="w-8 h-8 text-white mb-2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
-              />
-            </svg>
-  
-            <p className="text-white font-medium">
-              Change Hero Image
-            </p>
-          </div>
-  
-          {/* Remove Button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-  
-              setForm((prev) => ({
-                ...prev,
-                media: {
-                  ...prev.media,
-                  heroImageUrl: "",
-                },
-              }));
-            }}
-            className="
-              absolute
-              top-3
-              right-3
-              h-9
-              w-9
-              rounded-full
-              bg-red-500
-              text-white
-              flex
-              items-center
-              justify-center
-              shadow-lg
-              hover:scale-110
-              transition
-            "
-          >
-            ✕
-          </button>
-        </div>
-      ) : (
-        /* EMPTY STATE */
-        <div
-          className="
-            py-16
-            px-6
-            flex
-            flex-col
-            items-center
-            justify-center
-            text-center
-          "
-        >
-          <div
-            className="
-              h-16
-              w-16
-              rounded-full
-              bg-white/10
-              flex
-              items-center
-              justify-center
-              mb-4
-            "
-          >
-            <svg
-              className="w-8 h-8 text-[#C6A15B]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-          </div>
-  
-          <h4 className="text-white font-semibold text-lg">
-            Upload Hero Image
-          </h4>
-  
-          <p className="text-gray-400 text-sm mt-2">
-            Click to upload your property hero image
-          </p>
-  
-          <p className="text-gray-500 text-xs mt-1">
-            JPG, PNG, WEBP • Max 5MB
-          </p>
-        </div>
-      )}
-    </div>
-  
-    {hasError("media.heroImageUrl") && (
-      <p className="text-red-400 text-sm mt-2">
-        Hero Image is required
-      </p>
-    )}
-  
-    <input
-      id="heroImageUpload"
-      type="file"
-      hidden
-      accept="image/*"
-      onChange={async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-  
-        if (!file.type.startsWith("image/")) {
-          alert("Only image files allowed ❌");
-          return;
-        }
-  
-        if (file.size > 5 * 1024 * 1024) {
-          alert("Max file size is 5MB ❌");
-          return;
-        }
-  
-        try {
-          setUploading(true);
-  
-          const data = new FormData();
-          data.append("file", file);
-  
-          const res = await fetch(
-            "https://property-bouquet-backend.onrender.com/api/upload",
-            {
-              method: "POST",
-              body: data,
-            }
-          );
-  
-          const result = await res.json();
-  
-          if (!res.ok || !result.url) {
-            throw new Error(
-              result.message || "Upload failed"
-            );
-          }
-  
-          setForm((prev) => ({
-            ...prev,
-            media: {
-              ...prev.media,
-              heroImageUrl: result.url,
-            },
-          }));
-        } catch (err) {
-          console.error(err);
-          alert("Upload failed ❌");
-        } finally {
-          setUploading(false);
-        }
-  
-        e.target.value = "";
-      }}
-    />
-  </div>
-  
-      {/* ================= DEVELOPER ================= */}
-      <div className="space-y-2">
-        <label className="text-sm text-white/70 font-medium">
-          Developer
-        </label>
-  
-        {!useCustomDeveloper ? (
-         <div className="flex gap-3">
-  
-    <select
-      className={`input flex-1 transition-all duration-200 ${
-        hasError("coreDetails.developerRef")
-          ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-          : ""
-      }`}
-      value={
-    typeof form.coreDetails.developerRef === "object"
-      ? form.coreDetails.developerRef?._id
-      : form.coreDetails.developerRef || ""
-  }
-      onChange={(e) => {
-        const value = e.target.value;
-  
-        if (value === "CREATE_NEW") {
-          setShowDeveloperModal(true);
-          return;
-        }
-  
-        if (value === "OTHER") {
-          setUseCustomDeveloper(true);
-  
-          setForm((prev) => ({
-            ...prev,
-            coreDetails: {
-              ...prev.coreDetails,
-              developerRef: "",
-              developerName: "",
-              developerLogo: "",
-            },
-          }));
-  
-          return;
-        }
-  
-        const selectedDev = developers.find(
-          (d) => d._id === value
-        );
-  
-        setUseCustomDeveloper(false);
-  
-        setForm((prev) => ({
-          ...prev,
-          coreDetails: {
-            ...prev.coreDetails,
-            developerRef: selectedDev?._id || "",
-            developerName: selectedDev?.name || "",
-            developerLogo: selectedDev?.logo || "",
-          },
-        }));
-      }}
-    >
-      <option value="">
-        Select Developer
-      </option>
-  
-      {developers.map((dev) => (
-        <option key={dev._id} value={dev._id}>
-          {dev.name}
-        </option>
-      ))}
-  
-      <option value="CREATE_NEW">
-        + Create New Developer
-      </option>
-  
-      <option value="OTHER">
-        + Add Custom Developer
-      </option>
-    </select>
-  
-    {/* SEARCH BUTTON */}
-    <button
-      type="button"
-      onClick={() => setShowDeveloperSearch(true)}
-      className="
-        h-[48px]
-        w-[48px]
-        flex
-        items-center
-        justify-center
-        rounded-xl
-        bg-white/10
-        border
-        border-white/10
-        text-white
-        hover:bg-white/20
-        transition
-        shrink-0
-      "
-    >
-      <Search size={18} />
-    </button>
-  
-    {/* NEW BUTTON */}
-    <button
-      type="button"
-      onClick={() => {
-    setShowDeveloperModal(true);
-  }}
-      className="
-        h-[48px]
-        px-4
-        rounded-xl
-        bg-emerald-600
-        text-white
-        text-sm
-        font-medium
-        hover:bg-emerald-700
-        transition
-        shrink-0
-      "
-    >
-      + New
-    </button>
-  
-  </div>
-          
-        ) : (
-          <div className="flex gap-2">
-            <input
-              className="input flex-1"
-              placeholder="Enter developer name"
-              value={
-                form.coreDetails.developerName
-              }
-              onChange={(e) =>
-                handleChange(
-                  "coreDetails",
-                  "developerName",
-                  e.target.value
-                )
-              }
-            />
-  
-            <button
-              type="button"
-              onClick={() => {
-                setUseCustomDeveloper(false);
-  
-                setForm((prev) => ({
-                  ...prev,
-                  coreDetails: {
-                    ...prev.coreDetails,
-                    developerRef: "",
-                    developerName: "",
-                  },
-                }));
-              }}
-              className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-  
-      {hasError("coreDetails.developerRef") && (
-    <p className="text-red-400 text-sm">
-      Developer is required
-    </p>
-  )}
-  
-  {/* LOCATION SELECT */}
-  <div className="mb-5">
-  
-    <label className="block text-sm text-white/70 mb-2">
-      Select Location
-    </label>
-  
-    {!useCustomLocation ? (
-  <div className="flex gap-3">
-      <select
-        className={`input flex-1 transition-all duration-200 ${
-          hasError("locationData.locationRef")
-            ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-            : ""
-        }`}
-        value={
-    typeof form.locationData.locationRef === "object"
-      ? form.locationData.locationRef?._id
-      : form.locationData.locationRef || ""
-  }
-        onChange={(e) => {
-  
-    const value = e.target.value;
-  
-    // CREATE NEW LOCATION
-    if (value === "CREATE_NEW") {
-      setShowLocationModal(true);
-      return;
-    }
-  
-    // CUSTOM LOCATION
-    if (value === "OTHER") {
-  
-      setUseCustomLocation(true);
-  
-      setForm((prev) => ({
-        ...prev,
-        locationData: {
-          ...prev.locationData,
-          locationRef: "",
-          locationName: "",
-          customLocation: "",
-        },
-      }));
-  
-      return;
-    }
-  
-    // EXISTING LOCATION
-    const selected = buildOptions(locations).find(
-      (loc) => loc._id === value
-    );
-  
-    setUseCustomLocation(false);
-  
-    setForm((prev) => ({
-      ...prev,
-      locationData: {
-        ...prev.locationData,
-        locationRef: selected?._id || "",
-        locationName: selected?.label || "",
-        customLocation: "",
-      },
-    }));
-  }}
-      >
-        <option value="">
-          Select Location
-        </option>
-  
-        {buildOptions(locations).map((loc) => (
-          <option key={loc._id} value={loc._id}>
-            {loc.label}
-          </option>
-        ))}
-  
-        <option value="CREATE_NEW">
-    + Create New Location
-  </option>
-  
-  <option value="OTHER">
-    + Add Custom Location
-  </option>
-      </select>
-      <button
-    type="button"
-    onClick={() => setShowLocationSearch(true)}
-    className="
-      h-[48px]
-      w-[48px]
-      flex
-      items-center
-      justify-center
-      rounded-xl
-      bg-white/10
-      border
-      border-white/10
-      text-white
-      hover:bg-white/20
-      transition
-    "
-  >
-    <Search size={18} />
-  </button>
-  <button
-    type="button"
-    onClick={() => setShowLocationModal(true)}
-    className="
-      px-4
-      rounded-xl
-      bg-emerald-600
-      text-white
-      text-sm
-      font-medium
-      hover:bg-emerald-700
-    "
-  >
-    + New
-  </button>
-  </div>
-    ) : (
-  
-      <div className="flex flex-col md:flex-row gap-3">
-  
-        <input
-          className={`input flex-1 transition-all duration-200 ${
-            hasError("locationData.locationRef")
-              ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-              : ""
-          }`}
-          placeholder="Enter custom location"
-          value={form.locationData.customLocation || ""}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              locationData: {
-                ...prev.locationData,
-                customLocation: e.target.value,
-              },
-            }))
-          }
-        />
-  
-        <button
-          type="button"
-          onClick={() => {
-  
-            setUseCustomLocation(false);
-  
-            setForm((prev) => ({
-              ...prev,
-              locationData: {
-                ...prev.locationData,
-                locationRef: "",
-                locationName: "",
-                customLocation: "",
-              },
-            }));
-          }}
-          className="px-5 py-3 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/20 transition"
-        >
-          Cancel
-        </button>
-      </div>
-    )}
-  
-    {hasError("locationData.locationRef") && (
-      <p className="text-red-400 text-sm mt-2">
-        Location is required
-      </p>
-    )}
-  </div>
-  
-  
-      {/* ================= CATEGORY ================= */}
-      <div className="space-y-2">
-        <label className="text-sm text-white/70 font-medium">
-          Category
-        </label>
-  
-        {!useCustomCategory ? (
-          <select
-    className={`input transition-all duration-200 ${
-      hasError("categoryData.categoryRef")
-        ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-        : ""
-    }`}
-            value={
-    typeof form.categoryData.categoryRef === "object"
-      ? form.categoryData.categoryRef?._id
-      : form.categoryData.categoryRef || ""
-  }
-            onChange={(e) => {
-  
-    const value = e.target.value;
-  
-    if (value === "OTHER") {
-  
-      setUseCustomCategory(true);
-  
-      setForm((prev) => ({
-        ...prev,
-        categoryData: {
-          ...prev.categoryData,
-          categoryRef: "",
-          categoryName: "",
-          customCategory: "",
-        },
-      }));
-  
-      return;
-    }
-  
-    const selectedCategory = categories.find(
-      (cat) => cat._id === value
-    );
-  
-    setUseCustomCategory(false);
-  
-    setForm((prev) => ({
-      ...prev,
-      categoryData: {
-        categoryRef: selectedCategory?._id || "",
-        categoryName: selectedCategory?.name || "",
-        customCategory: "",
-      },
-    }));
-  
-  }}
-          >
-            <option value="">
-              Select Category
-            </option>
-  
-            {categories.map((cat) => (
-              <option
-                key={cat._id}
-                value={cat._id}
-              >
-                {cat.name}
-              </option>
-            ))}
-  
-            <option value="OTHER">
-              + Add Custom Category
-            </option>
-          </select>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              className="input flex-1"
-              placeholder="Enter custom category"
-              value={
-                form.categoryData.customCategory
-              }
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  categoryData: {
-                    ...prev.categoryData,
-                    customCategory:
-                      e.target.value,
-                  },
-                }))
-              }
-            />
-  
-            <button
-              type="button"
-              onClick={() => {
-                setUseCustomCategory(false);
-  
-                setForm((prev) => ({
-                  ...prev,
-                  categoryData: {
-                    categoryRef: "",
-                    categoryName: "",
-                    customCategory: "",
-                  },
-                }));
-              }}
-              className="px-4 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-  
-      {hasError("categoryData.categoryRef") && (
-    <p className="text-red-400 text-sm">
-      Category is required
-    </p>
-  )}
-  
-  {/* ================= PRICING ================= */}
-  <div className="space-y-2">
-    <label className="text-sm text-white/70 font-medium">
-      Pricing (Optional)
-    </label>
-  
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-    <input
-      type="number"
-      className="input"
-      placeholder="Starting Price"
-      value={form.coreDetails.startingPrice || ""}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "startingPrice",
-          e.target.value
-        )
-      }
-    />
-  
-    {form.coreDetails.startingPrice && (
-      <p className="mt-1 text-xs text-[#D4AF37] font-medium">
-        {formatIndianPrice(
-          form.coreDetails.startingPrice
-        )}
-      </p>
-    )}
-  </div>
-  
-     <div>
-    <input
-      type="number"
-      className="input"
-      placeholder="Max Price"
-      value={form.coreDetails.maxPrice || ""}
-      onChange={(e) =>
-        handleChange(
-          "coreDetails",
-          "maxPrice",
-          e.target.value
-        )
-      }
-    />
-  
-    {form.coreDetails.maxPrice && (
-      <p className="mt-1 text-xs text-[#D4AF37] font-medium">
-        {formatIndianPrice(
-          form.coreDetails.maxPrice
-        )}
-      </p>
-    )}
-  </div>
-    </div>
-  
-    <p className="text-xs text-white/40">
-      Optional. Leave blank if pricing is not available.
-    </p>
-  </div>
-  
-      {/* ================= KEY METRICS ================= */}
-  {/* <div className="mt-6">
-    <h3 className="font-semibold mb-2 text-white">
-      Key Metrics
-    </h3>
-  
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  
-      <input
+        type="number"
         className="input"
-        placeholder="Starting Price (e.g. ₹2 Cr)"
-        value={form.coreDetails.startingPrice}
+        placeholder="Starting Price"
+        disabled={form.coreDetails.priceOnRequest}
+        value={form.coreDetails.startingPrice || ""}
         onChange={(e) =>
           handleChange(
             "coreDetails",
@@ -2975,11 +2922,24 @@ if (loading) {
           )
         }
       />
-  
+
+      {form.coreDetails.startingPrice &&
+        !form.coreDetails.priceOnRequest && (
+          <p className="mt-1 text-xs text-[#D4AF37] font-medium">
+            {formatIndianPrice(
+              form.coreDetails.startingPrice
+            )}
+          </p>
+        )}
+    </div>
+
+    <div>
       <input
+        type="number"
         className="input"
-        placeholder="Max Price (e.g. ₹10 Cr)"
-        value={form.coreDetails.maxPrice}
+        placeholder="Max Price"
+        disabled={form.coreDetails.priceOnRequest}
+        value={form.coreDetails.maxPrice || ""}
         onChange={(e) =>
           handleChange(
             "coreDetails",
@@ -2988,387 +2948,469 @@ if (loading) {
           )
         }
       />
-  
-      <input
-        className="input"
-        placeholder="Possession (e.g. 2028)"
-        value={form.keyMetrics.possession}
-        onChange={(e) =>
-          handleChange(
-            "keyMetrics",
-            "possession",
-            e.target.value
-          )
-        }
-      />
-  
-      <input
-        className="input"
-        placeholder="Land Area (e.g. 10 Acres)"
-        value={form.keyMetrics.landArea}
-        onChange={(e) =>
-          handleChange(
-            "keyMetrics",
-            "landArea",
-            e.target.value
-          )
-        }
-      />
-  
-      <input
-        className="input"
-        placeholder="Total Units"
-        value={form.keyMetrics.totalUnits || ""}
-        onChange={(e) =>
-          handleChange(
-            "keyMetrics",
-            "totalUnits",
-            e.target.value
-          )
-        }
-      />
-  
-      <input
-        className="input"
-        placeholder="Total Towers"
-        value={form.keyMetrics.totalTowers || ""}
-        onChange={(e) =>
-          handleChange(
-            "keyMetrics",
-            "totalTowers",
-            e.target.value
-          )
-        }
-      />
-  
-    </div>
-  </div> */}
-  
-  {/* ================= CUSTOM KEY METRICS ================= */}
-  
-  <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
-  
-    <div className="mb-5">
-      <h3 className="font-semibold text-xl text-white">
-        Key Metrics
-      </h3>
-    </div>
-  
-   {(form.keyMetrics.customMetrics || []).map(
-    (item, index) => {
-  
-      const SelectedIcon =
-        ICONS[item.icon] || FaIcons.FaBuilding;
-  
-      const isOpen =
-        expandedMetric === index;
-  
-      return (
-        <div
-          key={index}
-          className="
-            rounded-2xl
-            mb-4
-            overflow-hidden
-            border
-            border-white/10
-            bg-white/5
-          "
-        >
-  
-          {/* COLLAPSED HEADER */}
-          <button
-            type="button"
-            onClick={() =>
-              setExpandedMetric(
-                isOpen ? null : index
-              )
-            }
-            className="
-              w-full
-              flex
-              items-center
-              justify-between
-              p-4
-              text-left
-            "
-          >
-  
-            <div className="flex items-center gap-4">
-  
-              <div
-                className="
-                  h-12
-                  w-12
-                  rounded-xl
-                  bg-[#D4AF37]/20
-                  border
-                  border-[#D4AF37]/30
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                <SelectedIcon
-                  size={20}
-                  className="text-[#D4AF37]"
-                />
-              </div>
-  
-              <div>
-  
-                <h4 className="text-white font-medium">
-                  {item.label ||
-                    `Metric #${index + 1}`}
-                </h4>
-  
-                <p className="text-white/50 text-sm">
-                  {item.value ||
-                    "No value entered"}
-                </p>
-  
-              </div>
-  
-            </div>
-  
-            <div className="text-white/60 text-xl">
-              {isOpen ? "−" : "+"}
-            </div>
-  
-          </button>
-  
-          {/* EXPANDED CONTENT */}
-          {isOpen && (
-            <div className="px-4 pb-4">
-  
-              <input
-                className="input mb-4"
-                placeholder="Metric Label"
-                value={item.label || ""}
-                onChange={(e) => {
-  
-                  const updated = [
-                    ...(form.keyMetrics
-                      .customMetrics || [])
-                  ];
-  
-                  updated[index].label =
-                    e.target.value;
-  
-                  handleChange(
-                    "keyMetrics",
-                    "customMetrics",
-                    updated
-                  );
-                }}
-              />
-  
-              <input
-                className="input mb-4"
-                placeholder="Metric Value"
-                value={item.value || ""}
-                onChange={(e) => {
-  
-                  const updated = [
-                    ...(form.keyMetrics
-                      .customMetrics || [])
-                  ];
-  
-                  updated[index].value =
-                    e.target.value;
-  
-                  handleChange(
-                    "keyMetrics",
-                    "customMetrics",
-                    updated
-                  );
-                }}
-              />
-  
-              <div className="flex gap-3">
-  
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveMetricIndex(index);
-                    setShowIconPicker(true);
-                  }}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-[#D4AF37]
-                    text-black
-                    font-medium
-                  "
-                >
-                  Change Icon
-                </button>
-  
-                <button
-                  type="button"
-                  onClick={() => {
-  
-                    const updated =
-                      form.keyMetrics.customMetrics.filter(
-                        (_, i) => i !== index
-                      );
-  
-                    handleChange(
-                      "keyMetrics",
-                      "customMetrics",
-                      updated
-                    );
-  
-                    if (
-                      expandedMetric === index
-                    ) {
-                      setExpandedMetric(null);
-                    }
-                  }}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-red-500
-                    text-white
-                  "
-                >
-                  Delete
-                </button>
-  
-              </div>
-  
-            </div>
-          )}
-  
-        </div>
-      );
-    }
-  )}
-  
-    <button
-    type="button"
-    onClick={() => {
-  
-      const updated = [
-        ...(form.keyMetrics.customMetrics || []),
-        {
-          label: "",
-          value: "",
-          icon: "FaBuilding",
-        },
-      ];
-  
-      handleChange(
-        "keyMetrics",
-        "customMetrics",
-        updated
-      );
-  
-      // Open only newly created metric
-      setExpandedMetric(updated.length - 1);
-    }}
-    className="
-      w-full
-      py-4
-      rounded-2xl
-      bg-[#D4AF37]
-      text-black
-      font-semibold
-      text-lg
-      hover:opacity-90
-      transition
-    "
-  >
-    + Add Metric
-  </button>
-  
-  </div>
-  
-      {/* ================= TAGLINES ================= */}
-      <div className="mt-6">
-        <h4 className="font-medium mb-3 text-white">
-          Tagline Items
-        </h4>
-  
-        {form.heroSection?.taglineItems?.map(
-          (item, index) => (
-            <div
-              key={index}
-              className="flex gap-2 mb-2"
-            >
-              <input
-                className="input flex-1"
-                placeholder={`Tagline ${
-                  index + 1
-                }`}
-                value={item}
-                onChange={(e) => {
-                  const updated = [
-                    ...form.heroSection
-                      .taglineItems,
-                  ];
-  
-                  updated[index] =
-                    e.target.value;
-  
-                  setForm((prev) => ({
-                    ...prev,
-                    heroSection: {
-                      ...prev.heroSection,
-                      taglineItems: updated,
-                    },
-                  }));
-                }}
-              />
-  
-              <button
-                type="button"
-                onClick={() => {
-                  const updated =
-                    form.heroSection.taglineItems.filter(
-                      (_, i) => i !== index
-                    );
-  
-                  setForm((prev) => ({
-                    ...prev,
-                    heroSection: {
-                      ...prev.heroSection,
-                      taglineItems: updated,
-                    },
-                  }));
-                }}
-                className="px-4 bg-red-500 text-white rounded-xl"
-              >
-                X
-              </button>
-            </div>
-          )
+
+      {form.coreDetails.maxPrice &&
+        !form.coreDetails.priceOnRequest && (
+          <p className="mt-1 text-xs text-[#D4AF37] font-medium">
+            {formatIndianPrice(
+              form.coreDetails.maxPrice
+            )}
+          </p>
         )}
-  
-        <button
-          type="button"
-          onClick={() => {
-            setForm((prev) => ({
-              ...prev,
-              heroSection: {
-                ...prev.heroSection,
-                taglineItems: [
-                  ...prev.heroSection
-                    .taglineItems,
-                  "",
-                ],
-              },
-            }));
-          }}
-          className="mt-2 px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
-        >
-          + Add Tagline
-        </button>
-      </div>
     </div>
-  )}
+
+  </div>
+
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={
+        form.coreDetails.priceOnRequest || false
+      }
+      onChange={(e) =>
+        setForm((prev) => ({
+          ...prev,
+          coreDetails: {
+            ...prev.coreDetails,
+            priceOnRequest: e.target.checked,
+
+            ...(e.target.checked && {
+              startingPrice: "",
+              maxPrice: "",
+            }),
+          },
+        }))
+      }
+      className="h-4 w-4"
+    />
+
+    <span className="text-white text-sm">
+      Price On Request
+    </span>
+  </label>
+
+  <p className="text-xs text-white/40">
+    {form.coreDetails.priceOnRequest
+      ? "Property will display 'Price On Request' everywhere."
+      : "Optional. Leave blank if pricing is not available."}
+  </p>
+
+</div>
+ 
+     {/* ================= KEY METRICS ================= */}
+ {/* <div className="mt-6">
+   <h3 className="font-semibold mb-2 text-white">
+     Key Metrics
+   </h3>
+ 
+   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ 
+     <input
+       className="input"
+       placeholder="Starting Price (e.g. ₹2 Cr)"
+       value={form.coreDetails.startingPrice}
+       onChange={(e) =>
+         handleChange(
+           "coreDetails",
+           "startingPrice",
+           e.target.value
+         )
+       }
+     />
+ 
+     <input
+       className="input"
+       placeholder="Max Price (e.g. ₹10 Cr)"
+       value={form.coreDetails.maxPrice}
+       onChange={(e) =>
+         handleChange(
+           "coreDetails",
+           "maxPrice",
+           e.target.value
+         )
+       }
+     />
+ 
+     <input
+       className="input"
+       placeholder="Possession (e.g. 2028)"
+       value={form.keyMetrics.possession}
+       onChange={(e) =>
+         handleChange(
+           "keyMetrics",
+           "possession",
+           e.target.value
+         )
+       }
+     />
+ 
+     <input
+       className="input"
+       placeholder="Land Area (e.g. 10 Acres)"
+       value={form.keyMetrics.landArea}
+       onChange={(e) =>
+         handleChange(
+           "keyMetrics",
+           "landArea",
+           e.target.value
+         )
+       }
+     />
+ 
+     <input
+       className="input"
+       placeholder="Total Units"
+       value={form.keyMetrics.totalUnits || ""}
+       onChange={(e) =>
+         handleChange(
+           "keyMetrics",
+           "totalUnits",
+           e.target.value
+         )
+       }
+     />
+ 
+     <input
+       className="input"
+       placeholder="Total Towers"
+       value={form.keyMetrics.totalTowers || ""}
+       onChange={(e) =>
+         handleChange(
+           "keyMetrics",
+           "totalTowers",
+           e.target.value
+         )
+       }
+     />
+ 
+   </div>
+ </div> */}
+ 
+ {/* ================= CUSTOM KEY METRICS ================= */}
+ 
+ <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+ 
+   <div className="mb-5">
+     <h3 className="font-semibold text-xl text-white">
+       Key Metrics
+     </h3>
+   </div>
+ 
+  {(form.keyMetrics.customMetrics || []).map(
+   (item, index) => {
+ 
+     const SelectedIcon =
+       ICONS[item.icon] || FaIcons.FaBuilding;
+ 
+     const isOpen =
+       expandedMetric === index;
+ 
+     return (
+       <div
+         key={index}
+         className="
+           rounded-2xl
+           mb-4
+           overflow-hidden
+           border
+           border-white/10
+           bg-white/5
+         "
+       >
+ 
+         {/* COLLAPSED HEADER */}
+         <button
+           type="button"
+           onClick={() =>
+             setExpandedMetric(
+               isOpen ? null : index
+             )
+           }
+           className="
+             w-full
+             flex
+             items-center
+             justify-between
+             p-4
+             text-left
+           "
+         >
+ 
+           <div className="flex items-center gap-4">
+ 
+             <div
+               className="
+                 h-12
+                 w-12
+                 rounded-xl
+                 bg-[#D4AF37]/20
+                 border
+                 border-[#D4AF37]/30
+                 flex
+                 items-center
+                 justify-center
+               "
+             >
+               <SelectedIcon
+                 size={20}
+                 className="text-[#D4AF37]"
+               />
+             </div>
+ 
+             <div>
+ 
+               <h4 className="text-white font-medium">
+                 {item.label ||
+                   `Metric #${index + 1}`}
+               </h4>
+ 
+               <p className="text-white/50 text-sm">
+                 {item.value ||
+                   "No value entered"}
+               </p>
+ 
+             </div>
+ 
+           </div>
+ 
+           <div className="text-white/60 text-xl">
+             {isOpen ? "−" : "+"}
+           </div>
+ 
+         </button>
+ 
+         {/* EXPANDED CONTENT */}
+         {isOpen && (
+           <div className="px-4 pb-4">
+ 
+             <input
+               className="input mb-4"
+               placeholder="Metric Label"
+               value={item.label || ""}
+               onChange={(e) => {
+ 
+                 const updated = [
+                   ...(form.keyMetrics
+                     .customMetrics || [])
+                 ];
+ 
+                 updated[index].label =
+                   e.target.value;
+ 
+                 handleChange(
+                   "keyMetrics",
+                   "customMetrics",
+                   updated
+                 );
+               }}
+             />
+ 
+             <input
+               className="input mb-4"
+               placeholder="Metric Value"
+               value={item.value || ""}
+               onChange={(e) => {
+ 
+                 const updated = [
+                   ...(form.keyMetrics
+                     .customMetrics || [])
+                 ];
+ 
+                 updated[index].value =
+                   e.target.value;
+ 
+                 handleChange(
+                   "keyMetrics",
+                   "customMetrics",
+                   updated
+                 );
+               }}
+             />
+ 
+             <div className="flex gap-3">
+ 
+               <button
+                 type="button"
+                 onClick={() => {
+                   setActiveMetricIndex(index);
+                   setShowIconPicker(true);
+                 }}
+                 className="
+                   px-4
+                   py-2
+                   rounded-xl
+                   bg-[#D4AF37]
+                   text-black
+                   font-medium
+                 "
+               >
+                 Change Icon
+               </button>
+ 
+               <button
+                 type="button"
+                 onClick={() => {
+ 
+                   const updated =
+                     form.keyMetrics.customMetrics.filter(
+                       (_, i) => i !== index
+                     );
+ 
+                   handleChange(
+                     "keyMetrics",
+                     "customMetrics",
+                     updated
+                   );
+ 
+                   if (
+                     expandedMetric === index
+                   ) {
+                     setExpandedMetric(null);
+                   }
+                 }}
+                 className="
+                   px-4
+                   py-2
+                   rounded-xl
+                   bg-red-500
+                   text-white
+                 "
+               >
+                 Delete
+               </button>
+ 
+             </div>
+ 
+           </div>
+         )}
+ 
+       </div>
+     );
+   }
+ )}
+ 
+   <button
+   type="button"
+   onClick={() => {
+ 
+     const updated = [
+       ...(form.keyMetrics.customMetrics || []),
+       {
+         label: "",
+         value: "",
+         icon: "FaBuilding",
+       },
+     ];
+ 
+     handleChange(
+       "keyMetrics",
+       "customMetrics",
+       updated
+     );
+ 
+     // Open only newly created metric
+     setExpandedMetric(updated.length - 1);
+   }}
+   className="
+     w-full
+     py-4
+     rounded-2xl
+     bg-[#D4AF37]
+     text-black
+     font-semibold
+     text-lg
+     hover:opacity-90
+     transition
+   "
+ >
+   + Add Metric
+ </button>
+ 
+ </div>
+ 
+     {/* ================= TAGLINES ================= */}
+     <div className="mt-6">
+       <h4 className="font-medium mb-3 text-white">
+         Tagline Items
+       </h4>
+ 
+       {form.heroSection?.taglineItems?.map(
+         (item, index) => (
+           <div
+             key={index}
+             className="flex gap-2 mb-2"
+           >
+             <input
+               className="input flex-1"
+               placeholder={`Tagline ${
+                 index + 1
+               }`}
+               value={item}
+               onChange={(e) => {
+                 const updated = [
+                   ...form.heroSection
+                     .taglineItems,
+                 ];
+ 
+                 updated[index] =
+                   e.target.value;
+ 
+                 setForm((prev) => ({
+                   ...prev,
+                   heroSection: {
+                     ...prev.heroSection,
+                     taglineItems: updated,
+                   },
+                 }));
+               }}
+             />
+ 
+             <button
+               type="button"
+               onClick={() => {
+                 const updated =
+                   form.heroSection.taglineItems.filter(
+                     (_, i) => i !== index
+                   );
+ 
+                 setForm((prev) => ({
+                   ...prev,
+                   heroSection: {
+                     ...prev.heroSection,
+                     taglineItems: updated,
+                   },
+                 }));
+               }}
+               className="px-4 bg-red-500 text-white rounded-xl"
+             >
+               X
+             </button>
+           </div>
+         )
+       )}
+ 
+       <button
+         type="button"
+         onClick={() => {
+           setForm((prev) => ({
+             ...prev,
+             heroSection: {
+               ...prev.heroSection,
+               taglineItems: [
+                 ...prev.heroSection
+                   .taglineItems,
+                 "",
+               ],
+             },
+           }));
+         }}
+         className="mt-2 px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:opacity-90 transition"
+       >
+         + Add Tagline
+       </button>
+     </div>
+   </div>
+ )}
         
 
         {/* ================= STEP 2 ================= */}
