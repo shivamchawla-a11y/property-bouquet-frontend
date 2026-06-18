@@ -22,10 +22,22 @@ const propertyTypes = [
 ];
 
 const budgetRanges = [
-  "₹50L - ₹1Cr",
-  "₹1Cr - ₹2Cr",
-  "₹2Cr - ₹5Cr",
-  "₹5Cr+",
+  {
+    label: "₹50L - ₹1Cr",
+    value: "5000000-10000000",
+  },
+  {
+    label: "₹1Cr - ₹2Cr",
+    value: "10000000-20000000",
+  },
+  {
+    label: "₹2Cr - ₹5Cr",
+    value: "20000000-50000000",
+  },
+  {
+    label: "₹5Cr+",
+    value: "50000000-999999999",
+  },
 ];
 
 
@@ -50,6 +62,7 @@ const [showDeveloperModal, setShowDeveloperModal] =
   const [filters, setFilters] = useState({
   propertyType: "",
   budget: "",
+  budgetLabel: "",
   location: "",
   developer: "",
   goal: "",
@@ -117,96 +130,35 @@ useEffect(() => {
     }));
   };
 
- const handleSearch = () => {
-  // PROPERTY SEARCH
-  if (searchTerm.trim()) {
-    const property = suggestions?.[0];
-
-    if (property?.slug) {
-      router.push(`/${property.slug}`);
-      return;
-    }
-  }
-
-  const activeFilters = Object.values(filters).filter(Boolean);
-
-  // ONLY DEVELOPER
-  if (
-    activeFilters.length === 1 &&
-    filters.developer
-  ) {
-    const selectedDeveloper = developers.find(
-      (developer) =>
-        developer.name === filters.developer
-    );
-
-    if (selectedDeveloper?.slug) {
-      router.push(
-        `/developers/${selectedDeveloper.slug}`
-      );
-      return;
-    }
-  }
-
-  // ONLY LOCATION
-  if (
-    activeFilters.length === 1 &&
-    filters.location
-  ) {
-    const selectedLocation = locations.find(
-      (location) =>
-        location.name === filters.location
-    );
-
-    if (selectedLocation?.slug) {
-      router.push(
-        `/locations/${selectedLocation.slug}`
-      );
-      return;
-    }
-  }
-
-  // MULTIPLE FILTERS
+const handleSearch = () => {
   const params = new URLSearchParams();
 
+  // PROPERTY SEARCH
+  if (searchTerm.trim()) {
+    params.set("search", searchTerm.trim());
+  }
+
+  // LOCATION
   if (filters.location) {
-    params.append(
-      "location",
-      filters.location
-    );
+    params.set("location", filters.location);
   }
 
+  // DEVELOPER
   if (filters.developer) {
-    params.append(
-      "developer",
-      filters.developer
-    );
+    params.set("developer", filters.developer);
   }
 
+  // TYPE
   if (filters.propertyType) {
-    params.append(
-      "type",
-      filters.propertyType
-    );
+    params.set("type", filters.propertyType);
   }
 
+  // BUDGET
   if (filters.budget) {
-    params.append(
-      "budget",
-      filters.budget
-    );
+    params.set("budget", filters.budget);
   }
 
-  if (filters.goal) {
-    params.append(
-      "goal",
-      filters.goal
-    );
-  }
-
-  router.push(
-    `/properties?${params.toString()}`
-  );
+  router.push(`/properties?${params.toString()}`);
 };
 
 const developerOptions =
@@ -217,14 +169,25 @@ const developerOptions =
   const suggestions = properties
   .filter((property) => {
 
+    const search =
+      searchTerm.toLowerCase();
+
     const title =
       property?.coreDetails?.title || "";
 
-    return title
-      .toLowerCase()
-      .includes(
-        searchTerm.toLowerCase()
-      );
+    const location =
+      property?.locationData
+        ?.locationName || "";
+
+    const developer =
+      property?.coreDetails
+        ?.developerName || "";
+
+    return (
+      title.toLowerCase().includes(search) ||
+      location.toLowerCase().includes(search) ||
+      developer.toLowerCase().includes(search)
+    );
   })
   .sort((a, b) => {
 
@@ -442,11 +405,15 @@ const developerOptions =
   icon={SlidersHorizontal}
   label="BUDGET"
   placeholder="Budget Range"
-  value={filters.budget}
+  value={filters.budgetLabel || ""}
   budgetSlider={true}
-  onChange={(value) =>
-    handleChange("budget", value)
-  }
+  onChange={(value) => {
+    setFilters((prev) => ({
+      ...prev,
+      budget: value,
+      budgetLabel: value,
+    }));
+  }}
 />
           </div>
 

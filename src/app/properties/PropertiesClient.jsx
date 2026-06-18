@@ -34,11 +34,17 @@ export default function PropertiesClient() {
     const searchParams =
   useSearchParams();
 
-  const selectedLocation =
+const selectedLocation =
   searchParams.get("location");
 
 const selectedDeveloper =
   searchParams.get("developer");
+
+const selectedBudget =
+  searchParams.get("budget");
+
+  const selectedAmenity =
+  searchParams.get("amenity");
 
   // ================= FETCH =================
 
@@ -95,6 +101,16 @@ const selectedDeveloper =
 
   const budget =
     searchParams.get("budget");
+
+  const amenitiesParam =
+  searchParams.get("amenity");
+
+const selectedAmenities =
+  amenitiesParam
+    ? amenitiesParam
+        .split(",")
+        .map((item) => item.trim())
+    : [];
 
   // SEARCH
 
@@ -164,17 +180,45 @@ const selectedDeveloper =
 
     result = result.filter(
       (property) => {
-        const price =
-          property?.coreDetails
-            ?.startingPrice || 0;
+        const startPrice =
+  property?.coreDetails
+    ?.startingPrice || 0;
 
-        return (
-          price >= minBudget &&
-          price <= maxBudget
-        );
+const maxPrice =
+  property?.coreDetails
+    ?.maxPrice || 0;
+
+return (
+  maxPrice >= minBudget &&
+  startPrice <= maxBudget
+);
       }
     );
   }
+
+  // AMENITY
+
+if (selectedAmenities.length) {
+  result = result.filter((property) => {
+
+    const propertyAmenities =
+      property?.overview?.amenities?.map(
+        (item) =>
+          item?.heading
+            ?.toLowerCase()
+            .trim()
+      ) || [];
+
+    return selectedAmenities.every(
+      (amenity) =>
+        propertyAmenities.includes(
+          amenity
+            .toLowerCase()
+            .trim()
+        )
+    );
+  });
+}
 
   // SORTING
 
@@ -382,6 +426,8 @@ const selectedDeveloper =
   onFiltered={setFilteredProperties}
   selectedLocation={selectedLocation}
   selectedDeveloper={selectedDeveloper}
+  selectedBudget={selectedBudget}
+  selectedAmenity={selectedAmenity}
 />
 
           {/* RIGHT */}

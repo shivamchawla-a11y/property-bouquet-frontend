@@ -14,7 +14,17 @@ export default function PropertyFilters({
   properties = [],
   selectedLocation,
   selectedDeveloper,
+  selectedBudget,
+  selectedAmenity,
 }) {
+
+  const selectedAmenities =
+  selectedAmenity
+    ? selectedAmenity
+        .split(",")
+        .map((item) => item.trim())
+    : [];
+
   const [openSections, setOpenSections] = useState({
   budget: true,
   bedrooms: true,
@@ -73,6 +83,31 @@ const developerCounts =
     {}
   );
 
+const amenityCounts =
+  properties.reduce(
+    (acc, property) => {
+
+      const propertyAmenities =
+        property?.overview?.amenities || [];
+
+      propertyAmenities.forEach(
+        (item) => {
+
+          const amenity =
+            item?.heading;
+
+          if (!amenity) return;
+
+          acc[amenity] =
+            (acc[amenity] || 0) + 1;
+        }
+      );
+
+      return acc;
+    },
+    {}
+  );
+
 const locations = [
   ...new Set(
     properties.flatMap((property) => {
@@ -96,6 +131,69 @@ const filteredLocations =
       .includes(locationSearch.toLowerCase())
   );
 
+const amenities = [
+  ...new Set(
+    properties.flatMap((property) =>
+      (property?.overview?.amenities || [])
+        .map((item) => item.heading)
+        .filter(Boolean)
+    )
+  ),
+].sort(); 
+
+ const budgetLabel = selectedBudget
+  ? (() => {
+      const [min, max] =
+        selectedBudget.split("-");
+
+      return `${formatPrice(
+        Number(min)
+      )} - ${formatPrice(
+        Number(max)
+      )}`;
+    })()
+  : null; 
+
+const applyBudgetFilter = (
+  min,
+  max
+) => {
+  const params =
+    new URLSearchParams();
+
+  if (selectedLocation) {
+    params.set(
+      "location",
+      selectedLocation
+    );
+  }
+
+  if (selectedDeveloper) {
+    params.set(
+      "developer",
+      selectedDeveloper
+    );
+  }
+
+  params.set(
+    "budget",
+    `${min * 100000}-${max * 100000}`
+  );
+
+ if (
+  selectedAmenities.length
+) {
+  params.set(
+    "amenity",
+    selectedAmenities.join(",")
+  );
+}
+
+  router.push(
+    `/properties?${params.toString()}`
+  );
+};
+
   const removeFilter = (type) => {
   const params = new URLSearchParams();
 
@@ -118,6 +216,26 @@ const filteredLocations =
       selectedDeveloper
     );
   }
+
+  if (
+    type !== "budget" &&
+    selectedBudget
+  ) {
+    params.set(
+      "budget",
+      selectedBudget
+    );
+  }
+
+  if (
+  type !== "amenity" &&
+  selectedAmenity
+) {
+  params.set(
+    "amenity",
+    selectedAmenity
+  );
+}
 
   router.push(
     `/properties${
@@ -196,9 +314,16 @@ const filteredLocations =
               </h3>
             </div>
 
-            <button className="text-sm font-semibold text-[#0f3b2e]">
-              Reset
-            </button>
+            <button
+  onClick={() => {
+    setMinBudget(50);
+    setMaxBudget(1000);
+    router.push("/properties");
+  }}
+  className="text-sm font-semibold text-[#0f3b2e]"
+>
+  Reset
+</button>
 
           </div>
         </div>
@@ -207,8 +332,12 @@ const filteredLocations =
         <div className="max-h-[calc(100vh-180px)] overflow-y-auto p-6 bg-white">
 
           {/* APPLIED FILTERS */}
-          {(selectedLocation ||
-  selectedDeveloper) && (
+          {(
+  selectedLocation ||
+selectedDeveloper ||
+selectedBudget ||
+selectedAmenities.length
+) && (
   <div className="mb-8">
 
     <div className="flex items-center justify-between mb-4">
@@ -218,9 +347,12 @@ const filteredLocations =
       </h4>
 
       <button
-        onClick={() =>
-          router.push("/properties")
-        }
+        onClick={() => {
+  setMinBudget(50);
+  setMaxBudget(1000);
+
+  router.push("/properties");
+}}
         className="
           text-xs
           uppercase
@@ -295,6 +427,111 @@ const filteredLocations =
           </button>
         </div>
       )}
+
+     {selectedAmenities.map((amenity) => (
+  <div
+    key={amenity}
+    className="
+      flex
+      items-center
+      gap-2
+      px-4
+      py-2
+      rounded-full
+      bg-[#faf7f2]
+      border
+      border-[#c89d58]/15
+    "
+  >
+    <span>
+      ✨ {amenity}
+    </span>
+
+    <button
+      onClick={() => {
+        const updatedAmenities =
+          selectedAmenities.filter(
+            (a) => a !== amenity
+          );
+
+        const params =
+          new URLSearchParams();
+
+        if (selectedLocation) {
+          params.set(
+            "location",
+            selectedLocation
+          );
+        }
+
+        if (selectedDeveloper) {
+          params.set(
+            "developer",
+            selectedDeveloper
+          );
+        }
+
+        if (selectedBudget) {
+          params.set(
+            "budget",
+            selectedBudget
+          );
+        }
+
+        if (updatedAmenities.length) {
+          params.set(
+            "amenity",
+            updatedAmenities.join(",")
+          );
+        }
+
+        router.push(
+          `/properties?${params.toString()}`
+        );
+      }}
+    >
+      <X size={14} />
+    </button>
+  </div>
+))}
+
+      {selectedBudget && (() => {
+  const [min, max] =
+    selectedBudget
+      .split("-")
+      .map(Number);
+
+  return (
+    <div
+      className="
+        flex
+        items-center
+        gap-2
+        px-4
+        py-2
+        rounded-full
+        bg-[#faf7f2]
+        border
+        border-[#c89d58]/15
+      "
+    >
+      <span>
+        💰 ₹{formatPrice(min)} -{" "}
+        {max >= 100000000
+          ? "₹10 Cr+"
+          : `₹${formatPrice(max)}`}
+      </span>
+
+      <button
+        onClick={() =>
+          removeFilter("budget")
+        }
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+})()}
 
     </div>
 
@@ -384,7 +621,26 @@ const filteredLocations =
             accent-[#c89d58]
           "
         />
-
+<button
+  onClick={() =>
+    applyBudgetFilter(
+      minBudget,
+      maxBudget
+    )
+  }
+  className="
+    w-full
+    h-12
+    rounded-xl
+    bg-[#0f3b2e]
+    text-white
+    font-semibold
+    hover:bg-[#174b3a]
+    transition-all
+  "
+>
+  Apply Budget
+</button>
       </div>
 
     </div>
@@ -544,23 +800,44 @@ const filteredLocations =
             "
           >
             <input
-              type="radio"
+             type="radio"
               checked={
                 selectedLocation === location
               }
-              onChange={() =>
-                router.push(
-                  `/properties?location=${encodeURIComponent(
-                    location
-                  )}${
-                    selectedDeveloper
-                      ? `&developer=${encodeURIComponent(
-                          selectedDeveloper
-                        )}`
-                      : ""
-                  }`
-                )
-              }
+              onChange={() => {
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "location",
+    location
+  );
+
+  if (selectedDeveloper) {
+    params.set(
+      "developer",
+      selectedDeveloper
+    );
+  }
+
+  if (selectedBudget) {
+    params.set(
+      "budget",
+      selectedBudget
+    );
+  }
+
+  if (selectedAmenity) {
+    params.set(
+      "amenity",
+      selectedAmenity
+    );
+  }
+
+  router.push(
+    `/properties?${params.toString()}`
+  );
+}}
               className="
                 h-4
                 w-4
@@ -659,24 +936,45 @@ const filteredLocations =
             "
           >
             <input
-              type="radio"
+  type="radio"
               checked={
                 selectedDeveloper ===
                 developer
               }
-              onChange={() =>
-                router.push(
-                  `/properties?${
-                    selectedLocation
-                      ? `location=${encodeURIComponent(
-                          selectedLocation
-                        )}&`
-                      : ""
-                  }developer=${encodeURIComponent(
-                    developer
-                  )}`
-                )
-              }
+              onChange={() => {
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "developer",
+    developer
+  );
+
+  if (selectedLocation) {
+    params.set(
+      "location",
+      selectedLocation
+    );
+  }
+
+  if (selectedBudget) {
+    params.set(
+      "budget",
+      selectedBudget
+    );
+  }
+
+  if (selectedAmenity) {
+    params.set(
+      "amenity",
+      selectedAmenity
+    );
+  }
+
+  router.push(
+    `/properties?${params.toString()}`
+  );
+}}
               className="
                 h-4
                 w-4
@@ -728,34 +1026,130 @@ const filteredLocations =
 </div>
 
           {/* AMENITIES */}
-          <div className="border-t border-gray-100 pt-8 mt-8">
+<div className="border-t border-gray-100 pt-8 mt-8">
 
-            <button
-              onClick={() => toggleSection("amenities")}
-              className="w-full flex items-center justify-between mb-5"
-            >
-              <h4 className="font-bold text-xl text-gray-900">
-                Amenities
-              </h4>
+  <button
+    onClick={() => toggleSection("amenities")}
+    className="w-full flex items-center justify-between mb-5"
+  >
+    <h4 className="font-bold text-xl text-gray-900">
+      Amenities
+    </h4>
 
-              {openSections.amenities ? (
-                <ChevronUp size={20} className="text-gray-900" />
-              ) : (
-                <ChevronDown size={20} className="text-gray-900" />
-              )}
-            </button>
+    {openSections.amenities ? (
+      <ChevronUp size={20} className="text-gray-900" />
+    ) : (
+      <ChevronDown size={20} className="text-gray-900" />
+    )}
+  </button>
 
-            {openSections.amenities && (
-              <div className="flex flex-wrap gap-3">
-                <Pill label="Clubhouse" />
-                <Pill label="Swimming Pool" />
-                <Pill label="Gymnasium" />
-                <Pill label="Spa" />
-                <Pill label="Sports Arena" />
-                <Pill label="Kids Play Area" />
-              </div>
-            )}
+  {openSections.amenities && (
+    <div className="space-y-1">
+
+      {amenities.map((amenity) => (
+        <label
+          key={amenity}
+          className="
+            flex
+            items-center
+            justify-between
+            px-3
+            py-2.5
+            rounded-xl
+            hover:bg-[#faf7f2]
+            cursor-pointer
+            transition-all
+          "
+        >
+          <div className="flex items-center gap-3">
+
+            <input
+  type="checkbox"
+              checked={selectedAmenities.includes(amenity)}
+              onChange={() => {
+  const params =
+    new URLSearchParams();
+
+  if (selectedLocation) {
+    params.set(
+      "location",
+      selectedLocation
+    );
+  }
+
+  if (selectedDeveloper) {
+    params.set(
+      "developer",
+      selectedDeveloper
+    );
+  }
+
+  if (selectedBudget) {
+    params.set(
+      "budget",
+      selectedBudget
+    );
+  }
+
+  let updatedAmenities =
+    [...selectedAmenities];
+
+  if (
+    updatedAmenities.includes(
+      amenity
+    )
+  ) {
+    updatedAmenities =
+      updatedAmenities.filter(
+        (a) => a !== amenity
+      );
+  } else {
+    updatedAmenities.push(
+      amenity
+    );
+  }
+
+  if (
+    updatedAmenities.length
+  ) {
+    params.set(
+      "amenity",
+      updatedAmenities.join(",")
+    );
+  }
+
+  router.push(
+    `/properties?${params.toString()}`
+  );
+}}
+              className="
+                h-4
+                w-4
+                accent-[#c89d58]
+              "
+            />
+
+            <span className="text-sm font-medium">
+              {amenity}
+            </span>
+
           </div>
+
+          <span
+            className="
+              text-xs
+              font-semibold
+              text-gray-500
+            "
+          >
+            ({amenityCounts[amenity] || 0})
+          </span>
+        </label>
+      ))}
+
+    </div>
+  )}
+</div>
 
         </div>
       </div>
@@ -906,11 +1300,38 @@ const filteredLocations =
             <button
               key={developer}
               onClick={() => {
-                router.push(
-                  `/properties?developer=${encodeURIComponent(
-                    developer
-                  )}`
-                );
+                const params =
+  new URLSearchParams();
+
+params.set(
+  "developer",
+  developer
+);
+
+if (selectedLocation) {
+  params.set(
+    "location",
+    selectedLocation
+  );
+}
+
+if (selectedBudget) {
+  params.set(
+    "budget",
+    selectedBudget
+  );
+}
+
+if (selectedAmenities.length) {
+  params.set(
+    "amenity",
+    selectedAmenities.join(",")
+  );
+}
+
+router.push(
+  `/properties?${params.toString()}`
+);
 
                 setShowDeveloperModal(
                   false
