@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Building2,
   Users,
-  IndianRupee,
   MessageSquare,
   TrendingUp,
 } from "lucide-react";
@@ -15,7 +14,9 @@ import {
   LineChart,
   Line,
   XAxis,
+  YAxis,
   Tooltip,
+  CartesianGrid,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -26,86 +27,212 @@ export default function AdminDashboard() {
 
   // 🔥 USER STATE
   const [user, setUser] = useState(null);
+  const [recentProperties, setRecentProperties] = useState([]);
+
+  const [leadChartData, setLeadChartData] =
+  useState([]);
+
+const [propertyChartData, setPropertyChartData] =
+  useState([]);
 
   // 🔥 STATES (for future real API)
   const [stats, setStats] = useState([
-    {
-      title: "Total Properties",
-      value: "128",
-      icon: Building2,
-      change: "+12%",
-    },
-    {
-      title: "Total Users",
-      value: "842",
-      icon: Users,
-      change: "+8%",
-    },
-    {
-      title: "Revenue",
-      value: "₹2.4 Cr",
-      icon: IndianRupee,
-      change: "+18%",
-    },
-    {
-      title: "Enquiries",
-      value: "64",
-      icon: MessageSquare,
-      change: "+5%",
-    },
-  ]);
-
+  {
+    title: "Total Properties",
+    value: 0,
+    icon: Building2,
+  },
+  {
+    title: "Published Properties",
+    value: 0,
+    icon: Building2,
+  },
+  {
+    title: "Total Users",
+    value: 0,
+    icon: Users,
+  },
+  {
+    title: "Total Leads",
+    value: 0,
+    icon: MessageSquare,
+  },
+]);
   // 🔥 FETCH USER
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+      if (!token) {
+        router.push("/login");
+        return;
+      }
 
-        const res = await fetch(
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const [
+        userRes,
+        propertiesRes,
+        usersRes,
+        leadsRes,
+      ] = await Promise.all([
+        fetch(
           "https://property-bouquet-backend.onrender.com/api/auth/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers }
+        ),
+        fetch(
+          "https://property-bouquet-backend.onrender.com/api/properties?all=true"
+        ),
+        fetch(
+          "https://property-bouquet-backend.onrender.com/api/auth/users",
+          { headers }
+        ),
+        fetch(
+          "https://property-bouquet-backend.onrender.com/api/leads",
+          { headers }
+        ),
+      ]);
+
+      const userData = await userRes.json();
+      const propertiesData =
+        await propertiesRes.json();
+      const usersData = await usersRes.json();
+      const leadsData = await leadsRes.json();
+
+      if (!userRes.ok) {
+        router.push("/login");
+        return;
+      }
+
+      setUser(userData.user);
+
+      const allProperties =
+        propertiesData?.data || [];
+
+      const publishedProperties =
+        allProperties.filter(
+          (property) =>
+            property.status === "published"
         );
 
-        const data = await res.json();
+      const allUsers =
+        usersData?.data || [];
 
-        if (res.ok) {
-          setUser(data.user);
-        } else {
-          router.push("/login");
-        }
-      } catch (err) {
-        console.error(err);
-        router.push("/login");
-      }
-    };
+      const allLeads =
+        leadsData?.data || [];
 
-    fetchUser();
-  }, []);
+// ========================================
+// LEADS BY MONTH (SORTED)
+// ========================================
 
-  // 🔥 CHART DATA
-  const revenueData = [
-    { name: "Jan", value: 40000 },
-    { name: "Feb", value: 60000 },
-    { name: "Mar", value: 80000 },
-    { name: "Apr", value: 120000 },
-    { name: "May", value: 150000 },
-  ];
+const monthNames = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
-  const propertyData = [
-    { name: "Delhi", value: 20 },
-    { name: "Gurgaon", value: 35 },
-    { name: "Noida", value: 25 },
-    { name: "Mumbai", value: 15 },
-  ];
+const monthlyLeads = {};
+
+allLeads.forEach((lead) => {
+  const monthIndex = new Date(
+    lead.createdAt
+  ).getMonth();
+
+  monthlyLeads[monthIndex] =
+    (monthlyLeads[monthIndex] || 0) + 1;
+});
+
+const leadGraph = monthNames
+  .map((month, index) => ({
+    name: month,
+    value: monthlyLeads[index] || 0,
+  }))
+  .filter((item) => item.value > 0);
+
+setLeadChartData(leadGraph);
+
+// ========================================
+// PROPERTIES BY LOCATION
+// ========================================
+
+const locationMap = {};
+
+allProperties.forEach((property) => {
+  const location =
+    property?.locationData
+      ?.locationName ||
+    property?.locationData
+      ?.customLocation ||
+    "Unknown";
+
+  locationMap[location] =
+    (locationMap[location] || 0) + 1;
+});
+
+const locationGraph =
+  Object.entries(locationMap)
+    .map(([name, value]) => ({
+      name,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
+
+setPropertyChartData(locationGraph);
+
+      setStats([
+        {
+          title: "Total Properties",
+          value: allProperties.length,
+          icon: Building2,
+        },
+        {
+          title: "Published Properties",
+          value: publishedProperties.length,
+          icon: Building2,
+        },
+        {
+          title: "Total Users",
+          value: allUsers.length,
+          icon: Users,
+        },
+        {
+          title: "Total Leads",
+          value: allLeads.length,
+          icon: MessageSquare,
+        },
+      ]);
+
+      setRecentProperties(
+        [...allProperties]
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt) -
+              new Date(a.createdAt)
+          )
+          .slice(0, 5)
+      );
+    } catch (err) {
+      console.error(err);
+      router.push("/login");
+    }
+  };
+
+  fetchDashboardData();
+}, [router]);
+
 
   return (
     <div className="space-y-6 text-gray-800">
@@ -193,7 +320,7 @@ export default function AdminDashboard() {
 
               <div className="flex items-center gap-1 mt-4 text-green-600 text-sm">
                 <TrendingUp size={14} />
-                {item.change} this month
+                Live Database
               </div>
             </div>
           );
@@ -204,32 +331,38 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <div className="bg-white p-6 rounded-xl shadow-card">
-          <h2 className="text-lg font-semibold text-primary mb-4">
-            Revenue Growth
-          </h2>
+  <h2 className="text-lg font-semibold text-primary mb-4">
+    Enquiries Growth
+  </h2>
 
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={revenueData}>
-              <XAxis dataKey="name" />
-              <Tooltip />
+  <ResponsiveContainer width="100%" height={250}>
+    <LineChart data={leadChartData}>
+      <CartesianGrid strokeDasharray="3 3" />
 
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#0E4F3A"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <XAxis dataKey="name" />
 
+      <YAxis />
+
+      <Tooltip />
+
+      <Line
+        type="monotone"
+        dataKey="value"
+        stroke="#0E4F3A"
+        strokeWidth={3}
+        dot={{ r: 5 }}
+        activeDot={{ r: 8 }}
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
         <div className="bg-white p-6 rounded-xl shadow-card">
           <h2 className="text-lg font-semibold text-primary mb-4">
             Properties by Location
           </h2>
 
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={propertyData}>
+            <BarChart data={propertyChartData}>
               <XAxis dataKey="name" />
               <Tooltip />
 
@@ -252,24 +385,20 @@ export default function AdminDashboard() {
           </h2>
 
           <div className="space-y-4">
-            {[
-              "Luxury Villa Delhi",
-              "Modern Flat Gurgaon",
-              "3BHK Noida",
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center border-b pb-2"
-              >
-                <span className="font-medium text-gray-800">
-                  {item}
-                </span>
+            {recentProperties.map((property) => (
+  <div
+    key={property._id}
+    className="flex justify-between items-center border-b pb-2"
+  >
+    <span className="font-medium text-gray-800">
+      {property?.coreDetails?.title}
+    </span>
 
-                <span className="text-sm text-gray-500">
-                  ₹1.2 Cr
-                </span>
-              </div>
-            ))}
+    <span className="text-sm text-gray-500 capitalize">
+      {property?.status || "draft"}
+    </span>
+  </div>
+))}
           </div>
         </div>
 
