@@ -54,6 +54,8 @@ const [developers, setDevelopers] = useState([]);
 const [developerSearch, setDeveloperSearch] =
   useState("");
   const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] =
+  useState([]);
 const [searchTerm, setSearchTerm] = useState("");
 const [showSuggestions, setShowSuggestions] =
   useState(false);
@@ -127,6 +129,22 @@ useEffect(() => {
         setDevelopers(
           uniqueDevelopers
         );
+
+        const uniqueCategories = [
+  ...new Set(
+    propertyData
+      .map(
+        (property) =>
+          property?.categoryData
+            ?.categoryName
+      )
+      .filter(Boolean)
+  ),
+].sort();
+
+setPropertyTypes(
+  uniqueCategories
+);
       }
     } catch (err) {
       console.error(err);
@@ -169,11 +187,11 @@ const handleSearch = () => {
   }
 
   if (filters.propertyType) {
-    params.set(
-      "type",
-      filters.propertyType
-    );
-  }
+  params.set(
+    "propertyType",
+    filters.propertyType
+  );
+}
 
   if (filters.budget) {
     params.set(
