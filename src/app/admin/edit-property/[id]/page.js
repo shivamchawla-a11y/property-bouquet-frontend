@@ -661,29 +661,28 @@ const safeForm = {
       property.heroSection?.taglineItems || [],
   },
 
-  // ================= KEY METRICS =================
   keyMetrics: {
-    landArea:
-      property.keyMetrics?.landArea || "",
+  landArea: property.keyMetrics?.landArea || "",
 
-    possession:
-      property.keyMetrics?.possession || "",
+  possession: property.keyMetrics?.possession || "",
 
-    status:
-      property.keyMetrics?.status || "",
+  status: property.keyMetrics?.status || "",
 
-    totalUnits:
-      property.keyMetrics?.totalUnits || "",
+  totalUnits: property.keyMetrics?.totalUnits || "",
 
-    totalTowers:
-      property.keyMetrics?.totalTowers || "",
+  totalTowers: property.keyMetrics?.totalTowers || "",
 
-    floors:
-      property.keyMetrics?.floors || "",
+  floors: property.keyMetrics?.floors || "",
 
-    reraNumber:
-      property.keyMetrics?.reraNumber || "",
-  },
+  reraNumber: property.keyMetrics?.reraNumber || "",
+
+  customMetrics:
+    property.keyMetrics?.customMetrics?.map((metric) => ({
+      label: metric.label || "",
+      value: metric.value || "",
+      icon: metric.icon || "FaBuilding",
+    })) || [],
+},
 
   // ================= OVERVIEW =================
   overview: {
