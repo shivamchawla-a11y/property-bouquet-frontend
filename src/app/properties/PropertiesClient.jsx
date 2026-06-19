@@ -337,108 +337,17 @@ if (bhk) {
 
       <Navbar />
 
-      {/* HERO */}
-
-      <section
-        className="
-          relative
-          pt-28
-          pb-16
-          overflow-hidden
-          bg-gradient-to-br
-          from-[#081c15]
-          via-[#10281f]
-          to-[#163b2c]
-        "
-      >
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d4af37]/20 blur-3xl rounded-full" />
-
-        <div className="relative max-w-7xl mx-auto px-4">
-
-          <div className="max-w-4xl">
-
-            <div
-              className="
-                inline-flex
-                items-center
-                gap-3
-                bg-white/10
-                border
-                border-white/10
-                backdrop-blur-xl
-                px-6
-                py-3
-                rounded-full
-                text-white
-                mb-8
-              "
-            >
-              <Home size={18} />
-
-              <span className="font-medium tracking-wide">
-                Luxury Property Collection
-              </span>
-            </div>
-
-            <h1
-              className="
-                text-4xl
-                md:text-6xl
-                font-black
-                text-white
-                leading-tight
-              "
-            >
-              Explore Premium
-              <br />
-              Properties
-            </h1>
-
-            <p
-              className="
-                mt-5
-                text-lg
-                md:text-xl
-                text-white/75
-                max-w-3xl
-                leading-8
-              "
-            >
-              Discover luxury residences,
-              investment opportunities and
-              iconic developments across
-              Gurgaon and NCR.
-            </p>
-
-            <div
-              className="
-                mt-8
-                bg-white
-                text-black
-                px-7
-                h-14
-                rounded-2xl
-                inline-flex
-                items-center
-                font-bold
-              "
-            >
-              {filteredProperties.length} Properties
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* MAIN */}
 
       <section
-        className="
-          max-w-[1500px]
-          mx-auto
-          px-4
-          py-16
-        "
-      >
+  className="
+    max-w-[1500px]
+    mx-auto
+    px-4
+    mt-28
+    py-16
+  "
+>
         <div
           className="
             grid

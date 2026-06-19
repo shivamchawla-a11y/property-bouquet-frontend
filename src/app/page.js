@@ -8,6 +8,7 @@ import Footer from "@/components/home/Footer";
 import PremiumPartners from "@/components/home/PremiumPartners";
 import LuxuryInsightsSection from "@/components/home/LuxuryInsightsSection";
 import RecommendedProjects from "@/components/home/RecommendedProperties";
+import HeroSectionMobile from "@/components/home/HeroSectionMobile";
 
 export default function HomePage() {
   return (
@@ -15,7 +16,15 @@ export default function HomePage() {
 
       <Navbar />
 
-      <HeroSection />
+      {/* DESKTOP HERO */}
+      <div className="hidden md:block">
+        <HeroSection />
+      </div>
+
+      {/* MOBILE HERO */}
+      <div className="block md:hidden">
+        <HeroSectionMobile />
+      </div>
 
       <RecommendedProjects/>
 

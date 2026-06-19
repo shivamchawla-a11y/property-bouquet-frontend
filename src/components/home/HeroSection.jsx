@@ -63,7 +63,7 @@ export default function HeroSection() {
         <div className="max-w-[1400px] mx-auto w-full px-6 xl:px-10">
 
           {/* LEFT CONTENT */}
-          <div className="max-w-[620px] -mt-20">
+          <div className="max-w-[620px] -mt-36">
 
             {/* TOP TEXT */}
             <motion.p
