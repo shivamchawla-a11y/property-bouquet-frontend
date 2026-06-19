@@ -310,16 +310,23 @@ shadow-[0_25px_80px_rgba(0,0,0,0.7)]
 
   <button
     onClick={() => {
-      onChange(
-        `${formatBudget(
-          budgetValues[0]
-        )} - ${formatBudget(
-          budgetValues[1]
-        )}`
-      );
+  const min =
+    budgetValues[0] * 100000;
 
-      setOpen(false);
-    }}
+  const max =
+    budgetValues[1] * 100000;
+
+  onChange({
+    value: `${min}-${max}`,
+    label: `${formatBudget(
+      budgetValues[0]
+    )} - ${formatBudget(
+      budgetValues[1]
+    )}`,
+  });
+
+  setOpen(false);
+}}
     className="
       mt-5
       w-full

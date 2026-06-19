@@ -46,6 +46,12 @@ const selectedBudget =
   const selectedAmenity =
   searchParams.get("amenity");
 
+  const selectedBhk =
+  searchParams.get("bhk");
+
+  const selectedPropertyType =
+  searchParams.get("propertyType");
+
   // ================= FETCH =================
 
   useEffect(() => {
@@ -91,7 +97,9 @@ const selectedBudget =
     searchParams.get("search");
 
   const type =
-    searchParams.get("type");
+  searchParams.get(
+    "propertyType"
+  );
 
   const location =
     searchParams.get("location");
@@ -104,6 +112,9 @@ const selectedBudget =
 
   const amenitiesParam =
   searchParams.get("amenity");
+
+  const bhk =
+  searchParams.get("bhk");
 
 const selectedAmenities =
   amenitiesParam
@@ -218,6 +229,23 @@ if (selectedAmenities.length) {
         )
     );
   });
+}
+
+// BHK
+
+if (bhk) {
+  result = result.filter(
+    (property) =>
+      property?.gatedContent?.floorPlans?.some(
+        (plan) =>
+          plan?.unitType
+            ?.toLowerCase()
+            .trim() ===
+          bhk
+            .toLowerCase()
+            .trim()
+      )
+  );
 }
 
   // SORTING
@@ -428,8 +456,11 @@ if (selectedAmenities.length) {
   selectedDeveloper={selectedDeveloper}
   selectedBudget={selectedBudget}
   selectedAmenity={selectedAmenity}
+  selectedBhk={selectedBhk}
+  selectedPropertyType={
+    selectedPropertyType
+  }
 />
-
           {/* RIGHT */}
 
           <div>

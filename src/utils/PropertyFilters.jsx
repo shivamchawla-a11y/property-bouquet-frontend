@@ -16,6 +16,8 @@ export default function PropertyFilters({
   selectedDeveloper,
   selectedBudget,
   selectedAmenity,
+  selectedPropertyType,
+  selectedBhk,
 }) {
 
   const selectedAmenities =
@@ -141,6 +143,28 @@ const amenities = [
   ),
 ].sort(); 
 
+const categories = [
+  ...new Set(
+    properties
+      ?.map(
+        (property) =>
+          property?.categoryData?.categoryName
+      )
+      .filter(Boolean)
+  ),
+].sort();
+
+const bhkOptions = [
+  ...new Set(
+    properties.flatMap(
+      (property) =>
+        property?.gatedContent?.floorPlans?.map(
+          (plan) => plan.unitType?.trim()
+        ) || []
+    )
+  ),
+].sort();
+
  const budgetLabel = selectedBudget
   ? (() => {
       const [min, max] =
@@ -186,6 +210,13 @@ const applyBudgetFilter = (
   params.set(
     "amenity",
     selectedAmenities.join(",")
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
   );
 }
 
@@ -237,6 +268,26 @@ const applyBudgetFilter = (
   );
 }
 
+if (
+  type !== "propertyType" &&
+  selectedPropertyType
+) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (
+  type !== "bhk" &&
+  selectedBhk
+) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
   router.push(
     `/properties${
       params.toString()
@@ -253,29 +304,68 @@ const applyBudgetFilter = (
     }));
   };
 
-  const Pill = ({ label }) => (
-    <button
-      type="button"
-      className="
-        px-4
-        py-2.5
-        rounded-full
-        border
-        border-gray-200
-        bg-white
-        text-gray-800
-        hover:border-[#0f3b2e]
-        hover:text-[#0f3b2e]
-        text-sm
-        font-medium
-        transition-all
-        duration-300
-        whitespace-nowrap
-      "
-    >
-      + {label}
-    </button>
+ const Pill = ({ label, type }) => (
+  <button
+    onClick={() => {
+      const params =
+        new URLSearchParams();
+
+      if (selectedLocation) {
+        params.set(
+          "location",
+          selectedLocation
+        );
+      }
+
+      if (selectedDeveloper) {
+        params.set(
+          "developer",
+          selectedDeveloper
+        );
+      }
+
+      if (selectedBudget) {
+        params.set(
+          "budget",
+          selectedBudget
+        );
+      }
+
+      if (selectedAmenity) {
+        params.set(
+          "amenity",
+          selectedAmenity
+        );
+      }
+
+      if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
   );
+}
+
+      if (type === "bhk") {
+        params.set("bhk", label);
+      }
+
+      router.push(
+        `/properties?${params.toString()}`
+      );
+    }}
+    className={`
+      px-4 py-2 rounded-full border
+      text-sm font-medium transition-all
+      ${
+        selectedBhk === label
+          ? "bg-[#0f3b2e] text-white border-[#0f3b2e]"
+          : "bg-white hover:bg-[#faf7f2]"
+      }
+    `}
+  >
+    {label}
+  </button>
+);
 
   return (
     <aside
@@ -333,9 +423,11 @@ const applyBudgetFilter = (
 
           {/* APPLIED FILTERS */}
           {(
-  selectedLocation ||
+selectedLocation ||
 selectedDeveloper ||
 selectedBudget ||
+selectedPropertyType ||
+selectedBhk ||
 selectedAmenities.length
 ) && (
   <div className="mb-8">
@@ -428,6 +520,34 @@ selectedAmenities.length
         </div>
       )}
 
+      {selectedBhk && (
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+      px-4
+      py-2
+      rounded-full
+      bg-[#faf7f2]
+      border
+      border-[#c89d58]/15
+    "
+  >
+    <span>
+      🛏 {selectedBhk}
+    </span>
+
+    <button
+      onClick={() =>
+        removeFilter("bhk")
+      }
+    >
+      <X size={14} />
+    </button>
+  </div>
+)}
+
      {selectedAmenities.map((amenity) => (
   <div
     key={amenity}
@@ -485,6 +605,13 @@ selectedAmenities.length
           );
         }
 
+        if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
         router.push(
           `/properties?${params.toString()}`
         );
@@ -532,6 +659,34 @@ selectedAmenities.length
     </div>
   );
 })()}
+
+{selectedPropertyType && (
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+      px-4
+      py-2
+      rounded-full
+      bg-[#faf7f2]
+      border
+      border-[#c89d58]/15
+    "
+  >
+    <span>
+      🏠 {selectedPropertyType}
+    </span>
+
+    <button
+      onClick={() =>
+        removeFilter("propertyType")
+      }
+    >
+      <X size={14} />
+    </button>
+  </div>
+)}
 
     </div>
 
@@ -667,15 +822,16 @@ selectedAmenities.length
             </button>
 
             {openSections.bedrooms && (
-              <div className="flex flex-wrap gap-3">
-                <Pill label="1 BHK" />
-                <Pill label="2 BHK" />
-                <Pill label="3 BHK" />
-                <Pill label="4 BHK" />
-                <Pill label="5 BHK" />
-                <Pill label="Penthouse" />
-              </div>
-            )}
+  <div className="flex flex-wrap gap-3 mb-8">
+    {bhkOptions.map((bhk) => (
+      <Pill
+        key={bhk}
+        label={bhk}
+        type="bhk"
+      />
+    ))}
+  </div>
+)}
           </div>
 
           {/* PROPERTY TYPE */}
@@ -697,14 +853,85 @@ selectedAmenities.length
             </button>
 
             {openSections.propertyType && (
-              <div className="flex flex-wrap gap-3">
-                <Pill label="Apartment" />
-                <Pill label="Villa" />
-                <Pill label="Floor" />
-                <Pill label="Penthouse" />
-                <Pill label="Commercial" />
-              </div>
-            )}
+  <div className="space-y-1">
+
+    {categories.map((category) => (
+      <label
+        key={category}
+        className="
+          flex
+          items-center
+          gap-3
+          px-3
+          py-2.5
+          rounded-xl
+          hover:bg-[#faf7f2]
+          cursor-pointer
+          transition-all
+        "
+      >
+        <input
+          type="radio"
+          checked={
+            selectedPropertyType ===
+            category
+          }
+          onChange={() => {
+            const params =
+              new URLSearchParams();
+
+            params.set(
+              "propertyType",
+              category
+            );
+
+            if (selectedLocation) {
+              params.set(
+                "location",
+                selectedLocation
+              );
+            }
+
+            if (selectedDeveloper) {
+              params.set(
+                "developer",
+                selectedDeveloper
+              );
+            }
+
+            if (selectedBudget) {
+              params.set(
+                "budget",
+                selectedBudget
+              );
+            }
+
+            if (selectedAmenity) {
+              params.set(
+                "amenity",
+                selectedAmenity
+              );
+            }
+
+            router.push(
+              `/properties?${params.toString()}`
+            );
+          }}
+          className="
+            h-4
+            w-4
+            accent-[#c89d58]
+          "
+        />
+
+        <span className="text-sm font-medium capitalize">
+          {category}
+        </span>
+      </label>
+    ))}
+
+  </div>
+)}
           </div>
 
           {/* STATUS */}

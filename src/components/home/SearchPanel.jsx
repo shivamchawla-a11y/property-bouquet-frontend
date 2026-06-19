@@ -70,56 +70,69 @@ const [showDeveloperModal, setShowDeveloperModal] =
   const router = useRouter();
 
 useEffect(() => {
-  const fetchData = async () => {
+  const fetchProperties = async () => {
     try {
-      // LOCATIONS
-      const locationRes = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/locations/tree"
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/properties"
       );
 
-      const locationData =
-        await locationRes.json();
+      const data = await res.json();
 
-      if (locationRes.ok) {
+      if (res.ok) {
+        const propertyData =
+          data.data || [];
+
+        setProperties(propertyData);
+
+        // LOCATIONS
+        const uniqueLocations = [
+          ...new Set(
+            propertyData.flatMap(
+              (property) => {
+                const location =
+                  property?.locationData
+                    ?.locationName;
+
+                if (!location) return [];
+
+                return location
+                  .split(">")
+                  .map((item) =>
+                    item.trim()
+                  )
+                  .filter(Boolean);
+              }
+            )
+          ),
+        ].sort();
+
         setLocations(
-          locationData.data || []
+          uniqueLocations
         );
-      }
 
-      // DEVELOPERS
-      const developerRes = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/developers"
-      );
+        // DEVELOPERS
+        const uniqueDevelopers = [
+          ...new Set(
+            propertyData
+              .map(
+                (property) =>
+                  property
+                    ?.coreDetails
+                    ?.developerName
+              )
+              .filter(Boolean)
+          ),
+        ].sort();
 
-      const developerData =
-        await developerRes.json();
-
-      if (developerRes.ok) {
         setDevelopers(
-          developerData.data || []
+          uniqueDevelopers
         );
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
-  const fetchProperties = async () => {
-  try {
-    const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/properties"
-    );
 
-    const data = await res.json();
-
-    if (res.ok) {
-      setProperties(data.data || []);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-  fetchData();
   fetchProperties();
 }, []);
 
@@ -131,40 +144,59 @@ useEffect(() => {
   };
 
 const handleSearch = () => {
-  const params = new URLSearchParams();
+  const params =
+    new URLSearchParams();
 
-  // PROPERTY SEARCH
   if (searchTerm.trim()) {
-    params.set("search", searchTerm.trim());
+    params.set(
+      "search",
+      searchTerm.trim()
+    );
   }
 
-  // LOCATION
   if (filters.location) {
-    params.set("location", filters.location);
+    params.set(
+      "location",
+      filters.location
+    );
   }
 
-  // DEVELOPER
   if (filters.developer) {
-    params.set("developer", filters.developer);
+    params.set(
+      "developer",
+      filters.developer
+    );
   }
 
-  // TYPE
   if (filters.propertyType) {
-    params.set("type", filters.propertyType);
+    params.set(
+      "type",
+      filters.propertyType
+    );
   }
 
-  // BUDGET
   if (filters.budget) {
-    params.set("budget", filters.budget);
+    params.set(
+      "budget",
+      filters.budget
+    );
   }
 
-  router.push(`/properties?${params.toString()}`);
+  console.log(
+    `/properties?${params.toString()}`
+  );
+
+  router.push(
+    `/properties${
+      params.toString()
+        ? `?${params.toString()}`
+        : ""
+    }`
+  );
 };
 
 const developerOptions =
-  developers.slice(0, 3).map(
-    (developer) => developer.name
-  );
+  developers.slice(0, 5);
 
   const suggestions = properties
   .filter((property) => {
@@ -257,12 +289,19 @@ const developerOptions =
             <input
   value={searchTerm}
   onChange={(e) => {
-    setSearchTerm(e.target.value);
+    setSearchTerm(
+      e.target.value
+    );
     setShowSuggestions(true);
   }}
   onFocus={() =>
     setShowSuggestions(true)
   }
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  }}
   placeholder="Search by property name, project, or landmark"
   className="
     bg-transparent
@@ -407,11 +446,11 @@ const developerOptions =
   placeholder="Budget Range"
   value={filters.budgetLabel || ""}
   budgetSlider={true}
-  onChange={(value) => {
+  onChange={(budgetData) => {
     setFilters((prev) => ({
       ...prev,
-      budget: value,
-      budgetLabel: value,
+      budget: budgetData.value,
+      budgetLabel: budgetData.label,
     }));
   }}
 />
@@ -424,9 +463,7 @@ const developerOptions =
               label="LOCATION"
               placeholder="Select Location"
               value={filters.location}
-              options={locations.map(
-                (l) => l.name
-              )}
+              options={locations}
               onChange={(value) =>
                 handleChange("location", value)
               }
@@ -729,20 +766,20 @@ const developerOptions =
 >
           {developers
             .filter((developer) =>
-              developer.name
-                .toLowerCase()
+  developer
+    .toLowerCase()
                 .includes(
                   developerSearch.toLowerCase()
                 )
             )
             .map((developer) => (
-              <button
-                key={developer._id}
+  <button
+    key={developer}
                 onClick={() => {
                   handleChange(
-                    "developer",
-                    developer.name
-                  );
+  "developer",
+  developer
+);
 
                   setShowDeveloperModal(
                     false
@@ -791,7 +828,7 @@ const developerOptions =
                       transition-colors
                     "
                   >
-                    {developer.name}
+                    {developer}
                   </p>
 
                   <p
@@ -808,7 +845,7 @@ const developerOptions =
             ))}
 
           {developers.filter((developer) =>
-            developer.name
+  developer
               .toLowerCase()
               .includes(
                 developerSearch.toLowerCase()
