@@ -36,7 +36,9 @@ const navItems = [
   },
 ];
 
-export default function Navbar() {
+export default function Navbar({
+  onConsultationClick,
+}) {
   const [active, setActive] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -45,6 +47,9 @@ export default function Navbar() {
 
 const [mobileDropdown, setMobileDropdown] =
   useState(null);
+
+  const [showConsultationModal, setShowConsultationModal] =
+  useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -161,9 +166,12 @@ const [mobileDropdown, setMobileDropdown] =
           <div className="flex items-center gap-3">
 
             {/* CONSULTATION BUTTON */}
-            <button className="hidden lg:flex h-[44px] px-6 rounded-xl bg-gradient-to-b from-[#d9b061] to-[#b8862e] text-black font-semibold text-[11px] tracking-[0.12em] shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:scale-[1.03] transition uppercase items-center">
-              Private Consultation
-            </button>
+            <button
+  onClick={onConsultationClick}
+  className="hidden lg:flex h-[44px] px-6 rounded-xl bg-gradient-to-b from-[#d9b061] to-[#b8862e] text-black font-semibold text-[11px] tracking-[0.12em] shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:scale-[1.03] transition uppercase items-center"
+>
+  Private Consultation
+</button>
 
             {/* MENU */}
             <button
@@ -391,26 +399,29 @@ const [mobileDropdown, setMobileDropdown] =
 
           {/* CONSULTATION BUTTON */}
           <button
-            className="
-              w-full
-              mt-6
-              h-[52px]
-              rounded-xl
-              bg-gradient-to-b
-              from-[#d9b061]
-              to-[#b8862e]
-              text-black
-              font-semibold
-              uppercase
-              tracking-[0.12em]
-            "
-          >
-            Private Consultation
-          </button>
+  onClick={onConsultationClick}
+  className="
+    w-full
+    mt-6
+    h-[52px]
+    rounded-xl
+    bg-gradient-to-b
+    from-[#d9b061]
+    to-[#b8862e]
+    text-black
+    font-semibold
+    uppercase
+    tracking-[0.12em]
+  "
+>
+  Private Consultation
+</button>
         </div>
       </motion.div>
     </>
   )}
+</AnimatePresence>
+<AnimatePresence>
 </AnimatePresence>
     </header>
   );
