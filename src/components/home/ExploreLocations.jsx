@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import {
   ArrowRight,
@@ -10,41 +12,45 @@ import {
   MapPin,
 } from "lucide-react";
 
-const locations = [
-  {
-    id: 1,
-    name: "Golf Course Road",
-    city: "Gurugram",
-    appreciation: "24%",
-    image: "/location1.webp",
-  },
 
-  {
-    id: 2,
-    name: "Bandra Kurla Complex",
-    city: "Mumbai",
-    appreciation: "22%",
-    image: "/location2.webp",
-  },
-
-  {
-    id: 3,
-    name: "Nandi Hills",
-    city: "Bengaluru",
-    appreciation: "30%",
-    image: "/location3.webp",
-  },
-
-  {
-    id: 4,
-    name: "Marine Drive",
-    city: "Mumbai",
-    appreciation: "20%",
-    image: "/location4.webp",
-  }
-];
 
 export default function ExploreLocations() {
+  const API =
+  "https://property-bouquet-backend.onrender.com/api";
+
+const [locations, setLocations] = useState([]);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  fetchLocations();
+}, []);
+
+const fetchLocations = async () => {
+  try {
+    const res = await fetch(`${API}/locations/tree`);
+    const data = await res.json();
+
+    if (res.ok) {
+      const roots = (data.data || []).filter(
+        (item) => !item.parent
+      );
+
+      setLocations(roots);
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+if (loading) {
+  return (
+    <section className="py-24 text-center">
+      Loading locations...
+    </section>
+  );
+}
   return (
     <section className="relative bg-[#f6f3ee] py-24 overflow-hidden border-t border-black/5">
 
@@ -131,15 +137,17 @@ export default function ExploreLocations() {
           {/* BUTTONS */}
           <div className="flex items-center justify-center gap-4 mt-10">
 
-            <button className="group flex items-center gap-3 h-[52px] px-7 rounded-full bg-[#171717] text-white text-[13px] tracking-[1px] font-semibold shadow-[0_10px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02] transition-all duration-300">
+            <Link
+  href="/properties"
+  className="group flex items-center gap-3 h-[52px] px-7 rounded-full bg-[#171717] text-white text-[13px] tracking-[1px] font-semibold shadow-[0_10px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02] transition-all duration-300"
+>
+  VIEW ALL LOCATIONS
 
-              VIEW ALL LOCATIONS
-
-              <ArrowRight
-                size={15}
-                className="group-hover:translate-x-1 transition"
-              />
-            </button>
+  <ArrowRight
+    size={15}
+    className="group-hover:translate-x-1 transition"
+  />
+</Link>
 
             {/* ARROWS */}
             <div className="flex items-center gap-3">
@@ -161,8 +169,12 @@ export default function ExploreLocations() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
           {locations.map((location, index) => (
+            <Link
+  href={`/properties?location=${encodeURIComponent(location.name)}`}
+  key={location._id}
+>
             <motion.div
-              key={location.id}
+              key={location._id}
               initial={{
                 opacity: 0,
                 y: 40,
@@ -189,17 +201,26 @@ export default function ExploreLocations() {
 
               {/* IMAGE */}
               <motion.img
-                src={location.image}
-                alt={location.name}
-                whileHover={{
-                  scale: 1.08,
-                }}
-                transition={{
-                  duration: 1,
-                  ease: "easeOut",
-                }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+  src={
+    location.image
+      ? location.image.startsWith("http")
+        ? location.image
+        : `https://property-bouquet-backend.onrender.com${location.image}`
+      : "https://placehold.co/600x800/f3f4f6/999999?text=Location"
+  }
+  alt={location.name}
+  loading="lazy"
+  onError={(e) => {
+    e.currentTarget.src =
+      "https://placehold.co/600x800/f3f4f6/999999?text=Location";
+  }}
+  whileHover={{ scale: 1.08 }}
+  transition={{
+    duration: 1,
+    ease: "easeOut",
+  }}
+  className="absolute inset-0 w-full h-full object-cover"
+/>
 
               {/* OVERLAY */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
@@ -221,7 +242,7 @@ export default function ExploreLocations() {
                   />
 
                   <span className="text-[11px] tracking-[1px] font-semibold text-white">
-                    HIGH GROWTH
+                    PREMIUM LOCATION
                   </span>
                 </div>
               </div>
@@ -234,15 +255,11 @@ export default function ExploreLocations() {
 
                   <MapPin size={14} />
 
-                  <span className="text-[12px] uppercase tracking-[1px] font-medium">
-                    {location.city}
-                  </span>
-                </div>
-
-                {/* NAME */}
-                <h3 className="text-[24px] leading-[1.15] font-semibold text-white">
+                    <h3 className="text-[24px] leading-[1.15] font-semibold text-white">
                   {location.name}
                 </h3>
+                  
+                </div>
 
                 {/* APPRECIATION */}
                 <div className="mt-6 flex items-end justify-between">
@@ -250,11 +267,11 @@ export default function ExploreLocations() {
                   <div>
 
                     <p className="text-[10px] uppercase tracking-[1.5px] text-white/60 mb-2">
-                      Top Appreciation
+                      Sub Locations
                     </p>
 
                     <p className="text-[38px] leading-none font-semibold text-[#d7b26d]">
-                      {location.appreciation}
+                      {location.children?.length || 0}
                     </p>
                   </div>
 
@@ -272,6 +289,7 @@ export default function ExploreLocations() {
               {/* GOLD GLOW */}
               <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[120px] h-[120px] bg-[#c89d58]/20 blur-[60px] opacity-0 group-hover:opacity-100 transition duration-500" />
             </motion.div>
+            </Link>
           ))}
         </div>
       </div>

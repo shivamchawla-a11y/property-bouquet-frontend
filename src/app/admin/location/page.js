@@ -23,6 +23,10 @@ export default function LocationPage() {
     useState(null);
   const [inputValue, setInputValue] =
     useState("");
+  const [imageUrl, setImageUrl] = useState("");
+const [editImage, setEditImage] = useState("");
+
+const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] =
@@ -66,6 +70,90 @@ export default function LocationPage() {
     setCurrentPage(1);
   }, [search]);
 
+  // ================= VALIDATE FILE =================
+const validateFile = (file) => {
+  if (!file) return false;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Only image files allowed");
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Max file size is 5MB");
+    return false;
+  }
+
+  return true;
+};
+
+// ================= UPLOAD IMAGE =================
+const uploadImage = async (file) => {
+  try {
+    const data = new FormData();
+
+    data.append("file", file);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(
+        result.message || "Upload failed"
+      );
+    }
+
+    return result.url;
+  } catch (err) {
+    console.error(err);
+
+    alert("Upload failed");
+
+    return null;
+  }
+};
+
+// ================= NEW LOCATION IMAGE =================
+const handleLocationImageUpload = async (
+  file
+) => {
+  if (!validateFile(file)) return;
+
+  setUploading(true);
+
+  const url = await uploadImage(file);
+
+  if (url) {
+    setImageUrl(url);
+  }
+
+  setUploading(false);
+};
+
+// ================= EDIT LOCATION IMAGE =================
+const handleEditImageUpload = async (
+  file
+) => {
+  if (!validateFile(file)) return;
+
+  setUploading(true);
+
+  const url = await uploadImage(file);
+
+  if (url) {
+    setEditImage(url);
+  }
+
+  setUploading(false);
+};
+
   // ================= ADD =================
   const addLocation = async (parentId) => {
     if (!inputValue.trim()) return;
@@ -83,9 +171,10 @@ export default function LocationPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: inputValue,
-          parent: parentId || null,
-        }),
+        name: inputValue,
+        parent: parentId || null,
+        image: imageUrl,
+      }),
       }
     );
 
@@ -96,10 +185,11 @@ export default function LocationPage() {
       return;
     }
 
-    setInputValue("");
-    setActiveInput(null);
+    await fetchLocations();
 
-    fetchLocations();
+setInputValue("");
+setImageUrl("");
+setActiveInput(null);
   };
 
   // ================= DELETE =================
@@ -149,8 +239,9 @@ export default function LocationPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: editValue,
-        }),
+  name: editValue,
+  image: editImage,
+}),
       }
     );
 
@@ -215,14 +306,20 @@ export default function LocationPage() {
           <div
             className="relative group transition-all duration-300"
             style={{
-              marginLeft: level * 18,
+              marginLeft: level * 36,
             }}
           >
-            <div className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 bg-gradient-to-r from-white to-gray-50 shadow-sm hover:shadow-md transition">
+            <div
+  className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
+    editingId === node._id
+      ? "border-[#0f3b2e] bg-[#f6faf8]"
+      : "border-gray-200 bg-gradient-to-r from-white to-gray-50"
+  }`}
+>
 
               {/* CONNECTOR */}
               {level > 0 && (
-                <div className="absolute left-[-10px] top-0 h-full w-[1px] bg-gray-200" />
+                <div className="absolute left-[-18px] top-0 bottom-0 border-l border-dashed border-gray-300" />
               )}
 
               {/* EXPAND */}
@@ -257,9 +354,40 @@ export default function LocationPage() {
               )}
 
               {/* ICON */}
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 p-1.5 rounded-lg shadow-sm">
-                <MapPin size={12} />
-              </div>
+              <div
+  className="
+    h-12
+    w-12
+    rounded-xl
+    overflow-hidden
+    border
+    border-gray-200
+    shadow-sm
+    shrink-0
+    bg-gradient-to-br
+    from-gray-50
+    to-gray-100
+  "
+>
+  {node.image ? (
+  <img
+    src={node.image}
+    alt={node.name}
+    className="
+      h-full
+      w-full
+      object-cover
+    "
+  />
+) : (
+  <div className="h-full w-full flex items-center justify-center">
+    <MapPin
+      size={16}
+      className="text-[#0f3b2e]"
+    />
+  </div>
+)}
+</div>
 
               {/* SR NUMBER */}
               <div className="text-xs font-bold text-gray-400 w-[24px]">
@@ -269,23 +397,74 @@ export default function LocationPage() {
               </div>
 
               {/* NAME */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pr-4">
                 {editingId ===
                 node._id ? (
-                  <input
-                    value={editValue}
-                    onChange={(e) =>
-                      setEditValue(
-                        e.target.value
-                      )
-                    }
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="space-y-2 w-full max-w-xl">
+
+  <input
+    value={editValue}
+    onChange={(e) =>
+      setEditValue(e.target.value)
+    }
+    placeholder="Location Name"
+    className="
+w-full
+bg-white
+text-gray-900
+placeholder:text-gray-400
+caret-[#0f3b2e]
+border
+border-gray-300
+rounded-xl
+px-4
+py-2.5
+outline-none
+focus:ring-2
+focus:ring-[#0f3b2e]/20
+"
+  />
+
+  <div className="flex items-center gap-3">
+  <button
+    type="button"
+    onClick={() =>
+      document
+        .getElementById(
+          "editLocationImageUpload"
+        )
+        ?.click()
+    }
+    className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+  >
+    {uploading
+      ? "Uploading..."
+      : "Change Image"}
+  </button>
+
+  {editImage && (
+    <img
+      src={editImage}
+      alt=""
+      className="h-14 w-14 rounded-lg object-cover border"
+    />
+  )}
+</div>
+
+</div>
                 ) : (
                   <div>
-                    <p className="font-semibold text-sm text-gray-800 truncate">
-                      {node.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+  <p className="font-semibold text-sm text-gray-800 truncate">
+    {node.name}
+  </p>
+
+  {node.image && (
+    <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+      Image
+    </span>
+  )}
+</div>
 
                     {level > 0 && (
                       <p className="text-[10px] text-gray-400">
@@ -308,7 +487,7 @@ export default function LocationPage() {
               )}
 
               {/* ACTIONS */}
-<div className="flex items-center gap-1.5 flex-wrap">
+<div className="flex items-center gap-2 shrink-0">
 
   {/* ADD */}
   <button
@@ -345,9 +524,10 @@ export default function LocationPage() {
   ) : (
     <button
       onClick={() => {
-        setEditingId(node._id);
-        setEditValue(node.name);
-      }}
+      setEditingId(node._id);
+      setEditValue(node.name);
+      setEditImage(node.image || "");
+    }}
       className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition"
     >
       <Pencil size={13} />
@@ -384,53 +564,98 @@ export default function LocationPage() {
           {activeInput ===
             node._id && (
             <div
-              className="flex items-center gap-2 mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200"
-              style={{
-                marginLeft:
-                  (level + 1) * 18,
-              }}
-            >
-              <input
-                autoFocus
-                value={inputValue}
-                onChange={(e) =>
-                  setInputValue(
-                    e.target.value
-                  )
-                }
-                placeholder="Add sub-location..."
-                className="flex-1 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+  className="
+mt-3
+rounded-xl
+border
+border-blue-200
+bg-blue-50
+p-4
+space-y-4
+shadow-sm
+"
+  style={{
+    marginLeft:
+      (level + 1) * 18,
+  }}
+>
+  <input
+    autoFocus
+    value={inputValue}
+    onChange={(e) =>
+      setInputValue(e.target.value)
+    }
+    placeholder="Sub-location name"
+    className="
+w-full
+bg-white
+text-gray-900
+placeholder:text-gray-400
+caret-[#0f3b2e]
+border
+border-gray-300
+rounded-xl
+px-4
+py-2.5
+outline-none
+focus:ring-2
+focus:ring-[#0f3b2e]/20
+"
+  />
 
-              <button
-                onClick={() =>
-                  addLocation(
-                    node._id
-                  )
-                }
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm rounded-lg font-semibold transition"
-              >
-                Add
-              </button>
+  <div className="flex items-center gap-3">
+  <button
+    type="button"
+    onClick={() =>
+      document
+        .getElementById(
+          "locationImageUpload"
+        )
+        ?.click()
+    }
+    className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+  >
+    {uploading
+      ? "Uploading..."
+      : "Upload Image"}
+  </button>
 
-              <button
-                onClick={() =>
-                  setActiveInput(
-                    null
-                  )
-                }
-                className="text-sm text-gray-500 hover:text-black"
-              >
-                Cancel
-              </button>
-            </div>
+  {imageUrl && (
+    <img
+      src={imageUrl}
+      alt=""
+      className="h-10 w-10 rounded-lg object-cover border"
+    />
+  )}
+</div>
+
+  <div className="flex gap-2">
+    <button
+      onClick={() =>
+        addLocation(node._id)
+      }
+      className="bg-blue-600 text-white px-3 py-2 rounded-lg"
+    >
+      Add
+    </button>
+
+    <button
+      onClick={() =>
+        setActiveInput(null)
+      }
+      className="text-sm text-gray-600"
+    >
+      Cancel
+    </button>
+  </div>
+</div>
           )}
 
           {/* CHILDREN */}
           {isExpanded &&
             node.children
               ?.length > 0 && (
-              <div className="ml-2 border-l border-dashed border-gray-300 pl-2 mt-1 transition-all duration-300">
+              <div className="ml-6 border-l border-dashed border-gray-300 pl-6 mt-2 transition-all duration-300">
                 {renderTree(
                   node.children,
                   level + 1
@@ -446,9 +671,11 @@ export default function LocationPage() {
   const addRoot = () =>
     addLocation(null);
 
+
   // ================= LOADING =================
   if (loading) {
     return (
+      
       <div className="h-[60vh] flex items-center justify-center text-sm font-medium text-gray-600">
         Loading locations...
       </div>
@@ -456,7 +683,42 @@ export default function LocationPage() {
   }
 
   return (
-    <div className="p-4 bg-[#f7f8f7] min-h-screen space-y-5">
+
+<div
+  className="p-4 bg-[#f7f8f7] min-h-screen space-y-5"
+  style={{
+    color: "#111827",
+  }}
+>
+        {/* ================= NEW LOCATION IMAGE ================= */}
+<input
+  id="locationImageUpload"
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={(e) => {
+    handleLocationImageUpload(
+      e.target.files?.[0]
+    );
+
+    e.target.value = "";
+  }}
+/>
+
+{/* ================= EDIT LOCATION IMAGE ================= */}
+<input
+  id="editLocationImageUpload"
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={(e) => {
+    handleEditImageUpload(
+      e.target.files?.[0]
+    );
+
+    e.target.value = "";
+  }}
+/>
 
       {/* ================= HEADER ================= */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -501,35 +763,63 @@ export default function LocationPage() {
       </div>
 
       {/* ================= ADD ROOT ================= */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row gap-2">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
         <input
-          value={
-            activeInput ===
-            "root"
-              ? inputValue
-              : ""
-          }
-          onChange={(e) =>
-            setInputValue(
-              e.target.value
-            )
-          }
-          placeholder="Add root location (e.g. Gurgaon)"
-          className="flex-1 border border-gray-300 text-sm text-gray-800 px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#0f3b2e]"
-          onFocus={() =>
-            setActiveInput(
-              "root"
-            )
-          }
-        />
+  value={inputValue}
+  onChange={(e) => setInputValue(e.target.value)}
+  placeholder="Add root location"
+  className="
+    flex-1
+    min-w-[280px]
+    bg-white
+    text-gray-900
+    placeholder:text-gray-400
+    caret-[#0f3b2e]
+    border
+    border-gray-300
+    rounded-xl
+    px-4
+    py-2.5
+    outline-none
+    focus:border-[#0f3b2e]
+    focus:ring-2
+    focus:ring-[#0f3b2e]/20
+  "
+/>
 
-        <button
-          onClick={addRoot}
-          className="bg-[#0f3b2e] hover:bg-[#145240] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition"
-        >
-          Add Location
-        </button>
+<div className="flex flex-wrap items-center gap-4 mt-4">
+  <button
+    type="button"
+    onClick={() =>
+      document
+        .getElementById(
+          "locationImageUpload"
+        )
+        ?.click()
+    }
+    className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium"
+  >
+    {uploading
+      ? "Uploading..."
+      : "Upload Image"}
+  </button>
+
+  {imageUrl && (
+    <img
+      src={imageUrl}
+      alt=""
+      className="h-12 w-12 rounded-lg object-cover border"
+    />
+  )}
+</div>
+
+<button
+  onClick={addRoot}
+  className="bg-[#0f3b2e] text-white px-5 py-2.5 rounded-xl"
+>
+  Add Location
+</button>
       </div>
 
       {/* ================= TREE ================= */}

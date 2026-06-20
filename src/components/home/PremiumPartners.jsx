@@ -1,11 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function PremiumPartners() {
 const [developers, setDevelopers] = useState([]);
+const topControls = useAnimation();
+const bottomControls = useAnimation();
 
 useEffect(() => {
 const fetchDevelopers = async () => {
@@ -38,6 +40,26 @@ fetchDevelopers();
 
 }, []);
 
+useEffect(() => {
+  topControls.start({
+    x: ["0%", "-50%"],
+    transition: {
+      duration: 80,
+      repeat: Infinity,
+      ease: "linear",
+    },
+  });
+
+  bottomControls.start({
+    x: ["-50%", "0%"],
+    transition: {
+      duration: 80,
+      repeat: Infinity,
+      ease: "linear",
+    },
+  });
+}, [topControls, bottomControls]);
+
 if (!developers.length) return null;
 
 return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className="max-w-[1600px] mx-auto px-5">
@@ -67,17 +89,7 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
         <div className="overflow-hidden">
 
           {/* TOP ROW */}
-          <motion.div
-            className="flex gap-5 w-max mb-5"
-            animate={{
-              x: ["0%", "-50%"],
-            }}
-            transition={{
-              duration: 80,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          >
+          <div className="flex gap-5 w-max mb-5 marquee-left">
             {[...developers, ...developers].map(
               (developer, index) => (
                 <Link
@@ -132,20 +144,10 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
                 </Link>
               )
             )}
-          </motion.div>
+          </div>
 
           {/* BOTTOM ROW */}
-          <motion.div
-            className="flex gap-5 w-max"
-            animate={{
-              x: ["-50%", "0%"],
-            }}
-            transition={{
-              duration: 80,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          >
+          <div className="flex gap-5 w-max marquee-right">
             {[...developers, ...developers].map(
               (developer, index) => (
                 <Link
@@ -200,7 +202,7 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
                 </Link>
               )
             )}
-          </motion.div>
+          </div>
 
         </div>
 
