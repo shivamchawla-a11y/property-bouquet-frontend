@@ -22,6 +22,7 @@ export default function LeadsPage() {
   const [agentFilter, setAgentFilter] = useState("All");
   const [propertyFilter, setPropertyFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [leadTypeFilter, setLeadTypeFilter] = useState("All");
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -116,6 +117,10 @@ export default function LeadsPage() {
     const statusMatch =
       statusFilter === "All" || l.status === statusFilter;
 
+      const leadTypeMatch =
+  leadTypeFilter === "All" ||
+  l.leadType === leadTypeFilter;
+
     const agentMatch =
       agentFilter === "All" ||
       (agentFilter === "Unassigned" && !l.assignedTo) ||
@@ -131,13 +136,14 @@ export default function LeadsPage() {
       (tab === "Unassigned" && !l.assignedTo);
 
     return (
-      searchMatch &&
-      propertyMatch &&
-      statusMatch &&
-      agentMatch &&
-      dateMatch &&
-      tabMatch
-    );
+  searchMatch &&
+  propertyMatch &&
+  statusMatch &&
+  leadTypeMatch &&
+  agentMatch &&
+  dateMatch &&
+  tabMatch
+);
   });
 
   const statusStyle = (s) => {
@@ -297,6 +303,34 @@ export default function LeadsPage() {
           </select>
 
           <select
+  className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700 bg-white"
+  value={leadTypeFilter}
+  onChange={(e) =>
+    setLeadTypeFilter(e.target.value)
+  }
+>
+  <option value="All">
+    All Lead Types
+  </option>
+
+  <option value="Brochure">
+    Brochure
+  </option>
+
+  <option value="Consultation">
+    Consultation
+  </option>
+
+  <option value="Site Visit">
+    Site Visit
+  </option>
+
+  <option value="Callback">
+    Callback
+  </option>
+</select>
+
+          <select
             className="border border-gray-300 text-gray-800 px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-green-700 bg-white"
             value={agentFilter}
             onChange={(e) => setAgentFilter(e.target.value)}
@@ -343,6 +377,10 @@ export default function LeadsPage() {
 
               <th className="px-6 py-4 font-semibold">Property</th>
 
+              <th className="px-6 py-4 font-semibold">
+                Source
+              </th>
+
               <th className="px-6 py-4 font-semibold">Status</th>
 
               <th className="px-6 py-4 font-semibold">Priority</th>
@@ -385,6 +423,21 @@ export default function LeadsPage() {
                   <td className="px-6 py-5 text-gray-700 font-medium">
                     {l.property}
                   </td>
+
+                  {/* LEAD TYPE */}
+
+<td className="px-6 py-5">
+  <span
+    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+      l.source ===
+      "Private Consultation"
+        ? "bg-amber-100 text-amber-700 border border-amber-200"
+        : "bg-gray-100 text-gray-700 border border-gray-200"
+    }`}
+  >
+    {l.source || "Website"}
+  </span>
+</td>
 
                   {/* STATUS */}
 
