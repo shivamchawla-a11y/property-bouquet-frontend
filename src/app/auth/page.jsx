@@ -1,18 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/home/Navbar";
 import {
   Eye,
   EyeOff,
   ChevronDown,
+  Quote,
 } from "lucide-react";
 
 import {
   motion,
   AnimatePresence,
 } from "framer-motion";
+
+const testimonials = [
+  {
+    quote:
+      "Property Bouquet secured us an off-market luxury residence before launch.",
+    name: "Rajiv Malhotra",
+    role: "Private Investor • Gurgaon",
+  },
+  {
+    quote:
+      "Their advisory team helped us invest in the right luxury project with complete confidence.",
+    name: "Neha Kapoor",
+    role: "NRI Investor • Dubai",
+  },
+  {
+    quote:
+      "The private inventory access gave us opportunities unavailable anywhere else.",
+    name: "Amit Singhania",
+    role: "Family Office • Delhi",
+  },
+];
 
 export default function LuxuryAuthPage() {
   const [activeTab, setActiveTab] =
@@ -25,6 +47,16 @@ export default function LuxuryAuthPage() {
     showConfirmPassword,
     setShowConfirmPassword,
   ] = useState(false);
+
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, []);
 
   return (
     <>
@@ -305,6 +337,133 @@ tracking-wide
 
 </div>
 
+<motion.div
+  initial={{ opacity: 0, y: 25 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.4, duration: 0.7 }}
+  whileHover={{ y: -4 }}
+  className="
+    mt-12
+    max-w-[420px]
+    rounded-[24px]
+    border
+    border-[#D9B061]/20
+    bg-[rgba(12,12,12,0.72)]
+    backdrop-blur-xl
+    shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+    overflow-hidden
+    relative
+  "
+>
+  {/* Golden Glow */}
+  <div
+    className="
+      absolute
+      -top-10
+      right-0
+      w-40
+      h-40
+      rounded-full
+      bg-[#D9B061]/10
+      blur-3xl
+    "
+  />
+
+  <div className="relative p-6">
+
+  {/* Quote Icon + Stars */}
+  <div className="flex items-center justify-between">
+
+    <div
+      className="
+      w-11
+      h-11
+      rounded-full
+      bg-[#D9B061]/10
+      border
+      border-[#D9B061]/20
+      flex
+      items-center
+      justify-center
+    "
+    >
+      <Quote
+        size={20}
+        className="text-[#D9B061]"
+      />
+    </div>
+
+    <div className="flex gap-1 text-[#D9B061]">
+      ★★★★★
+    </div>
+
+  </div>
+
+  <AnimatePresence mode="wait">
+
+    <motion.div
+      key={testimonialIndex}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -18 }}
+      transition={{ duration: 0.45 }}
+    >
+
+      <p
+        className="
+        mt-5
+        text-white/85
+        italic
+        leading-7
+        text-[14px]
+        min-h-[80px]
+      "
+      >
+        "{testimonials[testimonialIndex].quote}"
+      </p>
+
+      <div className="mt-6">
+
+        <p className="text-[#D9B061] font-medium text-[14px]">
+          {testimonials[testimonialIndex].name}
+        </p>
+
+        <p className="text-white/45 text-[12px] mt-1">
+          {testimonials[testimonialIndex].role}
+        </p>
+
+      </div>
+<div className="flex gap-2 mt-6">
+
+  {testimonials.map((_, index) => (
+
+    <button
+      key={index}
+      onClick={() => setTestimonialIndex(index)}
+      className={`
+      h-2
+      rounded-full
+      transition-all
+      duration-500
+
+      ${
+        testimonialIndex === index
+          ? "w-8 bg-[#D9B061]"
+          : "w-2 bg-white/20 hover:bg-white/40"
+      }
+    `}
+    />
+
+  ))}
+
+</div>
+    </motion.div>
+
+  </AnimatePresence>
+
+</div>
+</motion.div>
+
         </div>
 
         
@@ -533,29 +692,7 @@ text-[13px]
 
                     <div className="relative mb-10">
 
-  <div className="flex items-center">
 
-<div className="h-px flex-1 bg-white/10"/>
-
-<div
-className="
-mx-6
-
-text-[12px]
-
-uppercase
-
-tracking-[0.4em]
-
-text-white/35
-"
->
-OR
-</div>
-
-<div className="h-px flex-1 bg-white/10"/>
-
-</div>
 
 </div>
 
@@ -616,6 +753,30 @@ Continue with Google
 </span>
 
 </button>
+
+  <div className="flex items-center">
+
+<div className="h-px flex-1 bg-white/10"/>
+
+<div
+className="
+mx-6
+
+text-[12px]
+
+uppercase
+
+tracking-[0.4em]
+
+text-white/35
+"
+>
+OR
+</div>
+
+<div className="h-px flex-1 bg-white/10"/>
+
+</div>
 
                     {/* EMAIL */}
                     <div className="space-y-3">
