@@ -45,6 +45,9 @@ export default function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);
 
+  const [accountDropdown, setAccountDropdown] =
+  useState(false);
+
 const [mobileDropdown, setMobileDropdown] =
   useState(null);
 
@@ -143,17 +146,29 @@ const [mobileDropdown, setMobileDropdown] =
                       >
                         <div className="rounded-[22px] border border-white/10 bg-[#0b0b0b]/95 backdrop-blur-2xl p-3 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
 
-                          <div className="space-y-1">
-                            {item.items.map((sub) => (
-                              <button
-                                key={sub}
-                                className="w-full text-left px-4 py-3 rounded-xl text-white/75 hover:bg-white/5 hover:text-[#d6aa53] transition text-[13px]"
-                              >
-                                {sub}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+  <div className="space-y-1">
+    {item.items.map((sub) => (
+      <Link
+        key={sub}
+        href="#"
+        className="
+          block
+          px-4
+          py-3
+          rounded-xl
+          text-white/75
+          hover:bg-white/5
+          hover:text-[#d6aa53]
+          transition
+          text-[13px]
+        "
+      >
+        {sub}
+      </Link>
+    ))}
+  </div>
+
+</div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -163,7 +178,7 @@ const [mobileDropdown, setMobileDropdown] =
           </div>
 
           {/* RIGHT */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
 
             {/* CONSULTATION BUTTON */}
             <button
@@ -174,13 +189,188 @@ const [mobileDropdown, setMobileDropdown] =
 </button>
 
             {/* MENU */}
-            <button
+            {/* DESKTOP ACCOUNT MENU */}
+<div className="relative hidden xl:block">
+  <button
+    onClick={() =>
+      setAccountDropdown(
+        !accountDropdown
+      )
+    }
+    className="
+      w-[46px]
+      h-[46px]
+      rounded-full
+      border
+      border-[#b8862e]/40
+      bg-black/30
+      backdrop-blur-xl
+      flex
+      items-center
+      justify-center
+      text-[#d9b061]
+      hover:bg-[#d9b061]
+      hover:text-black
+      transition-all
+      duration-300
+    "
+  >
+    <Menu size={18} />
+  </button>
+  
+
+  <AnimatePresence>
+    {accountDropdown && (
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 10,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        exit={{
+          opacity: 0,
+          y: 10,
+        }}
+        transition={{
+          duration: 0.2,
+        }}
+        className="
+          absolute
+          right-0
+          top-[58px]
+          w-[260px]
+          rounded-[24px]
+          border
+          border-white/10
+          bg-[#0b0b0b]/95
+          backdrop-blur-2xl
+          p-3
+          shadow-[0_20px_80px_rgba(0,0,0,0.45)]
+        "
+      >
+        <div className="space-y-3">
+
+  {/* Premium Card */}
+  <div
+    className="
+      rounded-2xl
+      border
+      border-[#d9b061]/20
+      bg-gradient-to-br
+      from-[#d9b061]/10
+      via-transparent
+      to-transparent
+      p-5
+    "
+  >
+    <p className="text-white text-base font-semibold">
+      Welcome to Property Bouquet
+    </p>
+
+    <p className="text-white/60 text-sm mt-2 leading-6">
+      India's luxury real estate marketplace for premium buyers,
+      investors and property owners.
+    </p>
+  </div>
+
+  {/* Post Property */}
+  <Link
+    href="/post-property"
+    className="
+      flex
+      items-center
+      justify-center
+      h-[54px]
+      rounded-xl
+      bg-gradient-to-r
+      from-[#d9b061]
+      via-[#e4c06d]
+      to-[#b8862e]
+      text-black
+      font-semibold
+      tracking-wide
+      shadow-[0_10px_35px_rgba(217,176,97,0.45)]
+      hover:scale-[1.02]
+      transition-all
+    "
+  >
+    ✨ Post Property Free
+  </Link>
+
+  <Link
+    href="/auth"
+    className="
+      flex
+      items-center
+      justify-center
+      h-[48px]
+      rounded-xl
+      border
+      border-white/10
+      text-white
+      hover:bg-white/5
+      hover:text-[#d9b061]
+      transition
+    "
+  >
+    Login
+  </Link>
+
+  <Link
+    href="/signup"
+    className="
+      flex
+      items-center
+      justify-center
+      h-[48px]
+      rounded-xl
+      bg-white
+      text-black
+      font-semibold
+      hover:scale-[1.02]
+      transition
+    "
+  >
+    Create Account
+  </Link>
+
+  <Link
+    href="/contact"
+    className="
+      flex
+      items-center
+      justify-center
+      h-[48px]
+      rounded-xl
+      border
+      border-white/10
+      text-white
+      hover:bg-white/5
+      hover:text-[#d9b061]
+      transition
+    "
+  >
+      Contact Us
+  </Link>
+
+</div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+
+{/* MOBILE MENU BUTTON - KEEP ORIGINAL BEHAVIOUR */}
+<button
   onClick={() =>
     setMobileMenuOpen(
       !mobileMenuOpen
     )
   }
   className="
+    xl:hidden
     w-[46px]
     h-[46px]
     rounded-full
@@ -417,6 +607,81 @@ const [mobileDropdown, setMobileDropdown] =
   Private Consultation
 </button>
         </div>
+        <div className="space-y-3 mb-8">
+
+  <Link
+    href="/post-property"
+    className="
+      flex
+      items-center
+      justify-center
+      h-[56px]
+      rounded-xl
+      bg-gradient-to-r
+      from-[#d9b061]
+      via-[#e6c06d]
+      to-[#b8862e]
+      text-black
+      font-semibold
+      shadow-[0_10px_30px_rgba(217,176,97,.45)]
+    "
+  >
+    ✨ Post Property Free
+  </Link>
+
+  <div className="grid grid-cols-2 gap-3">
+
+    <Link
+      href="/auth"
+      className="
+        h-[48px]
+        rounded-xl
+        border
+        border-white/10
+        flex
+        items-center
+        justify-center
+        text-white
+      "
+    >
+      Login
+    </Link>
+
+    <Link
+      href="/auth"
+      className="
+        h-[48px]
+        rounded-xl
+        bg-white
+        text-black
+        font-semibold
+        flex
+        items-center
+        justify-center
+      "
+    >
+      Sign Up
+    </Link>
+
+  </div>
+
+  <Link
+    href="/contact"
+    className="
+      h-[48px]
+      rounded-xl
+      border
+      border-white/10
+      flex
+      items-center
+      justify-center
+      text-white
+    "
+  >
+      Contact Us
+  </Link>
+
+</div>
       </motion.div>
     </>
   )}
