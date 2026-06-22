@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/home/Navbar";
 import {
   Eye,
   EyeOff,
-  ChevronDown,
   Quote,
 } from "lucide-react";
 
@@ -18,37 +18,90 @@ import {
 const testimonials = [
   {
     quote:
-      "Property Bouquet secured us an off-market luxury residence before launch.",
-    name: "Rajiv Malhotra",
-    role: "Private Investor • Gurgaon",
+      "Property Bouquet helped us secure a luxury residence on Golf Course Road before the public launch. The entire experience felt truly exclusive.",
+    name: "Rahul Bansal",
+    role: "Business Owner • Golf Course Road, Gurugram",
   },
   {
     quote:
-      "Their advisory team helped us invest in the right luxury project with complete confidence.",
-    name: "Neha Kapoor",
-    role: "NRI Investor • Dubai",
+      "Their investment advisory gave us early access to a premium project in DLF Phase 5. It turned out to be one of our best real estate decisions.",
+    name: "Priya Arora",
+    role: "Entrepreneur • DLF Phase 5, Gurugram",
   },
   {
     quote:
-      "The private inventory access gave us opportunities unavailable anywhere else.",
-    name: "Amit Singhania",
-    role: "Family Office • Delhi",
+      "We were looking for long-term appreciation in New Gurgaon, and Property Bouquet identified the perfect investment opportunity before prices moved.",
+    name: "Karan Mehta",
+    role: "Investor • New Gurgaon (Sector 92)",
+  },
+  {
+    quote:
+      "Finding premium plotted developments around Farukhnagar was effortless with their guidance. Their market knowledge is exceptional.",
+    name: "Nitin Yadav",
+    role: "Land Investor • Farukhnagar",
+  },
+  {
+    quote:
+      "Their private inventory on Sohna Road offered options that weren't available through traditional channels. Highly recommended.",
+    name: "Megha Khanna",
+    role: "Homebuyer • Sohna Road, Gurugram",
+  },
+  {
+    quote:
+      "Property Bouquet introduced us to an outstanding investment opportunity along Dwarka Expressway well before the market caught on.",
+    name: "Vikram Sethi",
+    role: "NRI Investor • Sector 113, Dwarka Expressway",
   },
 ];
 
 export default function LuxuryAuthPage() {
-  const [activeTab, setActiveTab] =
-    useState("login");
 
   const [showPassword, setShowPassword] =
     useState(false);
 
-  const [
-    showConfirmPassword,
-    setShowConfirmPassword,
-  ] = useState(false);
-
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  const router = useRouter();
+
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
+
+const handleLogin = async () => {
+  try {
+    setLoading(true);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      localStorage.setItem("token", data.token);
+
+      router.push("/admin");
+    } else {
+      alert(data.message || "Login failed");
+    }
+  } catch (err) {
+    alert("Server error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -549,117 +602,41 @@ lg:p-7
           >
 
             {/* TABS */}
-            <div
-              className="
-                bg-white/[0.03]
-                rounded-xl
-                p-1
-                flex
-                mb-8
-              "
-            >
-              <button
-                onClick={() =>
-                  setActiveTab("login")
-                }
-                className={`
-flex-1
-
-h-[48px]
-
-rounded-full
-
-text-[13px]
-
-font-semibold
-
-tracking-[0.15em]
-
-uppercase
-
-transition-all
-
-duration-300
-
-${
-activeTab==="login"
-
-?
-
-"bg-[#D9B061] text-black shadow-[0_10px_35px_rgba(217,176,97,0.4)]"
-
-:
-
-"text-white/70 hover:text-white"
-
-}
-`}
-              >
-                Sign In
-              </button>
-
-              <button
-                onClick={() =>
-                  setActiveTab("signup")
-                }
-                className={`
-flex-1
-
-h-[48px]
-
-rounded-full
-
-text-[13px]
-
-font-semibold
-
-tracking-[0.15em]
-
-uppercase
-
-transition-all
-
-duration-300
-
-${
-activeTab==="signup"
-
-?
-
-"bg-[#D9B061] text-black shadow-[0_10px_35px_rgba(217,176,97,0.4)]"
-
-:
-
-"text-white/70 hover:text-white"
-
-}
-`}
-              >
-                Create Account
-              </button>
-            </div>
+<div
+  className="
+    bg-white/[0.03]
+    rounded-xl
+    p-1
+    flex
+    mb-8
+  "
+>
+  <button
+    className={`
+      flex-1
+      h-[48px]
+      rounded-full
+      text-[13px]
+      font-semibold
+      tracking-[0.15em]
+      uppercase
+      transition-all
+      duration-300
+      bg-[#D9B061]
+      text-black
+      shadow-[0_10px_35px_rgba(217,176,97,0.4)]
+    `}
+  >
+    Sign In
+  </button>
+</div>
 
             {/* FORM AREA */}
-            <AnimatePresence mode="wait">
-              {activeTab === "login" ? (
-                <motion.div
-                  key="login"
-                  initial={{
-                    opacity: 0,
-                    y: 20,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -20,
-                  }}
-                  transition={{
-                    duration: 0.25,
-                  }}
-                >
+            <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.25 }}
+>
                   <h3
                     className="
                       text-white
@@ -688,7 +665,13 @@ text-[13px]
                     journey.
                   </p>
 
-                  <form className="space-y-7">
+                 <form
+  className="space-y-7"
+  onSubmit={(e) => {
+    e.preventDefault();
+    handleLogin();
+  }}
+>
 
                     <div className="relative mb-10">
 
@@ -795,39 +778,25 @@ Email Address
 <input
 type="email"
 placeholder="Enter your email"
+value={email}
+onChange={(e) => setEmail(e.target.value)}
 className="
 w-full
-
 h-[54px]
-
 rounded-xl
-
 border
-
 border-white/10
-
 bg-white/[0.03]
-
 px-5
-
 text-[13px]
-
 text-white
-
 placeholder:text-white/25
-
 outline-none
-
 transition-all
-
 duration-300
-
 focus:border-[#D9B061]
-
 focus:bg-white/[0.05]
-
 focus:ring-4
-
 focus:ring-[#D9B061]/10
 "
 />
@@ -853,41 +822,26 @@ Password
 <input
 type={showPassword ? "text" : "password"}
 placeholder="••••••••••••"
+value={password}
+onChange={(e) => setPassword(e.target.value)}
 className="
 w-full
-
 h-[54px]
-
 rounded-xl
-
 border
-
 border-white/10
-
 bg-white/[0.03]
-
 px-5
-
 pr-16
-
 text-[13px]
-
 text-white
-
 placeholder:text-white/25
-
 outline-none
-
 transition-all
-
 duration-300
-
 focus:border-[#D9B061]
-
 focus:bg-white/[0.05]
-
 focus:ring-4
-
 focus:ring-[#D9B061]/10
 "
 />
@@ -979,37 +933,27 @@ Forgot Password?
 </div>
 
                     {/* LOGIN BUTTON */}
-                    <button
+<button
+type="submit"
+onClick={handleLogin}
+disabled={loading}
 className="
 group
-
 relative
-
 overflow-hidden
-
 w-full
-
 h-[48px]
-
 rounded-xl
-
 bg-[#D9B061]
-
 text-black
-
 font-semibold
-
 tracking-[0.12em]
-
 uppercase
-
 transition-all
-
 duration-500
-
 hover:scale-[1.02]
-
 hover:shadow-[0_20px_50px_rgba(217,176,97,0.35)]
+disabled:opacity-60
 "
 >
 
@@ -1038,7 +982,7 @@ group-hover:translate-x-[120%]
 />
 
 <span className="relative z-10">
-Access Private Portal
+  {loading ? "Signing In..." : "Access Private Portal"}
 </span>
 
 </button>
@@ -1099,574 +1043,6 @@ Your information is securely protected and encrypted.
 </div>
                   </form>
                 </motion.div>
-              ) : (
-                <motion.div
-                  key="signup"
-                  initial={{
-                    opacity: 0,
-                    y: 20,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -20,
-                  }}
-                  transition={{
-                    duration: 0.25,
-                  }}
-                >
-                  <h3
-className="
-text-white
-text-[40px]
-font-light
-tracking-[-0.03em]
-leading-none
-"
->
-Become a Private Member
-</h3>
-
-<p
-className="
-mt-4
-mb-10
-text-white/55
-leading-8
-text-[13px]
-"
->
-Join India's most exclusive luxury real estate network and unlock privileged investment opportunities.
-</p>
-
-                  <form className="space-y-7">
-
-                    {/* NAME */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Full Name
-</label>
-
-<input
-placeholder="Enter your full name"
-className="
-w-full
-h-[54px]
-rounded-xl
-border
-border-white/10
-bg-white/[0.03]
-px-5
-text-white
-placeholder:text-white/25
-outline-none
-transition-all
-duration-300
-focus:border-[#D9B061]
-focus:ring-4
-focus:ring-[#D9B061]/10
-"
-/>
-
-</div>
-
-                    {/* EMAIL */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Email Address
-</label>
-
-<input
-placeholder="Enter your email"
-className="
-w-full
-h-[54px]
-rounded-xl
-border
-border-white/10
-bg-white/[0.03]
-px-5
-text-white
-placeholder:text-white/25
-outline-none
-transition-all
-duration-300
-focus:border-[#D9B061]
-focus:ring-4
-focus:ring-[#D9B061]/10
-"
-/>
-
-</div>
-
-                    {/* PHONE */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Mobile Number
-</label>
-
-<input
-placeholder="+91 98765 43210"
-className="
-w-full
-h-[54px]
-rounded-xl
-border
-border-white/10
-bg-white/[0.03]
-px-5
-text-white
-placeholder:text-white/25
-outline-none
-transition-all
-duration-300
-focus:border-[#D9B061]
-focus:ring-4
-focus:ring-[#D9B061]/10
-"
-/>
-
-</div>
-
-                    {/* INVESTOR TYPE */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Investor Type
-</label>
-
-<div className="relative">
-
-<select
-className="
-w-full
-h-[54px]
-rounded-xl
-border
-border-white/10
-bg-white/[0.03]
-px-5
-text-white
-appearance-none
-outline-none
-transition-all
-duration-300
-focus:border-[#D9B061]
-focus:ring-4
-focus:ring-[#D9B061]/10
-"
->
-
-<option className="bg-black">
-Individual Investor
-</option>
-
-<option className="bg-black">
-NRI
-</option>
-
-<option className="bg-black">
-Family Office
-</option>
-
-<option className="bg-black">
-Channel Partner
-</option>
-
-<option className="bg-black">
-Developer
-</option>
-
-</select>
-
-<ChevronDown
-size={18}
-className="
-absolute
-right-6
-top-1/2
--translate-y-1/2
-text-white/40
-pointer-events-none
-"
-/>
-
-</div>
-
-</div>
-
-                    {/* PASSWORD */}
-                    {/* PASSWORD */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Password
-</label>
-
-<div className="relative">
-
-<input
-type={showPassword ? "text" : "password"}
-placeholder="••••••••••••"
-className="
-w-full
-
-h-[54px]
-
-rounded-xl
-
-border
-
-border-white/10
-
-bg-white/[0.03]
-
-px-5
-
-pr-16
-
-text-[13px]
-
-text-white
-
-placeholder:text-white/25
-
-outline-none
-
-transition-all
-
-duration-300
-
-focus:border-[#D9B061]
-
-focus:bg-white/[0.05]
-
-focus:ring-4
-
-focus:ring-[#D9B061]/10
-"
-/>
-
-<button
-type="button"
-onClick={() =>
-setShowPassword(!showPassword)
-}
-className="
-absolute
-
-right-6
-
-top-1/2
-
--translate-y-1/2
-
-text-white/40
-
-transition
-
-hover:text-[#D9B061]
-"
->
-{showPassword ? (
-<EyeOff size={20} />
-) : (
-<Eye size={20} />
-)}
-</button>
-
-</div>
-
-</div>
-
-
-
-                    {/* CONFIRM PASSWORD */}
-                    <div className="space-y-3">
-
-<label
-className="
-text-[12px]
-uppercase
-tracking-[0.28em]
-text-white/45
-"
->
-Confirm Password
-</label>
-
-<div className="relative">
-
-<input
-type={showPassword ? "text" : "password"}
-placeholder="••••••••••••"
-className="
-w-full
-
-h-[54px]
-
-rounded-xl
-
-border
-
-border-white/10
-
-bg-white/[0.03]
-
-px-5
-
-pr-16
-
-text-[13px]
-
-text-white
-
-placeholder:text-white/25
-
-outline-none
-
-transition-all
-
-duration-300
-
-focus:border-[#D9B061]
-
-focus:bg-white/[0.05]
-
-focus:ring-4
-
-focus:ring-[#D9B061]/10
-"
-/>
-
-<button
-type="button"
-onClick={() =>
-setShowPassword(!showPassword)
-}
-className="
-absolute
-
-right-6
-
-top-1/2
-
--translate-y-1/2
-
-text-white/40
-
-transition
-
-hover:text-[#D9B061]
-"
->
-{showPassword ? (
-<EyeOff size={20} />
-) : (
-<Eye size={20} />
-)}
-</button>
-
-</div>
-
-</div>
-
-                    {/* MEMBER BENEFITS */}
-                    <div
-className="
-rounded-3xl
-border
-border-[#D9B061]/15
-bg-[#D9B061]/5
-p-6
-mt-4
-"
->
-
-<h4
-className="
-text-[#D9B061]
-text-lg
-font-medium
-mb-5
-"
->
-Membership Includes
-</h4>
-
-<div className="space-y-4">
-
-{[
-"Early Access to Luxury Launches",
-"Exclusive Off-Market Properties",
-"Private Investment Reports",
-"Dedicated Relationship Manager",
-].map((item)=>(
-<div
-key={item}
-className="flex items-center gap-4"
->
-
-<div
-className="
-w-8
-h-8
-rounded-full
-bg-[#D9B061]/10
-border
-border-[#D9B061]/20
-flex
-items-center
-justify-center
-text-[#D9B061]
-"
->
-✓
-</div>
-
-<span
-className="
-text-white/80
-text-[13px]
-"
->
-{item}
-</span>
-
-</div>
-))}
-
-</div>
-
-</div>
-
-                    {/* TERMS */}
-                    <label
-className="
-flex
-items-start
-gap-4
-text-white/60
-text-sm
-leading-7
-"
->
-
-<input
-type="checkbox"
-className="
-mt-1
-accent-[#D9B061]
-"
-/>
-
-<span>
-I agree to the Terms & Conditions,
-Privacy Policy and consent to receive
-exclusive property updates from Property Bouquet.
-</span>
-
-</label>
-
-                    {/* SIGNUP BUTTON */}
-                    <button
-className="
-group
-relative
-overflow-hidden
-
-w-full
-h-[48px]
-
-rounded-xl
-
-bg-[#D9B061]
-
-text-black
-
-font-semibold
-
-tracking-[0.12em]
-
-uppercase
-
-transition-all
-
-duration-500
-
-hover:scale-[1.02]
-
-hover:shadow-[0_20px_50px_rgba(217,176,97,0.35)]
-"
->
-
-<div
-className="
-absolute
-inset-0
-translate-x-[-120%]
-bg-gradient-to-r
-from-transparent
-via-white/30
-to-transparent
-transition-transform
-duration-1000
-group-hover:translate-x-[120%]
-"
-/>
-
-<span className="relative z-10">
-Join Private Network
-</span>
-
-</button>
-
-                  </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <div
 className="
 mt-12

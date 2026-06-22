@@ -276,29 +276,6 @@ const [mobileDropdown, setMobileDropdown] =
     </p>
   </div>
 
-  {/* Post Property */}
-  <Link
-    href="/post-property"
-    className="
-      flex
-      items-center
-      justify-center
-      h-[54px]
-      rounded-xl
-      bg-gradient-to-r
-      from-[#d9b061]
-      via-[#e4c06d]
-      to-[#b8862e]
-      text-black
-      font-semibold
-      tracking-wide
-      shadow-[0_10px_35px_rgba(217,176,97,0.45)]
-      hover:scale-[1.02]
-      transition-all
-    "
-  >
-    ✨ Post Property Free
-  </Link>
 
   <Link
     href="/auth"
@@ -320,7 +297,7 @@ const [mobileDropdown, setMobileDropdown] =
   </Link>
 
   <Link
-    href="/signup"
+    href="/auth"
     className="
       flex
       items-center
@@ -608,26 +585,6 @@ const [mobileDropdown, setMobileDropdown] =
 </button>
         </div>
         <div className="space-y-3 mb-8">
-
-  <Link
-    href="/post-property"
-    className="
-      flex
-      items-center
-      justify-center
-      h-[56px]
-      rounded-xl
-      bg-gradient-to-r
-      from-[#d9b061]
-      via-[#e6c06d]
-      to-[#b8862e]
-      text-black
-      font-semibold
-      shadow-[0_10px_30px_rgba(217,176,97,.45)]
-    "
-  >
-    ✨ Post Property Free
-  </Link>
 
   <div className="grid grid-cols-2 gap-3">
 
