@@ -9,7 +9,6 @@ import {
   Building2,
   SlidersHorizontal,
   MapPin,
-  Target,
   ChevronDown,
 } from "lucide-react";
 
@@ -41,13 +40,6 @@ const budgetRanges = [
 ];
 
 
-const goals = [
-  "Investment",
-  "End Use",
-  "Rental Yield",
-  "Luxury Living",
-];
-
 export default function SearchPanel() {
     const [locations, setLocations] = useState([]);
 const [developers, setDevelopers] = useState([]);
@@ -67,7 +59,6 @@ const [showDeveloperModal, setShowDeveloperModal] =
   budgetLabel: "",
   location: "",
   developer: "",
-  goal: "",
 });
   const router = useRouter();
 
@@ -439,7 +430,7 @@ const developerOptions =
     backdrop-blur-xl
     grid
     grid-cols-1
-    lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_150px]
+    lg:grid-cols-[1fr_1fr_1fr_1fr_170px]
   "
 >
           {/* PROPERTY TYPE */}
@@ -516,19 +507,6 @@ const developerOptions =
 />
           </div>
 
-          {/* GOAL */}
-          <div className="lg:border-r border-white/10 hover:bg-white/[0.02] transition-all duration-300">
-            <LuxuryDropdown
-              icon={Target}
-              label="INVESTMENT GOAL"
-              placeholder="Select Goal"
-              value={filters.goal}
-              options={goals}
-              onChange={(value) =>
-                handleChange("goal", value)
-              }
-            />
-          </div>
 
           {/* SEARCH BUTTON */}
           <motion.button

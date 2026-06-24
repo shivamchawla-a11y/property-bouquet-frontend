@@ -718,27 +718,81 @@ selectedAmenities.length
 
       <div className="flex items-center justify-between">
 
-        <div>
-          <p className="text-xs text-gray-500">
-            Minimum
-          </p>
+        <div className="grid grid-cols-2 gap-3">
 
-          <p className="font-semibold text-[#0f3b2e] text-lg mt-1">
-  ₹{formatPrice(minBudget * 100000)}
-</p>
-        </div>
+  <div>
+    <label className="text-xs text-gray-500 block mb-2">
+      Minimum Budget
+    </label>
 
-        <div className="text-right">
-          <p className="text-xs text-gray-500">
-            Maximum
-          </p>
+    <input
+      type="number"
+      min={50}
+      max={1000}
+      step={10}
+      value={minBudget}
+      onChange={(e) =>
+        setMinBudget(
+          Math.min(
+            Number(e.target.value),
+            maxBudget
+          )
+        )
+      }
+      className="
+        w-full
+        h-11
+        rounded-xl
+        border
+        border-gray-200
+        px-3
+        text-sm
+      "
+    />
 
-          <p className="font-semibold text-[#0f3b2e] text-lg mt-1">
-  {maxBudget >= 1000
-    ? "₹10 Cr+"
-    : `₹${formatPrice(maxBudget * 100000)}`}
-</p>
-        </div>
+    <p className="text-xs text-[#0f3b2e] mt-2">
+      ₹{formatPrice(minBudget * 100000)}
+    </p>
+  </div>
+
+  <div>
+    <label className="text-xs text-gray-500 block mb-2">
+      Maximum Budget
+    </label>
+
+    <input
+      type="number"
+      min={50}
+      max={1000}
+      step={10}
+      value={maxBudget}
+      onChange={(e) =>
+        setMaxBudget(
+          Math.max(
+            Number(e.target.value),
+            minBudget
+          )
+        )
+      }
+      className="
+        w-full
+        h-11
+        rounded-xl
+        border
+        border-gray-200
+        px-3
+        text-sm
+      "
+    />
+
+    <p className="text-xs text-[#0f3b2e] mt-2">
+      {maxBudget >= 1000
+        ? "₹10 Cr+"
+        : `₹${formatPrice(maxBudget * 100000)}`}
+    </p>
+  </div>
+
+</div>
 
       </div>
 
