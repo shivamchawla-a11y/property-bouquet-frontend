@@ -30,11 +30,12 @@ export default function PropertyFilters({
   const [openSections, setOpenSections] = useState({
   budget: true,
   bedrooms: true,
-  propertyType: true,
-  status: true,
   locations: true,
-  developers: true,
-  amenities: true,
+
+  propertyType: false,
+  status: false,
+  developers: false,
+  amenities: false,
 });
   const router = useRouter();
 
@@ -834,135 +835,7 @@ selectedAmenities.length
 )}
           </div>
 
-          {/* PROPERTY TYPE */}
-          <div className="border-t border-gray-100 pt-8 mt-8">
-
-            <button
-              onClick={() => toggleSection("propertyType")}
-              className="w-full flex items-center justify-between mb-5"
-            >
-              <h4 className="font-bold text-xl text-gray-900">
-                Property Type
-              </h4>
-
-              {openSections.propertyType ? (
-                <ChevronUp size={20} className="text-gray-900" />
-              ) : (
-                <ChevronDown size={20} className="text-gray-900" />
-              )}
-            </button>
-
-            {openSections.propertyType && (
-  <div className="space-y-1">
-
-    {categories.map((category) => (
-      <label
-        key={category}
-        className="
-          flex
-          items-center
-          gap-3
-          px-3
-          py-2.5
-          rounded-xl
-          hover:bg-[#faf7f2]
-          cursor-pointer
-          transition-all
-        "
-      >
-        <input
-          type="radio"
-          checked={
-            selectedPropertyType ===
-            category
-          }
-          onChange={() => {
-            const params =
-              new URLSearchParams();
-
-            params.set(
-              "propertyType",
-              category
-            );
-
-            if (selectedLocation) {
-              params.set(
-                "location",
-                selectedLocation
-              );
-            }
-
-            if (selectedDeveloper) {
-              params.set(
-                "developer",
-                selectedDeveloper
-              );
-            }
-
-            if (selectedBudget) {
-              params.set(
-                "budget",
-                selectedBudget
-              );
-            }
-
-            if (selectedAmenity) {
-              params.set(
-                "amenity",
-                selectedAmenity
-              );
-            }
-
-            router.push(
-              `/properties?${params.toString()}`
-            );
-          }}
-          className="
-            h-4
-            w-4
-            accent-[#c89d58]
-          "
-        />
-
-        <span className="text-sm font-medium capitalize">
-          {category}
-        </span>
-      </label>
-    ))}
-
-  </div>
-)}
-          </div>
-
-          {/* STATUS */}
-          <div className="border-t border-gray-100 pt-8 mt-8">
-
-            <button
-              onClick={() => toggleSection("status")}
-              className="w-full flex items-center justify-between mb-5"
-            >
-              <h4 className="font-bold text-xl text-gray-900">
-                Project Status
-              </h4>
-
-              {openSections.status ? (
-                <ChevronUp size={20} className="text-gray-900" />
-              ) : (
-                <ChevronDown size={20} className="text-gray-900" />
-              )}
-            </button>
-
-            {openSections.status && (
-              <div className="flex flex-wrap gap-3">
-                <Pill label="New Launch" />
-                <Pill label="Under Construction" />
-                <Pill label="Ready To Move" />
-              </div>
-            )}
-          </div>
-
-        
-{/* LOCATIONS */}
+          {/* LOCATIONS */}
 
 <div className="border-t border-gray-100 pt-8 mt-8">
 
@@ -1112,8 +985,6 @@ selectedAmenities.length
   )}
 </div>
 
-          {/* DEVELOPERS */}
-
 {/* DEVELOPERS */}
 <div className="border-t border-gray-100 pt-8 mt-8">
 
@@ -1251,6 +1122,133 @@ selectedAmenities.length
   </div>
 )}
 </div>
+
+          {/* PROPERTY TYPE */}
+          <div className="border-t border-gray-100 pt-8 mt-8">
+
+            <button
+              onClick={() => toggleSection("propertyType")}
+              className="w-full flex items-center justify-between mb-5"
+            >
+              <h4 className="font-bold text-xl text-gray-900">
+                Property Type
+              </h4>
+
+              {openSections.propertyType ? (
+                <ChevronUp size={20} className="text-gray-900" />
+              ) : (
+                <ChevronDown size={20} className="text-gray-900" />
+              )}
+            </button>
+
+            {openSections.propertyType && (
+  <div className="space-y-1">
+
+    {categories.map((category) => (
+      <label
+        key={category}
+        className="
+          flex
+          items-center
+          gap-3
+          px-3
+          py-2.5
+          rounded-xl
+          hover:bg-[#faf7f2]
+          cursor-pointer
+          transition-all
+        "
+      >
+        <input
+          type="radio"
+          checked={
+            selectedPropertyType ===
+            category
+          }
+          onChange={() => {
+            const params =
+              new URLSearchParams();
+
+            params.set(
+              "propertyType",
+              category
+            );
+
+            if (selectedLocation) {
+              params.set(
+                "location",
+                selectedLocation
+              );
+            }
+
+            if (selectedDeveloper) {
+              params.set(
+                "developer",
+                selectedDeveloper
+              );
+            }
+
+            if (selectedBudget) {
+              params.set(
+                "budget",
+                selectedBudget
+              );
+            }
+
+            if (selectedAmenity) {
+              params.set(
+                "amenity",
+                selectedAmenity
+              );
+            }
+
+            router.push(
+              `/properties?${params.toString()}`
+            );
+          }}
+          className="
+            h-4
+            w-4
+            accent-[#c89d58]
+          "
+        />
+
+        <span className="text-sm font-medium capitalize">
+          {category}
+        </span>
+      </label>
+    ))}
+
+  </div>
+)}
+          </div>
+
+          {/* STATUS */}
+          <div className="border-t border-gray-100 pt-8 mt-8">
+
+            <button
+              onClick={() => toggleSection("status")}
+              className="w-full flex items-center justify-between mb-5"
+            >
+              <h4 className="font-bold text-xl text-gray-900">
+                Project Status
+              </h4>
+
+              {openSections.status ? (
+                <ChevronUp size={20} className="text-gray-900" />
+              ) : (
+                <ChevronDown size={20} className="text-gray-900" />
+              )}
+            </button>
+
+            {openSections.status && (
+              <div className="flex flex-wrap gap-3">
+                <Pill label="New Launch" />
+                <Pill label="Under Construction" />
+                <Pill label="Ready To Move" />
+              </div>
+            )}
+          </div>
 
           {/* AMENITIES */}
 <div className="border-t border-gray-100 pt-8 mt-8">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 import {
   Users,
   Phone,
@@ -32,6 +33,9 @@ export default function LeadsPage() {
 
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [noteValue, setNoteValue] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -146,6 +150,32 @@ export default function LeadsPage() {
 );
   });
 
+  const totalPages = Math.ceil(
+  filteredLeads.length / itemsPerPage
+);
+
+const startIndex =
+  (currentPage - 1) * itemsPerPage;
+
+const paginatedLeads =
+  filteredLeads.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [
+  search,
+  propertyFilter,
+  statusFilter,
+  leadTypeFilter,
+  agentFilter,
+  startDate,
+  endDate,
+  tab,
+]);
+
   const statusStyle = (s) => {
     if (s === "New")
       return "bg-blue-100 text-blue-700 border border-blue-200";
@@ -177,6 +207,41 @@ export default function LeadsPage() {
 
     return "bg-gray-100 text-gray-700 border border-gray-200";
   };
+
+  const exportToExcel = () => {
+  const exportData = filteredLeads.map((lead) => ({
+    Name: lead.name,
+    Phone: lead.phone,
+    Property: lead.property,
+    Source: lead.source || "Website",
+    Status: lead.status,
+    Priority: lead.priority,
+    Agent: lead.assignedTo?.name || "Unassigned",
+    Notes: getLatestNote(lead.notes),
+    CreatedAt: new Date(
+      lead.createdAt
+    ).toLocaleString(),
+  }));
+
+  const worksheet =
+    XLSX.utils.json_to_sheet(exportData);
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Leads"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `Leads_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`
+  );
+};
 
   if (loading) {
     return (
@@ -365,7 +430,44 @@ export default function LeadsPage() {
 
       {/* TABLE */}
 
-      <div className="bg-white rounded-3xl shadow-md overflow-x-auto">
+      {/* TABLE */}
+
+<div className="bg-white rounded-3xl shadow-md">
+
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-5 border-b">
+
+    <button
+      onClick={exportToExcel}
+      className="bg-[#0b5d3b] text-white px-5 py-3 rounded-2xl font-semibold hover:opacity-90"
+    >
+      Export Excel
+    </button>
+
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-gray-600">
+        Items per page
+      </span>
+
+      <select
+        value={itemsPerPage}
+        onChange={(e) => {
+          setItemsPerPage(
+            Number(e.target.value)
+          );
+          setCurrentPage(1);
+        }}
+        className="border border-gray-300 px-3 py-2 rounded-xl"
+      >
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div className="overflow-x-auto">
 
         <table className="w-full min-w-[1100px]">
 
@@ -398,7 +500,7 @@ export default function LeadsPage() {
           <tbody>
 
             {filteredLeads.length > 0 ? (
-              filteredLeads.map((l) => (
+              paginatedLeads.map((l) => (
                 <tr
                   key={l._id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition"
@@ -618,6 +720,63 @@ export default function LeadsPage() {
           </tbody>
 
         </table>
+<div className="flex flex-col md:flex-row items-center justify-between gap-4 p-5 border-t">
+
+  <div className="text-sm text-gray-600">
+    Showing {startIndex + 1} -
+    {Math.min(
+      startIndex + itemsPerPage,
+      filteredLeads.length
+    )} of {filteredLeads.length} leads
+  </div>
+
+  <div className="flex items-center gap-2">
+
+    <button
+      disabled={currentPage === 1}
+      onClick={() =>
+        setCurrentPage((p) => p - 1)
+      }
+      className="px-4 py-2 border rounded-xl disabled:opacity-40"
+    >
+      Previous
+    </button>
+
+    {Array.from(
+      { length: totalPages },
+      (_, i) => (
+        <button
+          key={i}
+          onClick={() =>
+            setCurrentPage(i + 1)
+          }
+          className={`w-10 h-10 rounded-xl ${
+            currentPage === i + 1
+              ? "bg-[#0b5d3b] text-white"
+              : "border"
+          }`}
+        >
+          {i + 1}
+        </button>
+      )
+    )}
+
+    <button
+      disabled={
+        currentPage === totalPages
+      }
+      onClick={() =>
+        setCurrentPage((p) => p + 1)
+      }
+      className="px-4 py-2 border rounded-xl disabled:opacity-40"
+    >
+      Next
+    </button>
+
+  </div>
+
+</div>
+        </div>
 
       </div>
 
