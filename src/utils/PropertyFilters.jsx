@@ -429,7 +429,7 @@ selectedDeveloper ||
 selectedBudget ||
 selectedPropertyType ||
 selectedBhk ||
-selectedAmenities.length
+selectedAmenities.length > 0
 ) && (
   <div className="mb-8">
 

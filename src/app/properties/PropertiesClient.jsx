@@ -14,6 +14,7 @@ import {
   MapPin,
   ArrowRight,
   Home,
+  Heart,
 } from "lucide-react";
 
 export default function PropertiesClient() {
@@ -349,13 +350,13 @@ if (bhk) {
   "
 >
         <div
-          className="
-            grid
-            lg:grid-cols-[400px_1fr]
-            gap-12
-            items-start
-          "
-        >
+  className="
+    grid
+    lg:grid-cols-[300px_1fr]
+    gap-8
+    items-start
+  "
+>
           {/* FILTERS */}
 
           <PropertyFilters
@@ -413,35 +414,75 @@ if (bhk) {
                 </p>
               </div>
 
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  setSortBy(
-                    e.target.value
-                  )
-                }
-                className="
-                  h-14
-                  px-5
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  outline-none
-                  bg-white
-                "
-              >
-                <option value="newest">
-                  Newest First
-                </option>
+              <div className="flex items-center gap-4">
+  <span
+    className="
+      text-sm
+      font-semibold
+      text-gray-500
+      whitespace-nowrap
+    "
+  >
+    Sort By
+  </span>
 
-                <option value="price-low-high">
-                  Price Low To High
-                </option>
+  <div className="relative">
+    <select
+      value={sortBy}
+      onChange={(e) =>
+        setSortBy(e.target.value)
+      }
+      className="
+        h-14
+        min-w-[240px]
+        pl-5
+        pr-12
+        rounded-2xl
+        border
+        border-[#d4af37]/25
+        bg-white
+        text-[#081c15]
+        font-semibold
+        shadow-[0_4px_20px_rgba(0,0,0,0.05)]
+        outline-none
+        appearance-none
+        cursor-pointer
+        transition-all
+        duration-300
+        hover:border-[#D4AF37]/50
+        focus:border-[#D4AF37]
+        focus:ring-4
+        focus:ring-[#D4AF37]/10
+      "
+    >
+      <option value="newest">
+        Newest First
+      </option>
 
-                <option value="price-high-low">
-                  Price High To Low
-                </option>
-              </select>
+      <option value="price-low-high">
+        Price: Low to High
+      </option>
+
+      <option value="price-high-low">
+        Price: High to Low
+      </option>
+    </select>
+
+    <div
+      className="
+        absolute
+        right-5
+        top-1/2
+        -translate-y-1/2
+        pointer-events-none
+        text-[#D4AF37]
+        text-sm
+      "
+    >
+      ▼
+    </div>
+  </div>
+</div>
             </div>
 
             {/* GRID */}
@@ -458,125 +499,312 @@ if (bhk) {
               >
                 {filteredProperties.map(
                   (property) => (
-                    <div
-                      key={
-                        property._id
-                      }
-                      className="
-                        group
-                        relative
-                        bg-white
-                        rounded-[32px]
-                        overflow-hidden
-                        border
-                        border-gray-100
-                        shadow-lg
-                        hover:shadow-2xl
-                        transition-all
-                        duration-500
-                      "
-                    >
-                      <div className="relative h-[320px] overflow-hidden">
+                   <div
+  key={property._id}
+  className="
+    group
+    relative
+    h-[420px]
+    overflow-hidden
+    rounded-[24px]
+    border
+    border-[#D4AF37]/25
+    bg-white
+    transition-all
+    duration-500
+    hover:-translate-y-1
+    hover:shadow-[0_18px_40px_rgba(0,0,0,0.12)]
+  "
+>
+  {/* IMAGE */}
 
-                        <img
-                          src={
-                            property
-                              ?.media
-                              ?.heroImageUrl ||
-                            "/placeholder.jpg"
-                          }
-                          alt={
-                            property
-                              ?.coreDetails
-                              ?.title
-                          }
-                          className="
-                            w-full
-                            h-full
-                            object-cover
-                            group-hover:scale-110
-                            transition
-                            duration-700
-                          "
-                        />
+<img
+src={
+property?.media?.heroImageUrl ||
+"/placeholder.jpg"
+}
+alt={property?.coreDetails?.title}
+className="
+absolute
+inset-0
+w-full
+h-full
+object-cover
+transition-transform
+duration-700
+group-hover:scale-105
+"
+/>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+{/* OVERLAY */}
 
-                        <div
-                          className="
-                            absolute
-                            top-5
-                            right-5
-                            bg-[#081c15]
-                            text-white
-                            px-5
-                            py-2
-                            rounded-full
-                            text-sm
-                            font-bold
-                          "
-                        >
-                          ₹{" "}
-                          {formatPrice(
-                            property
-                              ?.coreDetails
-                              ?.startingPrice
-                          )}
-                        </div>
+  <div
+    className="
+      absolute
+      inset-0
+      bg-gradient-to-t
+      from-black/95
+      via-black/35
+      to-transparent
+    "
+  />
 
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+{/* TOP BADGES */}
 
-                          <h3 className="text-2xl font-black">
-                            {
-                              property
-                                ?.coreDetails
-                                ?.title
-                            }
-                          </h3>
+  <div
+    className="
+      absolute
+      top-4
+      left-4
+      right-4
+      z-20
+      flex
+      items-center
+      justify-between
+    "
+  >
+    <div className="flex gap-2">
 
-                          <div className="flex items-center gap-2 text-white/80 mt-3">
-                            <MapPin size={16} />
+  <span
+    className="
+      px-3
+      py-1.5
+      rounded-full
+      bg-black/60
+      text-white
+      text-[10px]
+      font-semibold
+      tracking-wider
+    "
+  >
+    LUXURY
+  </span>
 
-                            <span className="text-sm">
-                              {
-                                property
-                                  ?.locationData
-                                  ?.locationName
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+  {property?.propertyTag && (
+    <span
+      className="
+        px-3
+        py-1.5
+        rounded-full
+        bg-[#D4AF37]
+        text-black
+        text-[10px]
+        font-bold
+      "
+    >
+      {property.propertyTag}
+    </span>
+  )}
+</div>
 
-                      <div className="p-6">
-                        <button
-                          className="
-                            w-full
-                            h-14
-                            rounded-2xl
-                            bg-[#081c15]
-                            hover:bg-[#1b4332]
-                            text-white
-                            font-bold
-                            flex
-                            items-center
-                            justify-center
-                            gap-3
-                          "
-                        >
-                          Explore Property
+<button
+  className="
+    w-11
+    h-11
+    rounded-full
+    bg-black/45
+    backdrop-blur-xl
+    border
+    border-white/20
+    flex
+    items-center
+    justify-center
+    text-white
+    shadow-[0_8px_20px_rgba(0,0,0,0.25)]
+    transition-all
+    duration-300
+    hover:scale-110
+    hover:bg-black/60
+  "
+>
+  <Heart size={18} strokeWidth={2} />
+</button>
 
-                          <ArrowRight
-                            size={18}
-                          />
-                        </button>
-                      </div>
 
-                      <Link
-                        href={`/${property.slug}`}
-                        className="absolute inset-0 z-10"
-                      />
-                    </div>
+  </div>
+
+{/* CONTENT */}
+
+  <div
+    className="
+      absolute
+      bottom-0
+      left-0
+      right-0
+      z-20
+      p-5
+    "
+  >
+    {/* TITLE */}
+
+
+<h3
+  className="
+    text-white
+    text-[28px]
+    font-black
+    leading-[1.05]
+    mb-2
+  "
+>
+  {property?.coreDetails?.title}
+</h3>
+
+{/* LOCATION */}
+
+<div
+  className="
+    flex
+    items-center
+    gap-2
+    text-white/85
+    text-sm
+    mb-4
+  "
+>
+  <MapPin
+    size={14}
+    className="shrink-0"
+  />
+
+  <span className="truncate">
+    {property?.locationData?.locationName
+      ?.split(">")
+      ?.map((item) => item.trim())
+      ?.reverse()
+      ?.join(" • ")}
+  </span>
+</div>
+
+
+{/* PRICE */}
+
+<div
+  className="
+    inline-flex
+    flex-col
+    bg-black/70
+    backdrop-blur-xl
+    border
+    border-[#D4AF37]/30
+    rounded-[18px]
+    px-4
+    py-3
+    mb-5
+  "
+>
+  <span
+    className="
+      text-[10px]
+      uppercase
+      tracking-[2px]
+      text-white/60
+    "
+  >
+    Starting From
+  </span>
+
+  <span
+    className="
+      text-[#F5D77D]
+      text-[22px]
+      font-bold
+    "
+  >
+    ₹
+    {formatPrice(
+      property?.coreDetails?.startingPrice
+    )}
+  </span>
+</div>
+
+{/* BOTTOM ROW */}
+
+<div
+  className="
+    flex
+    items-center
+    justify-between
+    border-t
+    border-white/10
+    pt-4
+  "
+>
+  <div className="flex gap-4">
+
+    <div>
+      <p className="text-[10px] text-white/50">
+        CONFIG
+      </p>
+
+      <p className="text-xs text-white">
+        {property?.configurationSummary ||
+          property?.categoryData
+            ?.categoryName}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-[10px] text-white/50">
+        BUILDER
+      </p>
+
+      <p className="text-xs text-white">
+        {property?.coreDetails
+          ?.developerName}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-[10px] text-white/50">
+        AMENITIES
+      </p>
+
+      <p className="text-xs text-white">
+        25+
+      </p>
+    </div>
+  </div>
+
+  <Link
+    href={`/properties/${property.slug}`}
+    className="
+      w-11
+      h-11
+      rounded-full
+      bg-[#D4AF37]
+      flex
+      items-center
+      justify-center
+      transition-all
+      duration-300
+      group-hover:scale-110
+    "
+  >
+    <ArrowRight
+      size={16}
+      className="text-black"
+    />
+  </Link>
+</div>
+
+
+  </div>
+
+{/* GOLD BORDER */}
+
+  <div
+    className="
+      absolute
+      inset-0
+      rounded-[24px]
+      border
+      border-[#D4AF37]/15
+      pointer-events-none
+    "
+  />
+</div>
+
                   )
                 )}
               </div>
