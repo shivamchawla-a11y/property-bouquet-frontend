@@ -392,7 +392,7 @@ export default function InsightsPage() {
 
           <button
             onClick={fetchNews}
-            className="px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition flex items-center gap-2 text-sm font-semibold"
+            className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 transition flex items-center gap-2 text-sm font-semibold"
           >
             <RefreshCw size={16} />
             Refresh
@@ -560,6 +560,9 @@ export default function InsightsPage() {
             border
             border-gray-300
             outline-none
+            text-gray-900
+            placeholder:text-gray-400
+            bg-white
             focus:ring-2
             focus:ring-[#0f3b2e]/20
             "
@@ -581,6 +584,7 @@ export default function InsightsPage() {
             border
             border-gray-300
             bg-white
+            text-gray-900
             "
           >
             <option value="all">
@@ -616,6 +620,7 @@ export default function InsightsPage() {
             border
             border-gray-300
             bg-white
+            text-gray-900
             "
           >
             <option value="All">
@@ -663,6 +668,7 @@ export default function InsightsPage() {
             border
             border-gray-300
             bg-white
+            text-gray-900
             "
           >
             <option value="newest">
@@ -1030,7 +1036,7 @@ export default function InsightsPage() {
               );
               setCurrentPage(1);
             }}
-            className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900"
           >
             <option value={10}>
               10
@@ -1062,7 +1068,14 @@ export default function InsightsPage() {
                       prev - 1
                   )
                 }
-                className="px-4 py-2 border rounded-lg"
+                className="
+px-4
+py-2
+border
+rounded-lg
+bg-white
+text-gray-900
+"
               >
                 Prev
               </button>
@@ -1082,7 +1095,14 @@ export default function InsightsPage() {
                       prev + 1
                   )
                 }
-                className="px-4 py-2 border rounded-lg"
+                className="
+                px-4
+                py-2
+                border
+                rounded-lg
+                bg-white
+                text-gray-900
+                "
               >
                 Next
               </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   TrendingUp,
@@ -76,26 +76,6 @@ const insights = [
   },
 ];
 
-const news = [
-  {
-    day: "16",
-    month: "MAY",
-    title:
-      "Luxury Real Estate: Why Ultra HNIs Are Moving Beyond Traditional Assets",
-  },
-  {
-    day: "12",
-    month: "MAY",
-    title:
-      "Top 5 Micro-Markets That Outperformed in 2024",
-  },
-  {
-    day: "08",
-    month: "MAY",
-    title:
-      "Branded Residences: The New Benchmark of Luxury Living",
-  },
-];
 
 const advisoryPoints = [
   "Asset Structuring",
@@ -109,6 +89,8 @@ export default function LuxuryInsightsSection() {
   const [investment, setInvestment] = useState(100000000); // 10 Cr
 const [years, setYears] = useState(5);
 const [appreciation, setAppreciation] = useState(20);
+const [latestInsights, setLatestInsights] =
+  useState([]);
 
 const projectedValue =
   investment *
@@ -136,7 +118,57 @@ const roi =
 
   return `₹ ${value.toLocaleString("en-IN")}`;
 };
-  
+
+useEffect(() => {
+  fetchInsights();
+}, []);
+
+const fetchInsights = async () => {
+  try {
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/news",
+      {
+        cache: "no-store",
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      const latest =
+        data.data
+          ?.filter(
+            (item) =>
+              item.status === "published" &&
+              !item.isDeleted
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt) -
+              new Date(a.createdAt)
+          )
+          .slice(0, 3) || [];
+
+      setLatestInsights(latest);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const formatDate = (date) => {
+  const d = new Date(date);
+
+  return {
+    day: d.getDate(),
+    month: d
+      .toLocaleString("en-US", {
+        month: "short",
+      })
+      .toUpperCase(),
+  };
+};
+
   return (
     <section className="bg-[#f6f3ee] pb-24">
 
@@ -367,7 +399,12 @@ const roi =
 
       <div className="space-y-7">
 
-        {news.map((item, index) => (
+        {latestInsights.map((item, index) => {
+
+  const date =
+    formatDate(item.createdAt);
+
+  return (
           <div
             key={index}
             className="flex gap-4 group cursor-pointer"
@@ -377,11 +414,11 @@ const roi =
             <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
 
               <span className="text-[24px] leading-none font-semibold text-[#171717]">
-                {item.day}
+                {date.day}
               </span>
 
               <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
-                {item.month}
+                {date.month}
               </span>
             </div>
 
@@ -401,12 +438,14 @@ const roi =
                 <div className="w-1 h-1 rounded-full bg-black/25" />
 
                 <p className="text-[12px] text-[#b98b3c] font-medium">
-                  Luxury Real Estate
+                  {item.category}
                 </p>
               </div>
             </div>
           </div>
-        ))}
+        );
+})}
+        
       </div>
     </div>
 
