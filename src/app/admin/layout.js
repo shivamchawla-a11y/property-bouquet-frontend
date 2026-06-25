@@ -16,6 +16,7 @@ import {
   Menu,
   Tag,
   FileText,
+  Newspaper,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -62,6 +63,12 @@ export default function AdminLayout({ children }) {
       name: "Pages",
       path: "/admin/pages",
       icon: FileText,
+    },
+
+    {
+  name: "Market Insights",
+  path: "/admin/insights",
+  icon: Newspaper,
     },
 
     // 🔒 SUPER ADMIN ONLY
