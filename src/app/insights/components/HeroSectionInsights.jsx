@@ -172,7 +172,7 @@ export default function HeroSectionInsights() {
   <div className="relative overflow-hidden rounded-[36px] border border-white/10 shadow-[0_35px_90px_rgba(0,0,0,.45)]">
 
     <img
-      src="/insights-hero.jpg"
+      src="/hero-img.png"
       alt="Property Insights"
       className="
       w-full
