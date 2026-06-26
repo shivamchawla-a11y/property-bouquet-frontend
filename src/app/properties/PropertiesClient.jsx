@@ -767,7 +767,7 @@ group-hover:scale-105
   </div>
 
   <Link
-    href={`/properties/${property.slug}`}
+    href={`/${property.slug}`}
     className="
       w-11
       h-11
