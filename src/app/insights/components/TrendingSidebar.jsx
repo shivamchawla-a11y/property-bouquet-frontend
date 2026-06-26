@@ -3,103 +3,178 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-export default function TrendingSidebar({
-  articles = [],
-}) {
+const trendingArticles = [
+  {
+    id: 1,
+    title: "Luxury Real Estate Investment Trends for 2026",
+    date: "May 24, 2026",
+    image: "/blog1.jpg",
+    slug: "#",
+  },
+  {
+    id: 2,
+    title: "How Smart Homes Are Transforming Premium Living",
+    date: "May 21, 2026",
+    image: "/blog2.jpg",
+    slug: "#",
+  },
+  {
+    id: 3,
+    title: "Top Emerging Luxury Locations Around Gurgaon",
+    date: "May 19, 2026",
+    image: "/blog3.jpg",
+    slug: "#",
+  },
+  {
+    id: 4,
+    title: "Interior Design Trends Every Luxury Buyer Should Know",
+    date: "May 16, 2026",
+    image: "/blog1.jpg",
+    slug: "#",
+  },
+];
+
+export default function TrendingSidebar() {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 25 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
       className="
-      mt-8
-      rounded-[28px]
-      border
-      border-[#ebe4d9]
-      bg-white
-      p-7
+        rounded-[24px]
+        border
+        border-[#ECE7DE]
+        bg-white
+        p-8
+        shadow-[0_10px_35px_rgba(0,0,0,.04)]
       "
     >
-      <h3
-        className="text-3xl text-[#111]"
-        style={{
-          fontFamily: "Georgia, serif",
-        }}
-      >
-        Trending Now
-      </h3>
+      {/* Heading */}
 
-      <div className="mt-7 space-y-6">
-        {articles.slice(0, 5).map(
-          (article, index) => (
-            <Link
-              href={`/insights/${article.slug}`}
-              key={article._id}
-              className="group flex gap-4"
-            >
-              <div
-                className="
+      <div className="flex items-center justify-between">
+
+        <h3
+          className="text-[34px] text-[#111]"
+          style={{
+            fontFamily: "Georgia, serif",
+          }}
+        >
+          Trending
+        </h3>
+
+      </div>
+
+      {/* Articles */}
+
+      <div className="mt-8">
+
+        {trendingArticles.map((article, index) => (
+
+          <Link
+            href={article.slug}
+            key={article.id}
+            className="
+              group
+              flex
+              gap-4
+              py-5
+              first:pt-0
+              border-b
+              border-[#F2EEE7]
+              last:border-none
+              last:pb-0
+            "
+          >
+            {/* Number */}
+
+            <div
+              className="
                 flex
-                h-7
-                w-7
+                h-8
+                w-8
+                shrink-0
                 items-center
                 justify-center
                 rounded-full
-                bg-[#C89D58]
-                text-xs
+                bg-[#111]
+                text-[12px]
                 font-semibold
                 text-white
+              "
+            >
+              {index + 1}
+            </div>
+
+            {/* Image */}
+
+            <div className="relative h-[78px] w-[95px] overflow-hidden rounded-xl shrink-0">
+
+              <Image
+                src={article.image}
+                alt={article.title}
+                fill
+                className="
+                  object-cover
+                  transition
+                  duration-700
+                  group-hover:scale-105
+                "
+              />
+
+            </div>
+
+            {/* Content */}
+
+            <div className="flex flex-col justify-between">
+
+              <h4
+                className="
+                  text-[15px]
+                  leading-6
+                  font-medium
+                  text-[#111]
+                  transition
+                  group-hover:text-[#C89D58]
                 "
               >
-                {index + 1}
-              </div>
+                {article.title}
+              </h4>
 
-              <div className="relative h-20 w-24 overflow-hidden rounded-xl shrink-0">
-                <Image
-                  src={article.heroImage}
-                  alt={article.title}
-                  fill
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
+              <p className="mt-2 text-[12px] uppercase tracking-wide text-[#8F8F8F]">
+                {article.date}
+              </p>
 
-              <div className="flex-1">
-                <h4 className="text-sm font-medium leading-6 text-[#222] group-hover:text-[#C89D58] transition">
-                  {article.title}
-                </h4>
+            </div>
 
-                <p className="mt-1 text-xs text-gray-500">
-                  {new Date(
-                    article.publishDate
-                  ).toLocaleDateString()}
-                </p>
-              </div>
-            </Link>
-          )
-        )}
+          </Link>
+
+        ))}
+
       </div>
+
+      {/* Button */}
 
       <Link
         href="/insights"
         className="
-        mt-8
-        flex
-        items-center
-        justify-center
-        gap-3
-        rounded-xl
-        border
-        border-[#C89D58]/40
-        py-4
-        font-medium
-        text-[#C89D58]
-        hover:bg-[#C89D58]
-        hover:text-white
-        transition
+          mt-8
+          inline-flex
+          items-center
+          gap-2
+          text-[#C89D58]
+          font-medium
+          transition-all
+          hover:gap-3
         "
       >
-        VIEW ALL ARTICLES
+        View All Articles
 
-        <ArrowRight size={18} />
+        <ArrowRight size={17} />
+
       </Link>
-    </div>
+
+    </motion.div>
   );
 }

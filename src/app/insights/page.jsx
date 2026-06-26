@@ -4,6 +4,7 @@ import Footer from "@/components/home/Footer";
 import HeroSectionInsights from "./components/HeroSectionInsights";
 import InsightsFilterBar from "./components/InsightsFilterBar";
 import FeaturedInsights from "./components/FeaturedInsights";
+import BottomCTA from "./components/BottomCTA";
 
 export const metadata = {
   title: "Property Insights | Property Bouquet",
@@ -32,6 +33,7 @@ export default function InsightsPage() {
 
 <FeaturedInsights/>
 
+<BottomCTA/>
       {/* Footer */}
 
       <Footer />

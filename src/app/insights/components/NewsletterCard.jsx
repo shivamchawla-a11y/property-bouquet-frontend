@@ -1,53 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { Mail } from "lucide-react";
 import { motion } from "framer-motion";
+import { Mail } from "lucide-react";
 
 export default function NewsletterCard() {
-  const [email, setEmail] = useState("");
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    console.log(email);
-
-    // We'll connect this later
-  }
-
   return (
     <motion.div
-      whileHover={{ y: -3 }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
       className="
-      rounded-[28px]
-      bg-[#07090C]
-      text-white
-      p-8
-      shadow-xl
+        rounded-[24px]
+        border
+        border-[#242424]
+        bg-[#090909]
+        p-9
+        shadow-[0_20px_60px_rgba(0,0,0,.25)]
       "
     >
+      {/* Icon */}
+
       <div
         className="
-        w-14
-        h-14
-        rounded-2xl
-        border
-        border-[#C89D58]/30
-        flex
-        items-center
-        justify-center
-        mb-8
+          mb-8
+          flex
+          h-14
+          w-14
+          items-center
+          justify-center
+          rounded-xl
+          border
+          border-[#C89D58]/40
         "
       >
         <Mail
-          size={24}
+          size={28}
+          strokeWidth={1.5}
           className="text-[#C89D58]"
         />
       </div>
 
+      {/* Heading */}
+
       <h3
-        className="text-3xl"
+        className="text-[34px] leading-tight text-white"
         style={{
           fontFamily: "Georgia, serif",
         }}
@@ -57,55 +52,54 @@ export default function NewsletterCard() {
         an Update
       </h3>
 
-      <p className="mt-5 leading-7 text-white/70">
-        Subscribe to receive market insights,
-        luxury launches and investment
+      {/* Description */}
+
+      <p className="mt-5 text-[15px] leading-7 text-[#b8b8b8]">
+        Subscribe to receive luxury property insights,
+        expert analysis, market trends and investment
         opportunities directly in your inbox.
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 space-y-4"
-      >
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          placeholder="Enter your email"
-          className="
+      {/* Input */}
+
+      <input
+        type="email"
+        placeholder="Enter your email address"
+        className="
+          mt-8
+          h-14
           w-full
           rounded-xl
           border
-          border-white/10
-          bg-white/5
+          border-[#2e2e2e]
+          bg-transparent
           px-5
-          py-4
           text-white
-          placeholder:text-white/40
+          placeholder:text-[#6b6b6b]
           outline-none
+          transition
           focus:border-[#C89D58]
-          "
-        />
+        "
+      />
 
-        <button
-          className="
+      {/* Button */}
+
+      <button
+        className="
+          mt-5
+          h-14
           w-full
           rounded-xl
           bg-[#C89D58]
-          py-4
-          text-sm
           font-semibold
-          text-black
-          transition
-          hover:bg-[#D9B877]
-          "
-        >
-          SUBSCRIBE NOW
-        </button>
-      </form>
+          tracking-wide
+          text-[#111]
+          transition-all
+          hover:bg-[#d4ab67]
+        "
+      >
+        SUBSCRIBE NOW
+      </button>
     </motion.div>
   );
 }
