@@ -19,6 +19,9 @@ export default function FeaturedProjects() {
     useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+const visibleCards = 3;
   useEffect(() => {
   const fetchFeaturedProperties = async () => {
     try {
@@ -43,6 +46,26 @@ export default function FeaturedProjects() {
 
   fetchFeaturedProperties();
 }, []);
+
+const handleNext = () => {
+  if (featuredProperties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev + visibleCards >= featuredProperties.length
+      ? 0
+      : prev + visibleCards
+  );
+};
+
+const handlePrev = () => {
+  if (featuredProperties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev - visibleCards < 0
+      ? Math.max(featuredProperties.length - visibleCards, 0)
+      : prev - visibleCards
+  );
+};
   return (
     <section className="bg-[#f6f3ee] py-16 overflow-hidden">
 
@@ -79,15 +102,43 @@ export default function FeaturedProjects() {
             {/* ARROWS */}
             <div className="flex justify-end gap-3 mb-5">
 
-              <button className="w-11 h-11 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition">
+              <button
+  onClick={handlePrev}
+  className="
+    w-11 h-11
+    rounded-full
+    bg-[#171717]
+    text-white
+    border border-[#2d2d2d]
+    flex items-center justify-center
+    transition-all duration-300
+    hover:bg-[#c89948]
+    hover:border-[#c89948]
+    hover:scale-105
+    active:scale-95
+  "
+>
+  <ChevronLeft size={18} />
+</button>
 
-                <ChevronLeft size={18} />
-              </button>
-
-              <button className="w-11 h-11 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition">
-
-                <ChevronRight size={18} />
-              </button>
+<button
+  onClick={handleNext}
+  className="
+    w-11 h-11
+    rounded-full
+    bg-[#171717]
+    text-white
+    border border-[#2d2d2d]
+    flex items-center justify-center
+    transition-all duration-300
+    hover:bg-[#c89948]
+    hover:border-[#c89948]
+    hover:scale-105
+    active:scale-95
+  "
+>
+  <ChevronRight size={18} />
+</button>
             </div>
 
             {/* CARDS */}
@@ -106,7 +157,9 @@ export default function FeaturedProjects() {
       </p>
     )}
 
-              {featuredProperties.map((item, index) => (
+              {featuredProperties
+  .slice(currentIndex, currentIndex + visibleCards)
+  .map((item, index) => (
   <Link
     key={item._id}
     href={`/${item.slug}`}

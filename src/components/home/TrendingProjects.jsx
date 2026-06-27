@@ -18,6 +18,27 @@ export default function TrendingProjects() {
     useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+const visibleCards = 3;
+
+const handleNext = () => {
+  if (trendingProperties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev + visibleCards >= trendingProperties.length ? 0 : prev + visibleCards
+  );
+};
+
+const handlePrev = () => {
+  if (trendingProperties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev - visibleCards < 0
+      ? Math.max(trendingProperties.length - visibleCards, 0)
+      : prev - visibleCards
+  );
+};
 
   useEffect(() => {
     const fetchTrendingProperties = async () => {
@@ -83,13 +104,19 @@ export default function TrendingProjects() {
             {/* ARROWS */}
             <div className="flex justify-end gap-3 mb-5">
 
-              <button className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition">
-                <ChevronLeft size={18} />
-              </button>
+              <button
+  onClick={handlePrev}
+  className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+>
+  <ChevronLeft size={18} />
+</button>
 
-              <button className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition">
-                <ChevronRight size={18} />
-              </button>
+<button
+  onClick={handleNext}
+  className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+>
+  <ChevronRight size={18} />
+</button>
 
             </div>
 
@@ -111,7 +138,9 @@ export default function TrendingProjects() {
             {/* CARDS */}
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-              {trendingProperties.map((item, index) => (
+              {trendingProperties
+  .slice(currentIndex, currentIndex + visibleCards)
+  .map((item, index) => (
   <Link
     key={item._id}
     href={`/${item.slug}`}

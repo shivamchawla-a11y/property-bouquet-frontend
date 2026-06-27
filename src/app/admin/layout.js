@@ -17,6 +17,7 @@ import {
   Tag,
   FileText,
   Newspaper,
+  BookOpen,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -70,6 +71,12 @@ export default function AdminLayout({ children }) {
   path: "/admin/insights",
   icon: Newspaper,
     },
+
+    {
+  name: "Knowledge Centre",
+  path: "/admin/knowledge",
+  icon: BookOpen,
+},
 
     // 🔒 SUPER ADMIN ONLY
     {

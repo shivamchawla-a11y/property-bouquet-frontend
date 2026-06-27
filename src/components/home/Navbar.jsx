@@ -38,6 +38,7 @@ const navItems = [
 
 export default function Navbar({
   onConsultationClick,
+  forceSolid = false,
 }) {
   const [active, setActive] = useState(null);
   const [scrolled, setScrolled] = useState(false);
@@ -65,14 +66,16 @@ const [mobileDropdown, setMobileDropdown] =
       window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const lightNavbar = forceSolid || scrolled;
+
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-[999] transition-all duration-500 ${
-        scrolled
-          ? "bg-black/80 backdrop-blur-xl border-b border-white/10"
-          : "bg-transparent"
-      }`}
-    >
+  className={`fixed top-0 left-0 w-full z-[999] transition-all duration-500 ${
+    lightNavbar
+      ? "bg-[#0b0b0b]/90 backdrop-blur-xl border-b border-white/10"
+      : "bg-transparent"
+  }`}
+>
       <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
         
         <div className="h-[82px] flex items-center justify-between">
