@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/utils/formatPrice";
+import Container from "@/components/layout/Container";
 
 import {
   ArrowRight,
@@ -48,7 +49,7 @@ export default function RecommendedProjects() {
       {/* TEXTURE */}
       <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_top_right,_#c89d58,_transparent_30%),radial-gradient(circle_at_bottom_left,_#c89d58,_transparent_25%)]" />
 
-      <div className="relative max-w-[1450px] mx-auto px-5 xl:px-8">
+      <Container className="relative">
 
         {/* HEADER */}
         <div className="text-center mb-16">
@@ -346,7 +347,7 @@ group-hover:translate-x-1
           ))}
 
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

@@ -14,7 +14,9 @@ import {
   ShieldCheck,
   Globe2,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
+import Link from "next/link";
 
 const articles = [
   {
@@ -91,6 +93,7 @@ const [years, setYears] = useState(5);
 const [appreciation, setAppreciation] = useState(20);
 const [latestInsights, setLatestInsights] =
   useState([]);
+  const [knowledgeArticles, setKnowledgeArticles] = useState([]);
 
 const projectedValue =
   investment *
@@ -156,6 +159,37 @@ const fetchInsights = async () => {
   }
 };
 
+useEffect(() => {
+  const fetchKnowledge = async () => {
+    try {
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/knowledge",
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setKnowledgeArticles(
+          data.data
+            .filter(
+              (item) =>
+                item.status === "published" &&
+                !item.isDeleted
+            )
+            .slice(0, 5)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchKnowledge();
+}, []);
+
 const formatDate = (date) => {
   const d = new Date(date);
 
@@ -174,7 +208,7 @@ const formatDate = (date) => {
 
       <div className="max-w-[1440px] mx-auto px-5">
 
-        {/* PREMIUM INSIGHTS SECTION */}
+        {/* PREMIUM KNOWLEDGE SECTION */}
 <div className="relative overflow-hidden rounded-[40px] border border-white/30 bg-[#f8f5ef] shadow-[0_35px_100px_rgba(0,0,0,0.08)]">
 
   {/* BACKGROUND GLOWS */}
@@ -227,7 +261,10 @@ const formatDate = (date) => {
     </p>
 
     {/* BUTTON */}
-    <button className="group relative overflow-hidden mt-9 inline-flex items-center gap-4 h-[56px] px-8 rounded-full bg-[#081512] text-white text-[12px] tracking-[2px] uppercase font-semibold shadow-[0_18px_45px_rgba(0,0,0,0.18)] hover:scale-[1.03] transition-all duration-500">
+    <Link
+  href="/knowledge"
+  className="group relative overflow-hidden mt-9 inline-flex items-center gap-4 h-[56px] px-8 rounded-full bg-[#081512] text-white text-[12px] tracking-[2px] uppercase font-semibold shadow-[0_18px_45px_rgba(0,0,0,0.18)] hover:scale-[1.03] transition-all duration-500"
+>
 
       {/* BUTTON GLOW */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#c89d58]/20 via-transparent to-[#c89d58]/10 opacity-0 group-hover:opacity-100 transition duration-500" />
@@ -240,14 +277,18 @@ const formatDate = (date) => {
 
         <ArrowRight size={14} />
       </div>
-    </button>
+    </Link>
   </div>
 
   {/* CARDS */}
   <div className="relative z-10 grid md:grid-cols-2 xl:grid-cols-5 gap-7 px-6 md:px-10 pb-10 md:pb-12">
 
-    {articles.map((item, index) => (
-      <motion.div
+    {knowledgeArticles.map((item, index) => (
+      <Link
+  href={`/knowledge/${item.slug}`}
+  className="block"
+>
+  <motion.div
         key={index}
         initial={{
           opacity: 0,
@@ -269,7 +310,7 @@ const formatDate = (date) => {
           scale: 1.015,
         }}
         className={`group relative overflow-hidden rounded-[30px] border backdrop-blur-2xl min-h-[300px] transition-all duration-700 ${
-          item.active
+          index === 0
             ? "bg-gradient-to-br from-[#041e19]/95 via-[#072922]/95 to-[#03110d]/95 border-[#c89d58]/20 shadow-[0_30px_70px_rgba(0,0,0,0.3)]"
             : "bg-white/55 border-white/70 shadow-[0_20px_55px_rgba(0,0,0,0.06)] hover:bg-white/75"
         }`}
@@ -292,7 +333,7 @@ const formatDate = (date) => {
             {/* ICON BOX */}
 <div
   className={`relative w-[62px] h-[62px] rounded-[20px] flex items-center justify-center border mb-7 overflow-hidden ${
-    item.active
+    index === 0
       ? "bg-[#c89d58]/10 border-[#c89d58]/20"
       : "bg-white/70 border-white"
   }`}
@@ -302,21 +343,17 @@ const formatDate = (date) => {
   <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
 
   {/* ICON */}
-  <item.icon
-    size={24}
-    strokeWidth={1.8}
-    className={`relative z-10 ${
-      item.active
-        ? "text-[#d6b06a]"
-        : "text-[#c89d58]"
-    }`}
-  />
+  <BookOpen
+  size={24}
+  strokeWidth={1.8}
+  className="relative z-10 text-[#c89d58]"
+/>
 </div>
 
             {/* TITLE */}
             <h3
               className={`text-[18px] leading-[1.45] font-semibold tracking-[-0.3px] ${
-                item.active
+                index === 0
                   ? "text-white"
                   : "text-[#171717]"
               }`}
@@ -327,12 +364,12 @@ const formatDate = (date) => {
             {/* DESCRIPTION */}
             <p
               className={`mt-4 text-[13px] leading-[1.9] ${
-                item.active
+                index === 0
                   ? "text-white/65"
                   : "text-black/50"
               }`}
             >
-              {item.desc}
+              {item.shortDescription}
             </p>
           </div>
 
@@ -341,7 +378,7 @@ const formatDate = (date) => {
 
             <button
               className={`text-[13px] font-semibold tracking-wide ${
-                item.active
+                index === 0
                   ? "text-[#d6b06a]"
                   : "text-[#b98b3c]"
               }`}
@@ -351,7 +388,7 @@ const formatDate = (date) => {
 
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                item.active
+                index === 0
                   ? "bg-[#c89d58] text-black"
                   : "bg-[#f3ece0] text-[#b98b3c] group-hover:bg-[#c89d58] group-hover:text-white"
               }`}
@@ -366,7 +403,8 @@ const formatDate = (date) => {
 
         {/* PREMIUM BORDER */}
         <div className="absolute inset-0 rounded-[30px] border border-white/10 pointer-events-none" />
-      </motion.div>
+        </motion.div>
+</Link>
     ))}
   </div>
 </div>
@@ -399,66 +437,72 @@ const formatDate = (date) => {
 
       <div className="space-y-7">
 
-        {latestInsights.map((item, index) => {
-
-  const date =
-    formatDate(item.createdAt);
+        {latestInsights.map((item) => {
+  const date = formatDate(item.createdAt);
 
   return (
-          <div
-            key={index}
-            className="flex gap-4 group cursor-pointer"
-          >
+    <Link
+      key={item._id}
+      href={`/insights/${item.slug}`}
+      className="block"
+    >
+      <div className="flex gap-4 group cursor-pointer">
 
-            {/* DATE */}
-            <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
+        {/* DATE */}
+        <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
 
-              <span className="text-[24px] leading-none font-semibold text-[#171717]">
-                {date.day}
-              </span>
+          <span className="text-[24px] leading-none font-semibold text-[#171717]">
+            {date.day}
+          </span>
 
-              <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
-                {date.month}
-              </span>
-            </div>
+          <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
+            {date.month}
+          </span>
 
-            {/* TEXT */}
-            <div className="pt-[2px]">
+        </div>
 
-              <h4 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[320px] transition-all duration-300 group-hover:text-[#b98b3c]">
-                {item.title}
-              </h4>
+        {/* TEXT */}
+        <div className="pt-[2px]">
 
-              <div className="flex items-center gap-3 mt-2">
+          <h4 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[320px] transition-all duration-300 group-hover:text-[#b98b3c]">
+            {item.title}
+          </h4>
 
-                <p className="text-[12px] text-black/45">
-                  6 Min Read
-                </p>
+          <div className="flex items-center gap-3 mt-2">
 
-                <div className="w-1 h-1 rounded-full bg-black/25" />
+            <p className="text-[12px] text-black/45">
+              6 Min Read
+            </p>
 
-                <p className="text-[12px] text-[#b98b3c] font-medium">
-                  {item.category}
-                </p>
-              </div>
-            </div>
+            <div className="w-1 h-1 rounded-full bg-black/25" />
+
+            <p className="text-[12px] text-[#b98b3c] font-medium">
+              {item.category}
+            </p>
+
           </div>
-        );
+
+        </div>
+
+      </div>
+    </Link>
+  );
 })}
         
       </div>
     </div>
 
-    {/* BUTTON */}
-    <button className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px] w-fit">
+    <Link
+  href="/insights"
+  className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px] w-fit"
+>
+  View All News
 
-      View All News
-
-      <ArrowRight
-        size={13}
-        className="group-hover:translate-x-1 transition"
-      />
-    </button>
+  <ArrowRight
+    size={13}
+    className="group-hover:translate-x-1 transition"
+  />
+</Link>
   </div>
 
   {/* RIGHT IMAGE */}

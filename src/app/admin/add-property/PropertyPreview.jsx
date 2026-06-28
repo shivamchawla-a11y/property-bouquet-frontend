@@ -802,24 +802,34 @@ const getShortLocation = (location) => {
 
           {developerLogo &&
           developerLogo.trim() !== "" ? (
-            <img
-              src={developerLogo}
-              alt={developerName}
-              className="
-                h-7
-                md:h-8
-                max-w-[110px]
-                md:max-w-[130px]
-                object-contain
-                opacity-95
-                transition-all
-                duration-500
-              "
-              onError={(e) =>
-                (e.target.style.display =
-                  "none")
-              }
-            />
+            <div className="h-[34px] md:h-[38px] w-[140px] flex items-center justify-start">
+  <img
+    src={developerLogo}
+    alt={developerName}
+    className="max-h-full max-w-full object-contain"
+    style={{
+      transform: "scale(1)",
+      transformOrigin: "left center",
+    }}
+    onLoad={(e) => {
+      const img = e.target;
+
+      // Normalize visually based on aspect ratio
+      const ratio = img.naturalWidth / img.naturalHeight;
+
+      // small logos (too thin or too small) get slight boost
+      if (ratio < 1.5) {
+        img.style.transform = "scale(1.15)";
+      }
+
+      // very wide logos slightly shrink
+      if (ratio > 4) {
+        img.style.transform = "scale(0.9)";
+      }
+    }}
+    onError={(e) => (e.target.style.display = "none")}
+  />
+</div>
           ) : (
             <h2
               className="
