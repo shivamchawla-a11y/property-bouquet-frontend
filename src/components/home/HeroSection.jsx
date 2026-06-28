@@ -12,6 +12,7 @@ import {
 
 import { motion } from "framer-motion";
 import SearchPanel from "./SearchPanel";
+import Container from "@/components/layout/Container";
 
 const filters = [
   {
@@ -38,7 +39,7 @@ const filters = [
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen min-h-[820px] overflow-visible bg-black">
+    <section className="relative h-screen min-h-[760px] xl:min-h-[820px] overflow-visible bg-black">
 
       {/* BACKGROUND IMAGE */}
       <img
@@ -60,10 +61,11 @@ export default function HeroSection() {
       {/* CONTENT */}
       <div className="relative z-20 h-full flex items-center">
 
-        <div className="max-w-[1400px] mx-auto w-full px-6 xl:px-10">
+  <Container>
 
-          {/* LEFT CONTENT */}
-          <div className="max-w-[620px] -mt-36">
+    {/* LEFT CONTENT */}
+
+    <div className="max-w-[620px] -mt-24 xl:-mt-28">
 
             {/* TOP TEXT */}
             <motion.p
@@ -96,7 +98,7 @@ export default function HeroSection() {
               transition={{
                 duration: 0.7,
               }}
-              className="text-white font-medium leading-[1.02] tracking-[-2px] text-[44px] md:text-[58px] xl:text-[66px]"
+              className="text-white font-medium leading-[1.05] tracking-[-1.5px] text-[40px] md:text-[52px] xl:text-[60px]"
               style={{
                 fontFamily:
                   "Georgia, Times New Roman, serif",
@@ -170,12 +172,14 @@ export default function HeroSection() {
               </span>
             </motion.button>
           </div>
-        </div>
-      </div>
+            </Container>
+  </div>
 
 {/* SEARCH PANEL */}
-<div className="absolute bottom-12 left-0 w-full z-[200] px-5 overflow-visible">
-  <SearchPanel />
+<div className="absolute bottom-12 left-0 w-full z-[200] overflow-visible">
+  <Container className="overflow-visible">
+    <SearchPanel />
+  </Container>
 </div>
 
     </section>

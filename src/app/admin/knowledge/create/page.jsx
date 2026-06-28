@@ -507,43 +507,43 @@ bg-white
                       )
                     }
                     className="
-w-full
-border
-border-gray-300
-rounded-xl
-px-4
-py-3
-text-gray-900
-bg-white
-"
+                  w-full
+                  border
+                  border-gray-300
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-gray-900
+                  bg-white
+                  "
                   >
                    <option>Buying Guide</option>
 
-<option>Selling Guide</option>
+                <option>Selling Guide</option>
 
-<option>Investment</option>
+                <option>Investment</option>
 
-<option>Legal</option>
+                <option>Legal</option>
 
-<option>Home Loans</option>
+                <option>Home Loans</option>
 
-<option>Taxation</option>
+                <option>Taxation</option>
 
-<option>Luxury Living</option>
+                <option>Luxury Living</option>
 
-<option>Interior Design</option>
+                <option>Interior Design</option>
 
-<option>Market Education</option>
+                <option>Market Education</option>
 
-<option>NRI Guide</option>
+                <option>NRI Guide</option>
 
-<option>Tips & Tricks</option>
+                <option>Tips & Tricks</option>
 
-<option>General</option>
+                <option>General</option>
                   </select>
                 </div>
 
-                <div>
+                <div> 
                   <label className="block text-sm font-semibold mb-2 text-[#0f3b2e]">
                     Author
                   </label>
