@@ -17,6 +17,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const articles = [
   {
@@ -284,12 +285,12 @@ const formatDate = (date) => {
   <div className="relative z-10 grid md:grid-cols-2 xl:grid-cols-5 gap-7 px-6 md:px-10 pb-10 md:pb-12">
 
     {knowledgeArticles.map((item, index) => (
-      <Link
-  href={`/knowledge/${item.slug}`}
-  className="block"
->
-  <motion.div
-        key={index}
+  <Link
+    key={item._id || item.slug || index}
+    href={`/knowledge/${item.slug}`}
+    className="block"
+  >
+    <motion.div
         initial={{
           opacity: 0,
           y: 40,

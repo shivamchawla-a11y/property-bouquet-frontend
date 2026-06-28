@@ -53,6 +53,8 @@ const [showSuggestions, setShowSuggestions] =
   useState(false);
 const [showDeveloperModal, setShowDeveloperModal] =
   useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+const [locationSearch, setLocationSearch] = useState("");
   const [filters, setFilters] = useState({
   propertyType: "",
   budget: "",
@@ -103,24 +105,31 @@ useEffect(() => {
           uniqueLocations
         );
 
-        // DEVELOPERS
-        const uniqueDevelopers = [
-          ...new Set(
-            propertyData
-              .map(
-                (property) =>
-                  property
-                    ?.coreDetails
-                    ?.developerName
-              )
-              .filter(Boolean)
-          ),
-        ].sort();
+// DEVELOPERS
+const uniqueDevelopers = [
+  ...new Map(
+    propertyData
+      .filter((property) => property?.coreDetails?.developerName)
+      .map((property) => {
+        const developer = property.coreDetails.developerRef;
 
-        setDevelopers(
-          uniqueDevelopers
-        );
+        return [
+          property.coreDetails.developerName,
+          {
+            name: property.coreDetails.developerName,
+            logo:
+              developer?.logo ||
+              developer?.image ||
+              property.coreDetails.developerLogo ||
+              property.coreDetails.developerImage ||
+              "/placeholder.png",
+          },
+        ];
+      })
+  ).values(),
+].sort((a, b) => a.name.localeCompare(b.name));
 
+setDevelopers(uniqueDevelopers);
         const uniqueCategories = [
   ...new Set(
     propertyData
@@ -204,8 +213,11 @@ const handleSearch = () => {
   );
 };
 
-const developerOptions =
-  developers.slice(0, 5);
+const developerOptions = developers
+  .slice(0, 5)
+  .map((developer) => developer.name);
+
+  const locationOptions = locations.slice(0, 6);
 
   const suggestions = properties
   .filter((property) => {
@@ -466,18 +478,26 @@ const developerOptions =
           </div>
 
           {/* LOCATION */}
-          <div className="lg:border-r border-white/10 hover:bg-white/[0.02] transition-all duration-300">
-            <LuxuryDropdown
-              icon={MapPin}
-              label="LOCATION"
-              placeholder="Select Location"
-              value={filters.location}
-              options={locations}
-              onChange={(value) =>
-                handleChange("location", value)
-              }
-            />
-          </div>
+<div className="lg:border-r border-white/10 hover:bg-white/[0.02] transition-all duration-300">
+  <LuxuryDropdown
+    icon={MapPin}
+    label="LOCATION"
+    placeholder="Select Location"
+    value={filters.location}
+    options={[
+      ...locationOptions,
+      "View All Locations →",
+    ]}
+    onChange={(value) => {
+      if (value === "View All Locations →") {
+        setShowLocationModal(true);
+        return;
+      }
+
+      handleChange("location", value);
+    }}
+  />
+</div>
 
           {/* DEVELOPER */}
           <div className="lg:border-r border-white/10 hover:bg-white/[0.02] transition-all duration-300">
@@ -760,26 +780,187 @@ const developerOptions =
     scrollbar-thumb-white/10
   "
 >
-          {developers
-            .filter((developer) =>
-  developer
-    .toLowerCase()
-                .includes(
-                  developerSearch.toLowerCase()
-                )
-            )
-            .map((developer) => (
-  <button
-    key={developer}
-                onClick={() => {
-                  handleChange(
+  {developers
+  .filter((developer) =>
+    developer.name
+      .toLowerCase()
+      .includes(
+        developerSearch.toLowerCase()
+      )
+  )
+    .map((developer) => (
+      <button
+        key={developer.name}
+        onClick={() => {
+          handleChange(
   "developer",
-  developer
+  developer.name
 );
+          setShowDeveloperModal(false);
+        }}
+        className="
+          w-full
+          px-6
+          py-4
+          flex
+          items-center
+          gap-4
+          border-b
+          border-white/[0.04]
+          hover:bg-white/[0.03]
+          transition-all
+          text-left
+          group
+        "
+      >
+        <img
+  src={developer.logo}
+  alt={developer.name}
+  onError={(e) => {
+    e.currentTarget.src = "/placeholder.png";
+  }}
+  className="
+    w-12
+    h-12
+    rounded-xl
+    object-cover
+    border
+    border-white/10
+    bg-white/5
+    shrink-0
+  "
+/>
+        <div className="flex-1">
+          <p
+            className="
+              text-white
+              text-[15px]
+              font-medium
+              group-hover:text-[#c89d58]
+              transition-colors
+            "
+          >
+            {developer.name}
+          </p>
 
-                  setShowDeveloperModal(
-                    false
-                  );
+          <p
+            className="
+              text-white/40
+              text-[12px]
+              mt-0.5
+            "
+          >
+            Developer Partner
+          </p>
+        </div>
+      </button>
+    ))}
+
+  {developers.filter((developer) =>
+    developer.name
+      .toLowerCase()
+      .includes(developerSearch.toLowerCase())
+  ).length === 0 && (
+    <div className="py-14 text-center">
+      <p className="text-white/40">
+        No developers found
+      </p>
+    </div>
+  )}
+</div>
+      </motion.div>
+    </motion.div>
+  )}
+  {showLocationModal && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="
+        fixed
+        inset-0
+        z-[999999]
+        bg-black/45
+        backdrop-blur-[5px]
+        flex
+        items-start
+        justify-center
+        pt-[110px]
+        pb-8
+        px-4
+      "
+      onClick={() => setShowLocationModal(false)}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 20 }}
+        transition={{ duration: 0.25 }}
+        onClick={(e) => e.stopPropagation()}
+        className="
+          relative
+          w-full
+          max-w-[540px]
+          rounded-[28px]
+          border
+          border-[#c89d58]/15
+          bg-[#0b0b0b]
+          shadow-[0_40px_120px_rgba(0,0,0,0.65)]
+          overflow-hidden
+        "
+      >
+        {/* TOP LINE */}
+        <div className="h-[2px] bg-gradient-to-r from-transparent via-[#c89d58] to-transparent" />
+
+        {/* HEADER */}
+        <div className="px-6 py-5 border-b border-white/10">
+          <p className="text-[#c89d58] text-[10px] uppercase tracking-[3px] mb-2">
+            Location Directory
+          </p>
+
+          <h3 className="text-white text-[22px] font-semibold">
+            Select Location
+          </h3>
+
+          <p className="text-white/45 text-[13px] mt-2">
+            Browse all available locations
+          </p>
+        </div>
+
+        {/* SEARCH */}
+        <div className="p-5 border-b border-white/10">
+          <input
+            value={locationSearch}
+            onChange={(e) => setLocationSearch(e.target.value)}
+            placeholder="Search location..."
+            className="
+              w-full
+              h-[50px]
+              rounded-[16px]
+              bg-white/[0.04]
+              border
+              border-white/10
+              px-5
+              text-white
+              placeholder:text-white/35
+              outline-none
+              focus:border-[#c89d58]/40
+            "
+          />
+        </div>
+
+        {/* LIST */}
+        <div className="max-h-[260px] overflow-y-auto">
+          {locations
+            .filter((loc) =>
+              loc.toLowerCase().includes(locationSearch.toLowerCase())
+            )
+            .map((loc) => (
+              <button
+                key={loc}
+                onClick={() => {
+                  handleChange("location", loc);
+                  setShowLocationModal(false);
                 }}
                 className="
                   w-full
@@ -787,75 +968,29 @@ const developerOptions =
                   py-4
                   flex
                   items-center
-                  gap-4
+                  justify-between
                   border-b
                   border-white/[0.04]
                   hover:bg-white/[0.03]
                   transition-all
                   text-left
-                  group
                 "
               >
-                <img
-                  src={
-                    developer.logo ||
-                    "/placeholder.png"
-                  }
-                  alt={developer.name}
-                  className="
-                    w-12
-                    h-12
-                    rounded-xl
-                    object-cover
-                    border
-                    border-white/10
-                    bg-white/5
-                    shrink-0
-                  "
-                />
+                <span className="text-white text-[14px] group-hover:text-[#c89d58]">
+                  {loc}
+                </span>
 
-                <div className="flex-1">
-                  <p
-                    className="
-                      text-white
-                      text-[15px]
-                      font-medium
-                      group-hover:text-[#c89d58]
-                      transition-colors
-                    "
-                  >
-                    {developer}
-                  </p>
-
-                  <p
-                    className="
-                      text-white/40
-                      text-[12px]
-                      mt-0.5
-                    "
-                  >
-                    Developer Partner
-                  </p>
-                </div>
+                <span className="text-[#c89d58] text-[16px]">
+                  →
+                </span>
               </button>
             ))}
 
-          {developers.filter((developer) =>
-  developer
-              .toLowerCase()
-              .includes(
-                developerSearch.toLowerCase()
-              )
+          {locations.filter((loc) =>
+            loc.toLowerCase().includes(locationSearch.toLowerCase())
           ).length === 0 && (
-            <div
-              className="
-                py-14
-                text-center
-              "
-            >
-              <p className="text-white/40">
-                No developers found
-              </p>
+            <div className="py-14 text-center text-white/40">
+              No locations found
             </div>
           )}
         </div>
