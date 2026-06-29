@@ -129,7 +129,7 @@ export default function InsightDetailPage() {
                   <ChevronRight size={14} />
 
                   <Link
-                    href="/property-insights"
+                    href="/insights"
                     className="hover:text-[#163629]"
                   >
                     Property Insights

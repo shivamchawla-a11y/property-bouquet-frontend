@@ -261,8 +261,7 @@ max-w-[460px]">
 
           <div className="mt-16">
             <LatestInsights
-    articles={articles}
-    featuredId={article?._id}
+  articles={articles}
 />
           </div>
 
@@ -278,10 +277,7 @@ max-w-[460px]">
 
             <div className="mt-8">
 
-              <TrendingSidebar
-    articles={articles}
-    featuredId={article?._id}
-/>
+<TrendingSidebar articles={articles} />
 
             </div>
 

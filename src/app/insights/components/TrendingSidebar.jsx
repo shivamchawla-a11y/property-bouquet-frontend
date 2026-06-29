@@ -5,38 +5,16 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-const trendingArticles = [
-  {
-    id: 1,
-    title: "Luxury Real Estate Investment Trends for 2026",
-    date: "May 24, 2026",
-    image: "/blog1.jpg",
-    slug: "#",
-  },
-  {
-    id: 2,
-    title: "How Smart Homes Are Transforming Premium Living",
-    date: "May 21, 2026",
-    image: "/blog2.jpg",
-    slug: "#",
-  },
-  {
-    id: 3,
-    title: "Top Emerging Luxury Locations Around Gurgaon",
-    date: "May 19, 2026",
-    image: "/blog3.jpg",
-    slug: "#",
-  },
-  {
-    id: 4,
-    title: "Interior Design Trends Every Luxury Buyer Should Know",
-    date: "May 16, 2026",
-    image: "/blog1.jpg",
-    slug: "#",
-  },
-];
-
-export default function TrendingSidebar() {
+export default function TrendingSidebar({
+  articles = [],
+}) {
+const trendingArticles = [...articles]
+  .sort(
+    (a, b) =>
+      new Date(b.publishDate) -
+      new Date(a.publishDate)
+  )
+  .slice(0, 5);
   return (
     <motion.div
       initial={{ opacity: 0, y: 25 }}
@@ -73,8 +51,8 @@ export default function TrendingSidebar() {
         {trendingArticles.map((article, index) => (
 
           <Link
-            href={article.slug}
-            key={article.id}
+            href={`/insights/${article.slug}`}
+            key={article._id}
             className="
               group
               flex
@@ -112,7 +90,7 @@ export default function TrendingSidebar() {
             <div className="relative h-[78px] w-[95px] overflow-hidden rounded-xl shrink-0">
 
               <Image
-                src={article.image}
+                src={article.featuredImage || "/placeholder-news.jpg"}
                 alt={article.title}
                 fill
                 className="
@@ -143,7 +121,14 @@ export default function TrendingSidebar() {
               </h4>
 
               <p className="mt-2 text-[12px] uppercase tracking-wide text-[#8F8F8F]">
-                {article.date}
+                {new Date(article.publishDate).toLocaleDateString(
+  "en-US",
+  {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }
+)}
               </p>
 
             </div>
@@ -157,23 +142,22 @@ export default function TrendingSidebar() {
       {/* Button */}
 
       <Link
-        href="/insights"
-        className="
-          mt-8
-          inline-flex
-          items-center
-          gap-2
-          text-[#C89D58]
-          font-medium
-          transition-all
-          hover:gap-3
-        "
-      >
-        View All Articles
+  href="/insights"
+  className="
+    mt-8
+    inline-flex
+    items-center
+    gap-2
+    text-[#C89D58]
+    font-medium
+    transition-all
+    hover:gap-3
+  "
+>
+  View All Articles
 
-        <ArrowRight size={17} />
-
-      </Link>
+  <ArrowRight size={17} />
+</Link>
 
     </motion.div>
   );

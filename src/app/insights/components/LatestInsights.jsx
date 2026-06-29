@@ -5,37 +5,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-const articles = [
-  {
-    id: 1,
-    category: "Blogs",
-    image: "/blog1.jpg",
-    date: "May 21, 2026",
-    title: "What Makes a Luxury Home Future-Ready?",
-    description:
-      "Key features and technologies defining the future of premium living.",
-  },
-  {
-    id: 2,
-    category: "Market Analysis",
-    image: "/blog2.jpg",
-    date: "May 19, 2026",
-    title: "Gurgaon Real Estate Market Report – May 2026",
-    description:
-      "Detailed analysis of price trends, supply, demand and investment opportunities.",
-  },
-  {
-    id: 3,
-    category: "Infrastructure Updates",
-    image: "/blog3.jpg",
-    date: "May 17, 2026",
-    title: "Upcoming Infrastructure Projects in Gurgaon",
-    description:
-      "A look at major infrastructure projects shaping Gurgaon's future.",
-  },
-];
+export default function LatestInsights({ articles = [] }) {
 
-export default function LatestInsights() {
+  const latestArticles = [...articles].sort(
+  (a, b) =>
+    new Date(b.publishDate) -
+    new Date(a.publishDate)
+);
   return (
     <div className="mt-16">
 
@@ -77,10 +53,9 @@ export default function LatestInsights() {
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-7">
 
-        {articles.map((article) => (
-
-          <motion.div
-            key={article.id}
+        {latestArticles.map((article) => (
+  <motion.div
+    key={article._id}  
             whileHover={{
               y: -6,
             }}
@@ -103,7 +78,7 @@ export default function LatestInsights() {
             <div className="relative h-[220px] overflow-hidden">
 
               <Image
-                src={article.image}
+                src={article.featuredImage || "/placeholder-news.jpg"}
                 alt={article.title}
                 fill
                 className="
@@ -143,7 +118,14 @@ export default function LatestInsights() {
 
               <p className="text-[13px] uppercase tracking-wide text-[#8d8d8d]">
 
-                {article.date}
+                {new Date(article.publishDate).toLocaleDateString(
+  "en-US",
+  {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }
+)}
 
               </p>
 
@@ -163,12 +145,12 @@ export default function LatestInsights() {
 
               <p className="mt-5 text-[15px] leading-7 text-[#666]">
 
-                {article.description}
+               {article.shortDescription}
 
               </p>
 
               <Link
-                href="#"
+                href={`/insights/${article.slug}`}
                 className="
                   mt-7
                   inline-flex
