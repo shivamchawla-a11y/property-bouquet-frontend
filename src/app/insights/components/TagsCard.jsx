@@ -1,57 +1,142 @@
 "use client";
 
-export default function TagsCard({ article }){
+export default function TagsCard({ article }) {
+  const tags =
+    article.tags?.length > 0
+      ? article.tags
+      : [
+          article.category,
+          "Luxury",
+          "Investment",
+          "Real Estate",
+          "Property",
+        ];
 
-    const tags=[
+  return (
+    <div
+      className="
+      relative
+      overflow-hidden
+      rounded-[32px]
+      border
+      border-[#ebe5db]
+      bg-gradient-to-b
+      from-white
+      to-[#fcfaf7]
+      p-8
+      shadow-[0_20px_60px_rgba(0,0,0,.06)]
+      transition-all
+      duration-500
+      hover:-translate-y-1
+      hover:shadow-[0_30px_80px_rgba(0,0,0,.09)]
+      !text-[#163629]
+      "
+    >
+      {/* Gold Glow */}
 
-        article.category,
+      <div
+        className="
+        absolute
+        -top-16
+        -right-16
+        w-40
+        h-40
+        rounded-full
+        bg-[#b88638]/10
+        blur-3xl
+        pointer-events-none
+        "
+      />
 
-        "Luxury",
+      {/* Header */}
 
-        "Investment",
+      <div className="relative">
 
-        "Gurgaon",
+        <p
+          className="
+          uppercase
+          tracking-[3px]
+          text-[11px]
+          font-semibold
+          !text-[#b88638]
+          "
+        >
+          Explore Topics
+        </p>
 
-        "Property"
+        <h3
+          className="
+          mt-2
+          text-[30px]
+          leading-tight
+          !text-[#163629]
+          "
+          style={{
+            fontFamily: "Georgia, serif",
+          }}
+        >
+          Popular Tags
+        </h3>
 
-    ];
+      </div>
 
-    return(
+      {/* Divider */}
 
-       <div className="bg-white border rounded-xl border-[#ece7dc] p-7">
+      <div className="my-7 h-px bg-gradient-to-r from-transparent via-[#e6ddcf] to-transparent" />
 
-<h3
-style={{fontFamily:"Georgia"}}
-className="text-[28px] text-[#163629]"
->
-Popular Tags
-</h3>
+      {/* Tags */}
 
-<div className="flex flex-wrap gap-3 mt-6">
+      <div className="flex flex-wrap gap-3">
 
-{article.tags?.map(tag=>(
+        {tags.map((tag) => (
 
-<span
-key={tag}
-className="
-px-4
-py-2
-rounded-md
-bg-[#f3f3f3]
-text-sm
-"
->
+          <button
+            key={tag}
+            className="
+            group
+            px-5
+            py-3
+            rounded-full
+            border
+            border-[#e8dfd1]
+            bg-[#f8f5ef]
+            !text-[#163629]
+            text-sm
+            font-medium
+            transition-all
+            duration-300
+            hover:bg-[#163629]
+            hover:!text-white
+            hover:border-[#163629]
+            hover:-translate-y-0.5
+            hover:shadow-lg
+            "
+          >
+            #{tag}
+          </button>
 
-{tag}
+        ))}
 
-</span>
+      </div>
 
-))}
+      {/* Footer */}
 
-</div>
+      <div className="mt-8 pt-6 border-t border-[#ece7dc]">
 
-</div>
+        <p
+          className="
+          text-[13px]
+          leading-7
+          !text-[#777]
+          "
+        >
+          Explore more luxury real estate insights,
+          investment strategies, and premium property
+          market updates through these curated topics.
+        </p>
 
-    )
+      </div>
 
+    </div>
+  );
 }

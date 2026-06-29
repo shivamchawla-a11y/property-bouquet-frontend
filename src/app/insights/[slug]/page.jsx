@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
+import Footer from "@/components/home/Footer";
+
 import "@/app/insights/article.css";
 
 import {
@@ -15,8 +17,7 @@ import {
   Link2,
 } from "lucide-react";
 
-import { FaFacebook } from "react-icons/fa";
-import { FaLinkedinIn } from "react-icons/fa";
+import { FaFacebook, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
 import AboutAuthor from "../components/AboutAuthor";
@@ -24,7 +25,6 @@ import TableOfContents from "../components/TableOfContents";
 import LatestInsightsSidebar from "../components/LatestInsightsSidebar";
 import CTAAdvisor from "../components/CTAAdvisor";
 import TagsCard from "../components/TagsCard";
-import Footer from "@/components/home/Footer";
 
 const API =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -36,6 +36,7 @@ export default function InsightDetailPage() {
   const [article, setArticle] = useState(null);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const articleRef = useRef(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -80,119 +81,48 @@ export default function InsightDetailPage() {
 
   if (loading) {
     return (
-      <>
-        <Navbar />
-
-        <section className="bg-[#faf8f4] min-h-screen">
-
-          <div className="max-w-[1320px] mx-auto px-6 py-20">
-
-            <div className="animate-pulse">
-
-              <div className="w-40 h-3 rounded bg-gray-200 mb-8" />
-
-              <div className="w-28 h-8 rounded bg-gray-200 mb-8" />
-
-              <div className="w-3/4 h-14 rounded bg-gray-200 mb-5" />
-
-              <div className="w-2/3 h-14 rounded bg-gray-200 mb-10" />
-
-              <div className="w-1/2 h-5 rounded bg-gray-200 mb-3" />
-
-              <div className="w-1/3 h-5 rounded bg-gray-200 mb-12" />
-
-              <div className="rounded-3xl h-[600px] bg-gray-200" />
-
-            </div>
-
-          </div>
-
-        </section>
-      </>
+      <section className="min-h-screen bg-[#f7f4ee] pt-40">
+        <div className="max-w-[1360px] mx-auto px-6">
+          <div className="animate-pulse rounded-[36px] bg-white h-[900px]" />
+        </div>
+      </section>
     );
   }
 
   if (!article) {
     return (
-      <>
-        <Navbar />
-
-        <section className="py-40 bg-[#faf8f4]">
-
-          <div className="max-w-6xl mx-auto text-center">
-
-            <h2
-              className="text-5xl text-[#163629]"
-              style={{
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              Article Not Found
-            </h2>
-
-            <p className="mt-6 text-gray-500">
-
-              The requested article doesn't exist.
-
-            </p>
-
-            <Link
-              href="/property-insights"
-              className="
-              inline-flex
-              mt-10
-              rounded-full
-              bg-[#163629]
-              px-8
-              py-3
-              text-white
-              "
-            >
-              Back to Insights
-            </Link>
-
-          </div>
-
-        </section>
-      </>
+      <section className="min-h-screen flex items-center justify-center bg-[#f7f4ee]">
+        <h2
+          className="text-5xl text-[#163629]"
+          style={{ fontFamily: "Georgia, serif" }}
+        >
+          Article Not Found
+        </h2>
+      </section>
     );
   }
 
   return (
     <>
-      <Navbar forceSolid />
+      <Navbar forceSolid/>
 
-      <main
-  className="
-    bg-[#faf8f4]
-    overflow-x-hidden
-    pt-28
-    lg:pt-32
-    min-h-screen
-    text-[#222]
-  "
->
+      <main className="bg-gradient-to-b from-[#f7f4ee] to-[#fcfbf8] pt-28 pb-24">
 
-        <section className="py-8">
+        <section className="max-w-[1400px] mx-auto px-5 lg:px-8">
 
-          <div className="max-w-[1320px] mx-auto px-5 lg:px-8">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-10 items-start">
 
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,780px)_360px] gap-16">
+            {/* LEFT COLUMN */}
 
-              {/* ===========================
-                  LEFT COLUMN
-              ============================ */}
+            <div className="bg-white rounded-[34px] border border-[#ece7dc] shadow-[0_30px_80px_rgba(0,0,0,.06)] overflow-hidden">
 
-              <div>
+              <div className="px-8 lg:px-20 pt-14 lg:pt-20 pb-20">
 
                 {/* Breadcrumb */}
 
-                <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#888]">
+                <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#8b8b8b]">
 
-                  <Link
-                    href="/"
-                    className="hover:text-[#163629]"
-                  >
+                  <Link href="/" className="hover:text-[#163629]">
                     Home
                   </Link>
 
@@ -209,36 +139,16 @@ export default function InsightDetailPage() {
 
                   <span>{article.category}</span>
 
-                  <ChevronRight size={14} />
-
-                  <span className="truncate">
-
-                    {article.title}
-
-                  </span>
-
                 </div>
 
                 {/* Category */}
 
                 <div className="mt-8">
 
-                  <span
-                    className="
-                    inline-flex
-                    items-center
-                    rounded
-                    bg-[#f5ede1]
-                    text-[#bb8735]
-                    uppercase
-                    tracking-[2px]
-                    text-[11px]
-                    font-semibold
-                    px-3
-                    py-1.5
-                    "
-                  >
+                  <span className="inline-flex items-center rounded-full bg-[#f5ede1] text-[#b88638] px-5 py-2 uppercase tracking-[2px] text-[11px] font-semibold">
+
                     {article.category}
+
                   </span>
 
                 </div>
@@ -246,14 +156,7 @@ export default function InsightDetailPage() {
                 {/* Title */}
 
                 <h1
-                  className="
-                  mt-6
-                  text-[56px]
-                  leading-[64px]
-                  text-[#163629]
-                  font-normal
-                  max-w-[760px]
-                  "
+                  className="mt-7 text-4xl md:text-5xl xl:text-6xl leading-tight tracking-[-1px] text-[#163629] max-w-[900px]"
                   style={{
                     fontFamily: "Georgia, serif",
                   }}
@@ -263,509 +166,649 @@ export default function InsightDetailPage() {
 
                 {/* Description */}
 
-                <p
-                  className="
-                  mt-6
-                  max-w-[720px]
-                  text-[19px]
-                  leading-9
-                  text-[#5c5c5c]
-                  "
-                >
+                <p className="mt-8 max-w-[820px] text-[21px] leading-10 text-[#666]">
+
                   {article.shortDescription}
+
                 </p>
 
-                {/* Meta Row starts here in Part 2 */}
-                {/* ==========================================
-    META ROW
-========================================== */}
+                {/* Meta */}
 
-<div className="mt-8 border-b border-[#ece7dc] pb-8">
-
-  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8">
-
-    {/* Left */}
-
-    <div className="flex flex-wrap items-center gap-8">
-
-      {/* Author */}
-
-      <div className="flex items-center gap-3">
-
-        <div
-          className="
-          h-12
-          w-12
-          rounded-full
-          bg-[#163629]
-          flex
-          items-center
-          justify-center
-          text-white
-          font-semibold
-          "
-        >
-          {article.author?.charAt(0)}
-        </div>
-
-        <div>
-
-          <p className="font-semibold text-[15px] text-[#222]">
-
-            {article.author}
-
-          </p>
-
-          <p className="text-[13px] text-[#777]">
-
-            Property Bouquet Research Team
-
-          </p>
-
-        </div>
-
-      </div>
-
-      {/* Date */}
-
-      <div className="flex items-center gap-2 text-[#777]">
-
-        <CalendarDays size={16} />
-
-        <span className="text-[14px]">
-
-          {new Date(article.publishDate).toLocaleDateString(
-            "en-US",
-            {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            }
-          )}
-
-        </span>
-
-      </div>
-
-      {/* Reading */}
-
-      <div className="flex items-center gap-2 text-[#777]">
-
-        <Clock3 size={16} />
-
-        <span className="text-[14px]">
-
-          {article.readTime} min read
-
-        </span>
-
-      </div>
-
-    </div>
-
-    {/* Share */}
-
-    <div className="flex items-center gap-3">
-
-      <span className="text-sm text-[#777]">
-
-        Share
-
-      </span>
-
-      <button
-        className="
-        h-10
-        w-10
-        rounded-full
-        border
-        border-[#ddd]
-        flex
-        items-center
-        justify-center
-        hover:bg-[#163629]
-        hover:text-white
-        transition
-        "
-      >
-        <FaFacebook size={15} />
-      </button>
-
-      <button
-        className="
-        h-10
-        w-10
-        rounded-full
-        border
-        border-[#ddd]
-        flex
-        items-center
-        justify-center
-        hover:bg-[#163629]
-        hover:text-white
-        transition
-        "
-      >
-        <FaXTwitter size={14} />
-      </button>
-
-      <button
-        className="
-        h-10
-        w-10
-        rounded-full
-        border
-        border-[#ddd]
-        flex
-        items-center
-        justify-center
-        hover:bg-[#163629]
-        hover:text-white
-        transition
-        "
-      >
-        <FaLinkedinIn size={15} />
-      </button>
-
-      <button
-        className="
-        h-10
-        w-10
-        rounded-full
-        border
-        border-[#ddd]
-        flex
-        items-center
-        justify-center
-        hover:bg-[#163629]
-        hover:text-white
-        transition
-        "
-      >
-        <Link2 size={16} />
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-{/* ==========================================
-    FEATURED IMAGE
-========================================== */}
-
-<div className="mt-10 overflow-hidden rounded-2xl">
-
-  <Image
-    src={
-      article.featuredImage ||
-      "/placeholder-news.jpg"
-    }
-    alt={article.title}
-    width={1600}
-    height={900}
-    priority
-    className="
-    w-full
-    h-[560px]
-    object-cover
-    transition
-    duration-500
-    hover:scale-[1.03]
-    "
-  />
-
-</div>
-
-{/* ==========================================
-    ARTICLE
-========================================== */}
-
-<article className="mt-14 text-[#333]">
-
-  <div
-    className="
-    article-content
-    luxury-article
-    text-[#444]
-    "
-    dangerouslySetInnerHTML={{
-      __html: article.content,
-    }}
-  />
-
-  {/* Author Quote */}
-
-  <div
-    className="
-    mt-14
-    rounded-2xl
-    border
-    border-[#ece7dc]
-    bg-[#fcfaf6]
-    p-8
-    "
-  >
-
-    <div className="flex gap-5">
-
-      <div
-        className="
-        w-16
-        h-16
-        rounded-full
-        bg-[#163629]
-        flex
-        items-center
-        justify-center
-        text-white
-        font-semibold
-        text-xl
-        "
-      >
-
-        {article.author?.charAt(0)}
-
-      </div>
-
-      <div>
-
-        <p
-          className="
-          text-[24px]
-          leading-10
-          italic
-          text-[#1d1d1d]
-          "
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
-        >
-
-          “Knowledge-backed real estate
-          decisions create long-term wealth.
-          Invest with research, not emotions.”
-
-        </p>
-
-        <p className="mt-6 font-semibold">
-
-          — {article.author}
-
-        </p>
-
-        <p className="text-sm text-gray-500">
-
-          Property Research Expert
-
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  {/* Helpful section continues in Part 3 */}
-    {/* ==========================================
-      WAS THIS HELPFUL
-  ========================================== */}
-
-  <div
-    className="
+                <div
+  className="
     mt-12
-    rounded-2xl
+    rounded-3xl
     border
     border-[#ece7dc]
-    bg-white
-    p-7
+    bg-[#faf8f4]
+    p-8
+    !text-[#163629]
+    xl:flex
+    xl:justify-between
+    flex
+    flex-col
+    gap-8
+  "
+>
+
+                  <div className="flex flex-wrap items-center gap-8">
+
+                    <div className="flex items-center gap-4">
+
+                      <div className="w-14 h-14 rounded-full bg-[#163629] text-white flex items-center justify-center font-semibold text-lg">
+
+                        {article.author?.charAt(0)}
+
+                      </div>
+
+                      <div>
+
+                        <p className="font-semibold">
+
+                          {article.author}
+
+                        </p>
+
+                        <p className="text-sm text-[#888]">
+
+                          Property Bouquet Research Team
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[#666]">
+
+                      <CalendarDays size={16} />
+
+                      <span>
+
+                        {new Date(article.publishDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[#666]">
+
+                      <Clock3 size={16} />
+
+                      <span>
+
+                        {article.readTime} min read
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                  <div className="flex items-center gap-3">
+
+                    <span className="text-sm text-[#777]">
+                      Share
+                    </span>
+
+                    {[FaFacebook, FaXTwitter, FaLinkedinIn].map(
+                      (Icon, index) => (
+                        <button
+className="
+w-11
+h-11
+rounded-full
+border
+border-[#d9d2c7]
+bg-white
+text-[#163629]
+hover:bg-[#163629]
+hover:text-white
+transition-all
+duration-300
+flex
+items-center
+justify-center
+shadow-sm
+"
+>
+                          <Icon size={16} />
+                        </button>
+                      )
+                    )}
+
+                    <button
+className="
+w-11
+h-11
+rounded-full
+border
+border-[#d9d2c7]
+bg-white
+text-[#163629]
+hover:bg-[#163629]
+hover:text-white
+transition-all
+duration-300
+flex
+items-center
+justify-center
+shadow-sm
+"
+>
+
+                      <Link2 size={17} />
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+                {/* Hero Image */}
+
+<div className="mt-16">
+
+  <figure
+    className="
+    relative
+    overflow-hidden
+    rounded-[36px]
+    border
+    border-[#e8e1d5]
+    bg-[#f7f4ee]
+    shadow-[0_40px_90px_rgba(0,0,0,.12)]
     "
   >
 
-    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <Image
+      src={
+        article.featuredImage ||
+        "/placeholder-news.jpg"
+      }
+      alt={article.title}
+      width={1600}
+      height={900}
+      priority
+      className="
+      w-full
+      h-auto
+      max-h-[700px]
+      object-contain
+      bg-[#f7f4ee]
+      transition-transform
+      duration-700
+      hover:scale-[1.02]
+      "
+    />
 
-      <div>
-
-        <h3
-          className="text-[30px] text-[#163629]"
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          Was this article helpful?
-        </h3>
-
-        <p className="mt-2 text-[#777]">
-
-          We'd love to hear your feedback.
-
-        </p>
-
-      </div>
-
-      <div className="flex gap-3">
-
-        <button
-          className="
-          px-7
-          h-11
-          rounded-lg
-          border
-          border-[#d8d3ca]
-          hover:bg-[#163629]
-          hover:text-white
-          transition
-          "
-        >
-          👍 Yes
-        </button>
-
-        <button
-          className="
-          px-7
-          h-11
-          rounded-lg
-          border
-          border-[#d8d3ca]
-          hover:bg-[#163629]
-          hover:text-white
-          transition
-          "
-        >
-          👎 No
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  {/* ==========================================
-      PREVIOUS / NEXT
-  ========================================== */}
-
-  <div className="mt-16 pt-10 border-t border-[#ece7dc]">
-
-    <div className="grid md:grid-cols-2 gap-10">
-
-      <div>
-
-        <p
-          className="
-          uppercase
-          tracking-[2px]
-          text-[11px]
-          text-gray-400
-          "
-        >
-          Previous Article
-        </p>
-
-        <h3
-          className="
-          mt-3
-          text-[28px]
-          leading-9
-          text-[#163629]
-          hover:text-[#b88638]
-          transition
-          cursor-pointer
-          "
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          Previous Article
-        </h3>
-
-      </div>
-
-      <div className="text-left md:text-right">
-
-        <p
-          className="
-          uppercase
-          tracking-[2px]
-          text-[11px]
-          text-gray-400
-          "
-        >
-          Next Article
-        </p>
-
-        <h3
-          className="
-          mt-3
-          text-[28px]
-          leading-9
-          text-[#163629]
-          hover:text-[#b88638]
-          transition
-          cursor-pointer
-          "
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          Next Article
-        </h3>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</article>
-
-{/* ============================
-    RIGHT SIDEBAR
-============================= */}
+  </figure>
 
 </div>
+
+                {/* ARTICLE CONTENT STARTS HERE */}
+{/* ==========================================
+    ARTICLE BODY
+========================================== */}
+
+{/* ==========================================
+ARTICLE BODY
+========================================== */}
+
+<br />
+<br />
+
+<div className="max-w-[760px] mx-auto">
+
+    <div
+  ref={articleRef}
+  className="article-content mt-16"
+  dangerouslySetInnerHTML={{
+    __html: (article.content || "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\u00A0/g, " "),
+  }}
+/>
+
+</div>
+{/* ==========================================
+AUTHOR QUOTE
+========================================== */}
+
+<div
+  className="
+  mt-24
+  rounded-[34px]
+  bg-gradient-to-br
+  from-[#163629]
+  to-[#214a39]
+  text-white
+  p-10
+  lg:p-14
+  flex
+  flex-col
+  lg:flex-row
+  gap-8
+  items-start
+  "
+>
+
+  <div
+    className="
+    w-20
+    h-20
+    rounded-full
+    bg-[#b88638]
+    flex
+    items-center
+    justify-center
+    text-3xl
+    font-semibold
+    shrink-0
+    "
+  >
+    {article.author?.charAt(0)}
+  </div>
+
+  <div>
+
+    <p
+      className="
+      text-[30px]
+      leading-[50px]
+      italic
+      "
+      style={{
+        fontFamily: "Georgia, serif",
+      }}
+    >
+      “Knowledge-backed real estate decisions create
+      long-term wealth. Invest with research,
+      not emotions.”
+    </p>
+
+    <div className="mt-10">
+
+      <h4 className="text-xl font-semibold">
+
+        {article.author}
+
+      </h4>
+
+      <p className="text-white/70 mt-2">
+
+        Property Bouquet Research Expert
+
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+{/* ==========================================
+WAS THIS HELPFUL
+========================================== */}
+
+<div
+  className="
+  mt-24
+  rounded-[32px]
+  border
+  border-[#ece7dc]
+  bg-[#faf8f4]
+  p-10
+  flex
+  flex-col
+  lg:flex-row
+  justify-between
+  items-center
+  gap-8
+  "
+>
+
+  <div>
+
+    <h3
+      className="text-[36px] text-[#163629]"
+      style={{
+        fontFamily: "Georgia, serif",
+      }}
+    >
+      Was this article helpful?
+    </h3>
+
+    <p className="mt-3 text-[#777]">
+
+      We'd love your feedback.
+
+    </p>
+
+  </div>
+
+  <div className="flex gap-4">
+
+<button
+  className="
+    h-12
+    px-8
+    rounded-full
+    border
+    border-[#d7d1c7]
+    bg-white
+    text-[#163629]
+    font-medium
+    hover:bg-[#163629]
+    hover:text-white
+    transition-all
+    duration-300
+  "
+>
+  👍 Yes
+</button>
+
+<button
+  className="
+    h-12
+    px-8
+    rounded-full
+    border
+    border-[#d7d1c7]
+    bg-white
+    text-[#163629]
+    font-medium
+    hover:bg-[#163629]
+    hover:text-white
+    transition-all
+    duration-300
+  "
+>
+  👎 No
+</button>
+
+  </div>
+
+</div>
+
+{/* ==========================================
+PREVIOUS / NEXT
+========================================== */}
+
+<div className="mt-24 grid md:grid-cols-2 gap-8">
+
+  <div
+    className="
+    rounded-[30px]
+    border
+    border-[#ece7dc]
+    p-10
+    hover:-translate-y-1
+    hover:shadow-xl
+    transition-all
+    duration-300
+    cursor-pointer
+    "
+  >
+
+    <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+
+      Previous Article
+
+    </p>
+
+    <h3
+      className="
+      mt-6
+      text-[30px]
+      leading-10
+      text-[#163629]
+      "
+      style={{
+        fontFamily: "Georgia, serif",
+      }}
+    >
+      Previous Article
+
+    </h3>
+
+  </div>
+
+  <div
+    className="
+    rounded-[30px]
+    border
+    border-[#ece7dc]
+    p-10
+    text-right
+    hover:-translate-y-1
+    hover:shadow-xl
+    transition-all
+    duration-300
+    cursor-pointer
+    "
+  >
+
+    <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+
+      Next Article
+
+    </p>
+
+    <h3
+      className="
+      mt-6
+      text-[30px]
+      leading-10
+      text-[#163629]
+      "
+      style={{
+        fontFamily: "Georgia, serif",
+      }}
+    >
+      Next Article
+
+    </h3>
+
+  </div>
+
+</div>
+
+            </div>
+          </div>
+
+            {/* ==========================
+    LUXURY RIGHT SIDEBAR
+========================== */}
 
 <aside
   className="
   hidden
   lg:block
   sticky
-  top-24
+  top-28
   self-start
-  space-y-6
   "
 >
 
-  <AboutAuthor
-    article={article}
-  />
+  <div
+    className="
+    space-y-8
+    rounded-[36px]
+    "
+  >
+    <TableOfContents
+  article={article}
+  articleRef={articleRef}
+/>
 
-  <TableOfContents
-    article={article}
-  />
+    <AboutAuthor
+      article={article}
+    />
 
-  <LatestInsightsSidebar
-    articles={articles}
-    currentSlug={article.slug}
-  />
 
-  <CTAAdvisor />
+    <LatestInsightsSidebar
+      articles={articles}
+      currentSlug={article.slug}
+    />
 
-  <TagsCard
-    article={article}
-  />
+    <CTAAdvisor />
+
+    <TagsCard
+      article={article}
+    />
+
+  </div>
 
 </aside>
+          </div>
 
-</div>
+        </section>
 
-</div>
+      </main>
 
-</section>
+      {/* ==========================================
+          LUXURY BOTTOM CTA
+      ========================================== */}
 
-</main>
-<Footer/>
-</>
-);
+      <section className="relative overflow-hidden bg-[#163629]">
+
+        <div
+          className="
+          absolute
+          -top-24
+          -right-24
+          w-80
+          h-80
+          rounded-full
+          bg-[#b88638]/10
+          blur-3xl
+          "
+        />
+
+        <div
+          className="
+          absolute
+          -bottom-20
+          -left-20
+          w-72
+          h-72
+          rounded-full
+          bg-white/5
+          blur-3xl
+          "
+        />
+
+        <div className="relative max-w-[1280px] mx-auto px-8 py-28">
+
+          <div className="max-w-[760px]">
+
+            <span
+              className="
+              inline-block
+              uppercase
+              tracking-[4px]
+              text-[#b88638]
+              text-xs
+              font-semibold
+              "
+            >
+              Property Bouquet
+            </span>
+
+            <h2
+              className="
+              mt-6
+              text-5xl
+              md:text-6xl
+              leading-tight
+              text-white
+              "
+              style={{
+                fontFamily: "Georgia, serif",
+              }}
+            >
+              Discover India's Finest Luxury
+              Properties With Confidence.
+            </h2>
+
+            <p
+              className="
+              mt-8
+              text-xl
+              leading-9
+              text-white/75
+              max-w-[640px]
+              "
+            >
+              Exclusive residences, investment advisory,
+              off-market opportunities and market intelligence
+              curated for discerning buyers.
+            </p>
+
+            <div className="mt-12 flex flex-wrap gap-5">
+
+              <Link
+                href="/contact"
+                className="
+                inline-flex
+                items-center
+                justify-center
+                h-14
+                px-10
+                rounded-full
+                bg-[#b88638]
+                text-black
+                font-semibold
+                hover:scale-105
+                transition-all
+                duration-300
+                "
+              >
+                Book Private Consultation
+              </Link>
+
+              <Link
+                href="/properties"
+                className="
+                inline-flex
+                items-center
+                justify-center
+                h-14
+                px-10
+                rounded-full
+                border
+                border-white/20
+                text-white
+                hover:bg-white
+                hover:text-[#163629]
+                transition-all
+                duration-300
+                "
+              >
+                Explore Properties
+              </Link>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <Footer />
+
+    </>
+
+  );
+
 }
+
