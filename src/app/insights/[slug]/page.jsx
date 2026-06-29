@@ -259,31 +259,31 @@ export default function InsightDetailPage() {
                     </span>
 
                     {[FaFacebook, FaXTwitter, FaLinkedinIn].map(
-                      (Icon, index) => (
-                        <button
-className="
-w-11
-h-11
-rounded-full
-border
-border-[#d9d2c7]
-bg-white
-text-[#163629]
-hover:bg-[#163629]
-hover:text-white
-transition-all
-duration-300
-flex
-items-center
-justify-center
-shadow-sm
-"
->
-                          <Icon size={16} />
-                        </button>
-                      )
-                    )}
-
+  (Icon, index) => (
+    <button
+      key={index}
+      className="
+      w-11
+      h-11
+      rounded-full
+      border
+      border-[#d9d2c7]
+      bg-white
+      text-[#163629]
+      hover:bg-[#163629]
+      hover:text-white
+      transition-all
+      duration-300
+      flex
+      items-center
+      justify-center
+      shadow-sm
+      "
+    >
+      <Icon size={16} />
+    </button>
+  )
+)}
                     <button
 className="
 w-11
@@ -420,33 +420,32 @@ AUTHOR QUOTE
   <div>
 
     <p
-      className="
-      text-[30px]
-      leading-[50px]
-      italic
-      "
-      style={{
-        fontFamily: "Georgia, serif",
-      }}
-    >
-      “Knowledge-backed real estate decisions create
-      long-term wealth. Invest with research,
-      not emotions.”
-    </p>
+  className="
+  text-[30px]
+  leading-[50px]
+  italic
+  "
+  style={{
+    fontFamily: "Georgia, serif",
+  }}
+>
+  {article.authorQuote ||
+    "Knowledge-backed real estate decisions create long-term wealth. Invest with research, not emotions."}
+</p>
 
     <div className="mt-10">
 
       <h4 className="text-xl font-semibold">
 
-        {article.author}
+        {article.author ||
+  "Property Bouquet Research Team"}
 
       </h4>
 
       <p className="text-white/70 mt-2">
-
-        Property Bouquet Research Expert
-
-      </p>
+  {article.authorDesignation ||
+    "Property Bouquet Research Expert"}
+</p>
 
     </div>
 

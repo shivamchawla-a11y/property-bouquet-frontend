@@ -80,13 +80,13 @@ export default function LatestInsightsSidebar({
 
       {/* Articles */}
 
-      <div className="space-y-5">
+      <div className="space-y-5"> 
 
         {latest.map((item, index) => (
 
           <Link
             key={item.slug}
-            href={`/property-insights/${item.slug}`}
+            href={`/insights/${item.slug}`}
             className="
             group
             block

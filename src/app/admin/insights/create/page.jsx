@@ -20,6 +20,7 @@ export default function CreateInsightPage() {
 
   const [loading, setLoading] =
     useState(false);
+    const [uploading, setUploading] = useState(false);
 
   const [keywords, setKeywords] =
     useState("");
@@ -39,7 +40,12 @@ export default function CreateInsightPage() {
         "Luxury Real Estate",
 
       author:
+      "Property Bouquet Research Team",
+
+      authorDesignation:
         "Property Bouquet Research Team",
+
+      authorQuote: "",
 
       readTime: 5,
 
@@ -177,8 +183,77 @@ export default function CreateInsightPage() {
     }
   };
 
+  // ================= VALIDATE FILE =================
+const validateFile = (file) => {
+  if (!file) return false;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Only image files allowed");
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Maximum file size is 5MB");
+    return false;
+  }
+
+  return true;
+};
+
+// ================= UPLOAD IMAGE =================
+const uploadImage = async (file) => {
+  try {
+    const data = new FormData();
+
+    data.append("file", file);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(result.message || "Upload failed");
+    }
+
+    return result.url;
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+    return null;
+  }
+};
+
+// ================= FEATURED IMAGE UPLOAD =================
+const handleFeaturedImageUpload = async (file) => {
+  if (!validateFile(file)) return;
+
+  setUploading(true);
+
+  const url = await uploadImage(file);
+
+  if (url) {
+    updateField("featuredImage", url);
+  }
+
+  setUploading(false);
+};
+
   return (
     <div className="max-w-7xl mx-auto p-6">
+
+      {uploading && (
+  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center">
+    <div className="bg-white px-6 py-4 rounded-2xl shadow-xl text-sm font-semibold">
+      Uploading image...
+    </div>
+  </div>
+)}
 
       {/* HEADER */}
 
@@ -572,6 +647,61 @@ bg-white
 "
                   />
                 </div>
+                <div>
+  <label className="block text-sm font-semibold mb-2 text-[#0f3b2e]">
+    Author Quote
+  </label>
+
+  <textarea
+    rows={4}
+    value={form.authorQuote}
+    onChange={(e) =>
+      updateField(
+        "authorQuote",
+        e.target.value
+      )
+    }
+    className="
+w-full
+border
+border-gray-300
+rounded-xl
+px-4
+py-3
+text-gray-900
+placeholder:text-gray-400
+bg-white
+"
+    placeholder="Knowledge-backed real estate decisions create long-term wealth..."
+  />
+</div>
+<div>
+  <label className="block text-sm font-semibold mb-2 text-[#0f3b2e]">
+    Author Designation
+  </label>
+
+  <input
+    value={form.authorDesignation}
+    onChange={(e) =>
+      updateField(
+        "authorDesignation",
+        e.target.value
+      )
+    }
+    className="
+w-full
+border
+border-gray-300
+rounded-xl
+px-4
+py-3
+text-gray-900
+placeholder:text-gray-400
+bg-white
+"
+    placeholder="Senior Investment Advisor"
+  />
+</div>
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-[#0f3b2e]">
@@ -618,29 +748,43 @@ bg-white
                 Featured Image
               </h2>
 
-              <input
-                value={
-                  form.featuredImage
-                }
-                onChange={(e) =>
-                  updateField(
-                    "featuredImage",
-                    e.target.value
-                  )
-                }
-                placeholder="https://..."
-                className="
-w-full
-border
+              <div
+  onClick={() =>
+    document
+      .getElementById("featuredImageUpload")
+      .click()
+  }
+  className="
+border-2
+border-dashed
 border-gray-300
-rounded-xl
-px-4
-py-3
-text-gray-900
-placeholder:text-gray-400
-bg-white
+rounded-2xl
+p-8
+text-center
+cursor-pointer
+hover:bg-gray-50
+transition
 "
-              />
+>
+  <p className="font-semibold text-[#0f3b2e]">
+    Click to Upload Featured Image
+  </p>
+
+  <p className="text-sm text-gray-500 mt-2">
+    PNG, JPG, WEBP (Max 5MB)
+  </p>
+</div>
+
+<input
+  id="featuredImageUpload"
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={(e) => {
+    handleFeaturedImageUpload(e.target.files[0]);
+    e.target.value = "";
+  }}
+/>
 
               {form.featuredImage && (
                 <img
