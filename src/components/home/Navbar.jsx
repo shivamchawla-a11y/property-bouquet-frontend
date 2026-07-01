@@ -11,28 +11,64 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
   {
-    title: "PROPERTIES",
-    items: ["Apartments", "Penthouses", "Villas", "Plots"],
+    title: "Properties",
+    items: [
+      "Luxury Apartments",
+      "Penthouses",
+      "Villas",
+      "Plots",
+    ],
   },
   {
-    title: "INVESTMENT INTELLIGENCE",
-    items: ["Market Reports", "ROI Analysis", "Luxury Trends"],
+    title: "Locations",
+    items: [
+      "Gurgaon",
+      "Dubai",
+      "Goa",
+      "London",
+    ],
   },
   {
-    title: "LOCATIONS",
-    items: ["Dubai", "Gurgaon", "Goa", "London"],
+    title: "Developers",
+    items: [
+      "DLF",
+      "M3M",
+      "Trump",
+      "Signature Global",
+    ],
   },
   {
-    title: "ADVISORY",
-    items: ["Private Advisory", "Investment Planning"],
+    title: "Knowledge Centre",
+    items: [
+      "Buying Guides",
+      "Home Loans",
+      "Legal Guides",
+      "Investment Guides",
+    ],
   },
   {
-    title: "MARKET INSIGHTS",
-    items: ["Insights", "Guides", "Luxury News"],
+    title: "Property Insights",
+    items: [
+      "Market Reports",
+      "Luxury News",
+      "Investment Trends",
+    ],
   },
   {
-    title: "ABOUT US",
-    items: ["Our Story", "Clients", "Vision"],
+    title: "Tools",
+    items: [
+      "EMI Calculator",
+      "Affordability Calculator",
+      "Area Converter",
+    ],
+  },
+  {
+    title: "About Us",
+    items: [
+      "Company",
+      "Our Team",
+      "Careers",
+    ],
   },
 ];
 
@@ -78,31 +114,99 @@ const [mobileDropdown, setMobileDropdown] =
 >
       <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
         
-        <div className="h-[82px] flex items-center justify-between">
+        <div className="h-[92px] flex items-center justify-between">
           
           {/* LEFT */}
           <div className="flex items-center gap-10">
 
             {/* LOGO */}
             <Link
-              href="/"
-              className="flex items-center gap-3 shrink-0"
-            >
+  href="/"
+  className="
+    flex
+    items-center
+    gap-4
+    shrink-0
+    group
+    transition-all
+    duration-500
+  "
+>
               <img
-                src="/logo.png"
-                alt="logo"
-                className="w-[48px] h-[48px] object-contain"
-              />
+  src="/logo.png"
+  alt="Property Bouquet"
+  className="
+  w-[46px]
+  h-[46px]
+  xl:w-[52px]
+  xl:h-[52px]
+  object-contain
+  transition-all
+  duration-500
+  group-hover:scale-105
+  drop-shadow-[0_6px_14px_rgba(0,0,0,.3)]
+"
+/>
 
-              <div className="leading-none">
-                <h2 className="text-[24px] xl:text-[26px] font-semibold text-white tracking-tight font-heading">
-                  PROPERTY
-                </h2>
+              <div className="flex flex-col leading-none">
 
-                <p className="text-[#c59d4f] tracking-[4px] text-[11px] xl:text-[12px] font-medium mt-1">
-                  BOUQUET
-                </p>
-              </div>
+  <h2
+    className="
+      text-[24px]
+xl:text-[27px]
+      font-light
+      tracking-[0.08em]
+      text-white
+      uppercase
+      drop-shadow-[0_2px_12px_rgba(0,0,0,.35)]
+    "
+    style={{
+      fontFamily: "Cormorant Garamond, serif",
+    }}
+  >
+    PROPERTY
+  </h2>
+
+  <div className="flex items-center gap-3 shrink-0 group">
+
+    <div
+      className="
+        h-px
+        w-8
+        bg-gradient-to-r
+        from-transparent
+        via-[#D4AF37]
+        to-[#D4AF37]
+      "
+    />
+
+    <span
+      className="
+        mx-3
+        text-[#D4AF37]
+        text-[10px]
+tracking-[0.38em]
+        uppercase
+        font-semibold
+      "
+    >
+      BOUQUET
+    </span>
+
+    <div
+      className="
+        h-px
+        flex-1
+        bg-gradient-to-l
+        from-transparent
+        via-[#D4AF37]
+        to-[#D4AF37]
+      "
+    />
+
+  </div>
+
+</div>
             </Link>
 
             {/* DESKTOP MENU */}

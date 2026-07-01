@@ -87,7 +87,9 @@ const advisoryPoints = [
   "Off-Market Access",
 ];
 
-export default function LuxuryInsightsSection() {
+export default function LuxuryInsightsSection({
+  onConsultationClick,
+}) {
 
   const [investment, setInvestment] = useState(100000000); // 10 Cr
 const [years, setYears] = useState(5);
@@ -835,7 +837,7 @@ const formatDate = (date) => {
       </div>
 
       {/* BUTTON */}
-      <button className="group mt-10 h-[54px] px-9 rounded-2xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[12px] font-semibold tracking-[1px] hover:brightness-110 hover:scale-[1.01] transition-all duration-300 shadow-[0_12px_35px_rgba(212,174,103,0.28)]">
+      <button onClick={onConsultationClick} className="group mt-10 h-[54px] px-9 rounded-2xl bg-gradient-to-b from-[#e0bd74] to-[#b88731] text-black text-[12px] font-semibold tracking-[1px] hover:brightness-110 hover:scale-[1.01] transition-all duration-300 shadow-[0_12px_35px_rgba(212,174,103,0.28)]">
 
         <span className="flex items-center gap-3">
           SCHEDULE PRIVATE CONSULTATION

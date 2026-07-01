@@ -56,7 +56,11 @@ export default function HomePage() {
 
       <PremiumPartners />
  
-      <LuxuryInsightsSection /> 
+      <LuxuryInsightsSection
+  onConsultationClick={() =>
+    setShowConsultation(true)
+  }
+/>
 
       <Footer/>
 
