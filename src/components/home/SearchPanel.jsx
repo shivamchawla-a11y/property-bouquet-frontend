@@ -566,34 +566,39 @@ const developerOptions = developers
       </div>
 
       {/* TAGLINE */}
-      <div
-        className="
-          relative
-          z-20
-          flex
-          items-center
-          justify-center
-          gap-3
-          pb-3
-        pt-0
-        "
-      >
-        <Building2
-          size={14}
-          className="text-[#c89d58]"
-        />
+<div
+  className="
+    relative
+    z-20
+    flex
+    items-center
+    justify-center
+    gap-2
+    pb-3
+    pt-1
+    px-4
+    text-center
+  "
+>
+  <Building2
+    size={14}
+    className="text-[#c89d58] shrink-0"
+  />
 
-        <span
-          className="
-            text-[11px]
-            uppercase
-            tracking-[6px]
-            text-white/70
-          "
-        >
-          Explore Luxury. Invest With Confidence.
-        </span>
-      </div>
+  <span
+    className="
+      text-[10px]
+      sm:text-[11px]
+      uppercase
+      tracking-[2px]
+      sm:tracking-[6px]
+      text-white/70
+      leading-relaxed
+    "
+  >
+    Explore Luxury. Invest With Confidence.
+  </span>
+</div>
     </div>
     <AnimatePresence>
   {showDeveloperModal && (
