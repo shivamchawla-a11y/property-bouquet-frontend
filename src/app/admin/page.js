@@ -8,6 +8,7 @@ import {
   Users,
   MessageSquare,
   TrendingUp,
+  Clock3,
 } from "lucide-react";
 
 import {
@@ -34,6 +35,7 @@ export default function AdminDashboard() {
 
 const [propertyChartData, setPropertyChartData] =
   useState([]);
+  const [activities, setActivities] = useState([]);
 
   // 🔥 STATES (for future real API)
   const [stats, setStats] = useState([
@@ -123,6 +125,56 @@ const [propertyChartData, setPropertyChartData] =
 
       const allLeads =
         leadsData?.data || [];
+
+        // ========================================
+// RECENT ACTIVITY
+// ========================================
+
+const activityFeed = [];
+
+// Recent Properties
+allProperties.forEach((property) => {
+  activityFeed.push({
+    type: "property",
+    title: `Property "${property.coreDetails?.title || property.title}" added`,
+    subtitle:
+      property.locationData?.locationName ||
+      property.locationData?.customLocation ||
+      "Unknown Location",
+    createdAt: property.createdAt,
+  });
+});
+
+// Recent Leads
+allLeads.forEach((lead) => {
+  activityFeed.push({
+    type: "lead",
+    title: `New enquiry received`,
+    subtitle:
+      lead.name ||
+      lead.fullName ||
+      lead.email ||
+      "New Lead",
+    createdAt: lead.createdAt,
+  });
+});
+
+// Recent Users
+allUsers.forEach((user) => {
+  activityFeed.push({
+    type: "user",
+    title: `New user registered`,
+    subtitle: user.name,
+    createdAt: user.createdAt,
+  });
+});
+
+activityFeed.sort(
+  (a, b) =>
+    new Date(b.createdAt) - new Date(a.createdAt)
+);
+
+setActivities(activityFeed.slice(0, 8));
 
 // ========================================
 // LEADS BY MONTH (SORTED)
@@ -438,12 +490,58 @@ setPropertyChartData(locationGraph);
           Recent Activity
         </h2>
 
-        <ul className="space-y-3 text-gray-600 text-sm">
-          <li>✔ New property added in Gurgaon</li>
-          <li>✔ User registered</li>
-          <li>✔ Enquiry received for Delhi villa</li>
-          <li>✔ Property marked as sold</li>
-        </ul>
+        <div className="space-y-4">
+  {activities.map((activity, index) => {
+    let Icon = Clock3;
+    let bg = "bg-gray-100";
+    let color = "text-gray-600";
+
+    if (activity.type === "property") {
+      Icon = Building2;
+      bg = "bg-blue-100";
+      color = "text-blue-600";
+    }
+
+    if (activity.type === "lead") {
+      Icon = MessageSquare;
+      bg = "bg-green-100";
+      color = "text-green-600";
+    }
+
+    if (activity.type === "user") {
+      Icon = Users;
+      bg = "bg-yellow-100";
+      color = "text-yellow-700";
+    }
+
+    return (
+      <div
+        key={index}
+        className="flex items-start gap-3 border-b last:border-b-0 pb-3"
+      >
+        <div
+          className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center`}
+        >
+          <Icon className={`${color}`} size={18} />
+        </div>
+
+        <div className="flex-1">
+          <p className="font-medium text-gray-800">
+            {activity.title}
+          </p>
+
+          <p className="text-sm text-gray-500">
+            {activity.subtitle}
+          </p>
+
+          <p className="text-xs text-gray-400 mt-1">
+            {new Date(activity.createdAt).toLocaleString()}
+          </p>
+        </div>
+      </div>
+    );
+  })}
+</div>
       </div>
     </div>
   );
