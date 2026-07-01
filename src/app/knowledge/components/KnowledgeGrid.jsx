@@ -1,77 +1,65 @@
 "use client";
 
-import KnowledgeCard from "./KnowledgeCard";
-import { ChevronDown } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ChevronDown,
+  ArrowRight,
+  Clock3,
+  CalendarDays,
+} from "lucide-react";
 
-const cards = [
-  {
-    badge: "GET STARTED",
-    image: "/knowledge/card1.jpg",
-    title: "Step-by-Step Home Buying Process",
-    description:
-      "A complete roadmap to help you buy your dream home smoothly.",
-  },
-  {
-    badge: "ESSENTIALS",
-    image: "/knowledge/card2.jpg",
-    title: "Documents Required to Buy Property",
-    description:
-      "Check the complete list of documents you need for a hassle-free purchase.",
-  },
-  {
-    badge: "LEGAL",
-    image: "/knowledge/card3.jpg",
-    title: "Agreement to Possession: Key Legal Steps",
-    description:
-      "Understand the legal process from agreement to getting possession.",
-  },
-  {
-    badge: "PROPERTY TYPES",
-    image: "/knowledge/card4.jpg",
-    title: "Under Construction vs Ready-to-Move",
-    description:
-      "Compare the pros, cons and risks before you decide.",
-  },
-  {
-    badge: "FINANCE",
-    image: "/knowledge/card5.jpg",
-    title: "Budgeting & Cost Breakdown",
-    description:
-      "Understand all costs involved beyond the property price.",
-  },
-  {
-    badge: "TIPS & CHECKLISTS",
-    image: "/knowledge/card6.jpg",
-    title: "Home Buying Checklist: Don't Miss Anything",
-    description:
-      "Use this complete checklist to ensure you're ready at every step.",
-  },
-];
-
-export default function KnowledgeGrid() {
+export default function KnowledgeGrid({
+  articles = [],
+}) {
   return (
-    <section className="mt-12">
+    <section>
 
-      <div className="flex items-center justify-between mb-8">
+      {/* Header */}
 
-        <h2 className="text-5xl font-serif">
-          Explore Buying Guides
-        </h2>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+
+        <div>
+
+          <p className="uppercase tracking-[4px] text-[#b88638] text-xs font-semibold">
+            Knowledge Library
+          </p>
+
+          <h2
+            className="mt-3 text-5xl text-[#163629]"
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            Explore Knowledge Articles
+          </h2>
+
+          <p className="mt-4 text-[#6f6f6f] max-w-2xl leading-8">
+            Curated articles, buying guides,
+            investment strategies, legal advice and
+            market insights to help you make
+            informed real estate decisions.
+          </p>
+
+        </div>
 
         <button
           className="
-          flex
+          hidden
+          md:flex
           items-center
           gap-2
-          text-gray-700
-          hover:text-[#b88a24]
+          rounded-full
+          border
+          border-[#e6dfd4]
+          bg-white
+          px-5
+          py-3
+          text-[#163629]
+          shadow-sm
           "
         >
-          Sort by:
-
-          <span className="font-medium">
-            Latest
-          </span>
+          Latest
 
           <ChevronDown size={18} />
 
@@ -79,16 +67,227 @@ export default function KnowledgeGrid() {
 
       </div>
 
-      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-7">
+      {/* Grid */}
 
-        {cards.map((card) => (
-          <KnowledgeCard
-            key={card.title}
-            {...card}
-          />
-        ))}
+      {articles.length === 0 ? (
 
-      </div>
+        <div
+          className="
+          rounded-[32px]
+          bg-white
+          border
+          border-[#ece7dc]
+          py-24
+          text-center
+          "
+        >
+
+          <h3
+            className="text-3xl text-[#163629]"
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            No Articles Found
+          </h3>
+
+          <p className="mt-4 text-[#777]">
+            Articles will appear here once they are
+            published.
+          </p>
+
+        </div>
+
+      ) : (
+
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+          {articles.map((article) => {
+
+            const publishDate =
+              article.publishDate
+                ? new Date(
+                    article.publishDate
+                  ).toLocaleDateString(
+                    "en-IN",
+                    {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }
+                  )
+                : "";
+
+            return (
+
+              <Link
+                key={article._id}
+                href={`/knowledge/${article.slug}`}
+                className="group"
+              >
+
+                <article
+                  className="
+                  h-full
+                  overflow-hidden
+                  rounded-[32px]
+                  bg-white
+                  border
+                  border-[#ebe5da]
+                  shadow-[0_12px_40px_rgba(0,0,0,.05)]
+                  hover:shadow-[0_30px_70px_rgba(0,0,0,.10)]
+                  hover:-translate-y-2
+                  transition-all
+                  duration-500
+                  "
+                >
+
+                  {/* Image */}
+
+                  <div className="relative h-64 overflow-hidden">
+
+                    <Image
+                      src={article.featuredImage}
+                      alt={article.title}
+                      fill
+                      unoptimized
+                      className="
+                      object-cover
+                      transition-transform
+                      duration-700
+                      group-hover:scale-110
+                      "
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                    <span
+                      className="
+                      absolute
+                      top-5
+                      left-5
+                      rounded-full
+                      bg-white/95
+                      backdrop-blur
+                      px-4
+                      py-2
+                      text-[11px]
+                      uppercase
+                      tracking-[2px]
+                      font-semibold
+                      text-[#163629]
+                      "
+                    >
+                      {article.category}
+                    </span>
+
+                  </div>
+
+                  {/* Content */}
+
+                  <div className="relative p-7">
+
+                    {/* Gold line */}
+
+                    <div className="w-14 h-[2px] bg-[#b88638] rounded-full mb-6" />
+
+                    <h3
+                      className="
+                      text-[28px]
+                      leading-[38px]
+                      text-[#163629]
+                      group-hover:text-[#b88638]
+                      transition-colors
+                      "
+                      style={{
+                        fontFamily: "Georgia, serif",
+                      }}
+                    >
+                      {article.title}
+                    </h3>
+
+                    <p className="mt-5 text-[#666] leading-8 line-clamp-3">
+
+                      {article.shortDescription}
+
+                    </p>
+
+                    {/* Footer */}
+
+                    <div
+                      className="
+                      mt-8
+                      pt-6
+                      border-t
+                      border-[#efe8dc]
+                      flex
+                      items-center
+                      justify-between
+                      "
+                    >
+
+                      <div className="space-y-2 text-sm text-[#777]">
+
+                        <div className="flex items-center gap-2">
+
+                          <Clock3
+                            size={15}
+                            className="text-[#b88638]"
+                          />
+
+                          {article.readTime} min read
+
+                        </div>
+
+                        <div className="flex items-center gap-2">
+
+                          <CalendarDays
+                            size={15}
+                            className="text-[#b88638]"
+                          />
+
+                          {publishDate}
+
+                        </div>
+
+                      </div>
+
+                      <div
+                        className="
+                        w-12
+                        h-12
+                        rounded-full
+                        bg-[#163629]
+                        text-white
+                        flex
+                        items-center
+                        justify-center
+                        group-hover:bg-[#b88638]
+                        group-hover:rotate-45
+                        transition-all
+                        duration-300
+                        "
+                      >
+
+                        <ArrowRight size={18} />
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </article>
+
+              </Link>
+
+            );
+
+          })}
+
+        </div>
+
+      )}
 
     </section>
   );

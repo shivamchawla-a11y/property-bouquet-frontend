@@ -1,248 +1,298 @@
 "use client";
 
-import {
-  Lightbulb,
-  ShieldCheck,
-  User,
-  MapPin,
-  CreditCard,
-  Camera,
-  Landmark,
-  Home,
-} from "lucide-react";
+import Link from "next/link";
+import "@/app/insights/article.css";
 
-const buyerDocuments = [
-  {
-    icon: User,
-    title: "1. Identity Proof",
-    description:
-      "Aadhaar Card, Passport, Voter ID, PAN Card or any government-issued identity proof.",
-  },
-  {
-    icon: MapPin,
-    title: "2. Address Proof",
-    description:
-      "Aadhaar Card, Passport, Driving License, Utility Bill or Bank Statement.",
-  },
-  {
-    icon: CreditCard,
-    title: "3. PAN Card",
-    description:
-      "Mandatory for property transactions above ₹10 lakhs.",
-  },
-  {
-    icon: Camera,
-    title: "4. Passport Photograph",
-    description:
-      "Recent passport-size photographs of all buyers.",
-  },
-  {
-    icon: Landmark,
-    title: "5. Bank Statements / ITR",
-    description:
-      "Last 6 months' bank statements and Income Tax Returns for loan processing.",
-  },
-];
-
-const sellerDocuments = [
-  {
-    icon: Home,
-    title: "1. Title Deed",
-    description:
-      "Original ownership documents proving legal ownership.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "2. Encumbrance Certificate",
-    description:
-      "Shows the property has no outstanding legal liabilities.",
-  },
-  {
-    icon: Landmark,
-    title: "3. Property Tax Receipts",
-    description:
-      "Latest tax payment receipts issued by the municipality.",
-  },
-  {
-    icon: Home,
-    title: "4. Approved Building Plan",
-    description:
-      "Building approval issued by the local authority.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "5. Occupancy Certificate",
-    description:
-      "Completion/Occupancy certificate wherever applicable.",
-  },
-];
-
-function Table({ rows }) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-[#e7e0d5] mt-6">
-
-      <div className="grid grid-cols-2 bg-[#0f3b2e] text-white">
-
-        <div className="px-6 py-4 font-semibold">
-          DOCUMENT
-        </div>
-
-        <div className="px-6 py-4 font-semibold">
-          DESCRIPTION
-        </div>
-
-      </div>
-
-      {rows.map((item, index) => {
-        const Icon = item.icon;
-
-        return (
-          <div
-            key={index}
-            className="grid grid-cols-2 border-t"
-          >
-            <div className="flex items-center gap-4 px-6 py-5">
-
-              <Icon
-                size={22}
-                className="text-[#0f3b2e]"
-              />
-
-              <span className="font-semibold">
-                {item.title}
-              </span>
-
-            </div>
-
-            <div className="px-6 py-5 text-gray-600 leading-7">
-              {item.description}
-            </div>
-
-          </div>
-        );
-      })}
-    </div>
+export default function ArticleContent({
+  article,
+  articles = [],
+}) {
+  const currentIndex = articles.findIndex(
+    (item) => item.slug === article.slug
   );
-}
 
-export default function ArticleContent() {
+  const previousArticle =
+    currentIndex < articles.length - 1
+      ? articles[currentIndex + 1]
+      : null;
+
+  const nextArticle =
+    currentIndex > 0
+      ? articles[currentIndex - 1]
+      : null;
+
   return (
-    <article>
+    <div
+      className="
+      rounded-[34px]
+      bg-white
+      border
+      border-[#ece7dc]
+      shadow-[0_30px_80px_rgba(0,0,0,.06)]
+      overflow-hidden
+      "
+    >
+      <div className="px-8 lg:px-16 xl:px-20 py-14 lg:py-20">
 
-      {/* Overview */}
+        {/* ARTICLE */}
 
-      <h2 className="text-4xl font-serif text-[#0f3b2e]">
-        Overview
-      </h2>
+        <div className="max-w-[780px] mx-auto">
 
-      <p className="mt-6 text-gray-600 leading-9 text-lg">
-        Buying a property is a significant financial
-        decision. Having the right documents in
-        place ensures a smooth transaction and
-        protects you from legal complications in
-        the future.
-      </p>
+          <div
+            className="article-content"
+            dangerouslySetInnerHTML={{
+              __html: (article.content || "")
+                .replace(/&nbsp;/g, " ")
+                .replace(/\u00A0/g, " "),
+            }}
+          />
 
-      {/* Key Takeaway */}
+        </div>
 
-      <div className="mt-8 rounded-2xl border bg-[#fbfaf8] border-[#e8dfd2] p-8">
+        {/* AUTHOR QUOTE */}
 
-        <div className="flex gap-5">
+        <div
+          className="
+          mt-24
+          rounded-[32px]
+          bg-gradient-to-br
+          from-[#163629]
+          to-[#214a39]
+          text-white
+          p-10
+          lg:p-14
+          flex
+          flex-col
+          lg:flex-row
+          gap-8
+          items-start
+          "
+        >
 
-          <div className="w-14 h-14 rounded-full bg-[#0f3b2e] flex items-center justify-center">
-
-            <Lightbulb
-              className="text-[#d3ac59]"
-              size={28}
-            />
-
+          <div
+            className="
+            w-20
+            h-20
+            rounded-full
+            bg-[#b88638]
+            flex
+            items-center
+            justify-center
+            text-3xl
+            font-semibold
+            shrink-0
+            "
+          >
+            {article.author?.charAt(0)}
           </div>
 
           <div>
 
-            <p className="uppercase tracking-[2px] text-xs font-bold text-[#0f3b2e]">
-              Key Takeaway
+            <p
+              className="text-[30px] leading-[50px] italic"
+              style={{
+                fontFamily: "Georgia, serif",
+              }}
+            >
+              {article.authorQuote ||
+                "Knowledge-backed real estate decisions create long-term wealth. Invest with research, not emotions."}
             </p>
 
-            <p className="mt-2 text-gray-700 leading-8">
-              Having the right documents ready
-              ensures a legally safe property
-              purchase and helps avoid delays in
-              registration and loan approval.
-            </p>
+            <div className="mt-10">
+
+              <h4 className="text-xl font-semibold">
+                {article.author}
+              </h4>
+
+              <p className="text-white/70 mt-2">
+                {article.authorDesignation ||
+                  "Property Bouquet Research Expert"}
+              </p>
+
+            </div>
 
           </div>
 
         </div>
 
-      </div>
-
-      {/* Buyer */}
-
-      <section className="mt-14">
-
-        <h2 className="text-4xl font-serif text-[#0f3b2e]">
-          1. Documents Required from the Buyer
-        </h2>
-
-        <p className="mt-5 text-gray-600 text-lg leading-8">
-          These documents are required from the
-          buyer to verify identity, address and
-          financial capability.
-        </p>
-
-        <Table rows={buyerDocuments} />
-
-      </section>
-
-      {/* Seller */}
-
-      <section className="mt-16">
-
-        <h2 className="text-4xl font-serif text-[#0f3b2e]">
-          2. Documents Required from the Seller
-        </h2>
-
-        <p className="mt-5 text-gray-600 text-lg leading-8">
-          These documents help verify ownership,
-          legal status and compliance of the
-          property.
-        </p>
-
-        <Table rows={sellerDocuments} />
-
-      </section>
-
-      {/* Future HTML */}
-
-      <section className="mt-20">
+        {/* HELPFUL */}
 
         <div
           className="
-          prose
-          prose-lg
-          max-w-none
-          prose-headings:font-serif
-          prose-headings:text-[#0f3b2e]
-          prose-p:text-gray-700
-          prose-li:text-gray-700
-          prose-a:text-[#c9a64b]
-          prose-img:rounded-2xl
+          mt-20
+          rounded-[28px]
+          border
+          border-[#ece7dc]
+          bg-[#faf8f4]
+          p-10
+          flex
+          flex-col
+          lg:flex-row
+          justify-between
+          items-center
+          gap-8
           "
         >
-          {/* Later replace with:
 
-          <div
-             dangerouslySetInnerHTML={{
-                __html: knowledge.content
-             }}
-          />
+          <div>
 
-          */}
+            <h3
+              className="text-[34px] text-[#163629]"
+              style={{
+                fontFamily: "Georgia, serif",
+              }}
+            >
+              Was this article helpful?
+            </h3>
+
+            <p className="mt-3 text-[#777]">
+              We'd love your feedback.
+            </p>
+
+          </div>
+
+          <div className="flex gap-4">
+
+            <button
+              className="
+              h-12
+              px-8
+              rounded-full
+              border
+              border-[#d7d1c7]
+              bg-white
+              text-[#163629]
+              font-medium
+              hover:bg-[#163629]
+              hover:text-white
+              transition-all
+              duration-300
+              "
+            >
+              👍 Yes
+            </button>
+
+            <button
+              className="
+              h-12
+              px-8
+              rounded-full
+              border
+              border-[#d7d1c7]
+              bg-white
+              text-[#163629]
+              font-medium
+              hover:bg-[#163629]
+              hover:text-white
+              transition-all
+              duration-300
+              "
+            >
+              👎 No
+            </button>
+
+          </div>
+
         </div>
 
-      </section>
+        {/* PREVIOUS / NEXT */}
 
-    </article>
+        {(previousArticle || nextArticle) && (
+          <div className="mt-20 grid md:grid-cols-2 gap-8">
+
+            <div>
+
+              {previousArticle && (
+
+                <Link
+                  href={`/knowledge/${previousArticle.slug}`}
+                  className="
+                  block
+                  rounded-[28px]
+                  border
+                  border-[#ece7dc]
+                  bg-[#fcfbf8]
+                  p-8
+                  hover:-translate-y-1
+                  hover:shadow-xl
+                  transition-all
+                  duration-300
+                  "
+                >
+
+                  <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+                    Previous Article
+                  </p>
+
+                  <h3
+                    className="
+                    mt-5
+                    text-[28px]
+                    leading-9
+                    text-[#163629]
+                    "
+                    style={{
+                      fontFamily: "Georgia, serif",
+                    }}
+                  >
+                    {previousArticle.title}
+                  </h3>
+
+                </Link>
+
+              )}
+
+            </div>
+
+            <div>
+
+              {nextArticle && (
+
+                <Link
+                  href={`/knowledge/${nextArticle.slug}`}
+                  className="
+                  block
+                  rounded-[28px]
+                  border
+                  border-[#ece7dc]
+                  bg-[#fcfbf8]
+                  p-8
+                  text-right
+                  hover:-translate-y-1
+                  hover:shadow-xl
+                  transition-all
+                  duration-300
+                  "
+                >
+
+                  <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+                    Next Article
+                  </p>
+
+                  <h3
+                    className="
+                    mt-5
+                    text-[28px]
+                    leading-9
+                    text-[#163629]
+                    "
+                    style={{
+                      fontFamily: "Georgia, serif",
+                    }}
+                  >
+                    {nextArticle.title}
+                  </h3>
+
+                </Link>
+
+              )}
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    </div>
   );
 }

@@ -1,19 +1,43 @@
-import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 
 import HeroSection from "./components/HeroSection";
 import KnowledgeSidebar from "./components/KnowledgeSidebar";
 import FeaturedGuide from "./components/FeaturedGuide";
 import KnowledgeGrid from "./components/KnowledgeGrid";
-
-// NEW COMPONENTS
 import FeaturedResources from "./components/FeaturedResources";
 import BottomFeatures from "./components/BottomFeatures";
+import Navbar from "@/components/home/Navbar";
 
-export default function KnowledgePage() {
+const API =
+  "https://property-bouquet-backend.onrender.com/api";
+
+async function getKnowledgeArticles() {
+  try {
+    const res = await fetch(
+      `${API}/knowledge`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return data.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function KnowledgePage() {
+
+  const articles =
+    await getKnowledgeArticles();
+
   return (
     <>
-      <Navbar forceSolid />
+      <Navbar forceSolid/>
 
       <HeroSection />
 
@@ -23,23 +47,19 @@ export default function KnowledgePage() {
 
           <div className="grid lg:grid-cols-12 gap-8">
 
-            {/* Sidebar */}
-
             <div className="lg:col-span-3">
-
               <KnowledgeSidebar />
-
             </div>
-
-            {/* Main Content */}
 
             <div className="lg:col-span-9 space-y-10">
 
-              <FeaturedGuide />
+              <FeaturedGuide
+                articles={articles}
+              />
 
-              <KnowledgeGrid />
-
-              {/* Free Resource Library */}
+              <KnowledgeGrid
+                articles={articles}
+              />
 
               <FeaturedResources />
 
@@ -47,12 +67,8 @@ export default function KnowledgePage() {
 
           </div>
 
-          {/* Bottom Black Feature Strip */}
-
           <div className="mt-20">
-
             <BottomFeatures />
-
           </div>
 
         </div>
@@ -60,6 +76,7 @@ export default function KnowledgePage() {
       </section>
 
       <Footer />
+
     </>
   );
 }

@@ -1,103 +1,187 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Clock3 } from "lucide-react";
 
-const articles = [
-  {
-    id: 1,
-    title: "How to Choose the Right Luxury Apartment",
-    category: "Buying Guide",
-    image:
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=900",
-    readTime: "6 min read",
-  },
-  {
-    id: 2,
-    title: "Complete Guide to Home Loan Approval",
-    category: "Home Loans",
-    image:
-      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900",
-    readTime: "8 min read",
-  },
-  {
-    id: 3,
-    title: "Luxury Real Estate Investment Strategy",
-    category: "Investment",
-    image:
-      "https://images.unsplash.com/photo-1460317442991-0ec209397118?w=900",
-    readTime: "7 min read",
-  },
-];
+export default function RelatedArticles({
+  currentArticle,
+  articles = [],
+}) {
+  const related = articles
+    .filter(
+      (item) =>
+        item.slug !== currentArticle.slug &&
+        item.status === "published"
+    )
+    .slice(0, 3);
 
-export default function RelatedArticles() {
+  if (!related.length) return null;
+
   return (
-    <section className="mt-24">
+    <section className="mt-28">
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-end justify-between mb-10">
 
         <div>
-          <p className="uppercase tracking-[0.35em] text-xs text-[#b9974b] font-semibold">
+
+          <p className="uppercase tracking-[4px] text-[#b88638] text-xs font-semibold">
+
             Continue Reading
+
           </p>
 
-          <h2 className="text-4xl font-light text-[#123026] mt-2">
+          <h2
+            className="mt-3 text-[46px] text-[#163629]"
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
             Related Knowledge
           </h2>
+
         </div>
 
         <Link
           href="/knowledge"
-          className="hidden md:flex items-center gap-2 text-[#123026] font-medium hover:gap-3 transition-all"
+          className="
+          hidden
+          md:flex
+          items-center
+          gap-2
+          text-[#163629]
+          font-semibold
+          hover:gap-3
+          transition-all
+          "
         >
           View All
+
           <ArrowRight size={18} />
+
         </Link>
 
       </div>
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-        {articles.map((article) => (
+        {related.map((item) => (
+
           <Link
-            key={article.id}
-            href="#"
+            key={item._id}
+            href={`/knowledge/${item.slug}`}
             className="group"
           >
-            <article className="overflow-hidden rounded-[28px] bg-white shadow-sm border border-[#ede7dc]">
 
-              <div className="overflow-hidden">
+            <article
+              className="
+              overflow-hidden
+              rounded-[30px]
+              bg-white
+              border
+              border-[#ece7dc]
+              shadow-[0_15px_45px_rgba(0,0,0,.05)]
+              hover:-translate-y-2
+              hover:shadow-[0_25px_60px_rgba(0,0,0,.08)]
+              transition-all
+              duration-500
+              "
+            >
 
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-64 object-cover transition duration-700 group-hover:scale-105"
+              <div className="relative h-64 overflow-hidden">
+
+                <Image
+                  src={
+                    item.featuredImage ||
+                    "/knowledge/article-hero.jpg"
+                  }
+                  alt={item.title}
+                  fill
+                  unoptimized
+                  className="
+                  object-cover
+                  transition-transform
+                  duration-700
+                  group-hover:scale-110
+                  "
                 />
+
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#b88638] via-[#e3c37d] to-[#b88638]" />
 
               </div>
 
               <div className="p-7">
 
-                <span className="inline-block px-3 py-1 rounded-full bg-[#f8f2e4] text-[#b9974b] text-xs font-semibold uppercase tracking-wider">
-                  {article.category}
+                <span
+                  className="
+                  inline-flex
+                  items-center
+                  rounded-full
+                  bg-[#f5ede1]
+                  px-4
+                  py-2
+                  text-[11px]
+                  uppercase
+                  tracking-[2px]
+                  font-semibold
+                  text-[#b88638]
+                  "
+                >
+                  {item.category}
                 </span>
 
-                <h3 className="mt-5 text-2xl font-light text-[#123026] leading-snug group-hover:text-[#b9974b] transition-colors">
-                  {article.title}
+                <h3
+                  className="
+                  mt-5
+                  text-[28px]
+                  leading-9
+                  text-[#163629]
+                  group-hover:text-[#b88638]
+                  transition-colors
+                  "
+                  style={{
+                    fontFamily: "Georgia, serif",
+                  }}
+                >
+                  {item.title}
                 </h3>
 
-                <div className="mt-6 flex items-center justify-between">
+                <p className="mt-4 text-[#666] leading-7 line-clamp-2">
 
-                  <span className="text-sm text-gray-500">
-                    {article.readTime}
-                  </span>
+                  {item.shortDescription}
 
-                  <span className="flex items-center gap-2 text-[#123026] font-medium">
+                </p>
+
+                <div className="mt-7 flex items-center justify-between">
+
+                  <div className="flex items-center gap-2 text-[#777]">
+
+                    <Clock3 size={16} />
+
+                    <span>
+
+                      {item.readTime} min read
+
+                    </span>
+
+                  </div>
+
+                  <span
+                    className="
+                    flex
+                    items-center
+                    gap-2
+                    text-[#163629]
+                    font-semibold
+                    group-hover:gap-3
+                    transition-all
+                    "
+                  >
+
                     Read
-                    <ArrowRight
-                      size={17}
-                      className="transition group-hover:translate-x-1"
-                    />
+
+                    <ArrowRight size={17} />
+
                   </span>
 
                 </div>
@@ -105,7 +189,9 @@ export default function RelatedArticles() {
               </div>
 
             </article>
+
           </Link>
+
         ))}
 
       </div>
