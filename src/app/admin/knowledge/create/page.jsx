@@ -21,6 +21,8 @@ export default function CreateKnowledgePage() {
   const [loading, setLoading] =
     useState(false);
 
+  const [uploading, setUploading] = useState(false);  
+
   const [keywords, setKeywords] =
     useState("");
 
@@ -174,7 +176,88 @@ export default function CreateKnowledgePage() {
     }
   };
 
+  // ================= VALIDATE FILE =================
+const validateFile = (file) => {
+  if (!file) return false;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Only image files allowed");
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Maximum file size is 5MB");
+    return false;
+  }
+
+  return true;
+};
+
+// ================= UPLOAD IMAGE =================
+const uploadImage = async (file) => {
+  try {
+    const data = new FormData();
+
+    data.append("file", file);
+
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(result.message || "Upload failed");
+    }
+
+    return result.url;
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+    return null;
+  }
+};
+
+// ================= FEATURED IMAGE =================
+const handleFeaturedImageUpload = async (file) => {
+  if (!validateFile(file)) return;
+
+  setUploading(true);
+
+  const url = await uploadImage(file);
+
+  if (url) {
+    updateField("featuredImage", url);
+  }
+
+  setUploading(false);
+};
+
   return (
+    <>
+  {uploading && (
+    <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-2xl px-8 py-6 shadow-2xl">
+        <div className="flex items-center gap-4">
+          <div className="h-6 w-6 rounded-full border-4 border-[#c9a64b] border-t-transparent animate-spin" />
+
+          <div>
+            <p className="font-semibold text-[#0f3b2e]">
+              Uploading Image...
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Please wait
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
     <div className="max-w-7xl mx-auto p-6">
 
       {/* HEADER */}
@@ -609,54 +692,92 @@ bg-white
 
             {/* FEATURED IMAGE */}
 
-            <div className="bg-white border rounded-3xl p-6 shadow-sm">
+<div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-              <h2 className="text-lg font-bold text-[#0f3b2e] mb-5">
-                Featured Image
-              </h2>
+  <h2 className="text-lg font-bold text-[#0f3b2e] mb-5">
+    Featured Image
+  </h2>
 
-              <input
-                value={
-                  form.featuredImage
-                }
-                onChange={(e) =>
-                  updateField(
-                    "featuredImage",
-                    e.target.value
-                  )
-                }
-                placeholder="https://..."
-                className="
-w-full
-border
-border-gray-300
-rounded-xl
-px-4
-py-3
-text-gray-900
-placeholder:text-gray-400
-bg-white
-"
-              />
+  <div className="space-y-4">
 
-              {form.featuredImage && (
-                <img
-                  src={
-                    form.featuredImage
-                  }
-                  alt="Preview"
-                  className="
-                  mt-4
-                  w-full
-                  h-52
-                  object-cover
-                  rounded-2xl
-                  border
-                  "
-                />
-              )}
+    <input
+      value={form.featuredImage}
+      onChange={(e) =>
+        updateField(
+          "featuredImage",
+          e.target.value
+        )
+      }
+      placeholder="https://..."
+      className="
+      w-full
+      border
+      border-gray-300
+      rounded-xl
+      px-4
+      py-3
+      text-gray-900
+      bg-white
+      "
+    />
 
-            </div>
+    <div className="flex items-center gap-3">
+
+      <label
+        htmlFor="knowledge-image"
+        className="
+        cursor-pointer
+        px-5
+        py-3
+        rounded-xl
+        bg-[#0f3b2e]
+        text-white
+        font-semibold
+        hover:bg-[#145440]
+        transition
+        "
+      >
+        Upload From Computer
+      </label>
+
+      <input
+        id="knowledge-image"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files?.[0]) {
+            handleFeaturedImageUpload(
+              e.target.files[0]
+            );
+          }
+        }}
+      />
+
+      <span className="text-sm text-gray-500">
+        JPG, PNG, WEBP (Max 5MB)
+      </span>
+
+    </div>
+
+    {form.featuredImage && (
+      <img
+        src={form.featuredImage}
+        alt="Preview"
+        className="
+        w-full
+        h-56
+        rounded-2xl
+        border
+        object-cover
+        mt-4
+        "
+      />
+    )}
+
+  </div>
+
+</div>
 
             {/* SEO */}
 
@@ -826,5 +947,6 @@ bg-white
       </form>
 
     </div>
-  );
+</>
+);
 }
