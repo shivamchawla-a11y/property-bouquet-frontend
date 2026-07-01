@@ -365,15 +365,7 @@ const formatDate = (date) => {
             </h3>
 
             {/* DESCRIPTION */}
-            <p
-              className={`mt-4 text-[13px] leading-[1.9] ${
-                index === 0
-                  ? "text-white/65"
-                  : "text-black/50"
-              }`}
-            >
-              {item.shortDescription}
-            </p>
+            
           </div>
 
           {/* FOOTER */}

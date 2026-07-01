@@ -279,21 +279,65 @@ export default function ArticleHero({ article }) {
               "
             />
 
-            <Image
-              src={
-                article?.featuredImage ||
-                "/knowledge/article-hero.jpg"
-              }
-              alt={article?.title || "Knowledge Article"}
-              fill
-              priority
-              className="
-              object-cover
-              transition-transform
-              duration-700
-              hover:scale-[1.04]
-              "
-            />
+            <div
+  className="
+    relative
+    h-[640px]
+    rounded-[38px]
+    overflow-hidden
+    border
+    border-[#e8dfd2]
+    bg-[#f7f4ef]
+    shadow-[0_40px_90px_rgba(0,0,0,.12)]
+    flex
+    items-center
+    justify-center
+  "
+>
+  {/* Blurred Background */}
+  <Image
+    src={
+      article?.featuredImage ||
+      "/knowledge/article-hero.jpg"
+    }
+    alt=""
+    fill
+    priority
+    className="
+      object-cover
+      blur-2xl
+      scale-110
+      opacity-30
+    "
+  />
+
+  {/* Main Image */}
+  <div className="relative z-10 w-full h-full p-8 flex items-center justify-center">
+    <Image
+      src={
+        article?.featuredImage ||
+        "/knowledge/article-hero.jpg"
+      }
+      alt={article?.title}
+      fill={false}
+      width={900}
+      height={700}
+      priority
+      className="
+        max-w-full
+        max-h-full
+        w-auto
+        h-auto
+        object-contain
+        rounded-[22px]
+        shadow-[0_25px_60px_rgba(0,0,0,.18)]
+      "
+    />
+  </div>
+
+  {/* Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10" />
+</div>
 
             {/* IMAGE OVERLAY */}
 
