@@ -119,7 +119,7 @@ export default function Footer() {
   />
 </div>
 
-            <p className="mt-10 text-[23px] leading-[2.1] text-white/80 max-w-[700px]">
+            <p className="mt-10 text-[18px] leading-[2.1] text-white/80 max-w-[700px]">
               Property Bouquet is a luxury real estate platform offering
               curated properties, expert insights & intelligent tools to help
               you make confident decisions.
@@ -158,13 +158,13 @@ export default function Footer() {
 
           <div className="border-r border-[#8e6b2e]/40 pr-10">
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-lg">
+            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
               Explore
             </h3>
 
             <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
 
-            <ul className="space-y-4 text-[22px] text-white/85">
+            <ul className="space-y-4 text-[16px] text-white/85">
 
               {exploreLinks.map((item) => (
 
@@ -185,13 +185,13 @@ export default function Footer() {
 
           <div className="border-r border-[#8e6b2e]/40 pr-10">
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-lg">
+            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
               Knowledge Centre
             </h3>
 
             <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
 
-            <ul className="space-y-4 text-[22px] text-white/85">
+            <ul className="space-y-4 text-[16px] text-white/85">
 
               {knowledgeLinks.map((item) => (
 
@@ -212,13 +212,13 @@ export default function Footer() {
 
           <div>
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-lg">
+            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
               Property Insights
             </h3>
 
             <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
 
-            <ul className="space-y-4 text-[22px] text-white/85">
+            <ul className="space-y-4 text-[16px] text-white/85">
 
               {insightLinks.map((item) => (
 
@@ -252,7 +252,7 @@ export default function Footer() {
                 className="flex items-center gap-5 px-8 py-8 hover:bg-[#0b1c15] transition-all duration-300"
               >
 
-                <div className="text-[#C89B4F] text-[34px]">
+                <div className="text-[#C89B4F] text-2xl lg:text-3xl">
                   {item.icon}
                 </div>
 
@@ -284,17 +284,17 @@ export default function Footer() {
 
           <div className="border-r border-[#8e6b2e]/30 pr-10">
 
-            <p className="uppercase tracking-[2px] text-[#C89B4F] text-sm">
+            <p className="uppercase tracking-[2px] text-[#C89B4F] text-xs lg:text-xs lg:text-sm">
               A Brand By
             </p>
 
-            <h3 className="text-[34px] font-light mt-5 tracking-wide">
+            <h3 className="text-2xl lg:text-3xl font-light mt-5 tracking-wide">
               AMETHYST LANDBASE
             </h3>
 
             <div className="w-16 h-[2px] bg-[#C89B4F] mt-7 mb-8"></div>
 
-            <p className="text-white/75 text-[18px] leading-9">
+            <p className="text-white/75 text-xs lg:text-xs lg:text-sm leading-9">
 
               Luxury Property Advisory &nbsp; | &nbsp;
               5+ Years of Trust
@@ -312,11 +312,11 @@ export default function Footer() {
 
           <div className="border-r border-[#8e6b2e]/30 pr-10">
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-lg">
+            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
               Stay Updated
             </h3>
 
-            <p className="text-white/70 mt-6 text-[18px] leading-8">
+            <p className="text-white/70 mt-6 text-xs lg:text-xs lg:text-sm leading-8">
 
               Insights on luxury real estate,
               market trends,
@@ -346,11 +346,11 @@ export default function Footer() {
 
           <div>
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-lg">
+            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
               Contact Us
             </h3>
 
-            <div className="space-y-6 mt-8 text-[18px] text-white/80">
+            <div className="space-y-6 mt-8 text-xs lg:text-xs lg:text-sm text-white/80">
 
               <div className="flex items-center gap-4">
                 <FaPhoneAlt className="text-[#C89B4F]" />
@@ -419,11 +419,11 @@ export default function Footer() {
 
                 <div>
 
-                  <p className="text-[#C89B4F] text-lg">
+                  <p className="text-[#C89B4F] text-base lg:text-base lg:text-lg">
                     Talk to our
                   </p>
 
-                  <h4 className="text-[26px] font-light mt-2">
+                  <h4 className="text-xl lg:text-2xl font-light mt-2">
                     Property Expert
                   </h4>
 
@@ -437,7 +437,7 @@ export default function Footer() {
                 flex
                 justify-between
                 items-center
-                text-[26px]
+                text-xl lg:text-2xl
                 hover:text-[#C89B4F]
                 transition-all
                 "
