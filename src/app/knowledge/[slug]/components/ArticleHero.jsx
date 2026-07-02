@@ -25,7 +25,7 @@ export default function ArticleHero({ article }) {
   return (
     <section className="bg-gradient-to-b from-[#f7f4ee] via-[#faf8f4] to-[#fcfbf8] pt-28 pb-24">
 
-      <div className="max-w-[1450px] mx-auto px-5 lg:px-8">
+      <div className="max-w-[1450px] mx-auto px-5 lg:px-8 scale-[0.95] origin-top">
 
         <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-20 items-center">
 
@@ -65,7 +65,7 @@ export default function ArticleHero({ article }) {
 
             {/* GOLD LABEL */}
 
-            <div className="flex items-center gap-5 mt-10">
+            <div className="flex items-center gap-4 mt-6">
 
               <div className="w-16 h-[2px] rounded-full bg-[#b88638]" />
 
@@ -85,7 +85,7 @@ export default function ArticleHero({ article }) {
 
             {/* CATEGORY */}
 
-            <div className="mt-8">
+            <div className="mt-5">
 
               <span
                 className="
@@ -111,20 +111,18 @@ export default function ArticleHero({ article }) {
 
             <h1
   className="
-    mt-8
-    text-[34px]
-    sm:text-[42px]
-    md:text-[48px]
-    lg:text-[54px]
-    xl:text-[58px]
-    leading-[1.08]
-    tracking-[-0.5px]
-    text-[#163629]
-    max-w-[760px]
+  mt-6
+  text-[26px]
+  sm:text-[32px]
+  md:text-[36px]
+  lg:text-[40px]
+  xl:text-[44px]
+  leading-[1.15]
+  tracking-[-0.5px]
+  text-[#163629]
+  max-w-[680px]
   "
-  style={{
-    fontFamily: "Georgia, serif",
-  }}
+  style={{ fontFamily: "Georgia, serif" }}
 >
   {article?.title}
 </h1>
@@ -133,7 +131,7 @@ export default function ArticleHero({ article }) {
 
             <p
               className="
-              mt-9
+              mt-6
               max-w-[680px]
               text-[17px]
               md:text-[18px]
@@ -146,19 +144,18 @@ export default function ArticleHero({ article }) {
 
             {/* META CARD */}
 
-            <div
+              <div
               className="
-              mt-12
-              rounded-[32px]
+              mt-8
+              rounded-[24px]
               border
               border-[#ece7dc]
               bg-white/75
               backdrop-blur
-              p-8
-              shadow-[0_15px_40px_rgba(0,0,0,.05)]
+              p-6
+              shadow-[0_10px_30px_rgba(0,0,0,.05)]
               "
             >
-
               <div className="flex flex-wrap items-center gap-10">
 
                 {/* AUTHOR */}
@@ -238,7 +235,7 @@ export default function ArticleHero({ article }) {
 
             {/* GOLD DIVIDER */}
 
-            <div className="mt-12 flex items-center gap-6">
+            <div className="mt-8 flex items-center gap-4">
 
               <div className="w-24 h-[2px] rounded-full bg-[#b88638]" />
 
@@ -288,24 +285,19 @@ export default function ArticleHero({ article }) {
   <div className="relative w-full h-full flex items-center justify-center p-8">
 
     <Image
-      src={
-        article?.featuredImage ||
-        "/knowledge/article-hero.jpg"
-      }
-      alt={article?.title}
-      width={900}
-      height={700}
-      priority
-      className="
-        max-w-full
-        max-h-full
-        w-auto
-        h-auto
-        object-contain
-        rounded-[22px]
-        shadow-[0_25px_60px_rgba(0,0,0,.18)]
-      "
-    />
+  src={article?.featuredImage || "/knowledge/article-hero.jpg"}
+  alt={article?.title}
+  width={800}
+  height={600}
+  priority
+  className="
+    w-full
+    h-auto
+    object-cover
+    rounded-[18px]
+    shadow-[0_18px_45px_rgba(0,0,0,.15)]
+  "
+/>
 
   </div>
 

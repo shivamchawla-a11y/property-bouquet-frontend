@@ -36,7 +36,7 @@ export default function ArticleContent({
 
         {/* ARTICLE */}
 
-        <div className="max-w-[760px] mx-auto">
+        <div className="max-w-[680px] mx-auto px-4 sm:px-0 scale-[0.87] origin-top">
 
           <div
             className="article-content"
@@ -61,13 +61,7 @@ export default function ArticleContent({
           text-white
           p-6
 sm:p-8
-lg:p-12
-          flex
-          flex-col
-          lg:flex-row
-          gap-8
-          items-start
-          "
+lg:p-12"
         >
 
           <div
@@ -94,9 +88,7 @@ lg:p-12
 
             <p
                 className="
-                text-[22px]
-                sm:text-[26px]
-                lg:text-[30px]
+                text-[18px] sm:text-[20px] lg:text-[22px]
                 leading-[1.7]
                 italic
                 "
@@ -108,7 +100,7 @@ lg:p-12
                 "Knowledge-backed real estate decisions create long-term wealth. Invest with research, not emotions."}
             </p>
 
-            <div className="mt-10">
+            <div className="mt-6">
 
               <h4 className="text-xl font-semibold">
                 {article.author}

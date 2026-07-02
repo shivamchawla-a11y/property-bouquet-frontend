@@ -55,14 +55,15 @@ const categories = [
 
 export default function ArticleSidebar() {
   return (
-    <div className="space-y-8">
+    
+    <div className="space-y-6 scale-[0.95] origin-top">
 
       {/* KNOWLEDGE MENU */}
 
       <div
         className="
         bg-white
-        rounded-[34px]
+        rounded-[26px]
         border
         border-[#ece7dc]
         overflow-hidden
@@ -74,7 +75,7 @@ export default function ArticleSidebar() {
 
         <div className="h-1 bg-gradient-to-r from-[#b88638] via-[#e3c37d] to-[#b88638]" />
 
-        <div className="px-8 py-7">
+        <div className="px-6 py-5">
 
           <p className="text-[#b88638] uppercase tracking-[3px] text-[11px] font-semibold">
 
@@ -180,7 +181,7 @@ export default function ArticleSidebar() {
         className="
         relative
         overflow-hidden
-        rounded-[34px]
+        rounded-[26px]
         "
       >
 
@@ -250,3 +251,4 @@ export default function ArticleSidebar() {
     </div>
   );
 }
+
