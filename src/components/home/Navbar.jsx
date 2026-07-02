@@ -13,6 +13,7 @@ const navItems = [
   {
     title: "Properties",
     key: "properties",
+    href: "/properties",
   },
   {
     title: "Locations",
@@ -24,6 +25,7 @@ const navItems = [
   },
   {
     title: "Knowledge Centre",
+    href: "/knowledge",
     items: [
       "Buying Guides",
       "Home Loans",
@@ -33,6 +35,7 @@ const navItems = [
   },
   {
     title: "Property Insights",
+    href: "/insights",
     items: [
       "Market Reports",
       "Luxury News",
@@ -41,14 +44,17 @@ const navItems = [
   },
   {
     title: "Tools",
+    href: "/tools",
     items: [
       "EMI Calculator",
+      "ROI Calculator",
       "Affordability Calculator",
       "Area Converter",
     ],
   },
   {
     title: "About Us",
+    href: "/about",
     items: [
       "Company",
       "Our Team",
@@ -56,6 +62,7 @@ const navItems = [
     ],
   },
 ];
+
 export default function Navbar({
   onConsultationClick,
   forceSolid = false,
@@ -356,125 +363,173 @@ tracking-[0.38em]
   }
 
   return (
-                <div
-                  key={item.title}
-                  className="relative"
-                  onMouseEnter={() => setActive(item.title)}
-                  onMouseLeave={() => setActive(null)}
-                >
-                  <button className="flex items-center gap-1 text-white/85 hover:text-[#d6aa53] transition text-[11px] xl:text-[12px] font-medium tracking-[0.08em] px-2.5 h-9 uppercase">
-                    {item.title}
-
-                    <ChevronDown
-                      size={13}
-                      className={`transition duration-300 ${
-                        active === item.title
-                          ? "rotate-180"
-                          : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {active === item.title && (
-                      <motion.div
-                        initial={{
-                          opacity: 0,
-                          y: 12,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          y: 0,
-                        }}
-                        exit={{
-                          opacity: 0,
-                          y: 8,
-                        }}
-                        transition={{
-                          duration: 0.2,
-                        }}
-                        className="absolute top-[48px] left-0 w-[240px]"
-                      >
-                        <div className="rounded-[22px] border border-white/10 bg-[#0b0b0b]/95 backdrop-blur-2xl p-3 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
-
-  <div className="space-y-1">
-    {dropdownItems.length > 0 &&
-dropdownItems.map((sub) => (
-     <button
-  key={sub}
-  onClick={() => {
-
-    // PROPERTIES
-    if (
-      item.key === "properties"
-    ) {
-      window.location.href =
-        `/properties?propertyType=${encodeURIComponent(sub)}`;
-      return;
-    }
-
-    // LOCATION
-    if (
-      item.key === "locations"
-    ) {
-
-      if (
-        sub ===
-        "View All Locations →"
-      ) {
-        setShowLocationModal(true);
-        return;
-      }
-
-      window.location.href =
-        `/properties?location=${encodeURIComponent(sub)}`;
-
-      return;
-    }
-
-    // DEVELOPER
-    if (
-      item.key === "developers"
-    ) {
-
-      if (
-        sub ===
-        "View All Developers →"
-      ) {
-        setShowDeveloperModal(true);
-        return;
-      }
-
-      window.location.href =
-        `/properties?developer=${encodeURIComponent(sub)}`;
-
-      return;
-    }
-
-  }}
-  className="
-    w-full
-    text-left
-    px-4
-    py-3
-    rounded-xl
-    text-white/75
-    hover:bg-white/5
-    hover:text-[#d6aa53]
-    transition
-    text-[13px]
-  "
+               <div
+  key={item.title}
+  className="relative"
+  onMouseEnter={() => setActive(item.title)}
+  onMouseLeave={() => setActive(null)}
 >
-  {sub}
-</button>
-    ))}
+  {/* MENU TITLE */}
+  <div className="flex items-center h-9">
+    <Link
+      href={item.href || "#"}
+      className="
+        flex
+        items-center
+        text-white/85
+        hover:text-[#d6aa53]
+        transition
+        text-[11px]
+        xl:text-[12px]
+        font-medium
+        tracking-[0.08em]
+        pl-2.5
+        uppercase
+      "
+    >
+      {item.title}
+    </Link>
+
+    <button
+      type="button"
+      className="px-1 text-white/85 hover:text-[#d6aa53]"
+    >
+      <ChevronDown
+        size={13}
+        className={`transition duration-300 ${
+          active === item.title ? "rotate-180" : ""
+        }`}
+      />
+    </button>
   </div>
 
+  <AnimatePresence>
+    {active === item.title && (
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 12,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        exit={{
+          opacity: 0,
+          y: 8,
+        }}
+        transition={{
+          duration: 0.2,
+        }}
+        className="absolute top-[48px] left-0 w-[240px]"
+      >
+        <div className="rounded-[22px] border border-white/10 bg-[#0b0b0b]/95 backdrop-blur-2xl p-3 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
+
+          <div className="space-y-1">
+            {dropdownItems.length > 0 &&
+              dropdownItems.map((sub) => (
+                <button
+                  key={sub}
+                  onClick={() => {
+
+                    // PROPERTIES
+                    if (item.key === "properties") {
+                      window.location.href =
+                        `/properties?propertyType=${encodeURIComponent(sub)}`;
+                      return;
+                    }
+
+                    // LOCATIONS
+                    if (item.key === "locations") {
+
+                      if (sub === "View All Locations →") {
+                        setShowLocationModal(true);
+                        return;
+                      }
+
+                      window.location.href =
+                        `/properties?location=${encodeURIComponent(sub)}`;
+                      return;
+                    }
+
+                    // DEVELOPERS
+                    if (item.key === "developers") {
+
+                      if (sub === "View All Developers →") {
+                        setShowDeveloperModal(true);
+                        return;
+                      }
+
+                      window.location.href =
+                        `/properties?developer=${encodeURIComponent(sub)}`;
+                      return;
+                    }
+
+                    // KNOWLEDGE CENTRE
+                    if (item.title === "Knowledge Centre") {
+                      window.location.href =
+                        `/knowledge?category=${encodeURIComponent(sub)}`;
+                      return;
+                    }
+
+                    // PROPERTY INSIGHTS
+                    if (item.title === "Property Insights") {
+                      window.location.href =
+                        `/insights?category=${encodeURIComponent(sub)}`;
+                      return;
+                    }
+
+                    // TOOLS
+                    if (item.title === "Tools") {
+
+                      const routes = {
+                        "EMI Calculator": "/tools/emi-calculator",
+                        "ROI Calculator": "/tools/roi-calculator",
+                        "Affordability Calculator": "/tools/affordability-calculator",
+                        "Area Converter": "/tools/area-converter",
+                      };
+
+                      window.location.href = routes[sub];
+                      return;
+                    }
+
+                    // ABOUT
+                    if (item.title === "About Us") {
+
+                      const routes = {
+                        Company: "/about/company",
+                        "Our Team": "/about/team",
+                        Careers: "/about/careers",
+                      };
+
+                      window.location.href = routes[sub];
+                      return;
+                    }
+
+                  }}
+                  className="
+                    w-full
+                    text-left
+                    px-4
+                    py-3
+                    rounded-xl
+                    text-white/75
+                    hover:bg-white/5
+                    hover:text-[#d6aa53]
+                    transition
+                    text-[13px]
+                  "
+                >
+                  {sub}
+                </button>
+              ))}
+          </div>
+
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
 </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
              );
 })}
             </nav>

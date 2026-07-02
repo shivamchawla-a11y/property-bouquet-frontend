@@ -12,7 +12,6 @@ import {
 export default function FeaturedGuide({
   articles = [],
 }) {
-  // Featured article first, otherwise latest article
   const featured =
     articles.find((a) => a.featured) ||
     articles[0];
@@ -36,24 +35,26 @@ export default function FeaturedGuide({
       overflow-hidden
       rounded-[36px]
       border
-      border-[#e9e1d5]
-      bg-white
-      shadow-[0_25px_70px_rgba(0,0,0,.07)]
+      border-[#ece4d8]
+      bg-[#fcfbf8]
+      shadow-[0_30px_80px_rgba(0,0,0,.08)]
       "
     >
-      {/* Gold Glow */}
-      <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-[#c9a64b]/10 blur-3xl" />
-      <div className="absolute -left-24 bottom-0 w-80 h-80 rounded-full bg-[#163629]/5 blur-3xl" />
+      {/* Background Glow */}
 
-      <div className="grid lg:grid-cols-2">
+      <div className="absolute -right-32 -top-32 w-[420px] h-[420px] rounded-full bg-[#c8a34d]/8 blur-3xl" />
+
+      <div className="absolute -left-20 bottom-0 w-[300px] h-[300px] rounded-full bg-[#163629]/5 blur-3xl" />
+
+      <div className="grid lg:grid-cols-[1.05fr_1.15fr] items-center">
 
         {/* LEFT */}
 
-        <div className="relative z-10 p-10 lg:p-14 xl:p-16 flex flex-col justify-center">
+        <div className="relative z-10 px-8 py-10 lg:px-14 xl:px-16 lg:py-14">
 
           {/* Badge */}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
 
             <span
               className="
@@ -64,14 +65,14 @@ export default function FeaturedGuide({
               bg-[#163629]
               px-5
               py-2
-              text-[11px]
+              text-[10px]
               uppercase
               tracking-[3px]
               font-semibold
               text-white
               "
             >
-              <Sparkles size={14} />
+              <Sparkles size={13} />
               Featured Guide
             </span>
 
@@ -81,7 +82,7 @@ export default function FeaturedGuide({
 
           {/* Category */}
 
-          <p className="mt-10 uppercase tracking-[3px] text-[#b88638] text-xs font-semibold">
+          <p className="mt-8 text-[11px] uppercase tracking-[3px] font-semibold text-[#b88638]">
             {featured.category}
           </p>
 
@@ -89,15 +90,16 @@ export default function FeaturedGuide({
 
           <h2
             className="
-            mt-5
-            text-4xl
-            lg:text-5xl
-            xl:text-[52px]
-            leading-tight
+            mt-4
+            text-[34px]
+            lg:text-[44px]
+            xl:text-[50px]
+            leading-[1.12]
+            font-light
             text-[#163629]
             "
             style={{
-              fontFamily: "Georgia, serif",
+              fontFamily: "Cormorant Garamond, serif",
             }}
           >
             {featured.title}
@@ -105,45 +107,41 @@ export default function FeaturedGuide({
 
           {/* Description */}
 
-          <p className="mt-7 text-lg leading-9 text-[#666] max-w-[620px]">
+          <p className="mt-6 text-[17px] leading-8 text-[#6d6d6d] max-w-[560px]">
             {featured.shortDescription}
           </p>
 
           {/* Meta */}
 
-          <div className="mt-10 flex flex-wrap gap-7 text-[#666]">
+          <div className="mt-8 flex flex-wrap gap-8 text-[14px] text-[#666]">
 
             <div className="flex items-center gap-3">
 
               <Clock3
-                size={18}
+                size={16}
                 className="text-[#b88638]"
               />
 
-              <span>
-                {featured.readTime} min read
-              </span>
+              {featured.readTime} min read
 
             </div>
 
             <div className="flex items-center gap-3">
 
               <CalendarDays
-                size={18}
+                size={16}
                 className="text-[#b88638]"
               />
 
-              <span>
-                {publishDate}
-              </span>
+              {publishDate}
 
             </div>
 
           </div>
 
-          {/* Button */}
+          {/* CTA */}
 
-          <div className="mt-12">
+          <div className="mt-10">
 
             <Link
               href={`/knowledge/${featured.slug}`}
@@ -154,13 +152,14 @@ export default function FeaturedGuide({
               rounded-full
               bg-[#163629]
               px-8
-              py-4
+              h-[54px]
               text-white
               font-medium
               hover:bg-[#214a39]
               transition-all
               duration-300
               hover:gap-5
+              shadow-lg
               "
             >
               Read Complete Guide
@@ -175,38 +174,49 @@ export default function FeaturedGuide({
 
         {/* RIGHT */}
 
-        <div className="relative min-h-[520px]">
-
-          <Image
-            src={featured.featuredImage}
-            alt={featured.title}
-            fill
-            priority
-            unoptimized
-            className="
-            object-cover
-            transition-transform
-            duration-700
-            hover:scale-105
-            "
-          />
-
-          {/* Overlay */}
-
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/60" />
-
-          {/* Gold Border */}
+        <div className="relative p-6 lg:p-8">
 
           <div
             className="
-            absolute
-            inset-6
-            rounded-[28px]
-            border
-            border-[#c9a64b]/30
-            pointer-events-none
+            relative
+            h-[340px]
+            lg:h-[500px]
+            rounded-[30px]
+            overflow-hidden
+            shadow-[0_30px_80px_rgba(0,0,0,.18)]
             "
-          />
+          >
+
+            <div className="relative rounded-[30px] overflow-hidden">
+  <Image
+    src={featured.featuredImage}
+    alt={featured.title}
+    width={900}
+    height={1100}
+    priority
+    unoptimized
+    className="
+      w-full
+      h-auto
+      object-contain
+    "
+  />
+</div>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
+
+            <div
+              className="
+              absolute
+              inset-5
+              rounded-[24px]
+              border
+              border-white/20
+              pointer-events-none
+              "
+            />
+
+          </div>
 
         </div>
 

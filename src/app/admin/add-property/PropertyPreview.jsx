@@ -748,22 +748,22 @@ const getShortLocation = (location) => {
     <div
       className={`
         relative
-        overflow-hidden
+        overflow-visible
         border
-        border-white/10
+        border-[#8d6d2f]
         backdrop-blur-3xl
         transition-all
         duration-500
         ${
           scrolled
             ? `
-              rounded-[16px]
-              bg-[rgba(4,7,7,0.82)]
+              rounded-full
+              bg-[#1d1d1a]/95
               shadow-[0_10px_40px_rgba(0,0,0,0.38)]
             `
             : `
-              rounded-[24px]
-              bg-[rgba(7,10,10,0.38)]
+              rounded-full
+              bg-[#1d1d1a]/95
               shadow-[0_20px_80px_rgba(0,0,0,0.48)]
             `
         }
@@ -791,8 +791,8 @@ const getShortLocation = (location) => {
           duration-500
           ${
             scrolled
-              ? "h-[58px]"
-              : "h-[64px] lg:h-[68px]"
+  ? "h-[52px]"
+  : "h-[66px]"
           }
         `}
       >
@@ -850,98 +850,109 @@ const getShortLocation = (location) => {
           )}
         </div>
 
-        {/* ================= DESKTOP NAV ================= */}
-        <div className="hidden xl:flex items-center gap-4 2xl:gap-6">
+       {/* ================= DESKTOP NAV ================= */}
+<div className="hidden xl:flex flex-1 items-center justify-center">
 
-          {[
-            {
-              label: "OVERVIEW",
-              id: "overview",
-            },
-            {
-              label: "ABOUT PROJECT",
-              id: "about",
-            },
-            {
-              label: "HIGHLIGHTS",
-              id: "highlights",
-            },
-            {
-              label: "AMENITIES",
-              id: "amenities",
-            },
-            {
-              label: "FLOOR PLAN",
-              id: "configuration",
-            },
-            {
-              label: "GALLERY",
-              id: "gallery",
-            },
-            {
-              label: "LOCATION",
-              id: "location",
-            },
-            {
-              label: "CONTACT",
-              id: "contact",
-            },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                const section =
-                  document.getElementById(
-                    item.id
-                  );
+  {/* LEFT LINKS */}
+  <div className="flex items-center gap-5">
 
-                if (section) {
-                  section.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }
-              }}
-              className={`
-                relative
-                text-[9px]
-                tracking-[1.7px]
-                uppercase
-                whitespace-nowrap
-                transition-all
-                duration-300
-                ${
-                  activeSection === item.id
-                    ? "text-[#d8b46b]"
-                    : "text-white/55 hover:text-white"
-                }
-              `}
-              style={{
-                fontFamily:
-                  "Inter, sans-serif",
-              }}
-            >
-              {item.label}
+    {[
+      { label: "OVERVIEW", id: "overview" },
+      { label: "ABOUT PROJECT", id: "about" },
+      { label: "HIGHLIGHTS", id: "highlights" },
+      { label: "AMENITIES", id: "amenities" },
+    ].map((item) => (
+      <button
+        key={item.id}
+        onClick={() => {
+          document
+            .getElementById(item.id)
+            ?.scrollIntoView({
+              behavior: "smooth",
+            });
+        }}
+        className={`relative uppercase tracking-[2px] text-[10px] transition-all duration-300 ${
+          activeSection === item.id
+            ? "text-[#d7b05b]"
+            : "text-white/75 hover:text-white"
+        }`}
+      >
+        {item.label}
 
-              {activeSection ===
-                item.id && (
-                <div
-                  className="
-                    absolute
-                    left-1/2
-                    -translate-x-1/2
-                    bottom-[-8px]
-                    w-6
-                    h-[1px]
-                    bg-[#d8b46b]
-                    transition-all
-                    duration-300
-                  "
-                />
-              )}
-            </button>
-          ))}
-        </div>
+        {activeSection === item.id && (
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-[-12px] w-8 h-[2px] bg-[#d7b05b]" />
+        )}
+      </button>
+    ))}
+  </div>
+
+{/* CENTER FLOATING LOGO */}
+<div className="relative w-[180px] flex justify-center flex-shrink-0 overflow-visible">
+  <Link
+    href="/"
+    className="
+      absolute
+      left-1/2
+      -translate-x-1/2
+      -top-[28px]
+      z-[100]
+      w-[88px]
+      h-[88px]
+      rounded-full
+      bg-[#20201d]
+      shadow-[0_18px_45px_rgba(0,0,0,.45)]
+      flex
+      items-center
+      justify-center
+      transition-all
+      duration-300
+      hover:scale-[1.04]
+      hover:border-[#e3bc67]
+      cursor-pointer
+    "
+  >
+    <img
+      src="/logo.png"
+      alt="Logo"
+      className="w-[58px] h-auto object-contain"
+    />
+  </Link>
+</div>
+
+  {/* RIGHT LINKS */}
+  <div className="flex items-center gap-5">
+
+    {[
+      { label: "FLOOR PLAN", id: "configuration" },
+      { label: "GALLERY", id: "gallery" },
+      { label: "LOCATION", id: "location" },
+      { label: "CONTACT", id: "contact" },
+    ].map((item) => (
+      <button
+        key={item.id}
+        onClick={() => {
+          document
+            .getElementById(item.id)
+            ?.scrollIntoView({
+              behavior: "smooth",
+            });
+        }}
+        className={`relative uppercase tracking-[2px] text-[10px] transition-all duration-300 ${
+          activeSection === item.id
+            ? "text-[#d7b05b]"
+            : "text-white/75 hover:text-white"
+        }`}
+      >
+        {item.label}
+
+        {activeSection === item.id && (
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-[-12px] w-8 h-[2px] bg-[#d7b05b]" />
+        )}
+      </button>
+    ))}
+  </div>
+
+</div>
 
         {/* ================= RIGHT ================= */}
         <div className="flex items-center gap-3">
@@ -954,10 +965,10 @@ const getShortLocation = (location) => {
               md:flex
               group
               relative
-              overflow-hidden
+              overflow-visible
               h-[36px]
               px-5
-              rounded-[6px]
+              rounded-xl
               bg-[#c9a64b]
               text-[#111]
               text-[9px]
@@ -1285,9 +1296,9 @@ const getShortLocation = (location) => {
       relative
       z-20
       w-full
-      px-4
-      sm:px-5
-      lg:px-10
+      px-3
+md:px-4
+lg:px-5
       pb-8
       sm:pb-10
       md:pb-14
