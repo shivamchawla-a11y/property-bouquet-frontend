@@ -83,45 +83,35 @@ export default async function KnowledgeArticlePage({
 
   return (
     <>
-      <Navbar forceSolid />
+  <Navbar forceSolid />
 
-      <ArticleHero article={article} />
+  <main className="pt-20 lg:pt-26">
+    <ArticleHero article={article} />
 
-      <section className="bg-[#faf8f4] pb-24">
-
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-
-          <div className="grid lg:grid-cols-12 gap-14">
-
-            <div className="lg:col-span-8">
-
-              <ArticleContent
-                article={article}
-              />
-
-            </div>
-
-            <div className="lg:col-span-4">
-
-              <ArticleSidebar
-                article={article}
-                articles={articles}
-              />
-
-            </div>
-
+    <section className="bg-[#faf8f4] pb-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+        <div className="grid lg:grid-cols-12 gap-14">
+          <div className="lg:col-span-8">
+            <ArticleContent article={article} />
           </div>
 
-          <RelatedArticles
-  currentArticle={article}
-  articles={articles}
-/>
-
+          <div className="lg:col-span-4">
+            <ArticleSidebar
+              article={article}
+              articles={articles}
+            />
+          </div>
         </div>
 
-      </section>
+        <RelatedArticles
+          currentArticle={article}
+          articles={articles}
+        />
+      </div>
+    </section>
+  </main>
 
-      <Footer />
-    </>
+  <Footer />
+</>
   );
 }

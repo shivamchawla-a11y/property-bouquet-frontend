@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
+import "quill-table-better/dist/quill-table-better.css";
 
 const ReactQuill = dynamic(
   () => import("react-quill-new"),
@@ -25,8 +26,12 @@ const modules = {
 
     ["link", "image"],
 
+    ["table"],
+
     ["clean"],
   ],
+
+  table: true,
 };
 
 export default function RichTextEditor({

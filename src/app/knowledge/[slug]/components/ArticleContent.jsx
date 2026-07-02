@@ -28,15 +28,15 @@ export default function ArticleContent({
       bg-white
       border
       border-[#ece7dc]
-      shadow-[0_30px_80px_rgba(0,0,0,.06)]
+      shadow-[0_40px_120px_rgba(22,54,41,.08)]
       overflow-hidden
       "
     >
-      <div className="px-8 lg:px-16 xl:px-20 py-14 lg:py-20">
+      <div className="px-5 sm:px-7 md:px-10 lg:px-16 xl:px-20 py-10 sm:py-12 lg:py-20">
 
         {/* ARTICLE */}
 
-        <div className="max-w-[780px] mx-auto">
+        <div className="max-w-[760px] mx-auto">
 
           <div
             className="article-content"
@@ -59,8 +59,9 @@ export default function ArticleContent({
           from-[#163629]
           to-[#214a39]
           text-white
-          p-10
-          lg:p-14
+          p-6
+sm:p-8
+lg:p-12
           flex
           flex-col
           lg:flex-row
@@ -71,14 +72,17 @@ export default function ArticleContent({
 
           <div
             className="
-            w-20
-            h-20
+            w-16
+            h-16
+            sm:w-20
+            sm:h-20
             rounded-full
             bg-[#b88638]
             flex
             items-center
             justify-center
-            text-3xl
+            text-2xl
+            sm:text-3xl
             font-semibold
             shrink-0
             "
@@ -89,7 +93,13 @@ export default function ArticleContent({
           <div>
 
             <p
-              className="text-[30px] leading-[50px] italic"
+                className="
+                text-[22px]
+                sm:text-[26px]
+                lg:text-[30px]
+                leading-[1.7]
+                italic
+                "
               style={{
                 fontFamily: "Georgia, serif",
               }}
@@ -124,7 +134,9 @@ export default function ArticleContent({
           border
           border-[#ece7dc]
           bg-[#faf8f4]
-          p-10
+          p-6
+          sm:p-8
+          lg:p-10
           flex
           flex-col
           lg:flex-row
@@ -137,7 +149,10 @@ export default function ArticleContent({
           <div>
 
             <h3
-              className="text-[34px] text-[#163629]"
+              className="text-[26px]
+              sm:text-[30px]
+              lg:text-[34px]
+              leading-tight text-[#163629]"
               style={{
                 fontFamily: "Georgia, serif",
               }}
@@ -151,12 +166,16 @@ export default function ArticleContent({
 
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3 w-full sm:w-auto">
 
             <button
               className="
-              h-12
-              px-8
+              h-11
+              sm:h-12
+              px-6
+              sm:px-8
+              text-sm
+              sm:text-base
               rounded-full
               border
               border-[#d7d1c7]
@@ -212,7 +231,8 @@ export default function ArticleContent({
                   border
                   border-[#ece7dc]
                   bg-[#fcfbf8]
-                  p-8
+                  p-6
+                  sm:p-8
                   hover:-translate-y-1
                   hover:shadow-xl
                   transition-all
@@ -227,8 +247,10 @@ export default function ArticleContent({
                   <h3
                     className="
                     mt-5
-                    text-[28px]
-                    leading-9
+                    text-[22px]
+                    sm:text-[24px]
+                    lg:text-[26px]
+                    leading-[1.4]
                     text-[#163629]
                     "
                     style={{

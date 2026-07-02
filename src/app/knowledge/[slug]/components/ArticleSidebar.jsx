@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 
 import {
   ChevronRight,
@@ -184,13 +183,6 @@ export default function ArticleSidebar() {
         rounded-[34px]
         "
       >
-
-        <Image
-          src="/knowledge/sidebar-bg.png"
-          alt=""
-          fill
-          className="object-cover"
-        />
 
         <div className="absolute inset-0 bg-[#163629]/90" />
 

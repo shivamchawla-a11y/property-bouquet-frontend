@@ -110,22 +110,24 @@ export default function ArticleHero({ article }) {
             {/* TITLE */}
 
             <h1
-              className="
-              mt-8
-              text-[46px]
-              md:text-[58px]
-              xl:text-[68px]
-              leading-[1.05]
-              tracking-[-1px]
-              text-[#163629]
-              max-w-[760px]
-              "
-              style={{
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              {article?.title}
-            </h1>
+  className="
+    mt-8
+    text-[34px]
+    sm:text-[42px]
+    md:text-[48px]
+    lg:text-[54px]
+    xl:text-[58px]
+    leading-[1.08]
+    tracking-[-0.5px]
+    text-[#163629]
+    max-w-[760px]
+  "
+  style={{
+    fontFamily: "Georgia, serif",
+  }}
+>
+  {article?.title}
+</h1>
 
             {/* DESCRIPTION */}
 
@@ -133,8 +135,9 @@ export default function ArticleHero({ article }) {
               className="
               mt-9
               max-w-[680px]
-              text-[20px]
-              leading-10
+              text-[17px]
+              md:text-[18px]
+              leading-8
               text-[#666]
               "
             >
@@ -249,37 +252,9 @@ export default function ArticleHero({ article }) {
           {/* RIGHT IMAGE */}
           {/* RIGHT IMAGE */}
 
-          <div
-            className="
-            relative
-            h-[640px]
-            rounded-[38px]
-            overflow-hidden
-            border
-            border-[#e8dfd2]
-            bg-[#f6f2ea]
-            shadow-[0_40px_90px_rgba(0,0,0,.12)]
-            "
-          >
+          {/* RIGHT IMAGE */}
 
-            {/* GOLD TOP BAR */}
-
-            <div
-              className="
-              absolute
-              top-0
-              left-0
-              right-0
-              h-1
-              z-20
-              bg-gradient-to-r
-              from-[#b88638]
-              via-[#e3c37d]
-              to-[#b88638]
-              "
-            />
-
-            <div
+<div
   className="
     relative
     h-[640px]
@@ -289,37 +264,35 @@ export default function ArticleHero({ article }) {
     border-[#e8dfd2]
     bg-[#f7f4ef]
     shadow-[0_40px_90px_rgba(0,0,0,.12)]
-    flex
-    items-center
-    justify-center
   "
 >
-  {/* Blurred Background */}
-  <Image
-    src={
-      article?.featuredImage ||
-      "/knowledge/article-hero.jpg"
-    }
-    alt=""
-    fill
-    priority
+  {/* GOLD TOP BAR */}
+
+  <div
     className="
-      object-cover
-      blur-2xl
-      scale-110
-      opacity-30
+      absolute
+      top-0
+      left-0
+      right-0
+      h-1
+      z-20
+      bg-gradient-to-r
+      from-[#b88638]
+      via-[#e3c37d]
+      to-[#b88638]
     "
   />
 
-  {/* Main Image */}
-  <div className="relative z-10 w-full h-full p-8 flex items-center justify-center">
+  {/* MAIN IMAGE */}
+
+  <div className="relative w-full h-full flex items-center justify-center p-8">
+
     <Image
       src={
         article?.featuredImage ||
         "/knowledge/article-hero.jpg"
       }
       alt={article?.title}
-      fill={false}
       width={900}
       height={700}
       priority
@@ -333,116 +306,38 @@ export default function ArticleHero({ article }) {
         shadow-[0_25px_60px_rgba(0,0,0,.18)]
       "
     />
+
   </div>
 
-  {/* Overlay */}
-  <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10" />
+  {/* GOLD CORNER DECOR */}
+
+  <div
+    className="
+      absolute
+      top-8
+      right-8
+      w-20
+      h-20
+      rounded-full
+      border
+      border-[#d7b267]/40
+    "
+  />
+
+  <div
+    className="
+      absolute
+      top-12
+      right-12
+      w-12
+      h-12
+      rounded-full
+      border
+      border-[#d7b267]/30
+    "
+  />
+
 </div>
-
-            {/* IMAGE OVERLAY */}
-
-            <div
-              className="
-              absolute
-              inset-0
-              bg-gradient-to-tr
-              from-black/15
-              via-transparent
-              to-white/20
-              "
-            />
-
-            {/* FLOATING CARD */}
-
-            <div
-              className="
-              absolute
-              bottom-8
-              left-8
-              z-20
-              bg-white/90
-              backdrop-blur-xl
-              rounded-[24px]
-              border
-              border-[#ece7dc]
-              shadow-2xl
-              px-7
-              py-6
-              max-w-[320px]
-              "
-            >
-
-              <p
-                className="
-                uppercase
-                tracking-[3px]
-                text-[11px]
-                font-semibold
-                text-[#b88638]
-                "
-              >
-                Luxury Knowledge
-              </p>
-
-              <h4
-                className="
-                mt-3
-                text-[28px]
-                leading-8
-                text-[#163629]
-                "
-                style={{
-                  fontFamily: "Georgia, serif",
-                }}
-              >
-                Expert Verified
-                <br />
-                Property Insights
-              </h4>
-
-              <div className="flex items-center gap-3 mt-6">
-
-                <div className="w-10 h-[2px] rounded-full bg-[#b88638]" />
-
-                <span className="text-sm text-[#666]">
-
-                  Trusted Research
-
-                </span>
-
-              </div>
-
-            </div>
-
-            {/* GOLD CORNER DECOR */}
-
-            <div
-              className="
-              absolute
-              top-8
-              right-8
-              w-20
-              h-20
-              rounded-full
-              border
-              border-[#d7b267]/40
-              "
-            />
-
-            <div
-              className="
-              absolute
-              top-12
-              right-12
-              w-12
-              h-12
-              rounded-full
-              border
-              border-[#d7b267]/30
-              "
-            />
-
-          </div>
 
         </div>
 
