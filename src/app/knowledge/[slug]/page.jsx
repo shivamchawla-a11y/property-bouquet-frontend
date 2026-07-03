@@ -96,11 +96,13 @@ export default async function KnowledgeArticlePage({
           </div>
 
           <div className="lg:col-span-4">
-            <ArticleSidebar
-              article={article}
-              articles={articles}
-            />
-          </div>
+  <div className="lg:sticky lg:top-28 self-start">
+    <ArticleSidebar
+      article={article}
+      articles={articles}
+    />
+  </div>
+</div>
         </div>
 
         <RelatedArticles
