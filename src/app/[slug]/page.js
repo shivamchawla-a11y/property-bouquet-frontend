@@ -30,7 +30,6 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   const property = await getProperty(slug);
-  const schema = buildPropertySchema(property, slug);
 
   if (!property) {
     return {
@@ -45,30 +44,32 @@ export async function generateMetadata({ params }) {
 // ==============================
 // Property Page
 // ==============================
-
 export default async function PropertyPage({ params }) {
-
-  // ✅ NEXT 15 FIX
+  // ✅ Next.js 15
   const { slug } = await params;
 
   const property = await getProperty(slug);
 
   if (!property) {
-  notFound();
-}
+    notFound();
+  }
+
+  // ✅ Build JSON-LD Schema
+  const schema = buildPropertySchema(property, slug);
 
   return (
-  <>
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schema),
-      }}
-    />
+    <>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schema),
+        }}
+      />
 
-    <div className="bg-white">
-      <PropertyPreview form={property} />
-    </div>
-  </>
-);
+      <div className="bg-white">
+        <PropertyPreview form={property} />
+      </div>
+    </>
+  );
 }
