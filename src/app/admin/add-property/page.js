@@ -452,11 +452,10 @@ export default function AddProperty() {
 
   // ================= SEO =================
   seoEngine: {
-    metaTitle: "",
-
-    metaDescription: "",
-  },
-
+  metaTitle: "",
+  metaDescription: "",
+  keywords: [],
+},
 
   // ================= FAQS =================
   faqSection: {
@@ -888,6 +887,14 @@ return;
 
     const validConfigurations = cleanedConfigurations;
 
+    const seoKeywords =
+  typeof form.seoEngine.keywords === "string"
+    ? form.seoEngine.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : form.seoEngine.keywords || [];
+
     const cleanedForm = {
       ...form,
 
@@ -936,6 +943,13 @@ return;
       },
 
       unitConfigurations: validConfigurations,
+
+      seoEngine: {
+  metaTitle: form.seoEngine.metaTitle?.trim() || "",
+  metaDescription:
+    form.seoEngine.metaDescription?.trim() || "",
+  keywords: seoKeywords,
+},
     };
 
     console.log("🚀 FINAL PAYLOAD:", cleanedForm);
@@ -2613,6 +2627,113 @@ const formatIndianPrice = (value) => {
     Price On Request
   </span>
 </label>
+
+{/* ================= SEO ================= */}
+<div className="glass p-6 rounded-2xl border border-white/10 mt-8">
+
+  <div className="mb-5">
+    <h3 className="text-xl font-semibold text-white">
+      SEO (Optional)
+    </h3>
+
+    <p className="text-sm text-white/50 mt-1">
+      Leave these fields empty and Property Bouquet will
+      automatically generate optimized SEO for this property.
+    </p>
+  </div>
+
+  <div className="space-y-5">
+
+    {/* Meta Title */}
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Meta Title
+      </label>
+
+      <input
+        className="input"
+        placeholder="Luxury Apartments in Gurgaon | Property Bouquet"
+        value={form.seoEngine.metaTitle || ""}
+        onChange={(e) =>
+          handleChange(
+            "seoEngine",
+            "metaTitle",
+            e.target.value
+          )
+        }
+      />
+
+      <p className="text-xs text-white/40 mt-2">
+        Recommended: 50–60 characters
+      </p>
+    </div>
+
+    {/* Meta Description */}
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Meta Description
+      </label>
+
+      <textarea
+        className="input min-h-[120px]"
+        placeholder="Describe the property for Google Search..."
+        value={form.seoEngine.metaDescription || ""}
+        onChange={(e) =>
+          handleChange(
+            "seoEngine",
+            "metaDescription",
+            e.target.value
+          )
+        }
+      />
+
+      <p className="text-xs text-white/40 mt-2">
+        Recommended: 140–160 characters
+      </p>
+    </div>
+
+    {/* Keywords */}
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        SEO Keywords
+      </label>
+
+      <input
+        className="input"
+        placeholder="Luxury Apartments, Gurgaon, Adani Realty, Sector 102"
+        value={form.seoEngine.keywords || ""}
+        onChange={(e) =>
+          handleChange(
+            "seoEngine",
+            "keywords",
+            e.target.value
+          )
+        }
+      />
+
+      <p className="text-xs text-white/40 mt-2">
+        Separate multiple keywords using commas.
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 p-4">
+
+      <p className="text-[#D4AF37] text-sm font-medium">
+        Automatic SEO Fallback
+      </p>
+
+      <p className="text-white/70 text-sm mt-2 leading-6">
+        If you leave any field blank, Property Bouquet
+        automatically generates SEO using the property's
+        title, developer, location, description and other
+        project details.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
 
     {/* ================= KEY METRICS ================= */}
 {/* <div className="mt-6">
