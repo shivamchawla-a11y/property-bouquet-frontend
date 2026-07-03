@@ -1,4 +1,7 @@
 import PropertyPreview from "../admin/add-property/PropertyPreview";
+import { notFound } from "next/navigation";
+import { buildPropertySEO } from "@/lib/propertySeo";
+import { buildPropertySchema } from "@/lib/propertySchema";
 
 async function getProperty(slug) {
   try {
@@ -20,6 +23,29 @@ async function getProperty(slug) {
   }
 }
 
+// ==============================
+// Dynamic SEO Metadata
+// ==============================
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+
+  const property = await getProperty(slug);
+  const schema = buildPropertySchema(property, slug);
+
+  if (!property) {
+    return {
+      title: "Property Not Found | Property Bouquet",
+      description: "The requested property could not be found.",
+    };
+  }
+
+  return buildPropertySEO(property, slug);
+}
+
+// ==============================
+// Property Page
+// ==============================
+
 export default async function PropertyPage({ params }) {
 
   // ✅ NEXT 15 FIX
@@ -28,16 +54,21 @@ export default async function PropertyPage({ params }) {
   const property = await getProperty(slug);
 
   if (!property) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-2xl font-bold">
-        Property Not Found
-      </div>
-    );
-  }
+  notFound();
+}
 
   return (
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(schema),
+      }}
+    />
+
     <div className="bg-white">
       <PropertyPreview form={property} />
     </div>
-  );
+  </>
+);
 }
