@@ -748,7 +748,7 @@ const getShortLocation = (location) => {
     <div
       className={`
         relative
-        overflow-visible
+        overflow-hidden
         border
         border-[#8d6d2f]
         backdrop-blur-3xl
@@ -781,20 +781,18 @@ const getShortLocation = (location) => {
         className={`
           relative
           z-10
-          px-4
-          md:px-6
-          lg:px-7
+          px-3
+          md:px-5
+          lg:px-6
           flex
           items-center
           justify-between
           transition-all
           duration-500
           ${
-            scrolled
-  ? "h-[52px]"
-  : "h-[66px]"
+            scrolled ? "h-[44px]" : "h-[54px]"
           }
-        `}
+        `}  
       >
 
         {/* ================= LEFT ================= */}
@@ -802,7 +800,7 @@ const getShortLocation = (location) => {
 
           {developerLogo &&
           developerLogo.trim() !== "" ? (
-            <div className="h-[34px] md:h-[38px] w-[140px] flex items-center justify-start">
+            <div className="h-[28px] md:h-[32px] w-[120px] flex items-center justify-start">
   <img
     src={developerLogo}
     alt={developerName}
@@ -871,50 +869,43 @@ const getShortLocation = (location) => {
               behavior: "smooth",
             });
         }}
-        className={`relative uppercase tracking-[2px] text-[10px] transition-all duration-300 ${
-          activeSection === item.id
-            ? "text-[#d7b05b]"
-            : "text-white/75 hover:text-white"
-        }`}
+        className={`uppercase tracking-[1.5px] text-[9px] font-medium transition-all duration-300 ${
+  activeSection === item.id
+    ? "text-[#d7b05b]"
+    : "text-white/70 hover:text-white"
+}`}
       >
         {item.label}
 
-        {activeSection === item.id && (
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-[-12px] w-8 h-[2px] bg-[#d7b05b]" />
-        )}
       </button>
     ))}
   </div>
 
-{/* CENTER FLOATING LOGO */}
-<div className="relative w-[180px] flex justify-center flex-shrink-0 overflow-visible">
+{/* CENTER LOGO */}
+<div className="flex items-center justify-center flex-shrink-0 mx-6">
   <Link
     href="/"
     className="
-      absolute
-      left-1/2
-      -translate-x-1/2
-      -top-[28px]
-      z-[100]
-      w-[88px]
-      h-[88px]
+      w-[46px]
+      h-[46px]
       rounded-full
-      bg-[#20201d]
-      shadow-[0_18px_45px_rgba(0,0,0,.45)]
+      bg-white
+      border border-[#8d6d2f]
+      shadow-[0_8px_20px_rgba(0,0,0,.28)]
       flex
       items-center
       justify-center
       transition-all
       duration-300
-      hover:scale-[1.04]
-      hover:border-[#e3bc67]
+      hover:scale-105
+      hover:border-[#d7b05b]
       cursor-pointer
     "
   >
     <img
       src="/logo.png"
       alt="Logo"
-      className="w-[58px] h-auto object-contain"
+      className="w-[38px] h-auto object-contain"
     />
   </Link>
 </div>
@@ -937,17 +928,14 @@ const getShortLocation = (location) => {
               behavior: "smooth",
             });
         }}
-        className={`relative uppercase tracking-[2px] text-[10px] transition-all duration-300 ${
-          activeSection === item.id
-            ? "text-[#d7b05b]"
-            : "text-white/75 hover:text-white"
-        }`}
+        className={`uppercase tracking-[1.5px] text-[9px] font-medium transition-all duration-300 ${
+  activeSection === item.id
+    ? "text-[#d7b05b]"
+    : "text-white/70 hover:text-white"
+}`}
       >
         {item.label}
 
-        {activeSection === item.id && (
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-[-12px] w-8 h-[2px] bg-[#d7b05b]" />
-        )}
       </button>
     ))}
   </div>
@@ -966,12 +954,13 @@ const getShortLocation = (location) => {
               group
               relative
               overflow-visible
-              h-[36px]
-              px-5
-              rounded-xl
+              h-[30px]
+px-4
+rounded-lg
+text-[8px]
+tracking-[1px]
               bg-[#c9a64b]
               text-[#111]
-              text-[9px]
               tracking-[1.1px]
               font-[600]
               transition-all
@@ -991,7 +980,7 @@ const getShortLocation = (location) => {
             <div className="relative flex items-center gap-2">
 
               <Download
-                size={12}
+                size={10}
                 strokeWidth={2.2}
               />
 
@@ -1183,8 +1172,9 @@ const getShortLocation = (location) => {
 
                   <span
                     className="
-                      text-[12px]
-                      tracking-[2px]
+                      tracking-[1.5px]
+                      text-[9px]
+                      font-medium
                       uppercase
                     "
                     style={{
@@ -1297,8 +1287,8 @@ const getShortLocation = (location) => {
       z-20
       w-full
       px-3
-md:px-4
-lg:px-5
+md:px-5
+lg:px-6
       pb-8
       sm:pb-10
       md:pb-14
