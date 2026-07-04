@@ -31,23 +31,46 @@ export const metadata = {
 
   themeColor: "#c89948",
 
+  applicationName: "Property Bouquet",
+
+  manifest: "/site.webmanifest",
+
   category: "Real Estate",
 
+  creator: "Property Bouquet",
+
+  publisher: "Property Bouquet",
+
+  authors: [
+  {
+    name: "Property Bouquet",
+    url: "https://propertybouquet.com",
+  },
+],
+
+  verification: {
+  google: "gz3uH-bqlngIa4CXwx2YOcYylDepDJZZpvqGVRyY4dQ",
+},
+
   description:
-    "Discover luxury apartments, villas, penthouses and premium investment opportunities across Gurgaon, Noida, Delhi NCR and India's leading cities. Explore new launches, ready-to-move homes and exclusive developer projects.",
+    "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
 
   keywords: [
-    "Luxury Real Estate",
-    "Luxury Apartments",
-    "Luxury Villas",
-    "Property in Gurgaon",
-    "Property in Noida",
-    "Property in Delhi NCR",
-    "Luxury Homes India",
-    "New Launch Projects",
-    "Ready to Move Apartments",
-    "Property Bouquet",
-  ],
+  "Property Bouquet",
+  "Luxury Real Estate",
+  "Luxury Apartments",
+  "Luxury Villas",
+  "Luxury Homes India",
+  "Property in Gurgaon",
+  "Property in Noida",
+  "Property in Delhi NCR",
+  "Luxury Property India",
+  "Premium Apartments",
+  "New Launch Projects",
+  "Ready to Move Homes",
+  "Investment Properties",
+  "Real Estate Platform",
+],
 
   alternates: {
     canonical: "/",
@@ -72,28 +95,42 @@ export const metadata = {
     siteName: "Property Bouquet",
     title: "Property Bouquet | Luxury Real Estate in India",
     description:
-      "Discover luxury apartments, villas, penthouses and premium investment opportunities across Gurgaon, Noida, Delhi NCR and India's leading cities. Explore new launches, ready-to-move homes and exclusive developer projects.",
+    "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
     images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-      },
-    ],
+  {
+    url: "/og-image.jpg",
+    width: 1200,
+    height: 630,
+    alt: "Property Bouquet Luxury Real Estate",
+  },
+],
   },
 
   twitter: {
     card: "summary_large_image",
     title: "Property Bouquet | Luxury Real Estate in India",
     description:
-      "Discover luxury apartments, villas, penthouses and premium investment opportunities across Gurgaon, Noida, Delhi NCR and India's leading cities.",
+    "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
     images: ["/og-image.jpg"],
-  },
+    imageAlt: "Property Bouquet Luxury Real Estate",
+},
 
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
+  icon: [
+    { url: "/favicon.ico" },
+    { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+  ],
+
+  apple: [
+    {
+      url: "/apple-touch-icon.png",
+      sizes: "180x180",
+    },
+  ],
+
+  shortcut: "/favicon.ico",
+},
 };
 
 export default function RootLayout({ children }) {
