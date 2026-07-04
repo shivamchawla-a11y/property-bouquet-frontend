@@ -29,8 +29,6 @@ export const metadata = {
     template: "%s | Property Bouquet",
   },
 
-  themeColor: "#c89948",
-
   applicationName: "Property Bouquet",
 
   manifest: "/site.webmanifest",
