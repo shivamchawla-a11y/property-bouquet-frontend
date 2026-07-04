@@ -4,21 +4,34 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-      },
-      {
-        userAgent: "*",
         disallow: [
           "/admin",
           "/admin/*",
-          "/login",
           "/auth",
+          "/login",
           "/forgot-password",
           "/reset-password",
-          "/api",
+          "/api/*",
         ],
       },
+
+      // AI Crawlers (Allowed)
+      {
+        userAgent: "GPTBot",
+        allow: "/",
+      },
+      {
+        userAgent: "Google-Extended",
+        allow: "/",
+      },
+      {
+        userAgent: "ClaudeBot",
+        allow: "/",
+      },
     ],
+
     sitemap: "https://propertybouquet.com/sitemap.xml",
+
     host: "https://propertybouquet.com",
   };
 }

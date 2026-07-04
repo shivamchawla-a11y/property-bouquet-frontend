@@ -1,34 +1,58 @@
 const API = "https://property-bouquet-backend.onrender.com/api";
 
 export default async function sitemap() {
-  const baseUrl = "https://propertybouquet.com";
+const BASE_URL = "https://propertybouquet.com";
 
   const sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/properties`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/knowledge`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/insights`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-  ];
+  {
+    url: BASE_URL,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 1,
+  },
+
+  {
+    url: `${BASE_URL}/properties`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.95,
+  },
+
+  {
+    url: `${BASE_URL}/developers`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+
+  {
+    url: `${BASE_URL}/locations`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+
+  {
+    url: `${BASE_URL}/categories`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+
+  {
+    url: `${BASE_URL}/knowledge`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.85,
+  },
+
+  {
+    url: `${BASE_URL}/insights`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.85,
+  },
+];
 
   try {
     const [
@@ -39,12 +63,24 @@ export default async function sitemap() {
       knowledgeRes,
       insightsRes,
     ] = await Promise.all([
-      fetch(`${API}/properties`, { cache: "no-store" }),
-      fetch(`${API}/developers`, { cache: "no-store" }),
-      fetch(`${API}/locations`, { cache: "no-store" }),
-      fetch(`${API}/categories`, { cache: "no-store" }),
-      fetch(`${API}/knowledge`, { cache: "no-store" }),
-      fetch(`${API}/news`, { cache: "no-store" }),
+      fetch(`${API}/properties`, { next: {
+    revalidate: 3600,
+  }, }),
+      fetch(`${API}/developers`, { next: {
+    revalidate: 3600,
+  }, }),
+      fetch(`${API}/locations`, { next: {
+    revalidate: 3600,
+  }, }),
+      fetch(`${API}/categories`, { next: {
+    revalidate: 3600,
+  }, }),
+      fetch(`${API}/knowledge`, { next: {
+    revalidate: 3600,
+  },}),
+      fetch(`${API}/news`, { next: {
+    revalidate: 3600,
+  }, }),
     ]);
 
     const [
@@ -66,10 +102,17 @@ export default async function sitemap() {
     // Properties
     if (propertiesData?.data) {
       propertiesData.data.forEach((property) => {
-        if (!property.slug) return;
+        if (
+  !property.slug ||
+  property.status !== "published" ||
+  !property.isActive ||
+  property.isDeleted
+) {
+  return;
+}
 
         sitemap.push({
-          url: `${baseUrl}/property/${property.slug}`,
+          url: `${BASE_URL}/${property.slug}`,
           lastModified: new Date(
             property.updatedAt || property.createdAt || Date.now()
           ),
@@ -85,7 +128,7 @@ export default async function sitemap() {
         if (!developer.slug) return;
 
         sitemap.push({
-          url: `${baseUrl}/developers/${developer.slug}`,
+          url: `${BASE_URL}/developers/${developer.slug}`,
           lastModified: new Date(
             developer.updatedAt || developer.createdAt || Date.now()
           ),
@@ -101,7 +144,7 @@ export default async function sitemap() {
         if (!location.slug) return;
 
         sitemap.push({
-          url: `${baseUrl}/locations/${location.slug}`,
+          url: `${BASE_URL}/locations/${location.slug}`,
           lastModified: new Date(
             location.updatedAt || location.createdAt || Date.now()
           ),
@@ -117,7 +160,7 @@ export default async function sitemap() {
         if (!category.slug) return;
 
         sitemap.push({
-          url: `${baseUrl}/categories/${category.slug}`,
+          url: `${BASE_URL}/categories/${category.slug}`,
           lastModified: new Date(
             category.updatedAt || category.createdAt || Date.now()
           ),
@@ -133,7 +176,7 @@ export default async function sitemap() {
         if (!article.slug) return;
 
         sitemap.push({
-          url: `${baseUrl}/knowledge/${article.slug}`,
+          url: `${BASE_URL}/knowledge/${article.slug}`,
           lastModified: new Date(
             article.updatedAt || article.createdAt || Date.now()
           ),
@@ -149,7 +192,7 @@ export default async function sitemap() {
         if (!article.slug) return;
 
         sitemap.push({
-          url: `${baseUrl}/insights/${article.slug}`,
+          url: `${BASE_URL}/insights/${article.slug}`,
           lastModified: new Date(
             article.updatedAt || article.createdAt || Date.now()
           ),
