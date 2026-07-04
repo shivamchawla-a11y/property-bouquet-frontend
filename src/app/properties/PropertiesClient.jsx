@@ -249,33 +249,32 @@ if (bhk) {
   );
 }
 
-  // SORTING
+ // SORTING
 
-  if (
-    sortBy ===
-    "price-low-high"
-  ) {
-    result.sort(
-      (a, b) =>
-        (a?.coreDetails
-          ?.startingPrice || 0) -
-        (b?.coreDetails
-          ?.startingPrice || 0)
+if (sortBy === "newest") {
+  result.sort((a, b) => {
+    return (
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
     );
-  }
+  });
+}
 
-  if (
-    sortBy ===
-    "price-high-low"
-  ) {
-    result.sort(
-      (a, b) =>
-        (b?.coreDetails
-          ?.startingPrice || 0) -
-        (a?.coreDetails
-          ?.startingPrice || 0)
-    );
-  }
+if (sortBy === "price-low-high") {
+  result.sort(
+    (a, b) =>
+      (a?.coreDetails?.startingPrice || 0) -
+      (b?.coreDetails?.startingPrice || 0)
+  );
+}
+
+if (sortBy === "price-high-low") {
+  result.sort(
+    (a, b) =>
+      (b?.coreDetails?.startingPrice || 0) -
+      (a?.coreDetails?.startingPrice || 0)
+  );
+}
 
   setFilteredProperties(
     result
@@ -285,43 +284,7 @@ if (bhk) {
   searchParams,
   sortBy,
 ]);
-  // ================= SORT =================
 
-  useEffect(() => {
-    let sorted = [
-      ...filteredProperties,
-    ];
-
-    if (
-      sortBy ===
-      "price-low-high"
-    ) {
-      sorted.sort(
-        (a, b) =>
-          (a?.coreDetails
-            ?.startingPrice || 0) -
-          (b?.coreDetails
-            ?.startingPrice || 0)
-      );
-    }
-
-    if (
-      sortBy ===
-      "price-high-low"
-    ) {
-      sorted.sort(
-        (a, b) =>
-          (b?.coreDetails
-            ?.startingPrice || 0) -
-          (a?.coreDetails
-            ?.startingPrice || 0)
-      );
-    }
-
-    setFilteredProperties(
-      sorted
-    );
-  }, [sortBy]);
 
   // ================= LOADING =================
 
