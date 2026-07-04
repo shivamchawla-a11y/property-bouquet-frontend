@@ -322,13 +322,13 @@ if (coreDetails?.priceOnRequest === true) {
   if (startPrice && maxPrice) {
     metrics.push({
       label: "Price Range",
-      value: `${formatPrice(startPrice)} - ${formatPrice(maxPrice)}`,
+      value: `₹ ${formatPrice(startPrice)} - ₹ ${formatPrice(maxPrice)}`,
       icon: "FaTag",
     });
   } else if (startPrice) {
     metrics.push({
       label: "Starting Price",
-      value: formatPrice(startPrice),
+      value: `₹ ${formatPrice(startPrice)}`,
       icon: "FaTag",
     });
   }

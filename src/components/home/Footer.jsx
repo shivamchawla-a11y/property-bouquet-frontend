@@ -93,365 +93,308 @@ export default function Footer() {
 
       <div className="max-w-[1500px] mx-auto px-8 lg:px-14 py-20">
 
-        {/* ================= TOP ================= */}
+        
+{/* ================= TOP ================= */}
 
-        <div className="grid lg:grid-cols-[1.8fr_1fr_1fr_1fr] gap-14">
+<div className="grid lg:grid-cols-[1.8fr_1fr_1fr_1fr] gap-12">
 
-          {/* LEFT */}
+  {/* LEFT */}
+  <div className="pr-10 border-r border-[#8e6b2e]/40">
 
-          <div className="pr-10 border-r border-[#8e6b2e]/40">
+    {/* LOGO (SMALLER FIX) */}
+    <div className="h-[34px] w-[140px] flex items-center">
+      <img
+        src="/logowhole.png" // keep your logo here
+        alt="Property Bouquet"
+        className="max-h-full max-w-full object-contain"
+        style={{
+          transformOrigin: "left center",
+        }}
+      />
+    </div>
 
-           {/* Logo */}
+    <p className="mt-8 text-[13px] leading-[1.85] text-white/75 max-w-[520px]">
+      Property Bouquet is a luxury real estate platform offering curated properties,
+      expert insights & intelligent tools to help you make confident decisions.
+    </p>
 
-<div className="mb-10">
-  <img
-    src="/logowhole.png"
-    alt="Property Bouquet"
-    className="
-      w-full
-      max-w-[430px]
-      h-auto
-      object-contain
-      object-left
-      select-none
-    "
-    draggable={false}
-  />
+    {/* SOCIAL */}
+    <div className="flex gap-6 mt-14">
+
+      {[
+        <FaFacebookF />,
+        <FaInstagram />,
+        <FaLinkedinIn />,
+        <FaYoutube />,
+      ].map((icon, index) => (
+        <button
+          key={index}
+          className="
+            w-12 h-12 rounded-full border border-[#B58A44]
+            text-[#C89B4F]
+            flex items-center justify-center
+            text-lg
+            hover:bg-[#C89B4F]
+            hover:text-black
+            transition-all duration-300
+          "
+        >
+          {icon}
+        </button>
+      ))}
+
+    </div>
+
+  </div>
+
+  {/* EXPLORE */}
+  <div className="border-r border-[#8e6b2e]/40 pr-10">
+
+    <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      Explore
+    </h3>
+
+    <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
+
+    <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
+
+      {exploreLinks.map((item) => (
+        <li
+          key={item}
+          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
+        >
+          {item}
+        </li>
+      ))}
+
+    </ul>
+
+  </div>
+
+  {/* KNOWLEDGE */}
+  <div className="border-r border-[#8e6b2e]/40 pr-10">
+
+    <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      Knowledge Centre
+    </h3>
+
+    <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
+
+    <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
+
+      {knowledgeLinks.map((item) => (
+        <li
+          key={item}
+          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
+        >
+          {item}
+        </li>
+      ))}
+
+    </ul>
+
+  </div>
+
+  {/* INSIGHTS */}
+  <div>
+
+    <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      Property Insights
+    </h3>
+
+    <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
+
+    <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
+
+      {insightLinks.map((item) => (
+        <li
+          key={item}
+          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
+        >
+          {item}
+        </li>
+      ))}
+
+    </ul>
+
+  </div>
+
 </div>
 
-            <p className="mt-10 text-[18px] leading-[2.1] text-white/80 max-w-[700px]">
-              Property Bouquet is a luxury real estate platform offering
-              curated properties, expert insights & intelligent tools to help
-              you make confident decisions.
-            </p>
+{/* ================= FEATURES STRIP ================= */}
 
-            {/* SOCIAL */}
+<div className="mt-16 border border-[#8e6b2e]/60 rounded-xl overflow-hidden">
 
-            <div className="flex gap-7 mt-16">
+  <div className="grid lg:grid-cols-6 divide-x divide-[#8e6b2e]/30">
 
-              {[
-                <FaFacebookF />,
-                <FaInstagram />,
-                <FaLinkedinIn />,
-                <FaYoutube />,
-              ].map((icon, index) => (
+    {featureCards.map((item, index) => (
+      <div
+        key={index}
+        className="flex items-center gap-4 px-6 py-6 hover:bg-[#0b1c15] transition-all duration-300"
+      >
 
-                <button
-                  key={index}
-                  className="w-16 h-16 rounded-full border border-[#B58A44] text-[#C89B4F]
-                  flex items-center justify-center
-                  text-xl
-                  hover:bg-[#C89B4F]
-                  hover:text-black
-                  duration-300"
-                >
-                  {icon}
-                </button>
+        <div className="text-[#C89B4F] text-xl">
+          {item.icon}
+        </div>
 
-              ))}
+        <div>
 
-            </div>
+          <h4 className="uppercase tracking-[2px] text-[11px] text-white/90">
+            {item.title}
+          </h4>
 
-          </div>
-
-          {/* EXPLORE */}
-
-          <div className="border-r border-[#8e6b2e]/40 pr-10">
-
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
-              Explore
-            </h3>
-
-            <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
-
-            <ul className="space-y-4 text-[16px] text-white/85">
-
-              {exploreLinks.map((item) => (
-
-                <li
-                  key={item}
-                  className="hover:text-[#C89B4F] cursor-pointer duration-300"
-                >
-                  {item}
-                </li>
-
-              ))}
-
-            </ul>
-
-          </div>
-
-          {/* KNOWLEDGE */}
-
-          <div className="border-r border-[#8e6b2e]/40 pr-10">
-
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
-              Knowledge Centre
-            </h3>
-
-            <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
-
-            <ul className="space-y-4 text-[16px] text-white/85">
-
-              {knowledgeLinks.map((item) => (
-
-                <li
-                  key={item}
-                  className="hover:text-[#C89B4F] cursor-pointer duration-300"
-                >
-                  {item}
-                </li>
-
-              ))}
-
-            </ul>
-
-          </div>
-
-          {/* INSIGHTS */}
-
-          <div>
-
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
-              Property Insights
-            </h3>
-
-            <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-8"></div>
-
-            <ul className="space-y-4 text-[16px] text-white/85">
-
-              {insightLinks.map((item) => (
-
-                <li
-                  key={item}
-                  className="hover:text-[#C89B4F] cursor-pointer duration-300"
-                >
-                  {item}
-                </li>
-
-              ))}
-
-            </ul>
-
-          </div>
+          <p className="uppercase tracking-[1px] text-[10px] text-white/70 mt-1">
+            {item.subtitle}
+          </p>
 
         </div>
 
-        {/* PART 2 STARTS HERE */}
+      </div>
+    ))}
 
-        {/* ================= FEATURES STRIP ================= */}
+  </div>
 
-        <div className="mt-20 border border-[#8e6b2e]/60 rounded-xl overflow-hidden">
-
-          <div className="grid lg:grid-cols-6 divide-x divide-[#8e6b2e]/40">
-
-            {featureCards.map((item, index) => (
-
-              <div
-                key={index}
-                className="flex items-center gap-5 px-8 py-8 hover:bg-[#0b1c15] transition-all duration-300"
-              >
-
-                <div className="text-[#C89B4F] text-2xl lg:text-3xl">
-                  {item.icon}
-                </div>
-
-                <div>
-
-                  <h4 className="uppercase tracking-[2px] text-[13px] text-white/90">
-                    {item.title}
-                  </h4>
-
-                  <p className="uppercase tracking-[1px] text-[13px] text-white/75 mt-1">
-                    {item.subtitle}
-                  </p>
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
+</div>
 
         {/* ================= LOWER SECTION ================= */}
 
-        <div className="grid lg:grid-cols-[1.25fr_1.2fr_1.15fr_0.9fr] gap-12 mt-20">
+<div className="grid lg:grid-cols-[1.25fr_1.2fr_1.15fr_0.9fr] gap-12 mt-20">
 
-          {/* BRAND */}
+  {/* BRAND */}
+  <div className="border-r border-[#8e6b2e]/30 pr-10">
 
-          <div className="border-r border-[#8e6b2e]/30 pr-10">
+    <p className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      A Brand By
+    </p>
 
-            <p className="uppercase tracking-[2px] text-[#C89B4F] text-xs lg:text-xs lg:text-sm">
-              A Brand By
-            </p>
+    <h3 className="text-[18px] lg:text-[20px] font-light mt-5 tracking-wide text-white">
+      AMETHYST LANDBASE
+    </h3>
 
-            <h3 className="text-2xl lg:text-3xl font-light mt-5 tracking-wide">
-              AMETHYST LANDBASE
-            </h3>
+    <div className="w-14 h-[2px] bg-[#C89B4F] mt-6 mb-7" />
 
-            <div className="w-16 h-[2px] bg-[#C89B4F] mt-7 mb-8"></div>
+    <p className="text-white/70 text-[13px] leading-[1.9]">
 
-            <p className="text-white/75 text-xs lg:text-xs lg:text-sm leading-9">
+      Luxury Property Advisory &nbsp; | &nbsp; 5+ Years of Trust
+      <br />
+      1000+ Families Served &nbsp; | &nbsp; ₹1000+ Cr Advisory Value
 
-              Luxury Property Advisory &nbsp; | &nbsp;
-              5+ Years of Trust
+    </p>
 
-              <br />
+  </div>
 
-              1000+ Families Served &nbsp; | &nbsp;
-              ₹1000+ Cr Advisory Value
+  {/* NEWSLETTER */}
+  <div className="border-r border-[#8e6b2e]/30 pr-10">
 
-            </p>
+    <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      Stay Updated
+    </h3>
 
-          </div>
+    <p className="text-white/70 mt-6 text-[13px] leading-[1.8]">
+      Insights on luxury real estate, market trends, and exclusive opportunities.
+    </p>
 
-          {/* NEWSLETTER */}
+    <div className="flex mt-10 h-[52px]">
 
-          <div className="border-r border-[#8e6b2e]/30 pr-10">
+      <input
+        type="email"
+        placeholder="Enter your email address"
+        className="flex-1 bg-transparent border border-[#8e6b2e]/50 px-5 outline-none text-white placeholder:text-white/40 text-[13px]"
+      />
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
-              Stay Updated
-            </h3>
+      <button
+        className="w-16 bg-[#C89B4F] text-black hover:bg-[#d7ae63] duration-300 flex items-center justify-center"
+      >
+        <FaArrowRight />
+      </button>
 
-            <p className="text-white/70 mt-6 text-xs lg:text-xs lg:text-sm leading-8">
+    </div>
 
-              Insights on luxury real estate,
-              market trends,
-              and exclusive opportunities.
+  </div>
 
-            </p>
+  {/* CONTACT */}
+  <div>
 
-            <div className="flex mt-10 h-[64px]">
+    <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+      Contact Us
+    </h3>
 
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 bg-transparent border border-[#8e6b2e]/50 px-6 outline-none text-white placeholder:text-white/40"
-              />
+    <div className="space-y-5 mt-8 text-[13px] leading-[1.8] text-white/80">
 
-              <button
-                className="w-20 bg-[#C89B4F] text-black text-2xl hover:bg-[#d7ae63] duration-300 flex items-center justify-center"
-              >
-                <FaArrowRight />
-              </button>
+      <div className="flex items-center gap-3">
+        <FaPhoneAlt className="text-[#C89B4F]" />
+        <span>+91 99900 12345</span>
+      </div>
 
-            </div>
+      <div className="flex items-center gap-3">
+        <FaEnvelope className="text-[#C89B4F]" />
+        <span>connect@propertybouquet.com</span>
+      </div>
 
-          </div>
+      <div className="flex items-start gap-3">
+        <FaMapMarkerAlt className="text-[#C89B4F] mt-1" />
+        <span>Gurugram | Delhi NCR | Noida </span>
+      </div>
 
-          {/* CONTACT */}
+      <div className="flex items-center gap-3">
+        <FaClock className="text-[#C89B4F]" />
+        <span>Mon - Sun : 10:00 AM - 7:00 PM</span>
+      </div>
 
-          <div>
+    </div>
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-base lg:text-base lg:text-lg">
-              Contact Us
-            </h3>
+  </div>
 
-            <div className="space-y-6 mt-8 text-xs lg:text-xs lg:text-sm text-white/80">
+  {/* WHATSAPP CARD */}
+  <div>
 
-              <div className="flex items-center gap-4">
-                <FaPhoneAlt className="text-[#C89B4F]" />
-                <span>+91 99900 12345</span>
-              </div>
+    <div className="
+      border border-[#8e6b2e]/60 rounded-xl p-7 h-full
+      flex flex-col justify-between
+      hover:border-[#C89B4F]
+      transition-all duration-300
+    ">
 
-              <div className="flex items-center gap-4">
-                <FaEnvelope className="text-[#C89B4F]" />
-                <span>connect@propertybouquet.com</span>
-              </div>
+      <div className="flex gap-4 items-start">
 
-              <div className="flex items-start gap-4">
-                <FaMapMarkerAlt className="text-[#C89B4F] mt-1" />
-                <span>
-                  Gurugram | Delhi NCR | Pune | Mumbai
-                </span>
-              </div>
+        <div className="
+          w-14 h-14 rounded-full border border-[#C89B4F]
+          flex items-center justify-center text-[#C89B4F] text-2xl
+        ">
+          <FaWhatsapp />
+        </div>
 
-              <div className="flex items-center gap-4">
-                <FaClock className="text-[#C89B4F]" />
-                <span>Mon - Sat : 10:00 AM - 7:00 PM</span>
-              </div>
+        <div>
 
-            </div>
+          <p className="text-[#C89B4F] text-[11px] tracking-[3px] font-medium uppercase">
+            Talk to our
+          </p>
 
-          </div>
-
-          {/* WHATSAPP CARD */}
-
-          <div>
-
-            <div
-              className="
-              border
-              border-[#8e6b2e]/60
-              rounded-xl
-              p-8
-              h-full
-              flex
-              flex-col
-              justify-between
-              hover:border-[#C89B4F]
-              transition-all
-              duration-300
-              "
-            >
-
-              <div className="flex gap-5">
-
-                <div
-                  className="
-                  w-16
-                  h-16
-                  rounded-full
-                  border
-                  border-[#C89B4F]
-                  flex
-                  items-center
-                  justify-center
-                  text-[#C89B4F]
-                  text-3xl
-                  "
-                >
-                  <FaWhatsapp />
-                </div>
-
-                <div>
-
-                  <p className="text-[#C89B4F] text-base lg:text-base lg:text-lg">
-                    Talk to our
-                  </p>
-
-                  <h4 className="text-xl lg:text-2xl font-light mt-2">
-                    Property Expert
-                  </h4>
-
-                </div>
-
-              </div>
-
-              <button
-                className="
-                mt-10
-                flex
-                justify-between
-                items-center
-                text-xl lg:text-2xl
-                hover:text-[#C89B4F]
-                transition-all
-                "
-              >
-                <span>+91 99900 12345</span>
-
-                <FaArrowRight />
-              </button>
-
-            </div>
-
-          </div>
+          <h4 className="text-[18px] font-light mt-1 text-white">
+            Property Expert
+          </h4>
 
         </div>
+
+      </div>
+
+      <button
+        className="
+          mt-10 flex justify-between items-center
+          text-[14px] text-white/80
+          hover:text-[#C89B4F]
+          transition-all
+        "
+      >
+        <span>+91 99900 12345</span>
+        <FaArrowRight />
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
         {/* PART 3 STARTS HERE */}
 
@@ -463,8 +406,8 @@ export default function Footer() {
 
             {/* LEFT */}
 
-            <p className="text-white/60 text-[16px]">
-              © 2024 Property Bouquet. All Rights Reserved.
+            <p className="text-white/60 text-[13px] leading-[1.9]">
+              © 2026 Property Bouquet. All Rights Reserved.
             </p>
 
             {/* CENTER */}
