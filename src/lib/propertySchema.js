@@ -6,34 +6,145 @@ export function buildPropertySchema(property, slug) {
   const location = property.locationData || {};
   const media = property.media || {};
   const metrics = property.keyMetrics || {};
+  const faqs = property.faqs || [];
 
-  const image =
-    media.heroImageUrl ||
-    media.gallery?.[0] ||
-    `${SITE_URL}/og-image.jpg`;
+  const pageUrl = `${SITE_URL}/${slug}`;
 
-  const price =
-    core.priceOnRequest
-      ? undefined
-      : core.startingPrice;
+  // -------------------------
+  // Images
+  // -------------------------
 
-  return {
-    "@context": "https://schema.org",
+  const images = [
+    media.heroImageUrl,
+    ...(media.gallery || []),
+  ].filter(Boolean);
+
+  // -------------------------
+  // Amenities
+  // -------------------------
+
+  const amenities =
+    overview.amenities?.map((item) => item.heading) || [];
+
+  // -------------------------
+  // Property Values
+  // -------------------------
+
+  const additionalProperty = [];
+
+  if (metrics.landArea) {
+    additionalProperty.push({
+      "@type": "PropertyValue",
+      name: "Land Area",
+      value: metrics.landArea,
+    });
+  }
+
+  if (metrics.possession) {
+    additionalProperty.push({
+      "@type": "PropertyValue",
+      name: "Possession",
+      value: metrics.possession,
+    });
+  }
+
+  if (metrics.status) {
+    additionalProperty.push({
+      "@type": "PropertyValue",
+      name: "Status",
+      value: metrics.status,
+    });
+  }
+
+  if (metrics.reraNumber) {
+    additionalProperty.push({
+      "@type": "PropertyValue",
+      name: "RERA Number",
+      value: metrics.reraNumber,
+    });
+  }
+
+  // -------------------------
+  // Graph
+  // -------------------------
+
+  const graph = [];
+
+  // -------------------------
+  // Breadcrumb
+  // -------------------------
+
+  graph.push({
+    "@type": "BreadcrumbList",
+
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Properties",
+        item: `${SITE_URL}/properties`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: core.title,
+        item: pageUrl,
+      },
+    ],
+  });
+
+  // -------------------------
+  // Place
+  // -------------------------
+
+  graph.push({
+    "@type": "Place",
+
+    "@id": `${pageUrl}#place`,
+
+    name:
+      location.locationName ||
+      location.customLocation ||
+      "Gurgaon",
+
+    address: {
+      "@type": "PostalAddress",
+
+      addressLocality:
+        location.locationName ||
+        location.customLocation ||
+        "Gurgaon",
+
+      addressRegion: "Haryana",
+
+      addressCountry: "IN",
+    },
+  });
+
+  // -------------------------
+  // Residence
+  // -------------------------
+
+  graph.push({
     "@type": "Residence",
 
-    "@id": `${SITE_URL}/${slug}`,
+    "@id": `${pageUrl}#residence`,
 
-    url: `${SITE_URL}/${slug}`,
+    url: pageUrl,
 
     name: core.title,
 
     description:
       overview.description ||
-      `Explore ${core.title} by ${
-        core.developerName || "leading developer"
-      }.`,
+      `Explore ${core.title}.`,
 
-    image: [image],
+    image: images,
 
     brand: {
       "@type": "Brand",
@@ -41,49 +152,187 @@ export function buildPropertySchema(property, slug) {
     },
 
     address: {
-      "@type": "PostalAddress",
-      addressLocality:
-        location.locationName ||
-        location.customLocation ||
-        "",
-      addressCountry: "IN",
+      "@id": `${pageUrl}#place`,
     },
 
-    offers: price
-      ? {
-          "@type": "Offer",
-          price,
-          priceCurrency: "INR",
-          availability:
-            "https://schema.org/InStock",
-          url: `${SITE_URL}/${slug}`,
-        }
-      : undefined,
+    amenityFeature: amenities.map((amenity) => ({
+      "@type": "LocationFeatureSpecification",
+      name: amenity,
+      value: true,
+    })),
 
-    additionalProperty: [
-      metrics.landArea && {
-        "@type": "PropertyValue",
-        name: "Land Area",
-        value: metrics.landArea,
+    additionalProperty,
+  });
+
+    // -------------------------
+  // Offer
+  // -------------------------
+
+  if (!core.priceOnRequest && core.startingPrice) {
+    graph.push({
+      "@type": "Offer",
+
+      "@id": `${pageUrl}#offer`,
+
+      url: pageUrl,
+
+      price: core.startingPrice,
+
+      priceCurrency: "INR",
+
+      availability: "https://schema.org/InStock",
+
+      seller: {
+        "@type": "Organization",
+        name: "Property Bouquet",
+        url: SITE_URL,
       },
 
-      metrics.possession && {
-        "@type": "PropertyValue",
-        name: "Possession",
-        value: metrics.possession,
-      },
+      itemCondition: "https://schema.org/NewCondition",
+    });
+  }
 
-      metrics.status && {
-        "@type": "PropertyValue",
-        name: "Status",
-        value: metrics.status,
-      },
+  // -------------------------
+  // Product
+  // -------------------------
 
-      metrics.reraNumber && {
-        "@type": "PropertyValue",
-        name: "RERA",
-        value: metrics.reraNumber,
-      },
-    ].filter(Boolean),
+  graph.push({
+    "@type": "Product",
+
+    "@id": `${pageUrl}#product`,
+
+    name: core.title,
+
+    url: pageUrl,
+
+    image: images,
+
+    description:
+      overview.description ||
+      `Luxury property by ${core.developerName || "Leading Developer"}.`,
+
+    brand: {
+      "@type": "Brand",
+      name: core.developerName || "Developer",
+    },
+
+    category:
+      property.categoryData?.categoryName || "Real Estate",
+
+    manufacturer: {
+      "@type": "Organization",
+      name: core.developerName || "Developer",
+    },
+
+    offers:
+      !core.priceOnRequest && core.startingPrice
+        ? {
+            "@id": `${pageUrl}#offer`,
+          }
+        : undefined,
+  });
+
+  // -------------------------
+  // Image Gallery
+  // -------------------------
+
+  if (images.length) {
+  graph.push({
+    "@type": "ItemList",
+
+    "@id": `${pageUrl}#images`,
+
+    name: `${core.title} Images`,
+
+    itemListElement: images.map((img, index) => ({
+      "@type": "ImageObject",
+
+      position: index + 1,
+
+      contentUrl: img,
+    })),
+  });
+}
+
+  // -------------------------
+  // Developer
+  // -------------------------
+
+  if (core.developerName) {
+    graph.push({
+      "@type": "Organization",
+
+      "@id": `${pageUrl}#developer`,
+
+      name: core.developerName,
+
+      image: core.developerLogo,
+
+      logo: core.developerLogo,
+    });
+  }
+
+  // -------------------------
+  // Floor Plans
+  // -------------------------
+
+  const floorPlans =
+    property.gatedContent?.floorPlans || [];
+
+  if (floorPlans.length) {
+    graph.push({
+      "@type": "OfferCatalog",
+
+      "@id": `${pageUrl}#floorplans`,
+
+      name: "Available Floor Plans",
+
+      itemListElement: floorPlans.map((plan) => ({
+        "@type": "Offer",
+
+        name: plan.unitType,
+
+        price: plan.price,
+
+        description: `${plan.area} • ${plan.bedrooms} Bedrooms`,
+
+        image: plan.image,
+      })),
+    });
+  }
+    // -------------------------
+  // FAQ Schema
+  // -------------------------
+
+  if (faqs.length) {
+    graph.push({
+      "@type": "FAQPage",
+
+      "@id": `${pageUrl}#faq`,
+
+      mainEntity: faqs
+        .filter((faq) => faq.question && faq.answer)
+        .map((faq) => ({
+          "@type": "Question",
+
+          name: faq.question,
+
+          acceptedAnswer: {
+            "@type": "Answer",
+
+            text: faq.answer,
+          },
+        })),
+    });
+  }
+
+  // -------------------------
+  // Return Complete Graph
+  // -------------------------
+
+  return {
+    "@context": "https://schema.org",
+
+    "@graph": graph,
   };
 }
