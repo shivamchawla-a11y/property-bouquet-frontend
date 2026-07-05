@@ -26,14 +26,14 @@ export function buildPropertySEO(property, slug) {
   const categoryName =
     category.categoryName?.trim() || "Luxury Apartments";
 
-  const possession =
-    keyMetrics.possession?.trim() || "";
-
   // -------------------------------
   // Meta Title
   // -------------------------------
 
-  const generatedTitle = `${propertyName} ${locationName} | Price, Floor Plans, Brochure & Reviews | Property Bouquet`;
+const generatedTitle =
+  developer && developer !== "Leading Developer"
+    ? `${propertyName} by ${developer} | Price, Floor Plans & Brochure`
+    : `${propertyName} | Price, Floor Plans & Brochure`;
 
   const title =
     seo.metaTitle?.trim() || generatedTitle;
@@ -42,9 +42,9 @@ export function buildPropertySEO(property, slug) {
   // Meta Description
   // -------------------------------
 
-  const generatedDescription =
-    overview.description?.trim() ||
-    `Explore ${propertyName} by ${developer} in ${locationName}. Check latest price, floor plans, brochure, amenities, location map, specifications and book your site visit with Property Bouquet.`;
+const generatedDescription =
+  overview.description?.trim() ||
+  `${propertyName} by ${developer} in ${locationName}. Explore prices, floor plans, master plan, amenities, specifications, possession details, location advantages and download the latest brochure.`;
 
   const description =
     seo.metaDescription?.trim() ||
@@ -63,20 +63,42 @@ export function buildPropertySEO(property, slug) {
     keywords = seo.keywords;
   } else {
     keywords = [
-      propertyName,
-      `${propertyName} ${locationName}`,
-      `${propertyName} Price`,
-      `${propertyName} Floor Plan`,
-      `${propertyName} Brochure`,
-      `${propertyName} Reviews`,
-      developer,
-      `${developer} Projects`,
-      categoryName,
-      `Property in ${locationName}`,
-      `Luxury Apartments ${locationName}`,
-      "Luxury Real Estate",
-      "Property Bouquet",
-    ].filter(Boolean);
+  propertyName,
+
+  `${propertyName} price`,
+  `${propertyName} floor plan`,
+  `${propertyName} brochure`,
+  `${propertyName} location`,
+  `${propertyName} reviews`,
+  `${propertyName} possession`,
+  `${propertyName} payment plan`,
+  `${propertyName} master plan`,
+  `${propertyName} amenities`,
+  `${propertyName} RERA`,
+  `${propertyName} specifications`,
+  `${propertyName} location map`,
+  `${propertyName} gallery`,
+  `${propertyName} images`,
+  `${propertyName} booking`,
+
+  `${propertyName} ${locationName}`,
+  `${propertyName} ${locationName} price`,
+  `${propertyName} apartments`,
+  `${propertyName} luxury apartments`,
+
+  developer,
+  `${developer} projects`,
+  `${developer} new launch`,
+  `${developer} residential projects`,
+
+  locationName,
+  `Property in ${locationName}`,
+  `Luxury Apartments in ${locationName}`,
+  `New Launch Projects in ${locationName}`,
+  `Real Estate ${locationName}`,
+
+  categoryName,
+].filter(Boolean);
   }
 
   // -------------------------------
@@ -84,15 +106,15 @@ export function buildPropertySEO(property, slug) {
   // -------------------------------
 
   const image =
-    media.heroImageUrl ||
-    media.gallery?.[0] ||
-    `${SITE_URL}/og-image.jpg`;
+  media.heroImageUrl?.trim() ||
+  media.gallery?.find((img) => img?.trim()) ||
+  `${SITE_URL}/og-image.jpg`;
 
   // -------------------------------
   // Canonical
   // -------------------------------
 
-  const canonical = `${SITE_URL}/${slug}`;
+const canonical = `${SITE_URL}/${slug.replace(/^\/+/, "")}`;
 
   // -------------------------------
   // Metadata
@@ -109,17 +131,19 @@ export function buildPropertySEO(property, slug) {
       canonical,
     },
 
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
+        robots: {
         index: true,
         follow: true,
-        "max-image-preview": "large",
-        "max-video-preview": -1,
-        "max-snippet": -1,
+        nocache: false,
+        googleBot: {
+          index: true,
+          follow: true,
+          noimageindex: false,
+          "max-image-preview": "large",
+          "max-video-preview": -1,
+          "max-snippet": -1,
+        },
       },
-    },
 
     openGraph: {
       title,
@@ -134,18 +158,16 @@ export function buildPropertySEO(property, slug) {
           url: image,
           width: 1200,
           height: 630,
-          alt: propertyName,
+          alt: `${propertyName} by ${developer}`,
         },
       ],
     },
 
     twitter: {
-  card: "summary_large_image",
-  title,
-  description,
-  images: [image],
-  creator: "@propertybouquet",
-  site: "@propertybouquet",
+    card: "summary_large_image",
+    title,
+    description,
+    images: [image],
 },
   };
 }
