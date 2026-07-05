@@ -9,6 +9,7 @@ import {
   Target,
   ChevronDown,
 } from "lucide-react";
+import Image from "next/image";
 
 import { motion } from "framer-motion";
 import SearchPanel from "./SearchPanel";
@@ -42,11 +43,16 @@ export default function HeroSection() {
     <section className="relative h-screen min-h-[760px] xl:min-h-[820px] overflow-visible bg-black">
 
       {/* BACKGROUND IMAGE */}
-      <img
-        src="/bg-img.png"
-        alt="Luxury"
-        className="absolute inset-0 w-full h-full object-cover scale-[1.02]"
-      />
+
+<Image
+  src="/bg-img.webp"
+  alt="Luxury Property"
+  fill
+  priority
+  quality={85}
+  sizes="100vw"
+  className="object-cover scale-[1.02]"
+/>
 
       {/* OVERLAYS */}
       <div className="absolute inset-0 bg-black/50" />
