@@ -22,6 +22,7 @@ import {
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
+  const isPreview = pathname.startsWith("/admin/preview");
   const router = useRouter();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -93,35 +94,41 @@ export default function AdminLayout({ children }) {
     },
   ];
 
-  // ================= AUTH CHECK =================
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/auth/me",
-          {
-            credentials: "include",
-          }
-        );
+// ================= AUTH CHECK =================
+useEffect(() => {
+  // Skip auth check on preview pages
+  if (isPreview) {
+    setLoading(false);
+    return;
+  }
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          router.push("/login");
-        } else {
-          setRole(data.user.role);
-          setLoading(false);
+  const checkAuth = async () => {
+    try {
+      const res = await fetch(
+        "https://property-bouquet-backend.onrender.com/api/auth/me",
+        {
+          credentials: "include",
         }
-      } catch (err) {
-        router.push("/login");
-      }
-    };
+      );
 
-    checkAuth();
-  }, [router]);
+      const data = await res.json();
+
+      if (!res.ok) {
+        router.push("/login");
+      } else {
+        setRole(data.user.role);
+        setLoading(false);
+      }
+    } catch (err) {
+      router.push("/login");
+    }
+  };
+
+  checkAuth();
+}, [router, isPreview]);
 
   // ================= LOADING =================
-  if (loading || !role) {
+if (!isPreview && (loading || !role)) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#f7f9f8]">
         <p className="text-gray-500 text-lg">
@@ -130,6 +137,11 @@ export default function AdminLayout({ children }) {
       </div>
     );
   }
+
+  // ================= PREVIEW PAGE =================
+if (isPreview) {
+  return children;
+}
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f7f9f8]">

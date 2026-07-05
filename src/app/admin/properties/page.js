@@ -884,7 +884,7 @@ const developerOptions = [
         <button
           onClick={() =>
             window.open(
-              `/property/${property.slug}`,
+              `/admin/preview/${property.slug}`,
               "_blank"
             )
           }
