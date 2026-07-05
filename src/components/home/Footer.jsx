@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -103,14 +104,18 @@ export default function Footer() {
 
     {/* LOGO (SMALLER FIX) */}
     <div className="h-[34px] w-[140px] flex items-center">
-      <img
-        src="/logowhole.png" // keep your logo here
-        alt="Property Bouquet"
-        className="max-h-full max-w-full object-contain"
-        style={{
-          transformOrigin: "left center",
-        }}
-      />
+
+<Image
+  src="/logowhole.webp"
+  alt="Property Bouquet"
+  width={140}
+  height={34}
+  priority
+  className="max-h-full max-w-full object-contain"
+  style={{
+    transformOrigin: "left center",
+  }}
+/>
     </div>
 
     <p className="mt-8 text-[13px] leading-[1.85] text-white/75 max-w-[520px]">

@@ -9,6 +9,7 @@ import {
   Database,
   ShieldCheck,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function HeroSectionInsights() {
   return (
@@ -171,20 +172,24 @@ export default function HeroSectionInsights() {
 
   <div className="relative overflow-hidden rounded-[36px] border border-white/10 shadow-[0_35px_90px_rgba(0,0,0,.45)]">
 
-    <img
-      src="/hero-img.png"
-      alt="Property Insights"
-      className="
-      w-full
-      h-[520px]
-      lg:h-[560px]
-      object-cover
-      object-center
-      transition-transform
-      duration-700
-      hover:scale-105
-      "
-    />
+<Image
+  src="/hero-img.webp"
+  alt="Property Insights"
+  width={1920}
+  height={560}
+  priority
+  sizes="(max-width: 1024px) 100vw, 50vw"
+  className="
+    w-full
+    h-[520px]
+    lg:h-[560px]
+    object-cover
+    object-center
+    transition-transform
+    duration-700
+    hover:scale-105
+  "
+/>
 
     {/* Top Overlay */}
 

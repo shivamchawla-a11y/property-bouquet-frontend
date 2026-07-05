@@ -500,11 +500,13 @@ const formatDate = (date) => {
   {/* RIGHT IMAGE */}
   <div className="relative min-h-[540px] overflow-hidden bg-black">
 
-    <img
-      src="/market1.png"
-      alt="Luxury Interior"
-      className="absolute inset-0 w-full h-full object-cover object-center"
-    />
+    <Image
+  src="/market1.webp"
+  alt="Luxury Interior"
+  fill
+  sizes="100vw"
+  className="absolute inset-0 object-cover object-center"
+/>
 
     {/* PREMIUM OVERLAY */}
     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
@@ -844,11 +846,14 @@ const formatDate = (date) => {
   <div className="relative min-h-[520px] overflow-hidden bg-black">
 
     {/* IMAGE */}
-    <img
-      src="/market2.png"
-      alt="Luxury Advisory"
-      className="absolute inset-0 w-full h-full object-cover object-center scale-[1.03]"
-    />
+
+<Image
+  src="/market2.webp"
+  alt="Luxury Advisory"
+  fill
+  sizes="100vw"
+  className="absolute inset-0 object-cover object-center scale-[1.03]"
+/>
 
     {/* OVERLAYS */}
     <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-transparent to-[#021c18]/35" />

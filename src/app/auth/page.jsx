@@ -14,6 +14,7 @@ import {
   motion,
   AnimatePresence,
 } from "framer-motion";
+import Image from "next/image";
 
 const testimonials = [
   {
@@ -188,19 +189,21 @@ animate-pulse
     overflow-hidden
   "
 >
-  <img
-    src="/auth-bg.png"
-    alt=""
-    className="
-      absolute
-      inset-0
-      w-full
-      h-full
-      object-cover
-      object-center
-      scale-[1.08]
-    "
-  />
+
+<Image
+  src="/auth-bg.webp"
+  alt=""
+  fill
+  priority
+  sizes="100vw"
+  className="
+    absolute
+    inset-0
+    object-cover
+    object-center
+    scale-[1.08]
+  "
+/>
 
 
   {/* left fade */}
