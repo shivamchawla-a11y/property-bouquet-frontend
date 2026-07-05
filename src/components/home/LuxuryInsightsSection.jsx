@@ -325,9 +325,6 @@ const formatDate = (date) => {
         {/* SHINE EFFECT */}
         <div className="absolute top-0 -left-[130%] w-[70%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent rotate-[18deg] group-hover:left-[150%] transition-all duration-[1300ms]" />
 
-        {/* NOISE TEXTURE */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')]" />
-
         {/* CONTENT */}
         <div className="relative z-10 p-7 flex flex-col h-full justify-between">
 

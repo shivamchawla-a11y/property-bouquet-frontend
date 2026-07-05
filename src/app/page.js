@@ -1,18 +1,41 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import Navbar from "@/components/home/Navbar";
 import HeroSection from "@/components/home/HeroSection";
-import LuxuryBanner from "@/components/home/LuxuryBanner";
-import FeaturedProjects from "@/components/home/FeaturedProjects";
-import TrendingProjects from "@/components/home/TrendingProjects";
-import ExploreLocations from "@/components/home/ExploreLocations";
-import Footer from "@/components/home/Footer";
-import PremiumPartners from "@/components/home/PremiumPartners";
-import LuxuryInsightsSection from "@/components/home/LuxuryInsightsSection";
-import RecommendedProjects from "@/components/home/RecommendedProperties";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
 import ConsultationModal from "@/components/home/ConsultationModal";
+
 import { useState } from "react";
+
+const RecommendedProjects = dynamic(() =>
+  import("@/components/home/RecommendedProperties")
+);
+
+const FeaturedProjects = dynamic(() =>
+  import("@/components/home/FeaturedProjects")
+);
+
+const TrendingProjects = dynamic(() =>
+  import("@/components/home/TrendingProjects")
+);
+
+const ExploreLocations = dynamic(() =>
+  import("@/components/home/ExploreLocations")
+);
+
+const PremiumPartners = dynamic(() =>
+  import("@/components/home/PremiumPartners")
+);
+
+const LuxuryInsightsSection = dynamic(() =>
+  import("@/components/home/LuxuryInsightsSection")
+);
+
+const Footer = dynamic(() =>
+  import("@/components/home/Footer")
+);
 
 export default function HomePage() {
 

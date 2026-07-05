@@ -3,16 +3,23 @@
 import { Play } from "lucide-react";
 import { motion } from "framer-motion";
 import SearchPanelMobile from "./SearchPanelMobile";
+import Image from "next/image";
 
 export default function HeroSectionMobile() {
   return (
     <section className="relative min-h-screen overflow-hidden lg:hidden">
       {/* BACKGROUND */}
-      <img
-        src="/bg-img.png"
-        alt="Luxury"
-        className="absolute inset-0 w-full h-full object-cover"
+      
+      <Image
+        src="/bg-img.webp"
+        alt="Luxury Property"
+        fill
+        priority
+        quality={85}
+        sizes="100vw"
+        className="object-cover scale-[1.02]"
       />
+      
 
       {/* OVERLAYS */}
       <div className="absolute inset-0 bg-black/60" />
