@@ -8,6 +8,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const navItems = [
   {
@@ -259,22 +260,24 @@ const mobileItems = navItems.map((item) => {
     duration-500
   "
 >
-              <img
-  src="/logo.png"
+              <Image
+  src="/logo.webp"
   alt="Property Bouquet"
+  width={52}
+  height={52}
+  priority
   className="
-  w-[46px]
-  h-[46px]
-  xl:w-[52px]
-  xl:h-[52px]
-  object-contain
-  transition-all
-  duration-500
-  group-hover:scale-105
-  drop-shadow-[0_6px_14px_rgba(0,0,0,.3)]
-"
+    w-[46px]
+    h-[46px]
+    xl:w-[52px]
+    xl:h-[52px]
+    object-contain
+    transition-all
+    duration-500
+    group-hover:scale-105
+    drop-shadow-[0_6px_14px_rgba(0,0,0,.3)]
+  "
 />
-
               <div className="flex flex-col leading-none">
 
   <h2

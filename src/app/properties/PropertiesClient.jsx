@@ -483,8 +483,7 @@ if (sortBy === "price-high-low") {
 
 <img
 src={
-property?.media?.heroImageUrl ||
-"/placeholder.jpg"
+property?.media?.heroImageUrl
 }
 alt={property?.coreDetails?.title}
 className="

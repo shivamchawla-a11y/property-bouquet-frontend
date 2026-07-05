@@ -160,9 +160,10 @@ if (error) {
               <div className="relative h-[420px] lg:h-[420px]">
 
                <Image
-  src={article.featuredImage || "/placeholder-news.jpg"}
+  src={article.featuredImage}
   alt={article.title}
   fill
+  sizes="(max-width: 1024px) 100vw, 58vw"
   className="object-cover transition-transform duration-700 group-hover:scale-105"
 />
 

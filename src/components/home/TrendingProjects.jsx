@@ -187,8 +187,7 @@ const handlePrev = () => {
 
         <img
           src={
-            item?.media?.heroImageUrl ||
-            "/placeholder-property.jpg"
+            item?.media?.heroImageUrl
           }
           alt={item?.coreDetails?.title}
           className="

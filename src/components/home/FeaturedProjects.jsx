@@ -205,9 +205,7 @@ const handlePrev = () => {
       <div className="relative h-[220px] overflow-hidden">
         <img
           src={
-            item?.media?.heroImageUrl ||
-            "/placeholder-property.jpg"
-          }
+            item?.media?.heroImageUrl }
           alt={item?.coreDetails?.title}
           className="
             w-full

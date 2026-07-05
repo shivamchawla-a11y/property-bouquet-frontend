@@ -136,6 +136,7 @@ import * as GiIcons from "react-icons/gi";
 import * as TbIcons from "react-icons/tb";
 import * as IoIcons from "react-icons/io5";
 import * as BsIcons from "react-icons/bs";
+import Image from "next/image";
 
 const ICONS = {
   ...FaIcons,
@@ -954,11 +955,14 @@ const handleCallback = async () => {
       cursor-pointer
     "
   >
-    <img
-      src="/logo.png"
-      alt="Logo"
-      className="w-[38px] h-auto object-contain"
-    />
+    <Image
+  src="/logo.webp"
+  alt="Property Bouquet"
+  width={38}
+  height={38}
+  className="w-[38px] h-auto object-contain"
+  priority
+/>
   </Link>
 </div>
 
@@ -5246,8 +5250,7 @@ else {
 
                 <img
                   src={
-                    project?.media?.heroImageUrl ||
-                    "/placeholder.jpg"
+                    project?.media?.heroImageUrl
                   }
                   alt={
                     project?.coreDetails?.title
@@ -5466,11 +5469,14 @@ else {
 
             <div className="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-[#021f1b] via-[#032821] to-[#04150f] flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.18)] border border-[#c89d58]/10">
 
-              <img
-                src="/logo.png"
-                alt="logo"
-                className="w-[72px] h-[72px] object-contain"
-              />
+              <Image
+  src="/logo.webp"
+  alt="Property Bouquet"
+  width={38}
+  height={38}
+  className="w-[38px] h-auto object-contain"
+  priority
+/>
             </div>
 
             <div>

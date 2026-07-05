@@ -148,8 +148,7 @@ hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
 
     <img
       src={
-        item?.media?.heroImageUrl ||
-        "/placeholder-property.jpg"
+        item?.media?.heroImageUrl
       }
       alt={item?.coreDetails?.title}
       className="

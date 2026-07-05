@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 export default function LoginPage() {
@@ -49,11 +50,14 @@ export default function LoginPage() {
 
         {/* LOGO */}
         <div className="flex flex-col items-center mb-6">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="w-16 h-16 object-contain mb-3"
-          />
+          <Image
+  src="/logo.webp"
+  alt="Property Bouquet"
+  width={38}
+  height={38}
+  className="w-[38px] h-auto object-contain"
+  priority
+/>
 
           <h1 className="text-2xl font-bold text-white">
             Property Bouquet

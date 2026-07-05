@@ -159,7 +159,7 @@ if (isPreview) {
               <div className="flex items-center gap-3">
                 <div className="bg-white rounded-2xl p-2 shadow-lg">
                   <Image
-                    src="/logo.png"
+                    src="/logo.webp"
                     width={34}
                     height={34}
                     alt="logo"
