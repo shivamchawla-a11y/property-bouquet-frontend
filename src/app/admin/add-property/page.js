@@ -478,7 +478,7 @@ export default function AddProperty() {
   contactDescription:
     "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
 
-  phone: "+91 99999 99999",
+  phone: "+91 90901 06101",
 
   timing: "Monday — Sunday | 10 AM — 7 PM",
 

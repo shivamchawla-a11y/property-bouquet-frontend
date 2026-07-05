@@ -140,10 +140,12 @@ export function buildPropertySEO(property, slug) {
     },
 
     twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [image],
-    },
+  card: "summary_large_image",
+  title,
+  description,
+  images: [image],
+  creator: "@propertybouquet",
+  site: "@propertybouquet",
+},
   };
 }

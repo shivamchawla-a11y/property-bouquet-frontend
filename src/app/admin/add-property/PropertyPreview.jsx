@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+
+const API = "https://property-bouquet-backend.onrender.com/api";
 
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -274,6 +277,11 @@ const [mobileMenuOpen, setMobileMenuOpen] =
   useState([]);
   const [showAboutMore, setShowAboutMore] =
   useState(false);
+
+
+const [name, setName] = useState("");
+const [phone, setPhone] = useState("");
+const [loading, setLoading] = useState(false);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -715,6 +723,50 @@ const getShortLocation = (location) => {
   }
 
   return location;
+};
+
+const handleCallback = async () => {
+  if (!name.trim()) {
+    return toast.error("Please enter your name");
+  }
+
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    return toast.error("Enter a valid phone number");
+  }
+
+  try {
+    setLoading(true);
+
+    const res = await fetch(`${API}/leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+  name,
+  phone,
+  property: coreDetails?.title || "",
+  source: "Private Consultation",
+}),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast.success(
+        "Thank you! Our property advisor will contact you shortly."
+      );
+
+      setName("");
+      setPhone("");
+    } else {
+      toast.error(data.message);
+    }
+  } catch (err) {
+    toast.error("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
 };
 
   return (
@@ -4657,7 +4709,7 @@ else {
 
                     <span className="text-white/90">
                       {faqSection?.contactPhone ||
-                        "+91 99999 99999"}
+                        "+91 90901 06101"}
                     </span>
                   </div>
 
@@ -5434,7 +5486,7 @@ else {
               </h2>
 
               <p className="text-black/45 mt-2 text-[15px] tracking-wide">
-                Curating Luxury Investments Across India & Dubai
+                Curating Luxury Investments Across India.
               </p>
             </div>
           </div>
@@ -5464,7 +5516,12 @@ else {
               </p>
 
               <h4 className="text-[#171717] text-[18px] font-semibold mt-1">
-                +91 9958-328-555
+                <a
+  href="tel:+919090106101"
+  className="text-[#171717] text-[17px] font-semibold hover:text-[#b88731]"
+>
+  +91 90901 06101
+</a>
               </h4>
             </div>
 
@@ -5481,7 +5538,12 @@ else {
               </p>
 
               <h4 className="text-[#171717] text-[16px] font-semibold mt-1 break-all">
-                support@propertybouquet.com
+                          <a
+            href="mailto:propertybouquet@gmail.com"
+            className="text-[#171717] text-[15px] font-semibold break-all hover:text-[#b88731]"
+          >
+            propertybouquet@gmail.com
+          </a>
               </h4>
             </div>
 
@@ -5498,7 +5560,14 @@ else {
               </p>
 
               <h4 className="text-[#171717] text-[15px] font-semibold mt-1 break-all leading-[1.5]">
-                wa.me/propertybouquet
+                <a
+  href="https://wa.me/919090106101?text=Hi%20Property%20Bouquet,%20I%20am%20interested%20in%20a%20property."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-[#171717] text-[15px] font-semibold hover:text-[#25D366]"
+>
+  Chat on WhatsApp
+</a>
               </h4>
             </div>
           </div>
@@ -5545,24 +5614,35 @@ else {
             <div className="mt-10 space-y-5">
 
               <input
-                type="text"
-                placeholder="Your Name"
-                className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
-              />
+  type="text"
+  placeholder="Your Name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+  className="w-full h-[54px] rounded-xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
+/>
 
               <input
-                type="text"
-                placeholder="Phone Number"
-                className="w-full h-[62px] rounded-2xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
-              />
+  type="text"
+  placeholder="Phone Number"
+  value={phone}
+  maxLength={10}
+  onChange={(e) =>
+    setPhone(e.target.value.replace(/\D/g, ""))
+  }
+  className="w-full h-[54px] rounded-xl border border-black/8 bg-[#fbf9f5] px-6 text-[#171717] placeholder:text-black/35 outline-none focus:border-[#c89d58]/40 transition-all"
+/>
 
-              <button className="group relative overflow-hidden w-full h-[62px] rounded-2xl bg-gradient-to-r from-[#d8b36c] to-[#b88731] text-black font-semibold text-[15px] shadow-[0_15px_40px_rgba(212,174,103,0.35)] hover:scale-[1.01] transition-all duration-500">
+              <button
+  onClick={handleCallback}
+  disabled={loading}
+  className="group relative overflow-hidden w-full h-[54px] rounded-xl bg-gradient-to-r from-[#d8b36c] to-[#b88731] text-black font-semibold text-[14px] shadow-[0_15px_40px_rgba(212,174,103,0.35)] hover:scale-[1.01] transition-all duration-500 disabled:opacity-60"
+>
 
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition" />
 
                 <span className="relative flex items-center justify-center gap-2">
 
-                  Contact Now
+                  {loading ? "Submitting..." : "Request Callback"}
 
                   <ArrowRight
                     size={16}

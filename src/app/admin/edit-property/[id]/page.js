@@ -480,7 +480,7 @@ export default function EditProperty() {
     contactDescription:
       "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
   
-    phone: "+91 99999 99999",
+    phone: "+91 90901 06101",
   
     timing: "Monday — Sunday | 10 AM — 7 PM",
   
@@ -6072,7 +6072,7 @@ if (loading) {
 
           <input
             className="input"
-            placeholder="+91 99999 99999"
+            placeholder="+91 90901 06101"
             value={form.faqSection?.contactPhone || ""}
             onChange={(e) =>
               setForm((prev) => ({

@@ -323,12 +323,22 @@ export default function Footer() {
 
       <div className="flex items-center gap-3">
         <FaPhoneAlt className="text-[#C89B4F]" />
-        <span>+91 99900 12345</span>
+        <a
+  href="tel:+919090106101"
+  className="hover:text-[#C89B4F] transition-colors"
+>
+  +91 90901 06101
+</a>
       </div>
 
       <div className="flex items-center gap-3">
         <FaEnvelope className="text-[#C89B4F]" />
-        <span>connect@propertybouquet.com</span>
+        <a
+  href="mailto:propertybouquet@gmail.com"
+  className="hover:text-[#C89B4F] transition-colors"
+>
+  propertybouquet@gmail.com
+</a>
       </div>
 
       <div className="flex items-start gap-3">
@@ -345,54 +355,64 @@ export default function Footer() {
 
   </div>
 
-  {/* WHATSAPP CARD */}
-  <div>
+ {/* WHATSAPP CARD */}
 
-    <div className="
-      border border-[#8e6b2e]/60 rounded-xl p-7 h-full
-      flex flex-col justify-between
-      hover:border-[#C89B4F]
-      transition-all duration-300
-    ">
+<a
+  href="https://wa.me/919090106101?text=Hi%20Property%20Bouquet,%20I'm%20interested%20in%20a%20property.%20Please%20assist%20me."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="
+    border border-[#8e6b2e]/60 rounded-xl p-7 h-full
+    flex flex-col justify-between
+    hover:border-[#C89B4F]
+    hover:bg-[#0b1c15]
+    transition-all duration-300
+    group
+  "
+>
+  <div className="flex gap-4 items-start">
 
-      <div className="flex gap-4 items-start">
-
-        <div className="
-          w-14 h-14 rounded-full border border-[#C89B4F]
-          flex items-center justify-center text-[#C89B4F] text-2xl
-        ">
-          <FaWhatsapp />
-        </div>
-
-        <div>
-
-          <p className="text-[#C89B4F] text-[11px] tracking-[3px] font-medium uppercase">
-            Talk to our
-          </p>
-
-          <h4 className="text-[18px] font-light mt-1 text-white">
-            Property Expert
-          </h4>
-
-        </div>
-
-      </div>
-
-      <button
-        className="
-          mt-10 flex justify-between items-center
-          text-[14px] text-white/80
-          hover:text-[#C89B4F]
-          transition-all
-        "
-      >
-        <span>+91 99900 12345</span>
-        <FaArrowRight />
-      </button>
-
+    <div
+      className="
+        w-14 h-14 rounded-full border border-[#C89B4F]
+        flex items-center justify-center
+        text-[#C89B4F] text-2xl
+        group-hover:bg-[#C89B4F]
+        group-hover:text-black
+        transition-all duration-300
+      "
+    >
+      <FaWhatsapp />
     </div>
 
+    <div>
+      <p className="text-[#C89B4F] text-[11px] tracking-[3px] font-medium uppercase">
+        Talk to our
+      </p>
+
+      <h4 className="text-[18px] font-light mt-1 text-white">
+        Property Expert
+      </h4>
+
+      <p className="mt-2 text-sm text-white/60">
+        Get instant assistance on WhatsApp
+      </p>
+    </div>
   </div>
+
+  <div
+    className="
+      mt-10 flex justify-between items-center
+      text-[14px] text-white/80
+      group-hover:text-[#C89B4F]
+      transition-all
+    "
+  >
+    <span>+91 90901 06101</span>
+
+    <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
+  </div>
+</a>
 
 </div>
 

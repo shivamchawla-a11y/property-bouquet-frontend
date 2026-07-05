@@ -3693,7 +3693,7 @@ object-contain
 
                     <span className="text-white/90">
                       {faqSection?.contactPhone ||
-                        "+91 99999 99999"}
+                        "+91 90901 06101"}
                     </span>
                   </div>
 
