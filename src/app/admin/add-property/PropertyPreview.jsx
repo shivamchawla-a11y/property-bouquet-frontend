@@ -284,6 +284,21 @@ const [name, setName] = useState("");
 const [phone, setPhone] = useState("");
 const [loading, setLoading] = useState(false);
 
+const [locations, setLocations] = useState([]);
+
+useEffect(() => {
+  const fetchLocations = async () => {
+    const res = await fetch(`${API}/locations/tree`);
+    const data = await res.json();
+
+    if (res.ok) {
+      setLocations(data.data || []);
+    }
+  };
+
+  fetchLocations();
+}, []);
+
 useEffect(() => {
   const handleScroll = () => {
     setScrolled(window.scrollY > 80);
@@ -574,26 +589,64 @@ const getLocationName = () => {
     return locationData.customLocation;
   }
 
-  if (locationData?.locationName?.includes(">")) {
-    const parts = locationData.locationName.split(">").map(p => p.trim());
+  if (locationData?.locationRef && Array.isArray(locations)) {
+    const locationId =
+      typeof locationData.locationRef === "object"
+        ? locationData.locationRef._id
+        : locationData.locationRef;
 
-    // 🔥 SHOW LAST 2 LEVELS ONLY
-    if (parts.length >= 2) {
-      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
+    const loc = findLocationById(locations, locationId);
+
+    if (loc) {
+      const parts = loc.fullPath.split(">").map((p) => p.trim());
+
+      if (parts.length >= 2) {
+        return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
+      }
+
+      return parts[0];
+    }
+  }
+
+  return locationData.locationName || "Location";
+};
+
+const findLocationById = (
+  nodes,
+  id,
+  prefix = ""
+) => {
+  for (const node of nodes) {
+    const path = prefix
+      ? `${prefix} > ${node.name}`
+      : node.name;
+
+    if (node._id === id) {
+      return {
+        ...node,
+        fullPath: path,
+      };
     }
 
-    return parts[0];
+    if (node.children?.length) {
+      const found = findLocationById(
+        node.children,
+        id,
+        path
+      );
+
+      if (found) return found;
+    }
   }
 
-  if (locationData?.locationName) {
-    return locationData.locationName;
-  }
-
-  return "Location";
+  return null;
 };
 
 const categoryName = getCategoryName();
 const locationName = getLocationName();
+
+console.log("locationData:", locationData);
+console.log("locationName:", locationName);
 
   const developerName = getDeveloperName();
 
@@ -707,16 +760,18 @@ useEffect(() => {
 }, [developerName]);
 
 const getShortLocation = (location) => {
-
   if (!location) return "Gurgaon";
 
   if (location.includes(">")) {
-
     const parts = location
       .split(">")
       .map((p) => p.trim());
 
-    return parts[parts.length - 1];
+    if (parts.length >= 2) {
+      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
+    }
+
+    return parts[0];
   }
 
   if (location.includes(",")) {
@@ -1459,27 +1514,27 @@ lg:px-6
           </div>
 
           <p
-            className="
-              text-[13px]
-              sm:text-[16px]
-              md:text-[24px]
-              font-light
-              tracking-wide
-              break-words
-            "
-            style={{
-              fontFamily:
-                "Inter, sans-serif",
-            }}
-          >
-            {locationName}
-{developerName && (
-  <span className="text-[#d8b46b]">
-    {" • "}
-    Developed by {developerName}
-  </span>
-)}
-          </p>
+  className="
+    text-[13px]
+    sm:text-[16px]
+    md:text-[24px]
+    font-light
+    tracking-wide
+    break-words
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  {locationName}
+
+  {developerName && (
+    <span className="text-[#d8b46b]">
+      {" • "}
+      Developed by {developerName}
+    </span>
+  )}
+</p>
         </motion.div>
 
         {/* DIVIDER */}
