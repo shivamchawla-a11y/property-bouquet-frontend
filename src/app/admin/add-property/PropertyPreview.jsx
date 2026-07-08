@@ -1305,14 +1305,21 @@ tracking-[1px]
     items-end
     isolate
   "
-  style={{
-    backgroundImage: media?.heroImageUrl
-      ? `url(${media.heroImageUrl})`
-      : "linear-gradient(#000,#111)",
-    backgroundSize: "cover",
-    backgroundPosition: "center center",
-  }}
->
+  >
+ <div className="absolute inset-0 -z-10">
+  <Image
+    src={media?.heroImageUrl}
+    alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Luxury ${categoryName || "Property"}`}
+    fill
+    priority
+    quality={90}
+    fetchPriority="high"
+    placeholder="empty"
+    sizes="100vw"
+    className="object-cover"
+  />
+</div>
+
 
   {/* ================= LUXURY OVERLAYS ================= */}
   <div className="absolute inset-0">
@@ -1410,6 +1417,10 @@ lg:px-6
           }}
         >
           {coreDetails?.title}
+<span className="sr-only">
+  {" "}
+  Luxury {categoryName} by {developerName} in {locationName}
+</span>
         </motion.h1>
 
         {/* LOCATION */}
@@ -1462,6 +1473,12 @@ lg:px-6
             }}
           >
             {locationName}
+{developerName && (
+  <span className="text-[#d8b46b]">
+    {" • "}
+    Developed by {developerName}
+  </span>
+)}
           </p>
         </motion.div>
 
@@ -1492,7 +1509,7 @@ lg:px-6
           }}
         >
           {heroSection?.heroDescription ||
-            "A rare fusion of architectural brilliance and low-density luxury living."}
+`${coreDetails?.title} by ${developerName} is a luxury ${categoryName?.toLowerCase() || "residential"} project in ${locationName}, offering premium residences, world-class amenities, elegant architecture and exceptional connectivity.`}
         </motion.p>
 
         {/* BUTTONS */}
@@ -3672,101 +3689,154 @@ else {
               </motion.button>
             </div>
 
-            {/* ================= ULTRA LUXURY MASONRY ================= */}
-<div
-  className="
-    columns-1
-    sm:columns-2
-    lg:columns-3
-    xl:columns-4
-    gap-4
-    md:gap-5
-    [column-fill:_balance]
-  "
->
+{/* ================= PREMIUM SMART GRID ================= */}
 
-  {gallery.map((img, i) => (
-    <motion.div
-      key={i}
-      variants={fadeUp}
-      whileHover={{
-        y: -8,
-      }}
-      transition={{
-        duration: 0.4,
-      }}
-      onClick={() => {
-        setSelectedImage(img);
-        setSelectedIndex(i);
-      }}
-      className="
-        group
-        relative
-        overflow-hidden
-        cursor-pointer
-        rounded-[24px]
-        md:rounded-[30px]
-        bg-white
-        border
-        border-[#ebe1d4]
-        shadow-[0_18px_45px_rgba(0,0,0,0.08)]
-        hover:shadow-[0_35px_90px_rgba(0,0,0,0.16)]
-        transition-all
-        duration-500
-        mb-4
-        md:mb-5
-        break-inside-avoid
-      "
-    >
+{/* ================= PREMIUM SMART GRID ================= */}
 
-      {/* IMAGE */}
-      <img
-        src={img}
-        alt=""
-        loading="lazy"
-        className="
-          w-full
-          h-auto
-          object-contain
-          transition
-          duration-[1200ms]
-          ease-out
-          group-hover:scale-[1.04]
-        "
-      />
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
 
-      {/* LUXURY OVERLAY */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+  {gallery.map((img, i) => {
 
-      {/* SHINE */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-1000 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%]" />
+    const remainder = gallery.length % 4;
 
-      {/* VIEW BUTTON */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+    // Only when exactly ONE image would be left,
+    // make the FIRST image the hero.
+    const heroFirst =
+      remainder === 1 &&
+      gallery.length > 4 &&
+      i === 0;
 
-        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
+    return (
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6 md:w-7 md:h-7 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 12H9m0 0l3-3m-3 3l3 3"
+      <motion.div
+        key={i}
+        variants={fadeUp}
+        whileHover={{
+          y: -8,
+          scale: 1.01,
+        }}
+        transition={{
+          duration: 0.45,
+        }}
+        onClick={() => {
+          setSelectedImage(img);
+          setSelectedIndex(i);
+        }}
+        className={`
+          group
+          cursor-pointer
+          overflow-hidden
+          rounded-[28px]
+          bg-white
+          border
+          border-[#ebe2d5]
+          shadow-[0_15px_45px_rgba(0,0,0,0.08)]
+          hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
+          transition-all
+          duration-500
+
+          ${
+            heroFirst
+              ? "sm:col-span-2 lg:col-span-3 xl:col-span-4"
+              : ""
+          }
+        `}
+      >
+
+        {/* IMAGE */}
+
+        <div
+          className={`
+            relative
+            overflow-hidden
+
+            ${
+              heroFirst
+                ? "aspect-[21/8] lg:aspect-[18/6]"
+                : "aspect-[4/3]"
+            }
+          `}
+        >
+
+          <Image
+            src={img}
+            alt={`${coreDetails?.title} | Luxury ${categoryName || "Property"} by ${developerName} in ${locationName} - Premium Gallery Image ${i + 1}`}
+            fill
+            quality={85}
+            priority={i < 2}
+            sizes="
+              (max-width:640px) 100vw,
+              (max-width:1024px) 50vw,
+              (max-width:1440px) 33vw,
+              25vw
+            "
+            className="
+              object-cover
+              transition-transform
+              duration-[1400ms]
+              ease-out
+              group-hover:scale-105
+            "
+          />
+
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+
+          {/* Shine */}
+          <div className="absolute inset-0 overflow-hidden">
+
+            <div
+              className="
+                absolute
+                top-0
+                -left-[120%]
+                h-full
+                w-[45%]
+                rotate-12
+                bg-gradient-to-r
+                from-transparent
+                via-white/20
+                to-transparent
+                group-hover:left-[140%]
+                transition-all
+                duration-[1500ms]
+              "
             />
-          </svg>
+
+          </div>
+
+          {/* View */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+
+            <div className="w-16 h-16 rounded-full backdrop-blur-xl border border-white/25 bg-white/10 flex items-center justify-center">
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-7 h-7 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 12H9m0 0l3-3m-3 3l3 3"
+                />
+              </svg>
+
+            </div>
+
+          </div>
 
         </div>
 
-      </div>
+      </motion.div>
 
-    </motion.div>
-  ))}
+    );
+
+  })}
+
 </div>
           </div>
         </div>
@@ -3808,33 +3878,37 @@ else {
           </button>
 
           {/* IMAGE */}
-          <motion.img
-            key={selectedImage}
-            initial={{
-              opacity: 0,
-              scale: 0.92,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.92,
-            }}
-            transition={{
-              duration: 0.35,
-            }}
-            src={selectedImage}
-            alt=""
-            className="
-  max-w-[96vw]
-  max-h-[92vh]
-  object-contain
-  rounded-[24px]
-  shadow-[0_40px_120px_rgba(0,0,0,0.65)]
-"
-          />
+          <motion.div
+  key={selectedImage}
+  initial={{
+    opacity: 0,
+    scale: 0.92,
+  }}
+  animate={{
+    opacity: 1,
+    scale: 1,
+  }}
+  exit={{
+    opacity: 0,
+    scale: 0.92,
+  }}
+  transition={{
+    duration: 0.35,
+  }}
+  className="relative w-[96vw] h-[92vh]"
+>
+
+  <Image
+    src={selectedImage}
+    alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Fullscreen Gallery`}
+    fill
+    priority
+    quality={75}
+    sizes="100vw"
+    className="object-contain rounded-[24px]"
+  />
+
+</motion.div>
 
           {/* RIGHT */}
           <button
