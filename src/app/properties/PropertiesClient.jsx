@@ -150,17 +150,40 @@ const selectedAmenities =
 
   // LOCATION
 
-  if (location) {
-    result = result.filter(
-      (property) =>
-        property?.locationData?.locationName
-          ?.toLowerCase()
-          .includes(
-            location.toLowerCase()
-          )
-    );
-  }
+// ================= LOCATION =================
 
+if (location) {
+
+  const searchLocation =
+    location.toLowerCase().trim();
+
+  result = result.filter((property) => {
+
+    const locationRef =
+      property?.locationData?.locationRef;
+
+    const locationNames = [];
+
+    let current = locationRef;
+
+    while (current) {
+
+      if (current.name) {
+        locationNames.push(
+          current.name.toLowerCase()
+        );
+      }
+
+      current = current.parent;
+    }
+
+    return locationNames.some((name) =>
+      name.includes(searchLocation)
+    );
+
+  });
+
+}
   // DEVELOPER
 
   if (developer) {

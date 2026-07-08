@@ -1078,11 +1078,16 @@ const fetchLocations = async () => {
 
     if (res.ok) {
       setLocations(data.data || []);
+      return data.data || [];   // ✅ return the tree
     }
+
+    return [];
   } catch (err) {
     console.error(err);
+    return [];
   }
 };
+
 useEffect(() => {
   fetchLocations();
 }, []);
@@ -1611,16 +1616,22 @@ const handleCreateLocation = async () => {
 
     const created = data.data;
 
-    await fetchLocations();
+     const updatedTree = await fetchLocations();
 
-    setForm((prev) => ({
-      ...prev,
-      locationData: {
-        ...prev.locationData,
-        locationRef: created._id,
-        locationName: created.name,
-      },
-    }));
+const options = buildOptions(updatedTree);
+
+const selectedLocation = options.find(
+  (loc) => loc._id === created._id
+);
+
+setForm((prev) => ({
+  ...prev,
+  locationData: {
+    ...prev.locationData,
+    locationRef: created._id,
+    locationName: selectedLocation?.label || created.name,
+  },
+}));
 
     toast.success("Location created successfully");
 

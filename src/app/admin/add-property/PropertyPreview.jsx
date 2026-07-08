@@ -1528,12 +1528,6 @@ lg:px-6
 >
   {locationName}
 
-  {developerName && (
-    <span className="text-[#d8b46b]">
-      {" • "}
-      Developed by {developerName}
-    </span>
-  )}
 </p>
         </motion.div>
 
