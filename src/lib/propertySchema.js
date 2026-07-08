@@ -99,6 +99,63 @@ export function buildPropertySchema(property, slug) {
     ],
   });
 
+  graph.push({
+  "@type": "WebPage",
+
+  "@id": pageUrl,
+
+  url: pageUrl,
+
+  name: core.title,
+
+  description:
+    overview.description ||
+    `Explore ${core.title} by ${core.developerName}.`,
+
+  isPartOf: {
+    "@id": `${SITE_URL}/#website`,
+  },
+
+  primaryImageOfPage: images[0],
+
+  inLanguage: "en-IN",
+});
+
+graph.push({
+  "@type": "WebSite",
+
+  "@id": `${SITE_URL}/#website`,
+
+  url: SITE_URL,
+
+  name: "Property Bouquet",
+
+  publisher: {
+    "@id": `${SITE_URL}/#organization`,
+  },
+
+  inLanguage: "en-IN",
+});
+
+graph.push({
+  "@type": "Organization",
+
+  "@id": `${SITE_URL}/#organization`,
+
+  name: "Property Bouquet",
+
+  url: SITE_URL,
+
+  logo: `${SITE_URL}/logo.png`,
+
+  sameAs: [
+    "https://www.instagram.com/.....",
+    "https://www.facebook.com/.....",
+    "https://www.linkedin.com/company/....."
+  ]
+});
+
+
   // -------------------------
   // Place
   // -------------------------

@@ -1929,22 +1929,22 @@ lg:px-6
           transition={{
             duration: 0.45,
           }}
-          className="relative overflow-hidden rounded-[12px] sm:rounded-[14px]"
+          className="relative overflow-hidden rounded-[12px] sm:rounded-[14px] h-[260px] sm:h-[340px] md:h-[500px]"
         >
-          <img
-            src={
-              overview?.aboutImageUrl ||
-              "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
-            }
-            alt="About"
-            className="
-              w-full
-              h-[260px]
-              sm:h-[340px]
-              md:h-[500px]
-              object-cover
-            "
-          />
+          <Image
+  src={
+    overview?.aboutImageUrl ||
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+  }
+  alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Luxury ${categoryName || "Residential"} Project`}
+  fill
+  quality={90}
+  loading="lazy"
+  decoding="async"
+  placeholder="empty"
+  sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 45vw"
+  className="object-cover"
+/>
 
           {/* DARK OVERLAY */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/5" />
