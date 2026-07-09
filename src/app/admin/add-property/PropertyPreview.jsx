@@ -1361,20 +1361,23 @@ tracking-[1px]
     isolate
   "
   >
- <div className="absolute inset-0 -z-10">
-  <Image
-    src={media?.heroImageUrl}
-    alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Luxury ${categoryName || "Property"}`}
-    fill
-    priority
-    quality={90}
-    fetchPriority="high"
-    placeholder="empty"
-    sizes="100vw"
-    className="object-cover"
-  />
+<div className="absolute inset-0 -z-10">
+  {media?.heroImageUrl ? (
+    <Image
+      src={media.heroImageUrl}
+      alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Luxury ${categoryName || "Property"}`}
+      fill
+      priority
+      quality={90}
+      fetchPriority="high"
+      placeholder="empty"
+      sizes="100vw"
+      className="object-cover"
+    />
+  ) : (
+    <div className="absolute inset-0 bg-[#111]" />
+  )}
 </div>
-
 
   {/* ================= LUXURY OVERLAYS ================= */}
   <div className="absolute inset-0">
@@ -1982,8 +1985,9 @@ lg:px-6
         >
           <Image
   src={
-    overview?.aboutImageUrl ||
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+    overview?.aboutImageUrl?.trim()
+      ? overview.aboutImageUrl.trim()
+      : "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
   }
   alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Luxury ${categoryName || "Residential"} Project`}
   fill
@@ -3807,26 +3811,28 @@ else {
           `}
         >
 
-          <Image
-            src={img}
-            alt={`${coreDetails?.title} | Luxury ${categoryName || "Property"} by ${developerName} in ${locationName} - Premium Gallery Image ${i + 1}`}
-            fill
-            quality={85}
-            priority={i < 2}
-            sizes="
-              (max-width:640px) 100vw,
-              (max-width:1024px) 50vw,
-              (max-width:1440px) 33vw,
-              25vw
-            "
-            className="
-              object-cover
-              transition-transform
-              duration-[1400ms]
-              ease-out
-              group-hover:scale-105
-            "
-          />
+          {img && (
+  <Image
+    src={img}
+    alt={`${coreDetails?.title} | Luxury ${categoryName || "Property"} by ${developerName} in ${locationName} - Premium Gallery Image ${i + 1}`}
+    fill
+    quality={85}
+    priority={i < 2}
+    sizes="
+      (max-width:640px) 100vw,
+      (max-width:1024px) 50vw,
+      (max-width:1440px) 33vw,
+      25vw
+    "
+    className="
+      object-cover
+      transition-transform
+      duration-[1400ms]
+      ease-out
+      group-hover:scale-105
+    "
+  />
+)}
 
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
@@ -5371,15 +5377,15 @@ else {
               {/* IMAGE */}
               <div className="relative h-[460px] overflow-hidden">
 
+                {project?.media?.heroImageUrl?.trim() ? (
                 <img
-                  src={
-                    project?.media?.heroImageUrl
-                  }
-                  alt={
-                    project?.coreDetails?.title
-                  }
+                  src={project.media.heroImageUrl}
+                  alt={project?.coreDetails?.title || "Property"}
                   className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
                 />
+              ) : (
+                <div className="w-full h-full bg-[#0f0f0f]" />
+              )}
 
                 {/* OVERLAY */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/35 to-transparent" />
