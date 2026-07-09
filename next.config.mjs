@@ -12,7 +12,7 @@ const nextConfig = {
       },
     ],
 
-    qualities: [75, 85, 90],
+    qualities: [75, 85, 90, 100],
   },
 };
 

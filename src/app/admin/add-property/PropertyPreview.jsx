@@ -3819,7 +3819,7 @@ else {
     src={img}
     alt={`${coreDetails?.title} | Luxury ${categoryName || "Property"} by ${developerName} in ${locationName} - Premium Gallery Image ${i + 1}`}
     fill
-    quality={85}
+    quality={100}
     priority={i < 2}
     sizes="
       (max-width:640px) 100vw,
@@ -5101,17 +5101,17 @@ else {
          {/* CALL */}
 <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
 
-  {/* CALL */}
+{/* CALL */}
 <a
-  href={`tel:${(faqSection?.phone || "+91 90901 06101").replace(/\s+/g, "")}`}
+  href="tel:+919090106101"
   className="group flex flex-col items-center"
 >
   <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#08211c] group-hover:text-[#d6b16f]">
-    <PhoneCall className="w-5 h-5" />
+    ☎
   </div>
 
   <p className="text-[#17342d] text-sm font-medium">
-    {faqSection?.callLabel || "Call Us"}
+    Call Us
   </p>
 </a>
 
@@ -5120,19 +5120,26 @@ else {
 {/* WHATSAPP */}
 <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
 
- {/* WHATSAPP */}
+{/* WHATSAPP */}
 <a
-  href={`https://wa.me/${(faqSection?.phone || "+91 90901 06101").replace(/[^\d]/g, "")}`}
+  href="https://wa.me/919090106101"
   target="_blank"
   rel="noopener noreferrer"
   className="group flex flex-col items-center"
 >
   <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#25D366] group-hover:border-[#25D366] group-hover:text-white">
-    <MessageCircleCheckIcon className="w-5 h-5" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-6 h-6"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M20.52 3.48A11.82 11.82 0 0012.02 0C5.4 0 .02 5.38.02 12c0 2.11.55 4.18 1.59 6.01L0 24l6.16-1.6A11.95 11.95 0 0012.02 24C18.64 24 24 18.62 24 12c0-3.2-1.25-6.2-3.48-8.52zM12.02 21.8c-1.83 0-3.62-.49-5.18-1.42l-.37-.22-3.66.95.98-3.57-.24-.37A9.74 9.74 0 012.2 12c0-5.41 4.4-9.8 9.82-9.8 2.62 0 5.08 1.02 6.93 2.87A9.74 9.74 0 0121.82 12c0 5.4-4.4 9.8-9.8 9.8zm5.39-7.35c-.29-.15-1.72-.85-1.98-.95-.27-.1-.46-.15-.66.15-.19.29-.76.95-.93 1.15-.17.19-.34.22-.63.07-.29-.15-1.23-.45-2.35-1.44-.87-.77-1.46-1.72-1.63-2.01-.17-.29-.02-.45.13-.6.14-.14.29-.34.44-.51.15-.17.2-.29.29-.49.1-.19.05-.37-.02-.51-.07-.15-.66-1.58-.9-2.17-.24-.58-.49-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.03 1-1.03 2.44s1.05 2.83 1.2 3.02c.15.2 2.05 3.13 4.97 4.39.69.3 1.23.48 1.65.62.69.22 1.32.19 1.81.12.55-.08 1.72-.7 1.96-1.37.24-.66.24-1.23.17-1.37-.08-.12-.27-.2-.56-.34z" />
+    </svg>
   </div>
 
   <p className="text-[#17342d] text-sm font-medium">
-    {faqSection?.whatsappLabel || "WhatsApp"}
+    WhatsApp
   </p>
 </a>
 
