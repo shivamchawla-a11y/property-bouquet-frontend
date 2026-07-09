@@ -32,10 +32,10 @@ export function buildPropertySEO(property, slug) {
 
 const generatedTitle =
   developer && developer !== "Leading Developer"
-    ? `${propertyName} by ${developer} | Price, Floor Plans & Brochure`
+    ? `${propertyName} | Price, Floor Plans & Brochure`
     : `${propertyName} | Price, Floor Plans & Brochure`;
 
-  const title =
+  const title = 
     seo.metaTitle?.trim() || generatedTitle;
 
   // -------------------------------
