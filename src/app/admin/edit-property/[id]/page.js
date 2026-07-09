@@ -878,45 +878,90 @@ const safeForm = {
 
   // ================= LOCATION =================
   locationData: {
-    locationRef:
-      typeof property.locationData?.locationRef === "object"
-        ? property.locationData?.locationRef?._id || ""
-        : property.locationData?.locationRef || "",
+  locationRef:
+    typeof property.locationData?.locationRef === "object"
+      ? property.locationData.locationRef?._id || ""
+      : property.locationData?.locationRef || "",
 
-    locationName:
-      property.locationData?.locationName || "",
+  locationName:
+    property.locationData?.locationName || "",
 
-    customLocation:
-      property.locationData?.customLocation || "",
+  customLocation:
+    property.locationData?.customLocation || "",
 
-    address:
-      property.locationData?.address || "",
+  address:
+    property.locationData?.address || "",
 
-    mapEmbedUrl:
-      property.locationData?.mapEmbedUrl || "",
+  mapEmbedUrl:
+    property.locationData?.mapEmbedUrl || "",
 
-    landmarks:
-      property.locationData?.landmarks?.length > 0
-        ? property.locationData.landmarks.map((l) => ({
-            name: l.name || "",
-            distance: l.distance || "",
-            subtitle:
-              l.subtitle || "Premium Connectivity",
-            icon: l.icon || "✦",
-          }))
-        : [
-            {
-              name: "",
-              distance: "",
-              subtitle: "Premium Connectivity",
-              icon: "✦",
-            },
-          ],
+  sectionNumber:
+    property.locationData?.sectionNumber || "07",
 
-    bottomStrip:
-      property.locationData?.bottomStrip || [],
-  },
+  topLabel:
+    property.locationData?.topLabel || "PRIME LOCATION",
 
+  headingLine1:
+    property.locationData?.headingLine1 || "",
+
+  headingHighlight:
+    property.locationData?.headingHighlight || "",
+
+  description:
+    property.locationData?.description || "",
+
+  leftCardTag:
+    property.locationData?.leftCardTag || "",
+
+  leftCardTitleLine1:
+    property.locationData?.leftCardTitleLine1 || "",
+
+  leftCardTitleLine2:
+    property.locationData?.leftCardTitleLine2 || "",
+
+  leftCardDescription:
+    property.locationData?.leftCardDescription || "",
+
+  mapSectionTag:
+    property.locationData?.mapSectionTag || "",
+
+  mapSectionTitle:
+    property.locationData?.mapSectionTitle || "",
+
+  badgeTitle:
+    property.locationData?.badgeTitle || "",
+
+  badgeSubtitle:
+    property.locationData?.badgeSubtitle || "",
+
+  floatingCardTag:
+    property.locationData?.floatingCardTag || "",
+
+  floatingCardTitle:
+    property.locationData?.floatingCardTitle || "",
+
+  floatingCardDescription:
+    property.locationData?.floatingCardDescription || "",
+
+  landmarks:
+    property.locationData?.landmarks?.length
+      ? property.locationData.landmarks.map((l) => ({
+          name: l.name || "",
+          distance: l.distance || "",
+          subtitle: l.subtitle || "",
+          icon: l.icon || "✦",
+        }))
+      : [],
+
+  bottomStrip:
+    property.locationData?.bottomStrip?.length
+      ? property.locationData.bottomStrip.map((b) => ({
+          title: b.title || "",
+          desc: b.desc || "",
+          icon: b.icon || "✦",
+        }))
+      : [],
+},
   // ================= MASTER PLAN =================
   masterPlanSection: {
     ...property.masterPlanSection,
@@ -1034,6 +1079,8 @@ const safeForm = {
           },
         ],
 };
+
+console.log(property.locationData);
 
 setForm(safeForm);
 setPreviewData(safeForm);
