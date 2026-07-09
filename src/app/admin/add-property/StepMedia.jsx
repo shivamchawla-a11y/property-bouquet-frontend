@@ -24,31 +24,37 @@ export default function StepMedia({ form, setForm }) {
 
   // ================= UPLOAD =================
   const uploadImage = async (file) => {
-    try {
-      const data = new FormData();
-      data.append("file", file);
+  try {
+    const data = new FormData();
 
-      const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/upload",
-        {
-          method: "POST",
-          body: data,
-        }
-      );
+    // Original file (contains originalname)
+    data.append("file", file);
 
-      const result = await res.json();
-
-      if (!res.ok || !result.url) {
-        throw new Error(result.message || "Upload failed");
+    const res = await fetch(
+      "https://property-bouquet-backend.onrender.com/api/upload",
+      {
+        method: "POST",
+        body: data,
       }
+    );
 
-      return result.url;
-    } catch (err) {
-      console.error("Upload Error:", err);
-      alert("Upload failed ❌");
-      return null;
+    const result = await res.json();
+
+    if (!res.ok || !result.url) {
+      throw new Error(result.message || "Upload failed");
     }
-  };
+
+    return {
+      url: result.url,
+      alt: result.alt || file.name.replace(/\.[^/.]+$/, ""),
+      publicId: result.public_id || "",
+    };
+  } catch (err) {
+    console.error("Upload Error:", err);
+    alert("Upload failed ❌");
+    return null;
+  }
+};
 
   // ================= HERO =================
   const handleHeroUpload = async (file) => {
@@ -56,17 +62,17 @@ export default function StepMedia({ form, setForm }) {
 
     setUploading(true);
 
-    const url = await uploadImage(file);
+    const uploaded = await uploadImage(file);
 
-    if (url) {
-      setForm((prev) => ({
-        ...prev,
-        media: {
-          ...prev.media,
-          heroImageUrl: url,
-        },
-      }));
-    }
+if (uploaded) {
+  setForm((prev) => ({
+    ...prev,
+    media: {
+      ...prev.media,
+      heroImageUrl: uploaded.url,
+    },
+  }));
+}
 
     setUploading(false);
   };
@@ -89,13 +95,13 @@ export default function StepMedia({ form, setForm }) {
 
     setUploading(true);
 
-    const urls = await Promise.all(
-      validFiles.map(uploadImage)
-    );
+    const uploads = await Promise.all(
+  validFiles.map(uploadImage)
+);
 
-    const cleanUrls = urls.filter(
-      (u) => u && u.trim()
-    );
+const cleanUrls = uploads
+  .filter(Boolean)
+  .map((item) => item.url);
 
     if (cleanUrls.length) {
       setForm((prev) => ({
@@ -138,9 +144,9 @@ export default function StepMedia({ form, setForm }) {
 
     setUploading(true);
 
-    const url = await uploadImage(file);
+    const uploaded = await uploadImage(file);
 
-    if (url) {
+if (uploaded) {
       setForm((prev) => {
         const updated = [
           ...(prev.gatedContent.floorPlans || []),
@@ -159,7 +165,7 @@ export default function StepMedia({ form, setForm }) {
           };
         }
 
-        updated[index].image = url;
+        updated[index].image = uploaded.url;
 
         return {
           ...prev,

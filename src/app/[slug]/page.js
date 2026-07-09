@@ -8,7 +8,9 @@ async function getProperty(slug) {
     const res = await fetch(
       `https://property-bouquet-backend.onrender.com/api/properties/slug/${slug}`,
       {
-        cache: "no-store",
+        next: {
+  revalidate: 300,
+},
       }
     );
 
