@@ -828,6 +828,23 @@ const handleCallback = async () => {
   }
 };
 
+const getImageAlt = (url) => {
+  if (!url) return "Property Image";
+
+  const filename = decodeURIComponent(
+    url
+      .split("/")
+      .pop()
+      .split("?")[0] // Remove query parameters if any
+      .split(".")[0]
+  );
+
+  return filename
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
   return (
     <div className="relative overflow-hidden bg-black">
 
@@ -3817,7 +3834,7 @@ else {
           {img && (
   <Image
     src={img}
-    alt={`${coreDetails?.title} | Luxury ${categoryName || "Property"} by ${developerName} in ${locationName} - Premium Gallery Image ${i + 1}`}
+    alt={getImageAlt(img)}
     fill
     quality={100}
     priority={i < 2}
@@ -3958,7 +3975,7 @@ else {
 
   <Image
     src={selectedImage}
-    alt={`${coreDetails?.title} by ${developerName} in ${locationName} - Fullscreen Gallery`}
+    alt={getImageAlt(selectedImage)}
     fill
     priority
     quality={75}
