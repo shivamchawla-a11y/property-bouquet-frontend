@@ -49,6 +49,8 @@ import {
   IndianRupee,
   ArrowUpDown,
   Wind,
+  MessageCircleCheckIcon,
+  PhoneCall,
 
 } from "lucide-react";
 
@@ -137,6 +139,7 @@ import * as TbIcons from "react-icons/tb";
 import * as IoIcons from "react-icons/io5";
 import * as BsIcons from "react-icons/bs";
 import Image from "next/image";
+import Footer from "@/components/home/Footer";
 
 const ICONS = {
   ...FaIcons,
@@ -4712,146 +4715,146 @@ else {
       <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
 
         {/* ================= LEFT CARD ================= */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeLeft}
-          className="rounded-[24px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
-        >
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true }}
+  variants={fadeLeft}
+  className="rounded-[28px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_25px_80px_rgba(0,0,0,0.10)]"
+>
+  {/* IMAGE */}
+  <div className="relative h-[400px] overflow-hidden group">
 
-          {/* IMAGE */}
-          <div className="relative h-[380px] overflow-hidden group">
+    {/* DEVELOPER IMAGE */}
+    <img
+      src={developerImage || "/location6.webp"}
+      alt={developerName}
+      className="w-full h-full object-cover transition duration-[3000ms] group-hover:scale-110"
+    />
 
-            {/* DEVELOPER IMAGE */}
+    {/* DARK OVERLAY */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+
+    {/* GOLD LIGHT */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
+
+    {/* CONTENT */}
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+
+      {/* LOGO */}
+      {developerLogo && (
+        <div className="relative mb-7">
+
+          <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-[1.28] animate-pulse" />
+
+          <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+
             <img
-              src={
-                developerImage ||
-                "/location6.webp"
-              }
+              src={developerLogo}
               alt={developerName}
-              className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+              className="w-16 h-16 object-contain"
             />
 
-            {/* PREMIUM OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
+          </div>
+        </div>
+      )}
 
-            {/* GOLDEN GLOW */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
+      {/* NAME */}
+      <h3
+        className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight"
+        style={{
+          fontFamily: "Cormorant Garamond, serif",
+        }}
+      >
+        {developerName}
+      </h3>
 
-            {/* CONTENT */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+      {/* DIVIDER */}
+      <div className="relative w-28 h-[1px] bg-[#d6b16f] my-6">
 
-              {/* LOGO */}
-              {developerLogo && (
-                <div className="relative mb-6">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rotate-45 bg-[#d6b16f]" />
 
-                  {/* OUTER RING */}
-                  <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-125 animate-pulse" />
+      </div>
 
-                  {/* LOGO HOLDER */}
-                  <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+      <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
+        Luxury Developer
+      </p>
 
-                    <img
-                      src={developerLogo}
-                      alt={developerName}
-                      className="w-16 h-16 object-contain"
-                    />
-                  </div>
-                </div>
-              )}
+    </div>
+  </div>
 
-              {/* DEVELOPER NAME */}
-              <h3
-                className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight drop-shadow-[0_5px_25px_rgba(0,0,0,0.5)]"
-                style={{
-                  fontFamily:
-                    "Cormorant Garamond, serif",
-                }}
-              >
-                {developerName}
-              </h3>
+  {/* CONTACT BOX */}
+  <div className="relative overflow-hidden bg-gradient-to-br from-[#071c17] via-[#0b2d25] to-[#123c32] p-9 text-white">
 
-              {/* GOLD LINE */}
-              <div className="w-24 h-[1px] bg-[#d6b16f] my-5 relative">
+    {/* GLOW */}
+    <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#d6b16f]/10 blur-3xl" />
 
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#d6b16f]" />
-              </div>
+    <div className="relative z-10">
 
-              {/* SUBTEXT */}
-              <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
-                Luxury Developer
-              </p>
+      <div className="flex items-start gap-5">
+
+        {/* ICON */}
+        <div className="w-16 h-16 rounded-full border border-[#d6b16f]/30 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-7 h-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.7}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+
+        </div>
+
+        <div className="flex-1">
+
+          {/* SMALLER HEADING */}
+          <h4
+            className="text-2xl md:text-[30px] font-light leading-tight"
+            style={{
+              fontFamily: "Cormorant Garamond, serif",
+            }}
+          >
+            {faqSection?.contactTitle || "Still have questions?"}
+          </h4>
+
+          <p className="text-white/70 text-[15px] leading-7 mt-3 max-w-md">
+            {faqSection?.contactDescription ||
+              "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
+          </p>
+
+          {/* GOLD DIVIDER */}
+          <div className="w-16 h-[1px] bg-[#d6b16f] mt-6 mb-6" />
+
+          {/* PHONE CARD */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md px-5 py-5">
+
+            <p className="uppercase tracking-[3px] text-[11px] text-[#d6b16f] mb-2">
+              Contact Advisor
+            </p>
+
+            {/* BIGGER PHONE */}
+            <div className="text-xl md:text-2xl font-semibold tracking-wide text-white">
+              {faqSection?.contactPhone || "+91 90901 06101"}
             </div>
+
           </div>
 
-          {/* CONTACT BOX */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+        </div>
 
-            {/* BACKGROUND GLOW */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
+      </div>
 
-            <div className="relative z-10 flex items-start gap-5">
+    </div>
 
-              {/* ICON */}
-              <div className="w-16 h-16 rounded-full border border-[#c8a66a] bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] flex-shrink-0 shadow-lg">
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-7 h-7"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-
-              {/* TEXT */}
-              <div className="flex-1">
-
-                <h4
-                  className="text-3xl font-light"
-                  style={{
-                    fontFamily:
-                      "Cormorant Garamond, serif",
-                  }}
-                >
-                  {faqSection?.contactTitle ||
-                    "Still have questions?"}
-                </h4>
-
-                <p className="text-white/70 text-sm leading-relaxed mt-3 max-w-md">
-                  {faqSection?.contactDescription ||
-                    "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
-                </p>
-
-                {/* CONTACT DETAILS */}
-                <div className="mt-6 space-y-4">
-
-                  <div className="flex items-center gap-3 text-sm">
-
-                    <div className="w-7 h-7 rounded-full bg-[#d6b16f]/10 border border-[#d6b16f]/30 flex items-center justify-center text-[#d6b16f] text-xs">
-                      ✦
-                    </div>
-
-                    <span className="text-white/90">
-                      {faqSection?.contactPhone ||
-                        "+91 90901 06101"}
-                    </span>
-                  </div>
-
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+  </div>
+</motion.div>
 
         {/* ================= FAQ ACCORDION ================= */}
         <motion.div
@@ -5095,27 +5098,45 @@ else {
             </button>
           </div>
 
-          {/* CALL */}
-          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
-            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
-              ☎
-            </div>
+         {/* CALL */}
+<div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
 
-            <p className="text-[#17342d] text-sm font-medium">
-              Call Us
-            </p>
-          </div>
+  {/* CALL */}
+<a
+  href={`tel:${(faqSection?.phone || "+91 90901 06101").replace(/\s+/g, "")}`}
+  className="group flex flex-col items-center"
+>
+  <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#08211c] group-hover:text-[#d6b16f]">
+    <PhoneCall className="w-5 h-5" />
+  </div>
 
-          {/* WHATSAPP */}
-          <div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
-            <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3">
-              ✦
-            </div>
+  <p className="text-[#17342d] text-sm font-medium">
+    {faqSection?.callLabel || "Call Us"}
+  </p>
+</a>
 
-            <p className="text-[#17342d] text-sm font-medium">
-              WhatsApp
-            </p>
-          </div>
+</div>
+
+{/* WHATSAPP */}
+<div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
+
+ {/* WHATSAPP */}
+<a
+  href={`https://wa.me/${(faqSection?.phone || "+91 90901 06101").replace(/[^\d]/g, "")}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group flex flex-col items-center"
+>
+  <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#25D366] group-hover:border-[#25D366] group-hover:text-white">
+    <MessageCircleCheckIcon className="w-5 h-5" />
+  </div>
+
+  <p className="text-[#17342d] text-sm font-medium">
+    {faqSection?.whatsappLabel || "WhatsApp"}
+  </p>
+</a>
+
+</div>
         </div>
       </motion.div>
 
@@ -5798,6 +5819,8 @@ else {
     </div>
   </div>
 </footer>
+
+<Footer/>
 
       {/* ================= PREMIUM LEAD MODAL ================= */}
 {showModal && (
