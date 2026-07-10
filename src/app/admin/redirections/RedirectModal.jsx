@@ -23,7 +23,7 @@ export default function RedirectModal({
     from: "",
     to: "",
     type: "301",
-    isActive: true,
+    active: true,
   });
 
   const [saving, setSaving] = useState(false);
@@ -34,9 +34,9 @@ export default function RedirectModal({
         from: redirect.from || "",
         to: redirect.to || "",
         type: redirect.type || "301",
-        isActive:
-          redirect.isActive !== undefined
-            ? redirect.isActive
+        active:
+          redirect.active !== undefined
+            ? redirect.active
             : true,
       });
     } else {
@@ -44,7 +44,7 @@ export default function RedirectModal({
         from: "",
         to: "",
         type: "301",
-        isActive: true,
+        active: true,
       });
     }
   }, [redirect, open]);
@@ -89,7 +89,7 @@ export default function RedirectModal({
         from: form.from.trim(),
         to: form.to.trim(),
         type: form.type,
-        isActive: form.isActive,
+        active: form.active,
       };
 
       let res;
@@ -295,17 +295,17 @@ export default function RedirectModal({
                 type="button"
                 onClick={() =>
                   updateField(
-                    "isActive",
-                    !form.isActive
+                    "active",
+                    !form.active
                   )
                 }
                 className={`w-full rounded-2xl py-4 font-semibold transition-all duration-300 ${
-                  form.isActive
+                  form.active
                     ? "bg-green-100 text-green-700 border border-green-300"
                     : "bg-red-100 text-red-700 border border-red-300"
                 }`}
               >
-                {form.isActive
+                {form.active
                   ? "✓ Active"
                   : "✕ Inactive"}
               </button>

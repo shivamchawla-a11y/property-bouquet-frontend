@@ -65,9 +65,9 @@ const [deleteLoading, setDeleteLoading] = useState(false);
 
   const totalRedirects = redirects.length;
 
-  const activeRedirects = redirects.filter(
-    (r) => r.isActive !== false
-  ).length;
+ const activeRedirects = redirects.filter(
+  (r) => r.active
+).length;
 
   const totalHits = redirects.reduce(
     (sum, r) => sum + (r.hits || 0),
@@ -381,12 +381,12 @@ const [deleteLoading, setDeleteLoading] = useState(false);
         onClick={() => handleToggle(item._id)}
         className={`px-3 py-1 rounded-full text-sm font-semibold transition
           ${
-            item.isActive
+            item.active
               ? "bg-green-100 text-green-700 hover:bg-green-200"
               : "bg-red-100 text-red-700 hover:bg-red-200"
           }`}
       >
-        {item.isActive ? "Active" : "Inactive"}
+        {item.active ? "Active" : "Inactive"}
       </button>
 
     </td>
