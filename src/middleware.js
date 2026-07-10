@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
+
 export async function middleware(request) {
+
   const { pathname } = request.nextUrl;
+
 
   // Ignore Next.js internals & static files
   if (
@@ -17,39 +20,66 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
+
+
   try {
+
     const res = await fetch(
-      `https://property-bouquet-backend.onrender.com/api/redirections/check?path=${encodeURIComponent(
-        pathname
-      )}`,
+      `https://property-bouquet-backend.onrender.com/api/redirections/check?path=${encodeURIComponent(pathname)}`,
       {
-        cache: "no-store",
+        cache:"no-store",
       }
     );
 
-    if (!res.ok) {
+
+    if(!res.ok){
       return NextResponse.next();
     }
+
+
 
     const data = await res.json();
 
-    if (!data.found) {
+
+
+    if(!data.found){
       return NextResponse.next();
     }
 
-    const destination = new URL(data.to, request.url);
+
+
+    const destination = new URL(
+      data.to,
+      request.url
+    );
+
+
 
     return NextResponse.redirect(
       destination,
-      data.type === 302 ? 302 : 301
+      Number(data.type) === 302 ? 302 : 301
     );
-  } catch (err) {
-    console.error("Redirect middleware:", err);
+
+
+
+  } catch(err){
+
+    console.error(
+      "Redirect middleware:",
+      err
+    );
+
 
     return NextResponse.next();
+
   }
+
 }
 
+
+
 export const config = {
-  matcher: "/:path*",
+  matcher:[
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
