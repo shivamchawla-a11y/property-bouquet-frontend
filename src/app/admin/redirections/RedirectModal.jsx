@@ -85,12 +85,24 @@ export default function RedirectModal({
     try {
       setSaving(true);
 
-      const payload = {
-        from: form.from.trim(),
-        to: form.to.trim(),
-        type: form.type,
-        active: form.active,
-      };
+      const normalizePath = (url) => {
+  try {
+    const parsed = new URL(url);
+
+    return parsed.pathname;
+  } catch {
+    return url.startsWith("/")
+      ? url
+      : `/${url}`;
+  }
+};
+
+const payload = {
+  from: normalizePath(form.from.trim()),
+  to: normalizePath(form.to.trim()),
+  type: Number(form.type),
+  active: form.active,
+};
 
       let res;
 
