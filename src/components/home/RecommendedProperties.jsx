@@ -12,11 +12,36 @@ import {
   Bath,
   MapPin,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 export default function RecommendedProjects() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+const visibleCards = 3;
+
+const handleNext = () => {
+  if (properties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev + visibleCards >= properties.length
+      ? 0
+      : prev + visibleCards
+  );
+};
+
+const handlePrev = () => {
+  if (properties.length <= visibleCards) return;
+
+  setCurrentIndex((prev) =>
+    prev - visibleCards < 0
+      ? Math.max(properties.length - visibleCards, 0)
+      : prev - visibleCards
+  );
+};
 
   useEffect(() => {
     const fetchRecommended = async () => {
@@ -98,10 +123,28 @@ export default function RecommendedProjects() {
             </p>
           )}
 
-        {/* CARDS */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+          <div className="flex justify-end gap-3 mb-5">
+  <button
+    onClick={handlePrev}
+    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+  >
+    <ChevronLeft size={18} />
+  </button>
 
-          {properties.map((item, index) => (
+  <button
+    onClick={handleNext}
+    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+  >
+    <ChevronRight size={18} />
+  </button>
+</div>
+
+        {/* CARDS */}
+       <div className="max-w-[1080px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+          {properties
+  .slice(currentIndex, currentIndex + visibleCards)
+  .map((item, index) => (
             <Link
               key={item._id}
               href={`/${item.slug}`}

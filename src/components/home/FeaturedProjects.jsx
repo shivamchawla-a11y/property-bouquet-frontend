@@ -142,7 +142,7 @@ const handlePrev = () => {
             </div>
 
             {/* CARDS */}
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-5 items-stretch">
+            <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-5 items-stretch">
 
   {loading && (
     <p className="col-span-3 text-center">
