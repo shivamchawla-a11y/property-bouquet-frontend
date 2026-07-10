@@ -18,6 +18,7 @@ import {
   FileText,
   Newspaper,
   BookOpen,
+  Route,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -62,16 +63,22 @@ export default function AdminLayout({ children }) {
       icon: PlusCircle,
     },
     {
-      name: "Pages",
-      path: "/admin/pages",
-      icon: FileText,
-    },
+  name: "Pages",
+  path: "/admin/pages",
+  icon: FileText,
+},
 
-    {
+{
+  name: "Redirections",
+  path: "/admin/redirections",
+  icon: Route,
+},
+
+{
   name: "Market Insights",
   path: "/admin/insights",
   icon: Newspaper,
-    },
+},
 
     {
   name: "Knowledge Centre",

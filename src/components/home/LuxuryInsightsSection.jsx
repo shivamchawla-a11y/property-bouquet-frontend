@@ -504,7 +504,7 @@ const formatDate = (date) => {
   src="/market1.webp"
   alt="Luxury Interior"
   fill
-  sizes="100vw"
+  sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
   className="absolute inset-0 object-cover object-center"
 />
 
@@ -846,15 +846,14 @@ const formatDate = (date) => {
   <div className="relative min-h-[520px] overflow-hidden bg-black">
 
     {/* IMAGE */}
-
+    
 <Image
   src="/market2.webp"
   alt="Luxury Advisory"
   fill
-  sizes="100vw"
+  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
   className="absolute inset-0 object-cover object-center scale-[1.03]"
 />
-
     {/* OVERLAYS */}
     <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-transparent to-[#021c18]/35" />
 
