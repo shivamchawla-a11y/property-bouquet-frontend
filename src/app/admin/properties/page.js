@@ -904,29 +904,22 @@ const developerOptions = [
 
 </td>
 
+{/* SEO */}
 <td className="p-3">
-  {hasCustomSEO(property) ? (
-    <div
-      className="flex items-center gap-2"
-      title="Custom SEO"
-    >
-      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-      <span className="text-xs font-semibold text-emerald-700">
-        Custom
-      </span>
-    </div>
-  ) : (
-    <div
-      className="flex items-center gap-2"
-      title="Auto Generated SEO"
-    >
-      <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-      <span className="text-xs font-semibold text-red-700">
-        Auto
-      </span>
-    </div>
-  )}
+  <div
+    className="flex justify-center"
+    title={hasCustomSEO(property) ? "Custom SEO" : "Auto SEO"}
+  >
+    <span
+      className={`h-4 w-4 rounded-full ${
+        hasCustomSEO(property)
+          ? "bg-emerald-500"
+          : "bg-red-500"
+      }`}
+    />
+  </div>
 </td>
+
 {/* CREATED */}
 <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
   {new Date(property.createdAt).toLocaleDateString(

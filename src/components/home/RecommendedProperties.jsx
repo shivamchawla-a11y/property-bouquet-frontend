@@ -56,8 +56,15 @@ const handlePrev = () => {
         const data = await res.json();
 
         if (data.success) {
-          setProperties(data.data || []);
-        }
+  const published = (data.data || []).filter(
+    (property) =>
+      property.status === "published" &&
+      property.isDeleted === false &&
+      property.isActive === true
+  );
+
+  setProperties(published);
+}
       } catch (error) {
         console.error(error);
       } finally {

@@ -35,8 +35,15 @@ const visibleCards = 3;
       const data = await res.json();
 
       if (data.success) {
-        setFeaturedProperties(data.data || []);
-      }
+  const published = (data.data || []).filter(
+    (property) =>
+      property.status === "published" &&
+      property.isDeleted === false &&
+      property.isActive === true
+  );
+
+  setFeaturedProperties(published);
+}
     } catch (error) {
       console.error(error);
     } finally {

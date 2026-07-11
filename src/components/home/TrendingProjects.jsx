@@ -53,8 +53,15 @@ const handlePrev = () => {
         const data = await res.json();
 
         if (data.success) {
-          setTrendingProperties(data.data || []);
-        }
+  const published = (data.data || []).filter(
+    (property) =>
+      property.status === "published" &&
+      property.isDeleted === false &&
+      property.isActive === true
+  );
+
+  setTrendingProperties(published);
+}
       } catch (error) {
         console.error(error);
       } finally {
