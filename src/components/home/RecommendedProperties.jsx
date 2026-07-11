@@ -27,9 +27,7 @@ const handleNext = () => {
   if (properties.length <= visibleCards) return;
 
   setCurrentIndex((prev) =>
-    prev + visibleCards >= properties.length
-      ? 0
-      : prev + visibleCards
+    prev >= properties.length - visibleCards ? 0 : prev + 1
   );
 };
 
@@ -37,9 +35,7 @@ const handlePrev = () => {
   if (properties.length <= visibleCards) return;
 
   setCurrentIndex((prev) =>
-    prev - visibleCards < 0
-      ? Math.max(properties.length - visibleCards, 0)
-      : prev - visibleCards
+    prev <= 0 ? properties.length - visibleCards : prev - 1
   );
 };
 
@@ -147,7 +143,7 @@ const handlePrev = () => {
 </div>
 
         {/* CARDS */}
-       <div className="max-w-[1080px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+       <div className="max-w-[900px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-4">
 
           {properties
   .slice(currentIndex, currentIndex + visibleCards)
@@ -194,7 +190,7 @@ hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
 "
 >
   {/* IMAGE */}
-  <div className="relative h-[220px] overflow-hidden">
+  <div className="relative h-[180px] overflow-hidden">
 
     <img
       src={
@@ -205,9 +201,10 @@ hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
 w-full
 h-full
 object-cover
+scale-110
 transition-transform
 duration-700
-group-hover:scale-110
+group-hover:scale-125
 "
     />
 
@@ -263,16 +260,38 @@ line-clamp-2
       />
 
       <span
-        className="
+  className="
 text-[13px]
 leading-snug
 line-clamp-2
 "
-      >
-        {item?.locationData?.locationName ||
-          item?.locationData?.customLocation ||
-          "Prime Location"}
-      </span>
+>
+  {(() => {
+    const location = item?.locationData?.locationRef;
+
+    if (!location) {
+      return (
+        item?.locationData?.customLocation ||
+        item?.locationData?.locationName ||
+        "Prime Location"
+      );
+    }
+
+    const parts = [];
+
+    // Child
+    if (location.name) parts.push(location.name);
+
+    // Parent
+    if (location.parent?.name) parts.push(location.parent.name);
+
+    // Grandparent
+    if (location.parent?.parent?.name)
+      parts.push(location.parent.parent.name);
+
+    return parts.join(", ");
+  })()}
+</span>
 
     </div>
 

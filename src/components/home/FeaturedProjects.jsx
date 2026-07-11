@@ -209,7 +209,7 @@ const handlePrev = () => {
       "
     >
       {/* IMAGE */}
-      <div className="relative h-[220px] overflow-hidden">
+      <div className="relative h-[180px] overflow-hidden">
         <img
           src={
             item?.media?.heroImageUrl }
@@ -278,9 +278,32 @@ const handlePrev = () => {
               line-clamp-2
             "
           >
-            {item?.locationData?.locationName ||
-              item?.locationData?.customLocation ||
-              "Prime Location"}
+            {(() => {
+  const location = item?.locationData?.locationRef;
+
+  if (!location) {
+    return (
+      item?.locationData?.customLocation ||
+      item?.locationData?.locationName ||
+      "Prime Location"
+    );
+  }
+
+  const parts = [];
+
+  // Child
+  if (location.name) parts.push(location.name);
+
+  // Parent
+  if (location.parent?.name) parts.push(location.parent.name);
+
+  // Grandparent (Topmost)
+  if (location.parent?.parent?.name) {
+    parts.push(location.parent.parent.name);
+  }
+
+  return parts.join(", ");
+})()}
           </span>
         </div>
 
