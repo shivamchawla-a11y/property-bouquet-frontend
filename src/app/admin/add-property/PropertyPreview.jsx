@@ -603,11 +603,15 @@ const getLocationName = () => {
     if (loc) {
       const parts = loc.fullPath.split(">").map((p) => p.trim());
 
-      if (parts.length >= 2) {
-        return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
-      }
+      if (parts.length >= 3) {
+  return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+}
 
-      return parts[0];
+if (parts.length === 2) {
+  return `${parts[1]}, ${parts[0]}`;
+}
+
+return parts[0];
     }
   }
 
@@ -769,12 +773,16 @@ const getShortLocation = (location) => {
     const parts = location
       .split(">")
       .map((p) => p.trim());
+      
+if (parts.length >= 3) {
+  return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+}
 
-    if (parts.length >= 2) {
-      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
-    }
+if (parts.length === 2) {
+  return `${parts[1]}, ${parts[0]}`;
+}
 
-    return parts[0];
+return parts[0];
   }
 
   if (location.includes(",")) {
