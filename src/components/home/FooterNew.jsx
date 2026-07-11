@@ -29,7 +29,6 @@ const cities = [
   "Flats in Gurgaon",
   "Flats in Delhi",
   "Flats in Noida",
-  "Flats in Dubai",
   "Flats in Mumbai",
   "Flats in Goa",
 ];
@@ -115,7 +114,7 @@ export default function Footer() {
               <p className="text-[16px] leading-[2] text-black/60 max-w-[720px]">
                 Property Bouquet specializes in premium luxury
                 residences, branded developments, and investment
-                opportunities across Gurgaon, Dubai and Delhi NCR.
+                opportunities across Gurgaon and Delhi NCR.
                 Discover elite homes crafted for modern luxury
                 living and long-term investment growth.
               </p>
@@ -383,7 +382,7 @@ export default function Footer() {
           className="text-[#E6C87A]"
         />
 
-        Gurgaon • Dubai • Delhi NCR
+        Gurgaon • Delhi NCR
       </div>
 
       {/* RIGHT */}

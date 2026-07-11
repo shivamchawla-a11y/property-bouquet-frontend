@@ -137,7 +137,7 @@ export default function HeroSection() {
               Institutional-grade advisory for
               ultra-premium residences,
               branded developments, and legacy
-              investments across India & Dubai.
+              investments across India.
             </motion.p>
 
             {/* BUTTON */}

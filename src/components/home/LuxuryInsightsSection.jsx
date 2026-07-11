@@ -786,8 +786,8 @@ const formatDate = (date) => {
       <p className="mt-6 text-white/62 text-[13px] leading-[2] max-w-[500px]">
         Tailored advisory for luxury residences,
         branded developments, and high-growth
-        investment opportunities across India &
-        Dubai — curated with institutional-grade
+        investment opportunities across India
+        — curated with institutional-grade
         market intelligence and private access.
       </p>
 

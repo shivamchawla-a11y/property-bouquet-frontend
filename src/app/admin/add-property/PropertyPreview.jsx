@@ -5555,7 +5555,7 @@ else {
           <p className="text-[16px] leading-[2] text-black/60 max-w-[720px]">
             Property Bouquet specializes in premium luxury
             residences, branded developments, and investment
-            opportunities across Gurgaon, Dubai and Delhi NCR.
+            opportunities across Gurgaon and Delhi NCR.
             Discover elite homes crafted for modern luxury
             living and long-term investment growth.
           </p>
