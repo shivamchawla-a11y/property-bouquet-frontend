@@ -452,6 +452,7 @@ export default function AddProperty() {
 
   // ================= SEO =================
   seoEngine: {
+  hasCustomSEO: false,
   metaTitle: "",
   metaDescription: "",
   keywords: [],
@@ -899,6 +900,13 @@ return;
         .filter(Boolean)
     : form.seoEngine.keywords || [];
 
+    const hasCustomSEO =
+  !!(
+    form.seoEngine.metaTitle?.trim() &&
+    form.seoEngine.metaDescription?.trim() &&
+    seoKeywords.length
+  );
+
     const cleanedForm = {
       ...form,
 
@@ -949,11 +957,13 @@ return;
       unitConfigurations: validConfigurations,
 
       seoEngine: {
+  hasCustomSEO,
   metaTitle: form.seoEngine.metaTitle?.trim() || "",
   metaDescription:
     form.seoEngine.metaDescription?.trim() || "",
   keywords: seoKeywords,
 },
+
     };
 
     console.log("🚀 FINAL PAYLOAD:", cleanedForm);
@@ -1064,6 +1074,22 @@ window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 const saveDraftSilently = () => {
+
+  const seoKeywords =
+  typeof form.seoEngine.keywords === "string"
+    ? form.seoEngine.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : form.seoEngine.keywords || [];
+
+const hasCustomSEO =
+  !!(
+    form.seoEngine.metaTitle?.trim() &&
+    form.seoEngine.metaDescription?.trim() &&
+    seoKeywords.length
+  );
+
   try {
     const payload = {
       ...form,
@@ -1092,6 +1118,14 @@ const saveDraftSilently = () => {
         locationRef:
           form.locationData.locationRef || null,
       },
+
+      seoEngine: {
+  hasCustomSEO,
+  metaTitle: form.seoEngine.metaTitle?.trim() || "",
+  metaDescription:
+    form.seoEngine.metaDescription?.trim() || "",
+  keywords: seoKeywords,
+},
     };
 
     const blob = new Blob(
@@ -1141,6 +1175,21 @@ const handleSaveDraft = async () => {
   try {
     const token = localStorage.getItem("token");
 
+    const seoKeywords =
+  typeof form.seoEngine.keywords === "string"
+    ? form.seoEngine.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : form.seoEngine.keywords || [];
+
+const hasCustomSEO =
+  !!(
+    form.seoEngine.metaTitle?.trim() &&
+    form.seoEngine.metaDescription?.trim() &&
+    seoKeywords.length
+  );
+
     const payload = {
   ...form,
   draftId,
@@ -1168,6 +1217,14 @@ const handleSaveDraft = async () => {
     locationRef:
       form.locationData.locationRef || null,
   },
+
+  seoEngine: {
+  hasCustomSEO,
+  metaTitle: form.seoEngine.metaTitle?.trim() || "",
+  metaDescription:
+    form.seoEngine.metaDescription?.trim() || "",
+  keywords: seoKeywords,
+},
 };
 
     const res = await fetch(

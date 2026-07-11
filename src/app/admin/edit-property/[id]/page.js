@@ -453,6 +453,7 @@ export default function EditProperty() {
   
       // ================= SEO =================
   seoEngine: {
+  hasCustomSEO: false,
   metaTitle: "",
   metaDescription: "",
   keywords: [],
@@ -1006,8 +1007,19 @@ const safeForm = {
 
   // ================= SEO =================
   seoEngine: {
+  hasCustomSEO:
+    property.seoEngine?.hasCustomSEO ??
+    !!(
+      property.seoEngine?.metaTitle?.trim() &&
+      property.seoEngine?.metaDescription?.trim() &&
+      property.seoEngine?.keywords?.length
+    ),
+
   metaTitle: property.seoEngine?.metaTitle || "",
-  metaDescription: property.seoEngine?.metaDescription || "",
+
+  metaDescription:
+    property.seoEngine?.metaDescription || "",
+
   keywords: property.seoEngine?.keywords || [],
 },
 
@@ -1462,6 +1474,13 @@ const validConfigurations =
         .filter(Boolean)
     : form.seoEngine.keywords || [];
 
+    const hasCustomSEO =
+  !!(
+    form.seoEngine.metaTitle?.trim() &&
+    form.seoEngine.metaDescription?.trim() &&
+    seoKeywords.length
+  );
+
     // ================= FINAL PAYLOAD =================
     const cleanedForm = {
       ...form,
@@ -1522,11 +1541,13 @@ const validConfigurations =
       unitConfigurations: validConfigurations,
 
       seoEngine: {
+  hasCustomSEO,
   metaTitle: form.seoEngine.metaTitle?.trim() || "",
   metaDescription:
     form.seoEngine.metaDescription?.trim() || "",
   keywords: seoKeywords,
 },
+
     };
 
     console.log("🚀 UPDATE PAYLOAD:", cleanedForm);
