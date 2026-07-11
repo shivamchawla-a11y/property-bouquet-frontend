@@ -39,6 +39,7 @@ export default function PropertiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [seoFilter, setSeoFilter] = useState("All");
 
 
   const router = useRouter();
@@ -50,6 +51,7 @@ useEffect(() => {
   filter,
   tagFilter,
   developerFilter,
+  seoFilter,
   itemsPerPage,
   sortBy,
 ]);
@@ -159,6 +161,19 @@ useEffect(() => {
     }
   };
 
+    const hasCustomSEO = (property) => {
+  const seo = property?.seoEngine;
+
+  if (!seo) return false;
+
+  return (
+    (seo.metaTitle?.trim()?.length ?? 0) > 0 ||
+    (seo.metaDescription?.trim()?.length ?? 0) > 0 ||
+    (Array.isArray(seo.keywords) &&
+      seo.keywords.filter(k => k?.trim()).length > 0)
+  );
+};
+
   // ================= RESTORE =================
   const handleRestore = async (id) => {
     try {
@@ -225,11 +240,19 @@ const filtered = properties
     propertyDeveloperId === developerFilter ||
     p?.developerRef === developerFilter;
 
-    return (
+    const seoMatch =
+  seoFilter === "All"
+    ? true
+    : seoFilter === "Custom"
+    ? hasCustomSEO(p)
+    : !hasCustomSEO(p);
+
+return (
   titleMatch &&
   tagMatch &&
   statusMatch &&
-  developerMatch
+  developerMatch &&
+  seoMatch
 );
   })
   .sort((a, b) => {
@@ -711,6 +734,31 @@ const developerOptions = [
   ))}
 </select>
 
+<select
+  value={seoFilter}
+  onChange={(e) => setSeoFilter(e.target.value)}
+  className="
+    bg-white
+    border
+    border-gray-300
+    text-sm
+    text-gray-800
+    px-4
+    py-2.5
+    rounded-xl
+    focus:ring-2
+    focus:ring-[#0f3b2e]
+    outline-none
+    transition
+    shadow-sm
+    min-w-[170px]
+  "
+>
+  <option value="All">All SEO</option>
+  <option value="Custom">Custom SEO</option>
+  <option value="Auto">Auto SEO</option>
+</select>
+
       </div>
 
       </div>
@@ -732,10 +780,6 @@ const developerOptions = [
               </th>
 
               <th className="p-3 text-left font-bold">
-                Market
-              </th>
-
-              <th className="p-3 text-left font-bold">
                 Price
               </th>
 
@@ -750,6 +794,10 @@ const developerOptions = [
 
               <th className="p-3 text-left font-bold">
                 Status
+              </th>
+
+              <th className="p-3 text-left font-bold">
+                SEO
               </th>
 
               <th className="p-3 text-left font-bold">
@@ -787,11 +835,6 @@ const developerOptions = [
                   {/* TITLE */}
                   <td className="p-3 font-semibold text-sm text-gray-900 max-w-[180px] truncate">
                     {property.coreDetails?.title || "N/A"}
-                  </td>
-
-                  {/* MARKET */}
-                  <td className="p-3 text-gray-700 text-sm font-medium">
-                    {property.marketType || "N/A"}
                   </td>
 
                   {/* PRICE */}
@@ -861,6 +904,29 @@ const developerOptions = [
 
 </td>
 
+<td className="p-3">
+  {hasCustomSEO(property) ? (
+    <div
+      className="flex items-center gap-2"
+      title="Custom SEO"
+    >
+      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+      <span className="text-xs font-semibold text-emerald-700">
+        Custom
+      </span>
+    </div>
+  ) : (
+    <div
+      className="flex items-center gap-2"
+      title="Auto Generated SEO"
+    >
+      <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+      <span className="text-xs font-semibold text-red-700">
+        Auto
+      </span>
+    </div>
+  )}
+</td>
 {/* CREATED */}
 <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
   {new Date(property.createdAt).toLocaleDateString(
