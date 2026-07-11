@@ -1460,14 +1460,14 @@ lg:px-6
 
           <p
             className="
-              text-[#d8b46b]
-              text-[9px]
-              sm:text-[11px]
-              tracking-[2px]
-              sm:tracking-[4px]
-              uppercase
-              font-semibold
-            "
+  text-[#d8b46b]
+  text-[9px]
+  sm:text-[10px]
+  tracking-[2px]
+  sm:tracking-[3px]
+  uppercase
+  font-semibold
+"
             style={{
               fontFamily:
                 "Inter, sans-serif",
@@ -1482,25 +1482,23 @@ lg:px-6
         <motion.h1
           variants={fadeUp}
           className="
-            text-white
-            font-normal
-            leading-[0.95]
-            tracking-[-1.5px]
-            sm:tracking-[-2px]
-            md:tracking-[-3px]
-            text-[34px]
-            xs:text-[38px]
-            sm:text-[48px]
-            md:text-[72px]
-            xl:text-[92px]
-            2xl:text-[105px]
-            max-w-[950px]
-            break-words
-          "
+  text-white
+  font-light
+  leading-[1.03]
+  tracking-[-0.5px]
+  sm:tracking-[-1px]
+  md:tracking-[-1.5px]
+  text-[38px]
+  sm:text-5xl
+  md:text-6xl
+  lg:text-[68px]
+  xl:text-[78px]
+  max-w-[900px]
+  break-words
+"
           style={{
-            fontFamily:
-              "Georgia, Times New Roman, serif",
-          }}
+  fontFamily: "Cormorant Garamond, serif",
+}}
         >
           {coreDetails?.title}
 <span className="sr-only">
@@ -1513,13 +1511,13 @@ lg:px-6
         <motion.div
           variants={fadeUp}
           className="
-            mt-6
-            sm:mt-7
-            flex
-            items-center
-            gap-3
-            text-white/82
-          "
+  text-[14px]
+  sm:text-[16px]
+  md:text-[18px]
+  font-light
+  tracking-[0.5px]
+  break-words
+"
         >
 
           <div className="
@@ -2035,76 +2033,66 @@ lg:px-6
       {/* ================= RIGHT CONTENT ================= */}
       <div className="pt-2 lg:pt-6">
 
-        {/* ================= TOP LABEL ================= */}
-        <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-wrap">
+        {/* ================= HEADING ================= */}
+<div className="text-center md:text-left">
 
-          {/* SECTION NUMBER */}
-          <p
-            className="
-              text-[#b89149]
-              text-[9px]
-              sm:text-[11px]
-              tracking-[2px]
-              sm:tracking-[2.5px]
-              uppercase
-              font-semibold
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            {aboutSectionNumber}
-          </p>
+  {/* SECTION LABEL */}
+  <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3 mb-4">
 
-          <div className="w-6 sm:w-8 h-[1px] bg-[#c9a64b]" />
+    <p
+      className="text-[#b58b47] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 600,
+      }}
+    >
+      {aboutSectionNumber}
+    </p>
 
-          {/* SECTION LABEL */}
-          <p
-            className="
-              text-[#233c31]
-              text-[9px]
-              sm:text-[11px]
-              tracking-[2px]
-              sm:tracking-[2.5px]
-              uppercase
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 500,
-            }}
-          >
-            {overview?.aboutLabel || "Luxury Living"}
-          </p>
-        </div>
+    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
 
-        {/* ================= TITLE ================= */}
-        <h2
-          className="
-            text-[#183126]
-            text-[30px]
-            sm:text-[38px]
-            md:text-[62px]
-            leading-[1]
-            md:leading-[0.98]
-            tracking-[-1px]
-            sm:tracking-[-2px]
-            md:tracking-[-2.5px]
-            max-w-[620px]
-            break-words
-          "
-          style={{
-            fontFamily: "Georgia, Times New Roman, serif",
-            fontWeight: 400,
-          }}
-        >
-          {overview?.aboutTitleLine1 ||
-            "Crafted For Elevated"}
+    <p
+      className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      {overview?.aboutLabel || "Luxury Living"}
+    </p>
 
-          <br />
+  </div>
 
-          {overview?.aboutTitleLine2 ||
-            "Luxury Living"}
-        </h2>
+  {/* TITLE */}
+  <h2
+    className="
+      text-[#17342d]
+      text-[34px]
+      sm:text-5xl
+      md:text-6xl
+      leading-[1.05]
+      max-w-[720px]
+      px-2
+      md:px-0
+    "
+    style={{
+      fontFamily: "Cormorant Garamond, serif",
+      fontWeight: 400,
+    }}
+  >
+    {overview?.aboutTitleLine1}
+
+    <span className="text-[#b58b47]">
+      {" "}
+      {overview?.aboutTitleLine2}
+    </span>
+  </h2>
+
+  {/* DIVIDER */}
+  <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mt-5 relative mx-auto md:mx-0">
+    <div className="absolute left-1/2 md:left-0 md:translate-x-0 -translate-x-1/2 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+  </div>
+
+</div>
 
         {/* ================= GOLD DIVIDER ================= */}
         <div className="flex items-center gap-3 mt-5 sm:mt-6 mb-6 sm:mb-7">
@@ -2115,93 +2103,73 @@ lg:px-6
         </div>
 
         {/* ================= DESCRIPTION ================= */}
-        <div
-          className="
-            text-[#505050]
-            text-[13px]
-            sm:text-[14px]
-            md:text-[15px]
-            leading-[1.9]
-            md:leading-[2]
-            font-[350]
-            space-y-4
-            sm:space-y-5
-            max-w-[560px]
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
+<div
+  className="
+    text-[#505050]
+    text-[13px]
+    sm:text-[14px]
+    md:text-[15px]
+    leading-[1.75]
+    font-[350]
+    max-w-[560px]
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  {(() => {
+    const paragraph1 =
+      overview?.description ||
+      "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
 
-          {/* COMBINED CONTENT */}
-          {(() => {
+    const paragraph2 =
+      aboutParagraph2 ||
+      "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
 
-            const paragraph1 =
-              overview?.description ||
-              "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
+    const combinedText = `${paragraph1} ${paragraph2}`;
 
-            const paragraph2 =
-              aboutParagraph2 ||
-              "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
+    const shouldTruncate = combinedText.length > 700;
+    const previewText = combinedText.slice(0, 700);
 
-            const combinedText =
-              `${paragraph1} ${paragraph2}`;
+    return (
+      <>
+        <p>
+          {showAboutMore || !shouldTruncate
+            ? combinedText
+            : `${previewText}...`}
+        </p>
 
-            const shouldTruncate =
-              combinedText.length > 320;
+        {shouldTruncate && (
+          <button
+            type="button"
+            onClick={() => setShowAboutMore(!showAboutMore)}
+            className="
+              mt-3
+              inline-flex
+              items-center
+              gap-2
+              text-[#b58b47]
+              hover:text-[#9f7d3d]
+              text-[12px]
+              tracking-[1px]
+              uppercase
+              transition-all
+              duration-300
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            {showAboutMore ? "Read Less" : "Read More"}
 
-            const previewText =
-              combinedText.slice(0, 320);
-
-            return (
-              <>
-                <p>
-                  {showAboutMore || !shouldTruncate
-                    ? combinedText
-                    : `${previewText}...`}
-                </p>
-
-                {shouldTruncate && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowAboutMore(
-                        !showAboutMore
-                      )
-                    }
-                    className="
-                      mt-2
-                      inline-flex
-                      items-center
-                      gap-2
-                      text-[#b89149]
-                      hover:text-[#9f7d3d]
-                      text-[12px]
-                      sm:text-[13px]
-                      tracking-[1.5px]
-                      uppercase
-                      transition-all
-                      duration-300
-                    "
-                    style={{
-                      fontFamily:
-                        "Inter, sans-serif",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {showAboutMore
-                      ? "Read Less"
-                      : "Read More"}
-
-                    <span className="text-[14px]">
-                      →
-                    </span>
-                  </button>
-                )}
-              </>
-            );
-          })()}
-        </div>
+            <span>→</span>
+          </button>
+        )}
+      </>
+    );
+  })()}
+</div>
       </div>
     </div>
 
@@ -2348,89 +2316,67 @@ lg:px-6
 
   <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-5 lg:px-6">
 
-    {/* ================= SECTION HEADER ================= */}
-    <div className="text-center mb-12 md:mb-16">
+    {/* ================= HEADING ================= */}
+<div className="text-center mb-12 md:mb-16">
 
-      <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 flex-wrap">
+  {/* SECTION LABEL */}
+  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
+    <p
+      className="text-[#b58b47] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 600,
+      }}
+    >
+      03
+    </p>
 
-        <p
-          className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[2.5px] uppercase font-semibold"
-          style={{
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          03
-        </p>
+    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
 
-        <div className="w-8 sm:w-10 h-[1px] bg-[#c9a64b]" />
+    <p
+      className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      Property Highlights
+    </p>
+  </div>
 
-        <p
-          className="text-[#233c31] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[2.5px] uppercase text-center"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 500,
-          }}
-        >
-          Property Highlights
-        </p>
-      </div>
+  {/* TITLE */}
+  <h2
+    className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] px-2"
+    style={{
+      fontFamily: "Cormorant Garamond, serif",
+    }}
+  >
+    {overview?.highlightsHeading || "Crafted for Elevated"}
 
-      <h2
-        className="
-          text-[#183126]
-          text-[30px]
-          sm:text-[40px]
-          md:text-[62px]
-          leading-[1.02]
-          md:leading-[0.98]
-          tracking-[-1.2px]
-          md:tracking-[-2.5px]
-          px-1
-        "
-        style={{
-          fontFamily: "Georgia, Times New Roman, serif",
-          fontWeight: 400,
-        }}
-      >
-        {overview?.highlightsHeading ||
-          "Crafted for Elevated"}
+    <span className="text-[#b58b47]">
+      {" "}
+      {overview?.highlightsSubheading || "Modern Living"}
+    </span>
+  </h2>
 
-        <br />
+  {/* DIVIDER */}
+  <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+  </div>
 
-        {overview?.highlightsSubheading ||
-          "Modern Living"}
-      </h2>
+  {/* DESCRIPTION */}
+  <p
+    className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2"
+    style={{
+      fontFamily: "Inter, sans-serif",
+      fontWeight: 300,
+    }}
+  >
+    Thoughtfully curated spaces, timeless architecture and refined
+    lifestyle experiences crafted for those who seek exclusivity,
+    elegance and long-term value.
+  </p>
 
-      {/* GOLD DIVIDER */}
-      <div className="flex items-center justify-center gap-3 mt-5 md:mt-6 mb-6 md:mb-7">
-
-        <div className="w-12 md:w-14 h-[1px] bg-[#c9a64b]" />
-
-        <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
-      </div>
-
-      {/* DESCRIPTION */}
-      <p
-        className="
-          text-[#5a5a5a]
-          text-[13px]
-          sm:text-[14px]
-          md:text-[15px]
-          leading-[1.9]
-          md:leading-[2]
-          max-w-[620px]
-          mx-auto
-          px-1
-        "
-        style={{
-          fontFamily: "Inter, sans-serif",
-        }}
-      >
-        Thoughtfully curated spaces, timeless architecture and refined
-        lifestyle experiences crafted for those who seek exclusivity,
-        elegance and long-term value.
-      </p>
-    </div>
+</div>
 
     {/* ================= HIGHLIGHTS GRID ================= */}
     <div
@@ -2654,9 +2600,9 @@ lg:px-6
         className="
           text-[#4d4d4d]
           italic
-          text-[20px]
-          sm:text-[26px]
-          md:text-[34px]
+          text-[14px]
+          sm:text-[20px]
+          md:text-[28px]
           leading-[1.6]
           md:leading-[1.5]
           text-center
@@ -2724,98 +2670,57 @@ id="amenities"
 
   <div className="relative z-10 max-w-[1380px] mx-auto px-5 lg:px-8">
 
-    {/* ================= TOP LABEL ================= */}
-    <motion.div
-      variants={fadeUp}
-      className="flex items-center justify-center gap-3 mb-4"
-    >
-      <p
-        className="text-[#c9a64b] text-[11px] tracking-[3px] uppercase"
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 600,
-        }}
-      >
-        {overview?.amenitiesSectionNumber || "04"}
-      </p>
-
-      <div className="w-8 h-[1px] bg-[#c9a64b]" />
-
-      <p
-        className="text-white/70 text-[11px] tracking-[3px] uppercase"
-        style={{
-          fontFamily: "Inter, sans-serif",
-        }}
-      >
-        {overview?.amenitiesSectionLabel ||
-  "Project Amenities"}
-      </p>
-    </motion.div>
-
     {/* ================= HEADING ================= */}
-    <motion.h2
-      variants={fadeUp}
-      className="
-        text-center
-        text-white
-        leading-[1.05]
-        tracking-[-2px]
-        text-[38px]
-        md:text-[72px]
-        max-w-[1200px]
-        mx-auto
-      "
-      style={{
-        fontFamily: "Georgia, Times New Roman, serif",
-        fontWeight: 400,
-      }}
-    >
-      {overview?.amenitiesHeadingLine1 ||
-  "Every Detail."}
-
-<span className="text-[#d7b367]">
-  {" "}
-  {overview?.amenitiesHeadingLine2 ||
-    "Elevated"}{" "}
-</span>
-
-{overview?.amenitiesHeadingLine3 ||
-  "Beyond Expectation."}
-    </motion.h2>
-
-    {/* GOLD DIVIDER */}
-    <motion.div
-      variants={fadeUp}
-      className="flex items-center justify-center gap-3 mt-6"
-    >
-      <div className="w-16 h-[1px] bg-[#c9a64b]" />
-
-      <div className="w-[6px] h-[6px] rotate-45 border border-[#c9a64b]" />
-
-      <div className="w-16 h-[1px] bg-[#c9a64b]" />
-    </motion.div>
-
-    {/* SUBTEXT */}
-    <motion.p
-      variants={fadeUp}
-      className="
-        mt-6
-        text-center
-        text-white/72
-        text-[14px]
-        md:text-[18px]
-        leading-[1.9]
-        max-w-[850px]
-        mx-auto
-      "
+<motion.div
+  variants={fadeUp}
+  className="text-center mb-12 md:mb-16"
+>
+  {/* SECTION LABEL */}
+  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
+    <p
+      className="text-[#b58b47] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
       style={{
         fontFamily: "Inter, sans-serif",
-        fontWeight: 300,
+        fontWeight: 600,
       }}
     >
-      {overview?.amenitiesSubheading ||
-  "Eldeco Camelot is a seamless blend of thoughtful design, cutting-edge technology and world-class amenities curated for an extraordinary lifestyle."}
-    </motion.p>
+      {overview?.amenitiesSectionNumber || "04"}
+    </p>
+
+    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
+
+    <p
+      className="text-white/70 text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      {overview?.amenitiesSectionLabel || "Project Amenities"}
+    </p>
+  </div>
+
+  {/* TITLE */}
+  <motion.h2
+    variants={fadeUp}
+    className="text-[34px] sm:text-5xl md:text-6xl font-light text-white leading-[1.05] px-2"
+    style={{
+      fontFamily: "Cormorant Garamond, serif",
+    }}
+  >
+    {overview?.amenitiesHeadingLine1 || "Every Detail."}
+
+    <span className="text-[#b58b47]">
+      {" "}
+      {overview?.amenitiesHeadingLine3 || "Beyond Expectation."}
+    </span>
+  </motion.h2>
+
+  {/* DIVIDER */}
+  <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+  </div>
+
+</motion.div>
 
     {/* ================= PREMIUM GRID ================= */}
 {Array.isArray(overview?.amenities) &&
@@ -3104,103 +3009,72 @@ else {
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6">
 
-        {/* ================= SECTION LABEL ================= */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center justify-center gap-2 sm:gap-3 mb-4"
-        >
-          <p
-            className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 600,
-            }}
-          >
-            {configurationSection?.sectionNumber || "05"}
-          </p>
+        {/* ================= HEADING ================= */}
+<motion.div
+  variants={fadeUp}
+  className="text-center mb-12 md:mb-16"
+>
+  {/* SECTION LABEL */}
+  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
+    <p
+      className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 600,
+      }}
+    >
+      {configurationSection?.sectionNumber || "05"}
+    </p>
 
-          <div className="w-6 sm:w-8 h-[1px] bg-[#c9a64b]" />
+    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
 
-          <p
-            className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase text-center"
-            style={{
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            {configurationSection?.sectionLabel ||
-              "Residence Configurations"}
-          </p>
-        </motion.div>
+    <p
+      className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+      style={{
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      {configurationSection?.sectionLabel ||
+        "Residence Configurations"}
+    </p>
+  </div>
 
-        {/* ================= TITLE ================= */}
-        <motion.h2
-          variants={fadeUp}
-          className="
-            text-center
-            text-[#183126]
-            text-[34px]
-            sm:text-[48px]
-            md:text-[72px]
-            leading-[0.95]
-            tracking-[-1px]
-            md:tracking-[-2px]
-            max-w-[1100px]
-            mx-auto
-            px-2
-          "
-          style={{
-            fontFamily:
-              "Georgia, Times New Roman, serif",
-            fontWeight: 400,
-          }}
-        >
-          <span className="block">
-            {configurationSection?.titleLine1 ||
-              "Residences Tailored"}
-          </span>
+  {/* TITLE */}
+  <motion.h2
+    variants={fadeUp}
+    className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] px-2"
+    style={{
+      fontFamily: "Cormorant Garamond, serif",
+    }}
+  >
+    {configurationSection?.titleLine1 ||
+      "Residences Tailored"}
 
-          <span className="block text-[#b89149] mt-1 sm:mt-2">
-            {configurationSection?.titleLine2 ||
-              "to Your Lifestyle"}
-          </span>
-        </motion.h2>
+    <span className="text-[#b58b47]">
+      {" "}
+      {configurationSection?.titleLine2 ||
+        "to Your Lifestyle"}
+    </span>
+  </motion.h2>
 
-        {/* GOLD DIVIDER */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center justify-center gap-3 mt-5 sm:mt-6"
-        >
-          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
+  {/* DIVIDER */}
+  <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+  </div>
 
-          <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
-
-          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
-        </motion.div>
-
-        {/* SUBTEXT */}
-        <motion.p
-          variants={fadeUp}
-          className="
-            mt-5
-            sm:mt-6
-            text-center
-            text-[#5d5d5d]
-            text-[13px]
-            sm:text-[15px]
-            md:text-[18px]
-            leading-[1.9]
-            max-w-[780px]
-            mx-auto
-            px-2
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 300,
-          }}
-        >
-          {configurationSection?.subheading ||
-            "Thoughtfully designed layouts that redefine space, privacy and luxury."}
-        </motion.p>
+  {/* SUBTEXT */}
+  <motion.p
+    variants={fadeUp}
+    className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2"
+    style={{
+      fontFamily: "Inter, sans-serif",
+      fontWeight: 300,
+    }}
+  >
+    {configurationSection?.subheading ||
+      "Thoughtfully designed layouts that redefine space, privacy, and luxury."}
+  </motion.p>
+</motion.div>
 
         {/* ================= MAIN CARD ================= */}
         <motion.div
