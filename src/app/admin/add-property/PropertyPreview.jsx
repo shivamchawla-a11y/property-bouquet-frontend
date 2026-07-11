@@ -652,8 +652,6 @@ const findLocationById = (
 const categoryName = getCategoryName();
 const locationName = getLocationName();
 
-console.log("locationData:", locationData);
-console.log("locationName:", locationName);
 
   const developerName = getDeveloperName();
 
