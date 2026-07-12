@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const API = "https://property-bouquet-backend.onrender.com/api";
 
@@ -850,6 +854,59 @@ const getImageAlt = (url) => {
     .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
+
+const autoplay = useRef(
+  Autoplay({
+    delay: 3500,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  })
+);
+
+const [emblaRef, emblaApi] = useEmblaCarousel(
+  {
+    loop: true,
+    align: "start",
+    slidesToScroll: 1,
+  },
+  [autoplay.current]
+);
+
+const handlePrev = () => emblaApi?.scrollPrev();
+const handleNext = () => emblaApi?.scrollNext();
+
+const stripItems =
+  locationData.bottomStrip?.length > 0
+    ? locationData.bottomStrip
+    : [
+        {
+          title: "Location that enhances life.",
+          desc: "Investment that appreciates.",
+          icon: "✦",
+        },
+        {
+          title: "Strategically Connected",
+          desc: "Seamless access to major hubs and expressways.",
+          icon: "✦",
+        },
+        {
+          title: "Thriving Neighborhood",
+          desc: "Surrounded by premium communities and landmarks.",
+          icon: "✦",
+        },
+        {
+          title: "Future-Ready Development",
+          desc:
+            "Infrastructure and growth that future-proofs your investment.",
+          icon: "✦",
+        },
+        {
+          title: "High Investment Potential",
+          desc:
+            "Prime location ensures long-term value appreciation.",
+          icon: "✦",
+        },
+      ];
 
   return (
     <div className="relative overflow-hidden bg-black">
@@ -4132,81 +4189,139 @@ else {
       </motion.div>
     </div>
 
-    {/* BOTTOM STRIP */}
-    <motion.div
-      variants={fadeUp}
-      className="mt-6 md:mt-8 rounded-[20px] md:rounded-[24px] overflow-hidden border border-[#c9a96a] bg-gradient-to-r from-[#07211c] to-[#0f3a30]"
+   {/* BOTTOM STRIP */}
+<motion.div
+  variants={fadeUp}
+  className="mt-6 md:mt-8"
+>
+  {/* Navigation */}
+  <div className="flex justify-end gap-3 mb-4">
+    <button
+      onClick={handlePrev}
+      className="
+        w-11 h-11
+        rounded-full
+        bg-[#171717]
+        text-white
+        border border-[#2d2d2d]
+        flex items-center justify-center
+        transition-all duration-300
+        hover:bg-[#c89948]
+        hover:border-[#c89948]
+        hover:scale-105
+      "
     >
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-2 ${
-          (locationData.bottomStrip?.length || 0) >= 5
-            ? "lg:grid-cols-5"
-            : (locationData.bottomStrip?.length || 0) === 4
-            ? "lg:grid-cols-4"
-            : (locationData.bottomStrip?.length || 0) === 3
-            ? "lg:grid-cols-3"
-            : "lg:grid-cols-2"
-        }`}
-      >
+      <ChevronLeft size={18} />
+    </button>
 
-        {(locationData.bottomStrip?.length
-          ? locationData.bottomStrip
-          : [
-              {
-                title: "Location that enhances life.",
-                desc: "Investment that appreciates.",
-                icon: "✦",
-              },
-              {
-                title: "Strategically Connected",
-                desc: "Seamless access to major hubs and expressways.",
-                icon: "✦",
-              },
-              {
-                title: "Thriving Neighborhood",
-                desc: "Surrounded by premium communities and landmarks.",
-                icon: "✦",
-              },
-              {
-                title: "Future-Ready Development",
-                desc:
-                  "Infrastructure and growth that future-proofs your investment.",
-                icon: "✦",
-              },
-              {
-                title: "High Investment Potential",
-                desc:
-                  "Prime location ensures long-term value appreciation.",
-                icon: "✦",
-              },
-            ]).map((item, i) => (
+    <button
+      onClick={handleNext}
+      className="
+        w-11 h-11
+        rounded-full
+        bg-[#171717]
+        text-white
+        border border-[#2d2d2d]
+        flex items-center justify-center
+        transition-all duration-300
+        hover:bg-[#c89948]
+        hover:border-[#c89948]
+        hover:scale-105
+      "
+    >
+      <ChevronRight size={18} />
+    </button>
+  </div>
+
+  <div
+    ref={emblaRef}
+    className="overflow-hidden rounded-[20px] md:rounded-[24px]"
+  >
+    <div className="flex -ml-3">
+      {stripItems.map((item, i) => (
+        <div
+          key={i}
+          className="
+            pl-3
+            flex-[0_0_100%]
+            sm:flex-[0_0_50%]
+            lg:flex-[0_0_33.3333%]
+            xl:flex-[0_0_25%]
+            min-w-0
+          "
+        >
           <motion.div
-            key={i}
             whileHover={{
-              y: -4,
+              y: -6,
             }}
-            className="p-5 sm:p-6 md:p-7 border-b sm:border-b-0 sm:border-r border-white/10 last:border-r-0"
+            transition={{
+              duration: 0.3,
+            }}
+            className="
+              h-full
+              rounded-[22px]
+              border
+              border-[#c9a96a]
+              bg-gradient-to-r
+              from-[#07211c]
+              to-[#0f3a30]
+              p-6
+              md:p-7
+            "
           >
             <div className="flex items-start gap-4">
 
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#c9a96a] flex items-center justify-center text-[#d8b06b] flex-shrink-0 text-sm sm:text-base">
+              <div
+                className="
+                  w-12
+                  h-12
+                  rounded-full
+                  border
+                  border-[#c9a96a]
+                  flex
+                  items-center
+                  justify-center
+                  text-[#d8b06b]
+                  text-lg
+                  shrink-0
+                "
+              >
                 {item.icon || "✦"}
               </div>
 
               <div>
-                <h4 className="text-[#d8b06b] text-[12px] sm:text-sm uppercase tracking-wide font-semibold leading-relaxed">
+                <h4
+                  className="
+                    text-[#d8b06b]
+                    text-sm
+                    uppercase
+                    tracking-[1px]
+                    font-semibold
+                    leading-relaxed
+                  "
+                >
                   {item.title}
                 </h4>
 
-                <p className="text-white/70 text-[12px] sm:text-sm mt-2 leading-relaxed">
+                <p
+                  className="
+                    text-white/70
+                    text-sm
+                    mt-3
+                    leading-relaxed
+                  "
+                >
                   {item.desc}
                 </p>
               </div>
+
             </div>
           </motion.div>
-        ))}
-      </div>
-    </motion.div>
+        </div>
+      ))}
+    </div>
+  </div>
+</motion.div>
   </div>
 </motion.section>
 
