@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/utils/formatPrice";
@@ -19,25 +21,24 @@ import {
 export default function RecommendedProjects() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-const visibleCards = 3;
+const autoplay = Autoplay({
+  delay: 3500,
+  stopOnInteraction: false,
+  stopOnMouseEnter: true,
+});
 
-const handleNext = () => {
-  if (properties.length <= visibleCards) return;
+const [emblaRef, emblaApi] = useEmblaCarousel(
+  {
+    loop: true,
+    align: "start",
+    slidesToScroll: 1,
+  },
+  [autoplay]
+);
 
-  setCurrentIndex((prev) =>
-    prev >= properties.length - visibleCards ? 0 : prev + 1
-  );
-};
-
-const handlePrev = () => {
-  if (properties.length <= visibleCards) return;
-
-  setCurrentIndex((prev) =>
-    prev <= 0 ? properties.length - visibleCards : prev - 1
-  );
-};
+const handlePrev = () => emblaApi?.scrollPrev();
+const handleNext = () => emblaApi?.scrollNext();
 
   useEffect(() => {
     const fetchRecommended = async () => {
@@ -143,16 +144,25 @@ const handlePrev = () => {
 </div>
 
         {/* CARDS */}
-       <div className="max-w-[900px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+       <div
+  className="max-w-[900px] mx-auto overflow-hidden"
+  ref={emblaRef}
+>
+  <div className="flex -ml-2">
 
-          {properties
-  .slice(currentIndex, currentIndex + visibleCards)
-  .map((item, index) => (
+          {properties.map((item, index) => (
             <Link
-              key={item._id}
-              href={`/${item.slug}`}
-              className="block h-full"
-            >
+  key={item._id}
+  href={`/${item.slug}`}
+  className="
+    min-w-0
+    flex-[0_0_100%]
+    md:flex-[0_0_50%]
+    xl:flex-[0_0_33.3333%]
+    pl-2
+    block
+  "
+>
               <motion.div
   initial={{
     opacity: 0,
@@ -414,7 +424,8 @@ group-hover:translate-x-1
             </Link>
           ))}
 
-        </div>
+          </div>
+</div>
       </Container>
     </section>
   );

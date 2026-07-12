@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/utils/formatPrice";
@@ -19,9 +22,26 @@ export default function FeaturedProjects() {
     useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const autoplay = useRef(
+  Autoplay({
+    delay: 3500,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  })
+);
 
-const visibleCards = 3;
+const [emblaRef, emblaApi] = useEmblaCarousel(
+  {
+    loop: true,
+    align: "start",
+    slidesToScroll: 1,
+  },
+  [autoplay.current]
+);
+
+const handlePrev = () => emblaApi?.scrollPrev();
+const handleNext = () => emblaApi?.scrollNext();
+
   useEffect(() => {
   const fetchFeaturedProperties = async () => {
     try {
@@ -54,25 +74,8 @@ const visibleCards = 3;
   fetchFeaturedProperties();
 }, []);
 
-const handleNext = () => {
-  if (featuredProperties.length <= visibleCards) return;
 
-  setCurrentIndex((prev) =>
-    prev + visibleCards >= featuredProperties.length
-      ? 0
-      : prev + visibleCards
-  );
-};
 
-const handlePrev = () => {
-  if (featuredProperties.length <= visibleCards) return;
-
-  setCurrentIndex((prev) =>
-    prev - visibleCards < 0
-      ? Math.max(featuredProperties.length - visibleCards, 0)
-      : prev - visibleCards
-  );
-};
   return (
     <section className="bg-[#f6f3ee] py-16 overflow-hidden">
 
@@ -149,7 +152,11 @@ const handlePrev = () => {
             </div>
 
             {/* CARDS */}
-            <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-5 items-stretch">
+            <div
+  className="max-w-[1100px] mx-auto overflow-hidden"
+  ref={emblaRef}
+>
+  <div className="flex -ml-2">
 
   {loading && (
     <p className="col-span-3 text-center">
@@ -164,13 +171,19 @@ const handlePrev = () => {
       </p>
     )}
 
-              {featuredProperties
-  .slice(currentIndex, currentIndex + visibleCards)
-  .map((item, index) => (
+              {featuredProperties.map((item, index) => (
   <Link
     key={item._id}
     href={`/${item.slug}`}
-    className="block h-full"
+    className="
+block
+min-w-0
+flex-[0_0_100%]
+md:flex-[0_0_50%]
+xl:flex-[0_0_33.3333%]
+pl-3
+self-stretch
+"
   >
     <motion.div
       initial={{
@@ -418,7 +431,8 @@ const handlePrev = () => {
     </motion.div>
   </Link>
 ))}
-            </div>
+              </div>
+</div>
           </div>
         </div>
       </div>

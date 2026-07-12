@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/utils/formatPrice";
@@ -18,27 +21,25 @@ export default function TrendingProjects() {
     useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const autoplay = useRef(
+  Autoplay({
+    delay: 3500,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  })
+);
 
-const visibleCards = 3;
+const [emblaRef, emblaApi] = useEmblaCarousel(
+  {
+    loop: true,
+    align: "start",
+    slidesToScroll: 1,
+  },
+  [autoplay.current]
+);
 
-const handleNext = () => {
-  if (trendingProperties.length <= visibleCards) return;
-
-  setCurrentIndex((prev) =>
-    prev + visibleCards >= trendingProperties.length ? 0 : prev + visibleCards
-  );
-};
-
-const handlePrev = () => {
-  if (trendingProperties.length <= visibleCards) return;
-
-  setCurrentIndex((prev) =>
-    prev - visibleCards < 0
-      ? Math.max(trendingProperties.length - visibleCards, 0)
-      : prev - visibleCards
-  );
-};
+const handlePrev = () => emblaApi?.scrollPrev();
+const handleNext = () => emblaApi?.scrollNext();
 
   useEffect(() => {
     const fetchTrendingProperties = async () => {
@@ -143,15 +144,25 @@ const handlePrev = () => {
               )}
 
             {/* CARDS */}
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div
+  className="overflow-hidden"
+  ref={emblaRef}
+>
+  <div className="flex -ml-3">
 
-              {trendingProperties
-  .slice(currentIndex, currentIndex + visibleCards)
-  .map((item, index) => (
+              {trendingProperties.map((item, index) => (
   <Link
     key={item._id}
     href={`/${item.slug}`}
-    className="block h-full"
+    className="
+block
+min-w-0
+flex-[0_0_100%]
+md:flex-[0_0_50%]
+xl:flex-[0_0_33.3333%]
+pl-3
+self-stretch
+"
   >
     <motion.div
       initial={{
@@ -425,7 +436,8 @@ const handlePrev = () => {
 
             </div>
 
-          </div>
+            </div>
+</div>
         </div>
       </div>
     </section>
