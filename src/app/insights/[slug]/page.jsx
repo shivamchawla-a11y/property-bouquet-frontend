@@ -26,9 +26,7 @@ import LatestInsightsSidebar from "../components/LatestInsightsSidebar";
 import CTAAdvisor from "../components/CTAAdvisor";
 import TagsCard from "../components/TagsCard";
 
-const API =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://property-bouquet-backend.onrender.com";
+const API = "https://propertybouquet.com/api";
 
 export default function InsightDetailPage() {
   const { slug } = useParams();

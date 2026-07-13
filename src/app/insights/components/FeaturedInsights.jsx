@@ -10,9 +10,7 @@ import NewsletterCard from "./NewsletterCard"
 import TrendingSidebar from "./TrendingSidebar";
 import LatestInsights from "./LatestInsights";
 
-const API =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://property-bouquet-backend.onrender.com";
+const API = "https://propertybouquet.com/api";
 
 export default function FeaturedInsights() {
   const [article, setArticle] = useState(null);
