@@ -872,9 +872,6 @@ const [emblaRef, emblaApi] = useEmblaCarousel(
   [autoplay.current]
 );
 
-const handlePrev = () => emblaApi?.scrollPrev();
-const handleNext = () => emblaApi?.scrollNext();
-
 const stripItems =
   locationData.bottomStrip?.length > 0
     ? locationData.bottomStrip
@@ -4195,43 +4192,6 @@ else {
   className="mt-6 md:mt-8"
 >
   {/* Navigation */}
-  <div className="flex justify-end gap-3 mb-4">
-    <button
-      onClick={handlePrev}
-      className="
-        w-11 h-11
-        rounded-full
-        bg-[#171717]
-        text-white
-        border border-[#2d2d2d]
-        flex items-center justify-center
-        transition-all duration-300
-        hover:bg-[#c89948]
-        hover:border-[#c89948]
-        hover:scale-105
-      "
-    >
-      <ChevronLeft size={18} />
-    </button>
-
-    <button
-      onClick={handleNext}
-      className="
-        w-11 h-11
-        rounded-full
-        bg-[#171717]
-        text-white
-        border border-[#2d2d2d]
-        flex items-center justify-center
-        transition-all duration-300
-        hover:bg-[#c89948]
-        hover:border-[#c89948]
-        hover:scale-105
-      "
-    >
-      <ChevronRight size={18} />
-    </button>
-  </div>
 
   <div
     ref={emblaRef}
