@@ -7,6 +7,7 @@ import {
   Playfair_Display,
   Montserrat,
 } from "next/font/google";
+import FloatingContact from "@/components/common/FloatingContact";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -146,36 +147,39 @@ export default function RootLayout({
   children,
 }) {
   return (
-    <html
-      lang="en"
-      className={`${playfair.variable} ${montserrat.variable}`}
-    >
-      <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteSchema),
-          }}
-        />
+  <html
+    lang="en"
+    className={`${playfair.variable} ${montserrat.variable}`}
+  >
+    <body>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(siteSchema),
+        }}
+      />
 
-        {children}
+      {children}
 
-        <Toaster
-          position="top-right"
-          containerStyle={{
-            zIndex: 2147483647,
-          }}
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: "#1f1f1f",
-              color: "#fff",
-              border: "1px solid #333",
-              fontSize: "14px",
-            },
-          }}
-        />
-      </body>
-    </html>
-  );
+      {/* Floating WhatsApp & Call Buttons */}
+      <FloatingContact />
+
+      <Toaster
+        position="top-right"
+        containerStyle={{
+          zIndex: 2147483647,
+        }}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#1f1f1f",
+            color: "#fff",
+            border: "1px solid #333",
+            fontSize: "14px",
+          },
+        }}
+      />
+    </body>
+  </html>
+);
 }

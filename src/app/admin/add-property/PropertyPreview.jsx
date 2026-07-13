@@ -1563,16 +1563,18 @@ lg:px-6
 <motion.div
   variants={fadeUp}
   className="
-    flex
-    items-center
-    gap-3
-    text-[14px]
-    sm:text-[16px]
-    md:text-[18px]
-    font-light
-    tracking-[0.5px]
-    flex-wrap
-  "
+flex
+items-center
+gap-3
+mt-3
+sm:mt-4
+text-[14px]
+sm:text-[16px]
+md:text-[18px]
+font-light
+tracking-[0.5px]
+flex-wrap
+"
 >
   <div
     className="
@@ -1622,28 +1624,29 @@ lg:px-6
         />
 
         {/* DESCRIPTION */}
-        <motion.p
-          variants={fadeUp}
-          className="
-            mt-6
-            sm:mt-7
-            max-w-[620px]
-            text-[13px]
-            sm:text-[15px]
-            md:text-[17px]
-            leading-[1.9]
-            sm:leading-[2]
-            text-white/72
-            font-light
-          "
-          style={{
-            fontFamily:
-              "Inter, sans-serif",
-          }}
-        >
-          {heroSection?.heroDescription ||
-`${coreDetails?.title} by ${developerName} is a luxury ${categoryName?.toLowerCase() || "residential"} project in ${locationName}, offering premium residences, world-class amenities, elegant architecture and exceptional connectivity.`}
-        </motion.p>
+<motion.p
+  variants={fadeUp}
+  className="
+    mt-6
+    sm:mt-7
+    max-w-[620px]
+    text-[13px]
+    sm:text-[15px]
+    md:text-[17px]
+    leading-[1.5]
+    sm:leading-[1.65]
+    text-white/72
+    font-light
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  {heroSection?.heroDescription ||
+    `${coreDetails?.title} by ${developerName} is a luxury ${
+      categoryName?.toLowerCase() || "residential"
+    } project in ${locationName}, offering premium residences, world-class amenities, elegant architecture and exceptional connectivity.`}
+</motion.p>
 
         {/* BUTTONS */}
         <motion.div
@@ -1701,127 +1704,6 @@ lg:px-6
             </div>
           </button>
 
-          {/* WATCH VIDEO */}
-          <a
-            href={
-              media?.walkthroughUrl?.trim()
-                ? media.walkthroughUrl
-                : "#"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              if (!media?.walkthroughUrl?.trim()) {
-                e.preventDefault();
-              }
-            }}
-            className="
-              group
-              relative
-              flex
-              items-center
-              gap-4
-              transition-all
-              duration-500
-              w-full
-              sm:w-auto
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-              opacity: media?.walkthroughUrl?.trim()
-                ? 1
-                : 0.72,
-            }}
-          >
-
-            {/* OUTER GLOW */}
-            <div className="relative shrink-0">
-
-              {/* GOLD AMBIENT */}
-              <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-2xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-
-              {/* RING GLOW */}
-              <div className="absolute inset-0 rounded-full border border-[#d8b46b]/20 scale-[1.18] opacity-0 group-hover:opacity-100 group-hover:scale-[1.28] transition-all duration-700" />
-
-              {/* MAIN BUTTON */}
-              <div
-                className="
-                  relative
-                  w-[54px]
-                  h-[54px]
-                  sm:w-[58px]
-                  sm:h-[58px]
-                  rounded-full
-                  flex
-                  items-center
-                  justify-center
-                  overflow-hidden
-                  border
-                  border-white/15
-                  shadow-[0_10px_40px_rgba(0,0,0,0.35)]
-                  backdrop-blur-2xl
-                  transition-all
-                  duration-500
-                  group-hover:scale-105
-                  group-hover:border-[#d8b46b]/40
-                "
-                style={{
-                  background: `
-                    linear-gradient(
-                      145deg,
-                      rgba(255,255,255,0.10),
-                      rgba(255,255,255,0.03)
-                    )
-                  `,
-                }}
-              >
-
-                {/* INNER GOLD SHINE */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#d8b46b]/10 via-transparent to-transparent opacity-60" />
-
-                {/* PLAY ICON */}
-                <Play
-                  size={16}
-                  fill="currentColor"
-                  className="
-                    relative
-                    z-10
-                    ml-[2px]
-                    text-white
-                    group-hover:text-[#f3d38d]
-                    transition-all
-                    duration-500
-                  "
-                />
-              </div>
-            </div>
-
-            {/* TEXT */}
-            <div className="flex flex-col min-w-0">
-
-              <span
-                className="
-                  text-[10px]
-                  sm:text-[11px]
-                  tracking-[2px]
-                  sm:tracking-[2.8px]
-                  uppercase
-                  text-white/78
-                  group-hover:text-white
-                  transition-all
-                  duration-500
-                  break-words
-                "
-              >
-                {heroSection?.videoButtonText ||
-                  "WATCH PROJECT VIDEO"}
-              </span>
-
-              <span className="text-[9px] sm:text-[10px] text-[#d8b46b]/70 tracking-[1.2px] sm:tracking-[1.5px] mt-[2px]">
-                Cinematic Walkthrough
-              </span>
-            </div>
-          </a>
         </motion.div>
       </div>
 
