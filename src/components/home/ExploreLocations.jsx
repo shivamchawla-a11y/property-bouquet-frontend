@@ -202,12 +202,12 @@ if (loading) {
               {/* IMAGE */}
               <motion.img
   src={
-    location.image
-      ? location.image.startsWith("http")
-        ? location.image
-        : `https://property-bouquet-backend.onrender.com${location.image}`
-      : "https://placehold.co/600x800/f3f4f6/999999?text=Location"
-  }
+  location.image
+    ? location.image.startsWith("http")
+      ? location.image
+      : `https://propertybouquet.com/api${location.image}`
+    : "https://placehold.co/600x800/f3f4f6/999999?text=Location"
+}
   alt={location.name}
   loading="lazy"
   onError={(e) => {
