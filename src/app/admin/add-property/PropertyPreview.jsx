@@ -1137,47 +1137,51 @@ const stripItems =
         <div className="flex items-center gap-3">
 
           {/* DESKTOP CTA */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="
-              hidden
-              md:flex
-              group
-              relative
-              overflow-visible
-              h-[30px]
-px-4
-rounded-lg
-text-[8px]
-tracking-[1px]
-              bg-[#c9a64b]
-              text-[#111]
-              tracking-[1.1px]
-              font-[600]
-              transition-all
-              duration-300
-              hover:brightness-110
-              shadow-[0_8px_24px_rgba(201,166,75,0.18)]
-              whitespace-nowrap
-            "
-            style={{
-              fontFamily:
-                "Inter, sans-serif",
-            }}
-          >
+<button
+  onClick={() => setShowModal(true)}
+  className="
+    hidden
+    md:flex
+    group
+    relative
+    overflow-hidden
+    h-[40px]
+    px-3
+    rounded-xl
+    bg-[#c9a64b]
+    text-[#111]
+    transition-all
+    duration-300
+    hover:-translate-y-[1px]
+    hover:brightness-110
+    shadow-[0_10px_28px_rgba(201,166,75,0.24)]
+    whitespace-nowrap
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  {/* Hover Shine */}
+  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+  <div className="relative flex items-center gap-2">
+    <Phone
+      size={17}
+      strokeWidth={2.4}
+    />
 
-            <div className="relative flex items-center gap-2">
-
-              <Download
-                size={10}
-                strokeWidth={2.2}
-              />
-
-              DOWNLOAD BROCHURE
-            </div>
-          </button>
+    <span
+      className="
+        text-[16px]
+        font-bold
+        tracking-[-0.2px]
+        leading-none
+      "
+    >
+      +91 9090 106 101
+    </span>
+  </div>
+</button>
 
           {/* ================= MOBILE MENU BUTTON ================= */}
           <button
@@ -2077,32 +2081,81 @@ flex-wrap
         </p>
 
         {shouldTruncate && (
-          <button
-            type="button"
-            onClick={() => setShowAboutMore(!showAboutMore)}
-            className="
-              mt-3
-              inline-flex
-              items-center
-              gap-2
-              text-[#b58b47]
-              hover:text-[#9f7d3d]
-              text-[12px]
-              tracking-[1px]
-              uppercase
-              transition-all
-              duration-300
-            "
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 600,
-            }}
-          >
-            {showAboutMore ? "Read Less" : "Read More"}
+  <div className="mt-6 flex flex-wrap items-center gap-4">
 
-            <span>→</span>
-          </button>
-        )}
+    {/* READ MORE */}
+    <button
+      type="button"
+      onClick={() => setShowAboutMore(!showAboutMore)}
+      className="
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        h-12
+        px-7
+        rounded-full
+        bg-[#17342d]
+        text-white
+        text-[12px]
+        uppercase
+        tracking-[1.5px]
+        font-semibold
+        transition-all
+        duration-300
+        hover:bg-[#0f241f]
+        hover:scale-[1.03]
+        active:scale-95
+        shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+      "
+      style={{
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      {showAboutMore ? "Read Less" : "Read More"}
+
+      <span className="text-base">→</span>
+    </button>
+
+    {/* DOWNLOAD BROCHURE */}
+    <button
+  type="button"
+  onClick={() => setShowModal(true)}
+  className="
+    inline-flex
+    items-center
+    justify-center
+    gap-2
+    h-12
+    px-7
+    rounded-full
+    bg-[#c9a64b]
+    text-[#17342d]
+    text-[12px]
+    uppercase
+    tracking-[1.5px]
+    font-semibold
+    transition-all
+    duration-300
+    hover:bg-[#b9933f]
+    hover:scale-[1.03]
+    active:scale-95
+    shadow-[0_12px_30px_rgba(201,166,75,0.18)]
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  <Download
+    size={15}
+    strokeWidth={2.2}
+  />
+
+  Download Brochure
+</button>
+
+  </div>
+)}
       </>
     );
   })()}

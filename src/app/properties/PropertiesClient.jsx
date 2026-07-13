@@ -485,11 +485,13 @@ if (sortBy === "price-high-low") {
               >
                 {filteredProperties.map(
                   (property) => (
-                   <div
+                   <Link
   key={property._id}
+  href={`/${property.slug}`}
   className="
     group
     relative
+    block
     h-[420px]
     overflow-hidden
     rounded-[24px]
@@ -751,26 +753,25 @@ group-hover:scale-105
     </div>
   </div>
 
-  <Link
-    href={`/${property.slug}`}
-    className="
-      w-11
-      h-11
-      rounded-full
-      bg-[#D4AF37]
-      flex
-      items-center
-      justify-center
-      transition-all
-      duration-300
-      group-hover:scale-110
-    "
-  >
-    <ArrowRight
-      size={16}
-      className="text-black"
-    />
-  </Link>
+  <div
+  className="
+    w-11
+    h-11
+    rounded-full
+    bg-[#D4AF37]
+    flex
+    items-center
+    justify-center
+    transition-all
+    duration-300
+    group-hover:scale-110
+  "
+>
+  <ArrowRight
+    size={16}
+    className="text-black"
+  />
+</div>
 </div>
 
 
@@ -788,7 +789,7 @@ group-hover:scale-105
       pointer-events-none
     "
   />
-</div>
+</Link>
 
                   )
                 )}
