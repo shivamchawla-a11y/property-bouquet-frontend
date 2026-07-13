@@ -6,7 +6,7 @@ import { buildPropertySchema } from "@/lib/propertySchema";
 // ==========================================
 // Backend API
 // ==========================================
-const API = "https://api.propertybouquet.com";
+const API = "https://propertybouquet.com";
 
 // ==========================================
 // Fetch Property
