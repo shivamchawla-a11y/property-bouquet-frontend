@@ -3,14 +3,22 @@ import { notFound } from "next/navigation";
 import { buildPropertySEO } from "@/lib/propertySeo";
 import { buildPropertySchema } from "@/lib/propertySchema";
 
+// ==========================================
+// Backend API
+// ==========================================
+const API = "https://api.propertybouquet.com";
+
+// ==========================================
+// Fetch Property
+// ==========================================
 async function getProperty(slug) {
   try {
     const res = await fetch(
-      `/api/properties/slug/${slug}`,
+      `${API}/api/properties/slug/${slug}`,
       {
         next: {
-  revalidate: 300,
-},
+          revalidate: 300,
+        },
       }
     );
 
@@ -20,14 +28,14 @@ async function getProperty(slug) {
 
     return data.data;
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching property:", err);
     return null;
   }
 }
 
-// ==============================
+// ==========================================
 // Dynamic SEO Metadata
-// ==============================
+// ==========================================
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
@@ -43,11 +51,10 @@ export async function generateMetadata({ params }) {
   return buildPropertySEO(property, slug);
 }
 
-// ==============================
+// ==========================================
 // Property Page
-// ==============================
+// ==========================================
 export default async function PropertyPage({ params }) {
-  // ✅ Next.js 15
   const { slug } = await params;
 
   const property = await getProperty(slug);
@@ -56,12 +63,10 @@ export default async function PropertyPage({ params }) {
     notFound();
   }
 
-  // ✅ Build JSON-LD Schema
   const schema = buildPropertySchema(property, slug);
 
   return (
     <>
-      {/* Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
