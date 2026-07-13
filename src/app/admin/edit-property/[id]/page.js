@@ -571,7 +571,7 @@ export default function EditProperty() {
      )
      .slice(0, 200);
    
-       const API = "https://property-bouquet-backend.onrender.com/api";
+       const API = "/api";
 
     useEffect(() => {
   const fetchProperty = async () => {
@@ -579,7 +579,7 @@ export default function EditProperty() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+        `/api/properties/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1553,7 +1553,7 @@ const validConfigurations =
     console.log("🚀 UPDATE PAYLOAD:", cleanedForm);
 
     const res = await fetch(
-      `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+      `/api/properties/${id}`,
       {
         method: "PATCH",
         headers: {
@@ -1741,7 +1741,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      "/api/upload-developer",
       {
         method: "POST",
         body: data,
@@ -1781,7 +1781,7 @@ const createDeveloper = async () => {
     setDeveloperLoading(true);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/developers",
+      "/api/developers",
       {
         method: "POST",
         headers: {
@@ -2488,7 +2488,7 @@ if (loading) {
          data.append("file", file);
  
          const res = await fetch(
-           "https://property-bouquet-backend.onrender.com/api/upload",
+           "/api/upload",
            {
              method: "POST",
              body: data,
@@ -3932,7 +3932,7 @@ if (loading) {
         data.append("file", file);
 
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/upload",
+          "/api/upload",
           {
             method: "POST",
             body: data,
@@ -5558,7 +5558,7 @@ if (loading) {
 
         try {
           const res = await fetch(
-            "https://property-bouquet-backend.onrender.com/api/upload",
+            "/api/upload",
             {
               method: "POST",
               body: formData,

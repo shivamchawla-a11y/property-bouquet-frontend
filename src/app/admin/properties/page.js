@@ -18,7 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 
 const API_URL =
-  "https://property-bouquet-backend.onrender.com/api/properties";
+  "/api/properties";
 
 export default function PropertiesPage() {
   const [search, setSearch] = useState("");
@@ -62,7 +62,7 @@ useEffect(() => {
     setLoading(true);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/properties?all=true",
+      "/api/properties?all=true",
       {
         credentials: "include",
         cache: "no-store",
@@ -91,7 +91,7 @@ useEffect(() => {
       setActionId(id);
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+        `/api/properties/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -135,7 +135,7 @@ useEffect(() => {
       setActionId(id);
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/properties/${id}`,
+        `/api/properties/${id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -180,7 +180,7 @@ useEffect(() => {
       setActionId(id);
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/properties/${id}/restore`,
+        `/api/properties/${id}/restore`,
         {
           method: "PATCH",
           credentials: "include",

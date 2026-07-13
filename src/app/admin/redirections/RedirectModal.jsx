@@ -11,7 +11,7 @@ import {
 import toast from "react-hot-toast";
 
 const API =
-  "https://property-bouquet-backend.onrender.com/api/redirections";
+  "/api/redirections";
 
 export default function RedirectModal({
   open,

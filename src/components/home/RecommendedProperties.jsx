@@ -44,7 +44,7 @@ const handleNext = () => emblaApi?.scrollNext();
     const fetchRecommended = async () => {
       try {
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/properties?propertyTag=Recommended",
+          "/api/properties?propertyTag=Recommended",
           {
             cache: "no-store",
           }

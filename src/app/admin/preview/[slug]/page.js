@@ -12,7 +12,7 @@ export default function PropertyViewPage() {
   const [loading, setLoading] = useState(true);
 
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   useEffect(() => {
     if (!slug) return;

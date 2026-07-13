@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       setMessage("");
 
       const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/auth/forgot-password",
+        "/api/auth/forgot-password",
         {
           method: "POST",
           headers: {

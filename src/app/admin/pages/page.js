@@ -26,7 +26,7 @@ export default function PagesAdmin() {
     try {
 
       const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/pages",
+        "/api/pages",
         {
           credentials: "include",
         }
@@ -54,7 +54,7 @@ export default function PagesAdmin() {
     try {
 
       const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/pages",
+        "/api/pages",
         {
           method: "POST",
           headers: {

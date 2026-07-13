@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const API_URL =
-  "https://property-bouquet-backend.onrender.com/api/knowledge";
+  "/api/knowledge";
 
 export default function KnowledgePage() {
   const router = useRouter();

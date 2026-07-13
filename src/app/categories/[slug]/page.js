@@ -21,7 +21,7 @@ import {
 import { formatPrice } from "@/utils/formatPrice";
 
 export default function CategorySlugPage() {
-  const API = "https://property-bouquet-backend.onrender.com/api";
+  const API = "/api";
 
   const { slug } = useParams();
 

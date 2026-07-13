@@ -45,7 +45,7 @@ const handleNext = () => emblaApi?.scrollNext();
     const fetchTrendingProperties = async () => {
       try {
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/properties?propertyTag=Trending",
+          "/api/properties?propertyTag=Trending",
           {
             cache: "no-store",
           }

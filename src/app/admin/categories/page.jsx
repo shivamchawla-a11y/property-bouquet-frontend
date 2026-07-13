@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 
 export default function CategoriesPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const [categories, setCategories] =
     useState([]);

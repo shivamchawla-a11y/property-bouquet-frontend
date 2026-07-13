@@ -22,7 +22,7 @@ import {
 
 export default function DeveloperSlugPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const { slug } = useParams();
 

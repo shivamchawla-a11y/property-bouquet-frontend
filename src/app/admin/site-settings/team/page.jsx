@@ -34,7 +34,7 @@ export default function TeamManagement() {
     role: "Agent",
   });
 
-  const API = "https://property-bouquet-backend.onrender.com/api/auth";
+  const API = "/api/auth";
 
   // ================= TOAST =================
 
@@ -80,7 +80,7 @@ export default function TeamManagement() {
         }
 
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/auth/me",
+          "/api/auth/me",
           {
             headers: {
               Authorization: `Bearer ${token}`,

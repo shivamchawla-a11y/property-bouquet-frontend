@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 
 export default function DevelopersPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const [developers, setDevelopers] =
     useState([]);
@@ -109,7 +109,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      "/api/upload-developer",
       {
         method: "POST",
         body: data,

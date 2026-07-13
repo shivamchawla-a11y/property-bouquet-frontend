@@ -15,7 +15,7 @@ import {
 
 export default function LocationPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const [locations, setLocations] = useState([]);
   const [expanded, setExpanded] = useState({});
@@ -95,7 +95,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      "/api/upload-developer",
       {
         method: "POST",
         body: data,

@@ -9,7 +9,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const API = "https://property-bouquet-backend.onrender.com/api";
+const API = "/api";
 
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -510,7 +510,7 @@ useEffect(() => {
     setSubmitting(true);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/leads",
+      "/api/leads",
       {
         method: "POST",
         headers: {
@@ -707,7 +707,7 @@ useEffect(() => {
         ?.replace(/\s+/g, "-");
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/developers/${developerSlug}`
+        `/api/developers/${developerSlug}`
       );
 
       const data = await res.json();

@@ -112,7 +112,7 @@ useEffect(() => {
   const checkAuth = async () => {
     try {
       const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/auth/me",
+        "/api/auth/me",
         {
           credentials: "include",
         }
@@ -243,7 +243,7 @@ if (isPreview) {
           <button
             onClick={async () => {
               await fetch(
-                "https://property-bouquet-backend.onrender.com/api/auth/logout",
+                "/api/auth/logout",
                 {
                   method: "POST",
                   credentials: "include",

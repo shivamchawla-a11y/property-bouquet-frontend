@@ -31,7 +31,7 @@ export default function StepMedia({ form, setForm }) {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload",
+      "/api/upload",
       {
         method: "POST",
         body: data,

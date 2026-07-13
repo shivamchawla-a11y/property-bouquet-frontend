@@ -37,7 +37,7 @@ export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const API = "https://property-bouquet-backend.onrender.com/api";
+  const API = "/api";
 
   const getHeaders = () => ({
     "Content-Type": "application/json",

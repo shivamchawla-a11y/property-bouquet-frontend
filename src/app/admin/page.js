@@ -82,18 +82,18 @@ const [propertyChartData, setPropertyChartData] =
         leadsRes,
       ] = await Promise.all([
         fetch(
-          "https://property-bouquet-backend.onrender.com/api/auth/me",
+          "/api/auth/me",
           { headers }
         ),
         fetch(
-          "https://property-bouquet-backend.onrender.com/api/properties?all=true"
+          "/api/properties?all=true"
         ),
         fetch(
-          "https://property-bouquet-backend.onrender.com/api/auth/users",
+          "/api/auth/users",
           { headers }
         ),
         fetch(
-          "https://property-bouquet-backend.onrender.com/api/leads",
+          "/api/leads",
           { headers }
         ),
       ]);

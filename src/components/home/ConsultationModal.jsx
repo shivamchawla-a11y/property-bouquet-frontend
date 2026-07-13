@@ -8,7 +8,7 @@ export default function ConsultationModal({
   onClose,
 }) {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const [leadName, setLeadName] =
     useState("");

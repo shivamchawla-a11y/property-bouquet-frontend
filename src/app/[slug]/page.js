@@ -6,7 +6,7 @@ import { buildPropertySchema } from "@/lib/propertySchema";
 async function getProperty(slug) {
   try {
     const res = await fetch(
-      `https://property-bouquet-backend.onrender.com/api/properties/slug/${slug}`,
+      `/api/properties/slug/${slug}`,
       {
         next: {
   revalidate: 300,

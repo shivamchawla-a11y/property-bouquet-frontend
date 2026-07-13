@@ -581,7 +581,7 @@ const filteredIcons = Object.keys(ICONS)
   )
   .slice(0, 200);
 
-    const API = "https://property-bouquet-backend.onrender.com/api";
+    const API = "/api";
 
     useEffect(() => {
   const fetchCategories = async () => {
@@ -969,7 +969,7 @@ return;
     console.log("🚀 FINAL PAYLOAD:", cleanedForm);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/properties",
+      "/api/properties",
       {
         method: "POST",
         headers: {
@@ -1136,7 +1136,7 @@ const hasCustomSEO =
     );
 
     navigator.sendBeacon(
-      "https://property-bouquet-backend.onrender.com/api/properties/draft",
+      "/api/properties/draft",
       blob
     );
   } catch (err) {
@@ -1228,7 +1228,7 @@ const hasCustomSEO =
 };
 
     const res = await fetch(
-  "https://property-bouquet-backend.onrender.com/api/properties/draft",
+  "/api/properties/draft",
   {
     method: "POST",
     headers: {
@@ -1368,7 +1368,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      "/api/upload-developer",
       {
         method: "POST",
         body: data,
@@ -1408,7 +1408,7 @@ const createDeveloper = async () => {
     setDeveloperLoading(true);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/developers",
+      "/api/developers",
       {
         method: "POST",
         headers: {
@@ -2112,7 +2112,7 @@ const formatIndianPrice = (value) => {
         data.append("file", file);
 
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/upload",
+          "/api/upload",
           {
             method: "POST",
             body: data,
@@ -3540,7 +3540,7 @@ const formatIndianPrice = (value) => {
         data.append("file", file);
 
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/upload",
+          "/api/upload",
           {
             method: "POST",
             body: data,
@@ -5166,7 +5166,7 @@ const formatIndianPrice = (value) => {
 
         try {
           const res = await fetch(
-            "https://property-bouquet-backend.onrender.com/api/upload",
+            "/api/upload",
             {
               method: "POST",
               body: formData,

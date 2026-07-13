@@ -1,4 +1,4 @@
-const API = "https://property-bouquet-backend.onrender.com/api";
+const API = "/api";
 
 export default async function sitemap() {
 const BASE_URL = "https://propertybouquet.com";

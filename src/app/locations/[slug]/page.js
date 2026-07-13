@@ -22,7 +22,7 @@ import { formatPrice } from "@/utils/formatPrice";
 
 export default function LocationSlugPage() {
   const API =
-    "https://property-bouquet-backend.onrender.com/api";
+    "/api";
 
   const { slug } = useParams();
 

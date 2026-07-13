@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
       setLoading(true);
 
       const res = await fetch(
-        `https://property-bouquet-backend.onrender.com/api/auth/reset-password/${token}`,
+        `/api/auth/reset-password/${token}`,
         {
           method: "PUT",
           headers: {

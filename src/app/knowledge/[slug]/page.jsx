@@ -8,7 +8,7 @@ import ArticleContent from "./components/ArticleContent";
 import ArticleSidebar from "./components/ArticleSidebar";
 import RelatedArticles from "./components/RelatedArticles";
 
-const API = "https://property-bouquet-backend.onrender.com/api";
+const API = "/api";
 
 // =====================
 // Fetch Single Article

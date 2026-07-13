@@ -76,7 +76,7 @@ useEffect(() => {
 const fetchInsights = async () => {
   try {
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/news",
+      "/api/news",
       {
         cache: "no-store",
       }
@@ -110,7 +110,7 @@ useEffect(() => {
   const fetchKnowledge = async () => {
     try {
       const res = await fetch(
-        "https://property-bouquet-backend.onrender.com/api/knowledge",
+        "/api/knowledge",
         {
           cache: "no-store",
         }

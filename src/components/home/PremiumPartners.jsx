@@ -13,7 +13,7 @@ useEffect(() => {
 const fetchDevelopers = async () => {
 try {
 const res = await fetch(
-"https://property-bouquet-backend.onrender.com/api/developers"
+"/api/developers"
 );
 
     const data = await res.json();

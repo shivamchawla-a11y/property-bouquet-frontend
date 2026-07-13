@@ -9,7 +9,7 @@ import BottomFeatures from "./components/BottomFeatures";
 import Navbar from "@/components/home/Navbar";
 
 const API =
-  "https://property-bouquet-backend.onrender.com/api";
+  "/api";
 
 async function getKnowledgeArticles() {
   try {

@@ -25,7 +25,7 @@ export async function middleware(request) {
   try {
 
     const res = await fetch(
-      `https://property-bouquet-backend.onrender.com/api/redirections/check?path=${encodeURIComponent(pathname)}`,
+      `/api/redirections/check?path=${encodeURIComponent(pathname)}`,
       {
         cache:"no-store",
       }

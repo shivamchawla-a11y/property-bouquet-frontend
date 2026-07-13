@@ -16,7 +16,7 @@ import {
 
 export default function ExploreLocations() {
   const API =
-  "https://property-bouquet-backend.onrender.com/api";
+  "/api";
 
 const [locations, setLocations] = useState([]);
 const [loading, setLoading] = useState(true);

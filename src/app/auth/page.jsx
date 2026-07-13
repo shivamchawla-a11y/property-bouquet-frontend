@@ -73,7 +73,7 @@ const handleLogin = async () => {
     setLoading(true);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/auth/login",
+      "/api/auth/login",
       {
         method: "POST",
         headers: {

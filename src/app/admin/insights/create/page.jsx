@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const API_URL =
-  "https://property-bouquet-backend.onrender.com/api/news";
+  "/api/news";
 
 export default function CreateInsightPage() {
   const router = useRouter();
@@ -208,7 +208,7 @@ const uploadImage = async (file) => {
     data.append("file", file);
 
     const res = await fetch(
-      "https://property-bouquet-backend.onrender.com/api/upload-developer",
+      "/api/upload-developer",
       {
         method: "POST",
         body: data,

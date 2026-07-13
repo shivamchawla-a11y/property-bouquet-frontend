@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const API_URL =
-  "https://property-bouquet-backend.onrender.com/api/news";
+  "/api/news";
 
 export default function InsightsPage() {
   const router = useRouter();

@@ -118,7 +118,7 @@ const [developerSearch, setDeveloperSearch] =
     const fetchProperties = async () => {
       try {
         const res = await fetch(
-          "https://property-bouquet-backend.onrender.com/api/properties"
+          "/api/properties"
         );
   
         const data = await res.json();
