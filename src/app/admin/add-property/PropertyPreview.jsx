@@ -1978,30 +1978,30 @@ flex-wrap
 <div className="text-center md:text-left">
 
   {/* SECTION LABEL */}
-  <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3 mb-4">
+<div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3 mb-4">
 
-    <p
-      className="text-[#b58b47] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
-      style={{
-        fontFamily: "Inter, sans-serif",
-        fontWeight: 600,
-      }}
-    >
-      {aboutSectionNumber}
-    </p>
+  <p
+    className="text-[#b58b47] text-[10px] sm:text-[11px] tracking-[1px] uppercase"
+    style={{
+      fontFamily: "Inter, sans-serif",
+      fontWeight: 600,
+    }}
+  >
+    {aboutSectionNumber}
+  </p>
 
-    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
+  <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
 
-    <p
-      className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
-      style={{
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      {overview?.aboutLabel || "Luxury Living"}
-    </p>
+  <p
+    className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[1px] uppercase"
+    style={{
+      fontFamily: "Inter, sans-serif",
+    }}
+  >
+    {overview?.aboutLabel || "Luxury Living"}
+  </p>
 
-  </div>
+</div>
 
   {/* TITLE */}
   <h2
@@ -2080,82 +2080,104 @@ flex-wrap
             : `${previewText}...`}
         </p>
 
-        {shouldTruncate && (
-  <div className="mt-6 flex flex-wrap items-center gap-4">
+        <div className="mt-8 flex flex-wrap gap-4">
 
-    {/* READ MORE */}
+  {/* READ MORE */}
+  {shouldTruncate && (
     <button
       type="button"
       onClick={() => setShowAboutMore(!showAboutMore)}
       className="
+        group
         inline-flex
         items-center
-        justify-center
-        gap-2
-        h-12
+        gap-3
+        h-[52px]
         px-7
-        rounded-full
-        bg-[#17342d]
-        text-white
-        text-[12px]
-        uppercase
-        tracking-[1.5px]
-        font-semibold
+        rounded-xl
+        border
+        border-[#17342d]
+        bg-transparent
+        text-[#17342d]
         transition-all
         duration-300
-        hover:bg-[#0f241f]
-        hover:scale-[1.03]
-        active:scale-95
-        shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+        hover:bg-[#17342d]
+        hover:text-white
+        hover:-translate-y-[2px]
       "
-      style={{
-        fontFamily: "Inter, sans-serif",
-      }}
     >
-      {showAboutMore ? "Read Less" : "Read More"}
+      <span
+        className="
+          text-[12px]
+          uppercase
+          tracking-[2px]
+          font-semibold
+        "
+      >
+        {showAboutMore ? "Read Less" : "Read More"}
+      </span>
 
-      <span className="text-base">→</span>
+      <span
+        className="
+          text-lg
+          transition-transform
+          duration-300
+          group-hover:translate-x-1
+        "
+      >
+        →
+      </span>
     </button>
+  )}
 
-    {/* DOWNLOAD BROCHURE */}
-    <button
-  type="button"
-  onClick={() => setShowModal(true)}
-  className="
-    inline-flex
-    items-center
-    justify-center
-    gap-2
-    h-12
-    px-7
-    rounded-full
-    bg-[#c9a64b]
-    text-[#17342d]
-    text-[12px]
-    uppercase
-    tracking-[1.5px]
-    font-semibold
-    transition-all
-    duration-300
-    hover:bg-[#b9933f]
-    hover:scale-[1.03]
-    active:scale-95
-    shadow-[0_12px_30px_rgba(201,166,75,0.18)]
-  "
-  style={{
-    fontFamily: "Inter, sans-serif",
-  }}
->
-  <Download
-    size={15}
-    strokeWidth={2.2}
-  />
+  {/* DOWNLOAD */}
+  <button
+    type="button"
+    onClick={() => setShowModal(true)}
+    className="
+      group
+      inline-flex
+      items-center
+      gap-3
+      h-[52px]
+      px-8
+      rounded-xl
+      bg-[#17342d]
+      text-white
+      border
+      border-[#17342d]
+      shadow-[0_14px_35px_rgba(23,52,45,.18)]
+      transition-all
+      duration-300
+      hover:bg-[#c9a64b]
+      hover:border-[#c9a64b]
+      hover:text-[#17342d]
+      hover:-translate-y-[2px]
+    "
+  >
+    <Download
+      size={17}
+      strokeWidth={2.2}
+      className="
+        transition-transform
+        duration-300
+        group-hover:-translate-y-[2px]
+      "
+    />
 
-  Download Brochure
-</button>
+    <span
+      className="
+        text-[12px]
+        uppercase
+        tracking-[2px]
+        font-semibold
+      "
+    >
+      Download Brochure
+    </span>
+  </button>
 
-  </div>
-)}
+</div>
       </>
     );
   })()}
