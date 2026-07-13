@@ -936,7 +936,8 @@ const stripItems =
     <div
       className={`
         relative
-        overflow-hidden
+overflow-visible
+xl:overflow-hidden
         border
         border-[#8d6d2f]
         backdrop-blur-3xl
@@ -945,12 +946,14 @@ const stripItems =
         ${
           scrolled
             ? `
-              rounded-full
+              rounded-2xl
+xl:rounded-full
               bg-[#1d1d1a]/95
               shadow-[0_10px_40px_rgba(0,0,0,0.38)]
             `
             : `
-              rounded-full
+              rounded-2xl
+xl:rounded-full
               bg-[#1d1d1a]/95
               shadow-[0_20px_80px_rgba(0,0,0,0.48)]
             `
