@@ -14,6 +14,15 @@ const nextConfig = {
 
     qualities: [75, 85, 90, 100],
   },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://propertybouquet.com/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -25,11 +25,11 @@ export async function middleware(request) {
   try {
 
     const res = await fetch(
-      `/api/redirections/check?path=${encodeURIComponent(pathname)}`,
-      {
-        cache:"no-store",
-      }
-    );
+  `https://propertybouquet.com/api/redirections/check?path=${encodeURIComponent(pathname)}`,
+  {
+    cache: "no-store",
+  }
+);
 
 
     if(!res.ok){

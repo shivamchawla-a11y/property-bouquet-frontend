@@ -1560,57 +1560,60 @@ lg:px-6
         </motion.h1>
 
         {/* LOCATION */}
-        <motion.div
-          variants={fadeUp}
-          className="
-  text-[14px]
-  sm:text-[16px]
-  md:text-[18px]
-  font-light
-  tracking-[0.5px]
-  break-words
-"
-        >
-
-          <div className="
-            w-9
-            h-9
-            sm:w-10
-            sm:h-10
-            rounded-full
-            bg-white/10
-            backdrop-blur-xl
-            border
-            border-white/10
-            flex
-            items-center
-            justify-center
-            shrink-0
-          ">
-
-            <MapPin
-              size={16}
-              className="text-[#d8b46b] sm:w-[18px] sm:h-[18px]"
-            />
-          </div>
-
-          <p
+<motion.div
+  variants={fadeUp}
   className="
-    text-[13px]
+    flex
+    items-center
+    gap-3
+    text-[14px]
     sm:text-[16px]
-    md:text-[24px]
+    md:text-[18px]
     font-light
-    tracking-wide
-    break-words
+    tracking-[0.5px]
+    flex-wrap
   "
-  style={{
-    fontFamily: "Inter, sans-serif",
-  }}
 >
-  {locationName}
+  <div
+    className="
+      w-9
+      h-9
+      sm:w-10
+      sm:h-10
+      rounded-full
+      bg-white/10
+      backdrop-blur-xl
+      border
+      border-white/10
+      flex
+      items-center
+      justify-center
+      shrink-0
+    "
+  >
+    <MapPin
+      size={16}
+      className="text-[#d8b46b] sm:w-[18px] sm:h-[18px]"
+    />
+  </div>
 
-</p>
-        </motion.div>
+  <p
+    className="
+      text-[13px]
+      sm:text-[16px]
+      md:text-[24px]
+      font-light
+      tracking-wide
+      leading-tight
+      break-words
+    "
+    style={{
+      fontFamily: "Inter, sans-serif",
+    }}
+  >
+    {locationName}
+  </p>
+</motion.div>
 
         {/* DIVIDER */}
         <motion.div
