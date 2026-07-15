@@ -17,8 +17,16 @@ const FeaturedProjects = dynamic(() =>
   import("@/components/home/FeaturedProjects")
 );
 
+const FeaturedProjectsMobile = dynamic(() =>
+  import("@/components/home/FeaturedProjectsMobile")
+);
+
 const TrendingProjects = dynamic(() =>
   import("@/components/home/TrendingProjects")
+);
+
+const TrendingProjectsMobile = dynamic(() =>
+  import("@/components/home/TrendingProjectsMobile")
 );
 
 const ExploreLocations = dynamic(() =>
@@ -70,10 +78,26 @@ export default function HomePage() {
       <RecommendedProjects/>
 
       {/* FEATURED */}
-      <FeaturedProjects />
+      {/* FEATURED DESKTOP */}
+<div className="hidden lg:block">
+  <FeaturedProjects />
+</div>
+
+{/* FEATURED MOBILE */}
+<div className="block lg:hidden">
+  <FeaturedProjectsMobile />
+</div>
 
       {/* TRENDING */}
-      <TrendingProjects />
+      {/* DESKTOP */}
+<div className="hidden lg:block">
+  <TrendingProjects />
+</div>
+
+{/* MOBILE */}
+<div className="block lg:hidden">
+  <TrendingProjectsMobile />
+</div>
 
       <ExploreLocations />
 

@@ -3337,7 +3337,6 @@ else {
                           "Wide balconies for natural light & ventilation",
                           "Master suite with walk-in wardrobe",
                           "Dedicated utility area",
-                          "2–3 car parking",
                         ]
                     ).map((item, index) => (
                       <div

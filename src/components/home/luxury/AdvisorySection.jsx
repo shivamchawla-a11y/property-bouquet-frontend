@@ -255,77 +255,77 @@ const formatDate = (date) => {
         </div>
 
         {/* RIGHT IMAGE SIDE */}
-        <div className="relative min-h-[520px] overflow-hidden bg-black">
+<div className="relative min-h-[420px] md:min-h-[520px] overflow-hidden bg-black">
 
-          <Image
-            src="/market2.webp"
-            alt="Luxury Advisory"
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
-            className="absolute inset-0 object-cover object-center scale-[1.03]"
-          />
+  <Image
+    src="/market2.webp"
+    alt="Luxury Advisory"
+    fill
+    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
+    className="absolute inset-0 object-cover object-center scale-[1.03]"
+  />
 
-          <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-transparent to-[#021c18]/35" />
+  <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-transparent to-[#021c18]/35" />
 
-          <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.22)]" />
+  <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.22)]" />
 
-          {/* FLOATING GLASS STATS */}
-          <div className="absolute bottom-7 left-7 right-7 z-20">
+  {/* FLOATING GLASS STATS */}
+  <div className="absolute bottom-4 md:bottom-7 left-4 right-4 md:left-7 md:right-7 z-20">
 
-            <div className="rounded-[28px] border border-white/10 bg-white/[0.08] backdrop-blur-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+    <div className="rounded-[22px] md:rounded-[28px] border border-white/10 bg-white/[0.08] backdrop-blur-2xl p-4 md:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
 
-              <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-3 gap-3 md:gap-5">
 
-                <div>
-                  <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
-                    Assets Advised
-                  </p>
+        <div className="text-center md:text-left">
+          <p className="text-white/55 text-[8px] md:text-[10px] uppercase tracking-[1px] md:tracking-[1.5px] mb-1 md:mb-2">
+            Assets Advised
+          </p>
 
-                  <h3 className="text-white text-[26px] leading-none font-semibold">
-                    ₹850Cr+
-                  </h3>
-                </div>
-
-                <div>
-                  <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
-                    Markets
-                  </p>
-
-                  <h3 className="text-white text-[26px] leading-none font-semibold">
-                    12+
-                  </h3>
-                </div>
-
-                <div>
-                  <p className="text-white/55 text-[10px] uppercase tracking-[1.5px] mb-2">
-                    Retention
-                  </p>
-
-                  <h3 className="text-[#d4ae67] text-[26px] leading-none font-semibold">
-                    98%
-                  </h3>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* TOP FLOATING BADGE */}
-          <div className="absolute top-7 right-7 z-20">
-
-            <div className="rounded-full border border-white/10 bg-white/[0.08] backdrop-blur-xl px-5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.28)]">
-
-              <p className="text-white text-[11px] tracking-[1.5px] uppercase">
-                Luxury Investment Advisory
-              </p>
-
-            </div>
-
-          </div>
-
+          <h3 className="text-white text-[18px] md:text-[26px] leading-none font-semibold">
+            ₹850Cr+
+          </h3>
         </div>
+
+        <div className="text-center md:text-left">
+          <p className="text-white/55 text-[8px] md:text-[10px] uppercase tracking-[1px] md:tracking-[1.5px] mb-1 md:mb-2">
+            Markets
+          </p>
+
+          <h3 className="text-white text-[18px] md:text-[26px] leading-none font-semibold">
+            12+
+          </h3>
+        </div>
+
+        <div className="text-center md:text-left">
+          <p className="text-white/55 text-[8px] md:text-[10px] uppercase tracking-[1px] md:tracking-[1.5px] mb-1 md:mb-2">
+            Retention
+          </p>
+
+          <h3 className="text-[#d4ae67] text-[18px] md:text-[26px] leading-none font-semibold">
+            98%
+          </h3>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* TOP FLOATING BADGE */}
+  <div className="absolute top-4 right-4 md:top-7 md:right-7 z-20">
+
+    <div className="rounded-full border border-white/10 bg-white/[0.08] backdrop-blur-xl px-3 py-2 md:px-5 md:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.28)]">
+
+      <p className="text-[9px] md:text-[11px] text-white tracking-[1px] md:tracking-[1.5px] uppercase text-center">
+        Luxury Investment Advisory
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
 
       </div>
 

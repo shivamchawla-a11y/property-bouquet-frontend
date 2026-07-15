@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export default function HeroSectionMobile() {
   return (
-    <section className="relative min-h-screen overflow-hidden lg:hidden">
+    <section className="relative h-[85vh] overflow-hidden">
       {/* BACKGROUND */}
       
       <Image
@@ -32,194 +32,155 @@ export default function HeroSectionMobile() {
       <div className="absolute top-[18%] left-[-20%] w-[280px] h-[280px] bg-[#c89d58]/20 blur-[120px] rounded-full" />
 
       {/* CONTENT */}
-      <div className="relative z-20 flex flex-col justify-between min-h-screen px-6 pt-[110px] pb-8">
-        {/* TOP CONTENT */}
-        <div>
-          {/* BADGE */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-            }}
-            className="
-              inline-flex
-              items-center
-              gap-2
-              px-4
-              py-2
-              rounded-full
-              border
-              border-[#c89d58]/20
-              bg-white/5
-              backdrop-blur-xl
-            "
-          >
-            <div className="w-2 h-2 rounded-full bg-[#c89d58]" />
+<div className="relative z-20 flex flex-col h-full px-6 pt-[110px] pb-6">
+  {/* TOP CONTENT */}
+  <div>
+    {/* BADGE */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="
+        inline-flex
+        items-center
+        gap-2
+        px-4
+        py-2
+        rounded-full
+        border
+        border-[#c89d58]/20
+        bg-white/5
+        backdrop-blur-xl
+      "
+    >
+      <div className="w-2 h-2 rounded-full bg-[#c89d58]" />
 
-            <span
-              className="
-                text-[#d6b06a]
-                text-[10px]
-                tracking-[2px]
-                uppercase
-                font-semibold
-              "
-            >
-              Curated For Generational Wealth
-            </span>
-          </motion.div>
+      <span
+        className="
+          text-[#d6b06a]
+          text-[10px]
+          tracking-[2px]
+          uppercase
+          font-semibold
+        "
+      >
+        Curated For Generational Wealth
+      </span>
+    </motion.div>
 
-          {/* HEADING */}
-          <motion.h1
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-            className="
-              mt-8
-              text-white
-              text-[42px]
-              leading-[1.02]
-              tracking-[-2px]
-              font-medium
-            "
-            style={{
-              fontFamily:
-                "Georgia, Times New Roman, serif",
-            }}
-          >
-            Curating India's Most
+    {/* HEADING */}
+    <motion.h1
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="
+        mt-8
+        text-white
+        text-[42px]
+        leading-[1.02]
+        tracking-[-2px]
+        font-medium
+      "
+      style={{
+        fontFamily: "Georgia, Times New Roman, serif",
+      }}
+    >
+      Curating India's Most
 
-            <span className="block text-[#c89d58] mt-2">
-              Intelligent
-            </span>
+      <span className="block text-[#c89d58] mt-2">
+        Intelligent
+      </span>
 
-            <span className="block">
-              Luxury Assets
-            </span>
-          </motion.h1>
+      <span className="block">
+        Luxury Assets
+      </span>
+    </motion.h1>
 
-          {/* DESCRIPTION */}
-          <motion.p
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 1,
-            }}
-            className="
-              mt-6
-              text-white/75
-              text-[14px]
-              leading-[1.9]
-              max-w-[340px]
-            "
-          >
-            Institutional-grade advisory for
-            ultra-premium residences,
-            branded developments and legacy
-            investments across India.
-          </motion.p>
+    {/* DESCRIPTION */}
+    <motion.p
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1 }}
+      className="
+        mt-6
+        text-white/75
+        text-[14px]
+        leading-[1.9]
+        max-w-[340px]
+      "
+    >
+      Institutional-grade advisory for
+      ultra-premium residences,
+      branded developments and legacy
+      investments across India.
+    </motion.p>
 
-          {/* CTA */}
-          <motion.button
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 1.1,
-            }}
-            className="
-              mt-8
-              flex
-              items-center
-              gap-4
-              group
-            "
-          >
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-xl opacity-0 group-hover:opacity-100 transition" />
+    {/* CTA */}
+    <motion.button
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1.1 }}
+      className="
+        mt-8
+        flex
+        items-center
+        gap-4
+        group
+      "
+    >
+      <div className="relative">
+        <div className="absolute inset-0 rounded-full bg-[#c89d58]/30 blur-xl opacity-0 group-hover:opacity-100 transition" />
 
-              <div
-                className="
-                  relative
-                  w-12
-                  h-12
-                  rounded-full
-                  border
-                  border-[#c89d58]/70
-                  flex
-                  items-center
-                  justify-center
-                  text-[#c89d58]
-                  bg-white/5
-                  backdrop-blur-xl
-                "
-              >
-                <Play
-                  size={14}
-                  fill="currentColor"
-                  className="ml-[2px]"
-                />
-              </div>
-            </div>
-
-            <span
-              className="
-                text-[#d3ae69]
-                text-[12px]
-                font-semibold
-                tracking-[1px]
-              "
-            >
-              DISCOVER OUR APPROACH
-            </span>
-          </motion.button>
-        </div>
-
-        {/* SEARCH PANEL */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: 0.3,
-            duration: 0.8,
-          }}
-          className="mt-10"
+        <div
+          className="
+            relative
+            w-12
+            h-12
+            rounded-full
+            border
+            border-[#c89d58]/70
+            flex
+            items-center
+            justify-center
+            text-[#c89d58]
+            bg-white/5
+            backdrop-blur-xl
+          "
         >
-          <SearchPanelMobile />
-        </motion.div>
+          <Play
+            size={14}
+            fill="currentColor"
+            className="ml-[2px]"
+          />
+        </div>
       </div>
+
+      <span
+        className="
+          text-[#d3ae69]
+          text-[12px]
+          font-semibold
+          tracking-[1px]
+        "
+      >
+        DISCOVER OUR APPROACH
+      </span>
+    </motion.button>
+  </div>
+
+  {/* SEARCH PANEL */}
+  <motion.div
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{
+      delay: 0.3,
+      duration: 0.8,
+    }}
+    className="mt-8"
+  >
+    <SearchPanelMobile />
+  </motion.div>
+</div>
     </section>
   );
 }
