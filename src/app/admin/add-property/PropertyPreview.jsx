@@ -2083,102 +2083,119 @@ flex-wrap
             : `${previewText}...`}
         </p>
 
-        <div className="mt-8 flex flex-wrap gap-4">
+        <div
+  className="
+    flex
+    flex-row
+    gap-3
+    mt-8
+    w-full
+    md:w-auto
+  "
+>
 
   {/* READ MORE */}
   {shouldTruncate && (
-    <button
-      type="button"
-      onClick={() => setShowAboutMore(!showAboutMore)}
-      className="
-        group
-        inline-flex
-        items-center
-        gap-3
-        h-[52px]
-        px-7
-        rounded-xl
-        border
-        border-[#17342d]
-        bg-transparent
-        text-[#17342d]
-        transition-all
-        duration-300
-        hover:bg-[#17342d]
-        hover:text-white
-        hover:-translate-y-[2px]
-      "
-    >
-      <span
-        className="
-          text-[12px]
-          uppercase
-          tracking-[2px]
-          font-semibold
-        "
-      >
-        {showAboutMore ? "Read Less" : "Read More"}
-      </span>
-
-      <span
-        className="
-          text-lg
-          transition-transform
-          duration-300
-          group-hover:translate-x-1
-        "
-      >
-        →
-      </span>
-    </button>
-  )}
-
-  {/* DOWNLOAD */}
   <button
     type="button"
-    onClick={() => setShowModal(true)}
+    onClick={() => setShowAboutMore(!showAboutMore)}
     className="
       group
+      flex-1
+      md:flex-none
       inline-flex
       items-center
-      gap-3
-      h-[52px]
-      px-8
+      justify-center
+      gap-2
+      h-[50px]
+      md:h-[52px]
+      px-4
+      md:px-7
       rounded-xl
-      bg-[#17342d]
-      text-white
       border
       border-[#17342d]
-      shadow-[0_14px_35px_rgba(23,52,45,.18)]
+      bg-transparent
+      text-[#17342d]
       transition-all
       duration-300
-      hover:bg-[#c9a64b]
-      hover:border-[#c9a64b]
-      hover:text-[#17342d]
+      hover:bg-[#17342d]
+      hover:text-white
       hover:-translate-y-[2px]
     "
   >
-    <Download
-      size={17}
-      strokeWidth={2.2}
-      className="
-        transition-transform
-        duration-300
-        group-hover:-translate-y-[2px]
-      "
-    />
+    <span className="text-[12px] md:text-[13px] font-semibold uppercase tracking-[1.2px] md:tracking-[2px] whitespace-nowrap">
+      {showAboutMore ? "Read Less" : "Read More"}
+    </span>
 
     <span
       className="
-        text-[12px]
-        uppercase
-        tracking-[2px]
-        font-semibold
+        text-base
+        md:text-lg
+        transition-transform
+        duration-300
+        group-hover:translate-x-1
       "
     >
-      Download Brochure
+      →
     </span>
   </button>
+)}
+
+  {/* DOWNLOAD */}
+  <button
+  type="button"
+  onClick={() => setShowModal(true)}
+  className="
+    group
+    flex-1
+    md:flex-none
+    inline-flex
+    items-center
+    justify-center
+    gap-2
+    h-[50px]
+    md:h-[52px]
+    px-4
+    md:px-8
+    rounded-xl
+    bg-[#17342d]
+    text-white
+    border
+    border-[#17342d]
+    shadow-[0_14px_35px_rgba(23,52,45,.18)]
+    transition-all
+    duration-300
+    hover:bg-[#c9a64b]
+    hover:border-[#c9a64b]
+    hover:text-[#17342d]
+    hover:-translate-y-[2px]
+  "
+>
+  <Download
+    size={16}
+    strokeWidth={2.2}
+    className="
+      transition-transform
+      duration-300
+      group-hover:-translate-y-[2px]
+      shrink-0
+    "
+  />
+
+  <span
+    className="
+      text-[11px]
+      md:text-[12px]
+      uppercase
+      tracking-[1px]
+      md:tracking-[2px]
+      font-semibold
+      whitespace-nowrap
+    "
+  >
+    Download Brochure
+  </span>
+</button>
 
 </div>
       </>
@@ -3107,109 +3124,131 @@ else {
           "
         >
 
-          <div className="grid lg:grid-cols-[280px_1fr]">
+          <div>
 
-            {/* ================= LEFT TABS ================= */}
-            <div className="border-b lg:border-b-0 lg:border-r border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
+ {/* ================= CONFIGURATION TABS ================= */}
 
-              <div className="flex lg:block min-w-max lg:min-w-0">
+<div
+  className="
+    flex
+    overflow-x-auto
+    bg-[#f5f0e7]
+    border-b
+    border-[#e6dccb]
+  "
+>
+  {gatedContent.floorPlans.map((u, i) => {
+    const active = activePlan === i;
 
-                {gatedContent.floorPlans.map((u, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActivePlan(i)}
-                    className={`
-                      group
-                      relative
-                      flex-shrink-0
-                      lg:w-full
-                      text-left
-                      px-5
-                      sm:px-6
-                      py-5
-                      lg:py-6
-                      border-r
-                      lg:border-r-0
-                      lg:border-b
-                      border-[#e6dccb]
-                      transition-all
-                      duration-300
-                      min-w-[220px]
-                      sm:min-w-[260px]
-                      lg:min-w-0
-                      ${
-                        activePlan === i
-                          ? "bg-[#03261d] text-white"
-                          : "hover:bg-[#f1eadf]"
-                      }
-                    `}
-                  >
+    return (
+      <button
+        key={i}
+        onClick={() => setActivePlan(i)}
+        className={`
+          relative
+          flex-1
+          min-w-[190px]
+          px-8
+          py-6
+          text-left
+          transition-all
+          duration-300
+          border-r
+          last:border-r-0
+          border-[#e6dccb]
+          group
+          overflow-hidden
 
-                    {/* ACTIVE BAR */}
-                    {activePlan === i && (
-                      <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
-                    )}
+          ${
+            active
+              ? "bg-[#03261d] text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+              : "bg-[#faf7f2] hover:bg-white hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+          }
+        `}
+      >
+        {/* GOLD LINE */}
+        <div
+          className={`
+            absolute
+            left-0
+            top-0
+            h-full
+            w-[3px]
+            transition-all
+            duration-300
 
-                    <div className="flex items-center justify-between gap-4">
+            ${
+              active
+                ? "bg-[#c9a64b]"
+                : "bg-transparent group-hover:bg-[#d0ac63]"
+            }
+          `}
+        />
 
-                      <div>
+        {/* ACTIVE BOTTOM LINE */}
+        {active && (
+          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#c9a64b]" />
+        )}
 
-                        <h3
-                          className={`
-                            text-[20px]
-                            sm:text-[22px]
-                            leading-none
-                            mb-2
-                            ${
-                              activePlan === i
-                                ? "text-white"
-                                : "text-[#1e352b]"
-                            }
-                          `}
-                          style={{
-                            fontFamily:
-                              "Georgia, Times New Roman, serif",
-                            fontWeight: 400,
-                          }}
-                        >
-                          {u?.unitType || "Luxury Unit"}
-                        </h3>
+        <h3
+          className={`
+            text-[24px]
+            leading-none
+            transition-colors
+            duration-300
 
-                        <p
-                          className={`
-                            text-[12px]
-                            sm:text-[13px]
-                            ${
-                              activePlan === i
-                                ? "text-[#d7b367]"
-                                : "text-[#666]"
-                            }
-                          `}
-                        >
-                          {u?.area || "Luxury Residences"}
-                        </p>
-                      </div>
+            ${
+              active
+                ? "text-white"
+                : "text-[#17342d] group-hover:text-[#0f2b22]"
+            }
+          `}
+          style={{
+            fontFamily: "Cormorant Garamond, serif",
+            fontWeight: 500,
+          }}
+        >
+          {u.unitType}
+        </h3>
 
-                      <div
-                        className={`
-                          text-[18px]
-                          sm:text-[20px]
-                          transition-all
-                          duration-300
-                          ${
-                            activePlan === i
-                              ? "text-[#d7b367] translate-x-1"
-                              : "text-[#b89149]"
-                          }
-                        `}
-                      >
-                        →
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+        <p
+          className={`
+            mt-2
+            text-[14px]
+            transition-colors
+            duration-300
+
+            ${
+              active
+                ? "text-[#d7b367]"
+                : "text-[#8b6f3d] group-hover:text-[#b58b47]"
+            }
+          `}
+        >
+          {u.area}
+        </p>
+
+        {!active && (
+          <div
+            className="
+              absolute
+              inset-0
+              opacity-0
+              group-hover:opacity-100
+              transition-opacity
+              duration-300
+              pointer-events-none
+              bg-gradient-to-r
+              from-transparent
+              via-white/40
+              to-transparent
+            "
+          />
+        )}
+      </button>
+    );
+  })}
+</div>
 
             {/* ================= RIGHT CONTENT ================= */}
             <div className="p-5 sm:p-6 lg:p-8">
@@ -4958,128 +4997,195 @@ else {
 
 
       {/* ================= BOTTOM CTA ================= */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+      {/* ================= BOTTOM CTA ================= */}
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true }}
+  variants={fadeUp}
+  className="mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
+>
+  {/* DESKTOP */}
+  <div className="hidden lg:grid lg:grid-cols-[1fr_auto]">
+
+    {/* LEFT */}
+    <div className="flex items-center gap-5 p-7">
+
+      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-8 h-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10"
+          />
+        </svg>
+
+      </div>
+
+      <div>
+
+        <h3
+          className="text-3xl text-[#17342d] font-light"
+          style={{
+            fontFamily:
+              "Cormorant Garamond, serif",
+          }}
+        >
+          {faqSection?.ctaTitle ||
+            "Ready to experience your dream home?"}
+        </h3>
+
+        <p className="text-[#777] mt-2 leading-relaxed">
+          {faqSection?.ctaDescription ||
+            "Book a site visit and take the first step towards your dream home."}
+        </p>
+
+      </div>
+
+    </div>
+
+    {/* RIGHT */}
+    <div className="border-l border-[#e5ddd2] p-6 flex items-center gap-3">
+
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
       >
-        <div className="grid lg:grid-cols-[1fr_auto_auto_auto] items-center">
+        {faqSection?.ctaButtonText ||
+          "Book A Site Visit"}
 
-          {/* LEFT */}
-          <div className="flex items-center gap-5 p-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
+        </svg>
+      </button>
 
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
+      <a
+        href="tel:+919090106101"
+        className="px-6 py-4 rounded-xl border border-[#17342d] text-[#17342d] font-semibold hover:bg-[#17342d] hover:text-white transition"
+      >
+        Call
+      </a>
 
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-8 h-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10"
-                />
-              </svg>
-            </div>
+      <a
+        href="https://wa.me/919090106101"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-6 py-4 rounded-xl bg-[#25D366] text-white font-semibold hover:brightness-110 transition"
+      >
+        WhatsApp
+      </a>
 
-            <div>
-              <h3
-                className="text-3xl text-[#17342d] font-light"
-                style={{
-                  fontFamily: "Cormorant Garamond, serif",
-                }}
-              >
-                {faqSection?.ctaTitle ||
-                  "Ready to experience your dream home?"}
-              </h3>
+    </div>
 
-              <p className="text-[#777] mt-2 leading-relaxed">
-                {faqSection?.ctaDescription ||
-                  "Book a site visit and take the first step towards your dream home."}
-              </p>
-            </div>
-          </div>
-
-          {/* BUTTON */}
-          <div className="border-l border-[#e5ddd2] p-6">
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
-            >
-              {faqSection?.ctaButtonText ||
-                "Book A Site Visit"}
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </button>
-          </div>
-
-         {/* CALL */}
-<div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
-
-{/* CALL */}
-<a
-  href="tel:+919090106101"
-  className="group flex flex-col items-center"
->
-  <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#08211c] group-hover:text-[#d6b16f]">
-    ☎
   </div>
 
-  <p className="text-[#17342d] text-sm font-medium">
-    Call Us
-  </p>
-</a>
+  {/* MOBILE */}
+  <div className="lg:hidden">
 
-</div>
+    <div className="p-6">
 
-{/* WHATSAPP */}
-<div className="border-l border-[#e5ddd2] p-6 flex flex-col items-center justify-center text-center min-w-[120px]">
+      <div className="flex items-start gap-4">
 
-{/* WHATSAPP */}
-<a
-  href="https://wa.me/919090106101"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="group flex flex-col items-center"
->
-  <div className="w-12 h-12 rounded-full border border-[#d6b16f] flex items-center justify-center text-[#b58b47] mb-3 transition-all duration-300 group-hover:bg-[#25D366] group-hover:border-[#25D366] group-hover:text-white">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-6 h-6"
-      fill="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path d="M20.52 3.48A11.82 11.82 0 0012.02 0C5.4 0 .02 5.38.02 12c0 2.11.55 4.18 1.59 6.01L0 24l6.16-1.6A11.95 11.95 0 0012.02 24C18.64 24 24 18.62 24 12c0-3.2-1.25-6.2-3.48-8.52zM12.02 21.8c-1.83 0-3.62-.49-5.18-1.42l-.37-.22-3.66.95.98-3.57-.24-.37A9.74 9.74 0 012.2 12c0-5.41 4.4-9.8 9.82-9.8 2.62 0 5.08 1.02 6.93 2.87A9.74 9.74 0 0121.82 12c0 5.4-4.4 9.8-9.8 9.8zm5.39-7.35c-.29-.15-1.72-.85-1.98-.95-.27-.1-.46-.15-.66.15-.19.29-.76.95-.93 1.15-.17.19-.34.22-.63.07-.29-.15-1.23-.45-2.35-1.44-.87-.77-1.46-1.72-1.63-2.01-.17-.29-.02-.45.13-.6.14-.14.29-.34.44-.51.15-.17.2-.29.29-.49.1-.19.05-.37-.02-.51-.07-.15-.66-1.58-.9-2.17-.24-.58-.49-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.03 1-1.03 2.44s1.05 2.83 1.2 3.02c.15.2 2.05 3.13 4.97 4.39.69.3 1.23.48 1.65.62.69.22 1.32.19 1.81.12.55-.08 1.72-.7 1.96-1.37.24-.66.24-1.23.17-1.37-.08-.12-.27-.2-.56-.34z" />
-    </svg>
-  </div>
+        <div className="w-14 h-14 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shrink-0">
 
-  <p className="text-[#17342d] text-sm font-medium">
-    WhatsApp
-  </p>
-</a>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-7 h-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 7V3m8 4V3m-9 8h10"
+            />
+          </svg>
 
-</div>
         </div>
-      </motion.div>
+
+        <div>
+
+          <h3
+            className="text-[28px] leading-tight text-[#17342d]"
+            style={{
+              fontFamily:
+                "Cormorant Garamond, serif",
+            }}
+          >
+            {faqSection?.ctaTitle ||
+              "Ready to experience your dream home?"}
+          </h3>
+
+          <p className="text-[#777] mt-2 text-[14px] leading-7">
+            {faqSection?.ctaDescription ||
+              "Book a site visit and take the first step towards your dream home."}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div className="border-t border-[#e5ddd2] p-5">
+
+      <div className="flex flex-col gap-3">
+
+        <button
+          onClick={() => setShowModal(true)}
+          className="w-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d6b16f] py-4 rounded-xl font-semibold uppercase tracking-wide"
+        >
+          {faqSection?.ctaButtonText ||
+            "Book A Site Visit"}
+        </button>
+
+        <div className="grid grid-cols-2 gap-3">
+
+          <a
+            href="tel:+919090106101"
+            className="border border-[#17342d] rounded-xl py-4 text-center font-semibold text-[#17342d] hover:bg-[#17342d] hover:text-white transition"
+          >
+            Call
+          </a>
+
+          <a
+            href="https://wa.me/919090106101"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl py-4 text-center bg-[#25D366] text-white font-semibold hover:brightness-110 transition"
+          >
+            WhatsApp
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</motion.div>
 
     </div>
   </section>
