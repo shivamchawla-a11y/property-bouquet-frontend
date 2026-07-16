@@ -7,7 +7,7 @@ import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Bath, Bed, ChevronLeft, ChevronRight, WalletCards } from "lucide-react";
 
 const API = "/api";
 
@@ -1426,7 +1426,7 @@ xl:rounded-full
 </div>
 
 {/* ================= CINEMATIC HERO ================= */}
-<motion.div
+<motion.div 
   id="overview"
   initial={{
     scale: 1.05,
@@ -1440,12 +1440,14 @@ xl:rounded-full
     duration: 1.4,
   }}
   className="
-    relative
-    min-h-screen
-    overflow-hidden
-    flex
-    items-end
-    isolate
+  relative
+  md:min-h-screen
+  overflow-hidden
+  flex
+  items-end
+  isolate
+  bg-[#081310]
+  md:bg-transparent
   "
   >
 <div className="absolute inset-0 -z-10">
@@ -1459,7 +1461,7 @@ xl:rounded-full
       fetchPriority="high"
       placeholder="empty"
       sizes="100vw"
-      className="object-cover"
+      className="hidden md:block object-cover"
     />
   ) : (
     <div className="absolute inset-0 bg-[#111]" />
@@ -1470,19 +1472,19 @@ xl:rounded-full
   <div className="absolute inset-0">
 
     {/* LEFT DARK */}
-    <div className="absolute inset-0 bg-gradient-to-r from-[#020806]/95 via-[#07120f]/70 to-transparent" />
+    <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#020806]/95 via-[#07120f]/70 to-transparent" />
 
     {/* RIGHT GOLD */}
-    <div className="absolute inset-0 bg-gradient-to-l from-[#c89d581f] via-transparent to-transparent" />
+    <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-[#c89d581f] via-transparent to-transparent" />
 
     {/* BOTTOM DEPTH */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
+    <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
 
     {/* GOLD LIGHT */}
-    <div className="absolute left-[6%] top-[14%] w-[220px] h-[220px] md:w-[520px] md:h-[520px] bg-[#c89d58]/10 blur-[100px] md:blur-[140px] rounded-full" />
+    <div className="hidden md:block absolute left-[6%] top-[14%] w-[220px] h-[220px] md:w-[520px] md:h-[520px] bg-[#c89d58]/10 blur-[100px] md:blur-[140px] rounded-full" />
 
     {/* EXTRA AMBIENT LIGHT */}
-    <div className="absolute right-[10%] bottom-[10%] w-[180px] h-[180px] md:w-[380px] md:h-[380px] bg-[#d8b46b]/10 blur-[80px] md:blur-[120px] rounded-full" />
+    <div className="hidden md:block absolute right-[10%] bottom-[10%] w-[180px] h-[180px] md:w-[380px] md:h-[380px] bg-[#d8b46b]/10 blur-[80px] md:blur-[120px] rounded-full" />
   </div>
 
   {/* ================= CONTENT ================= */}
@@ -1501,12 +1503,30 @@ lg:px-6
       sm:pb-10
       md:pb-14
       xl:pb-16
-      pt-28
-      sm:pt-32
+      pt-8
+      sm:pt-10
+      md:pt-28
     "
   >
 
     <div className="max-w-[1450px] mx-auto w-full">
+
+      {/* ================= MOBILE HERO IMAGE ================= */}
+<div className="block md:hidden mt-12 mb-8">
+  <div className="overflow-hidden rounded-[26px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+
+    <img
+      src={heroSection?.heroImage || media?.heroImageUrl}
+      alt={coreDetails?.title}
+      className="
+        w-full
+        h-[250px]
+        object-cover
+      "
+    />
+
+  </div>
+</div>
 
       <div className="max-w-[860px]">
 
@@ -3253,7 +3273,7 @@ else {
             {/* ================= RIGHT CONTENT ================= */}
             <div className="p-5 sm:p-6 lg:p-8">
 
-              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 lg:gap-10 items-start">
+              <div className="grid lg:grid-cols-[1.45fr_0.65fr] gap-10 lg:gap-12 items-start">
 
                 {/* ================= DETAILS ================= */}
                 <div>
@@ -3287,60 +3307,61 @@ else {
                   <div className="w-14 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7 mb-6 sm:mb-7" />
 
                   {/* ================= METRICS ================= */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-y-6 gap-x-0">
 
                     {[
-                      {
-                        label: "Bedrooms",
-                        value: activeFloorPlan?.bedrooms || "3",
-                        icon: "⌂",
-                      },
-                      {
-                        label: "Bathrooms",
-                        value: activeFloorPlan?.bathrooms || "3",
-                        icon: "◉",
-                      },
-                      {
-                        label: "Balconies",
-                        value: activeFloorPlan?.balconies || "2",
-                        icon: "▤",
-                      },
-                      {
-                        label: "Price",
-                        value: activeFloorPlan?.price || "On Request",
-                        icon: "₹",
-                      },
-                      {
-                        label: "Payment Plan",
-                        value:
-                          activeFloorPlan?.paymentPlan || "Flexible",
-                        icon: "◌",
-                      },
-                    ].map((item, index) => (
+                    {
+                      label: "Bedrooms",
+                      value: activeFloorPlan?.bedrooms || "3",
+                      icon: Bed,
+                    },
+                    {
+                      label: "Bathrooms",
+                      value: activeFloorPlan?.bathrooms || "3",
+                      icon: Bath,
+                    },
+                    {
+                      label: "Balconies",
+                      value: activeFloorPlan?.balconies || "2",
+                      icon: Building2,
+                    },
+                    {
+                      label: "Price",
+                      value: activeFloorPlan?.price || "On Request",
+                      icon: IndianRupee,
+                    },
+                    {
+                      label: "Payment Plan",
+                      value: activeFloorPlan?.paymentPlan || "Flexible",
+                      icon: WalletCards,
+                    },
+                  ].map((item, index) => (
                       <div
-                        key={index}
-                        className="
-                          border-r
-                          even:border-r-0
-                          md:even:border-r
-                          md:last:border-r-0
-                          border-[#e2d6c2]
-                          pr-3
-                        "
-                      >
+  key={index}
+  className={`
+    border-r
+    last:border-r-0
+    border-[#e2d6c2]
+    pr-4
+    min-w-0
+  `}
+>
 
-                        <div className="text-[#c9a64b] text-[18px] sm:text-[20px] mb-2">
-                          {item.icon}
-                        </div>
+                        <div className="mb-2">
+  <item.icon
+    className="w-5 h-5 sm:w-6 sm:h-6 text-[#c9a64b]"
+    strokeWidth={1.7}
+  />
+</div>
 
                         <p
                           className="
-                            text-[#1f352c]
-                            text-[16px]
-                            sm:text-[18px]
-                            leading-snug
-                            break-words
-                          "
+                          text-[#1f352c]
+                          text-[15px]
+                          lg:text-[17px]
+                          leading-snug
+                          break-words
+                        "
                           style={{
                             fontFamily:
                               "Georgia, Times New Roman, serif",
@@ -3354,7 +3375,7 @@ else {
                             mt-2
                             text-[#6a6a6a]
                             text-[10px]
-                            sm:text-[11px]
+                            lg:text-[10.5px]
                             leading-[1.7]
                             uppercase
                             tracking-[1px]
@@ -5241,7 +5262,7 @@ else {
         >
           More Signature Creations By
 
-          <span className="block text-[#b58b47] mt-2">
+          <span className="inline text-[#b58b47] ml-2">
             {developerName}
           </span>
         </h2>
@@ -5312,9 +5333,9 @@ else {
                   </div>
 
                   {/* DESCRIPTION */}
-                  <p className="text-[#5f5f5f] text-[16px] md:text-[18px] leading-[2.1] whitespace-pre-line font-light max-w-3xl">
-                    {developerDescription}
-                  </p>
+                  <p className="text-[#5f5f5f] text-[16px] md:text-[18px] leading-[1.75] whitespace-pre-line font-light max-w-3xl">
+                  {developerDescription}
+                </p>
 
                   
                 </div>
@@ -5406,7 +5427,7 @@ else {
         >
           Other Landmark Projects By
 
-          <span className="block text-[#b58b47] mt-2">
+          <span className="inline-block text-[#b58b47] ml-2">
             {developerName}
           </span>
         </h2>
