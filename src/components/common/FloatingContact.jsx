@@ -1,6 +1,12 @@
 "use client";
 
-import { Phone, FileText, Home } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Building2,
+  Newspaper,
+  Phone,
+} from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export default function FloatingContact() {
@@ -21,7 +27,6 @@ export default function FloatingContact() {
         className="
           hidden
           lg:flex
-          group
           fixed
           bottom-6
           right-6
@@ -41,135 +46,199 @@ export default function FloatingContact() {
           active:scale-95
         "
       >
-        <FaWhatsapp className="text-white text-[28px]" />
+        <FaWhatsapp
+          size={28}
+          className="text-white"
+        />
       </a>
 
-      {/* ================= MOBILE ACTION BAR ================= */}
-<div
-  className="
-    lg:hidden
-    fixed
-    bottom-0
-    left-0
-    right-0
-    z-[9999]
-    bg-[#081310]/95
-    backdrop-blur-xl
-    border-t
-    border-[#c9a64b]/20
-    shadow-[0_-15px_40px_rgba(0,0,0,0.35)]
-    pb-[max(env(safe-area-inset-bottom),10px)]
-  "
->
-  <div className="grid grid-cols-3 h-[68px]">
+      {/* ================= MOBILE BOTTOM BAR ================= */}
+      <div
+        className="
+          lg:hidden
+          fixed
+          bottom-0
+          left-0
+          right-0
+          z-[9999]
+          h-[78px]
+          bg-[#07120f]/95
+          backdrop-blur-2xl
+          border-t
+          border-[#c9a64b]/15
+          shadow-[0_-18px_45px_rgba(0,0,0,0.45)]
+          pb-[env(safe-area-inset-bottom)]
+        "
+      >
+        {/* Floating Logo */}
+        <Link
+          href="/"
+          className="
+            absolute
+            left-1/2
+            -translate-x-1/2
+            -top-8
+            w-[74px]
+            h-[74px]
+            rounded-full
+            bg-white
+            border-[5px]
+            border-[#07120f]
+            shadow-[0_12px_35px_rgba(0,0,0,0.25)]
+            flex
+            items-center
+            justify-center
+            overflow-hidden
+          "
+        >
+          <Image
+            src="/logo.webp"
+            alt="Property Bouquet"
+            width={46}
+            height={46}
+            className="object-contain"
+          />
+        </Link>
 
-    {/* HOME */}
-    {/* ================= HOME ================= */}
-<a
-  href="/"
-  className="
-    flex-1
-    flex
-    flex-col
-    items-center
-    justify-center
-    gap-[4px]
-    border-r
-    border-[#c9a64b]/10
-    active:bg-white/5
-    transition-all
-    duration-200
-  "
->
-  <Home
-    size={20}
-    strokeWidth={2}
-    className="text-[#c9a64b]"
-  />
+        <div className="grid grid-cols-4 h-full px-3">
 
-  <span
+  {/* ================= PROPERTIES ================= */}
+  <Link
+    href="/properties"
     className="
-      text-[11px]
-      tracking-[0.5px]
-      font-medium
-      text-white/95
+  flex
+  flex-col
+  items-center
+  justify-center
+  pr-5
+      gap-1
+      border-r
+      border-[#c9a64b]/10
+      active:bg-white/5
+      transition-all
     "
   >
-    Home
-  </span>
-</a>
+    <Building2
+      size={20}
+      strokeWidth={2}
+      className="text-[#c9a64b]"
+    />
 
-{/* ================= CALL ================= */}
-<a
-  href={`tel:+${phone}`}
-  className="
-    flex-1
-    flex
-    flex-col
-    items-center
-    justify-center
-    gap-[4px]
-    border-r
-    border-[#c9a64b]/10
-    active:bg-white/5
-    transition-all
-    duration-200
-  "
->
-  <Phone
-    size={20}
-    strokeWidth={2}
-    className="text-[#c9a64b]"
-  />
+    <span
+      className="
+        text-[10px]
+        font-medium
+        tracking-[0.4px]
+        text-white
+      "
+    >
+      Properties
+    </span>
+  </Link>
 
-  <span
+  {/* ================= INSIGHTS ================= */}
+  <Link
+    href="/insights"
     className="
-      text-[11px]
-      tracking-[0.5px]
-      font-medium
-      text-white/95
+  flex
+  flex-col
+  items-center
+  justify-center
+  pr-8
+      gap-1
+      border-r
+      border-[#c9a64b]/10
+      active:bg-white/5
+      transition-all
     "
   >
-    Call
-  </span>
-</a>
+    <Newspaper
+      size={20}
+      strokeWidth={2}
+      className="text-[#c9a64b]"
+    />
 
-{/* ================= WHATSAPP ================= */}
-<a
-  href={`https://wa.me/${phone}?text=${whatsappMessage}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="
-    flex-1
-    flex
-    flex-col
-    items-center
-    justify-center
-    gap-[4px]
-    active:bg-white/5
-    transition-all
-    duration-200
-  "
->
-  <FaWhatsapp
-    size={21}
-    className="text-[#25D366]"
-  />
+    <span
+      className="
+        text-[10px]
+        font-medium
+        tracking-[0.4px]
+        text-white
+      "
+    >
+      Insights
+    </span>
+  </Link>
 
-  <span
+  {/* ================= CALL ================= */}
+  <a
+    href={`tel:+${phone}`}
     className="
-      text-[11px]
-      tracking-[0.5px]
-      font-medium
-      text-white/95
+  flex
+  flex-col
+  items-center
+  justify-center
+  pl-8
+      gap-1
+      border-r
+      border-[#c9a64b]/10
+      active:bg-white/5
+      transition-all
     "
   >
-    WhatsApp
-  </span>
-</a>
+    <Phone
+      size={20}
+      strokeWidth={2}
+      className="text-[#c9a64b]"
+    />
 
-  </div>
+    <span
+      className="
+        text-[10px]
+        font-medium
+        tracking-[0.4px]
+        text-white
+      "
+    >
+      Call
+    </span>
+  </a>
+
+  {/* ================= WHATSAPP ================= */}
+  <a
+    href={`https://wa.me/${phone}?text=${whatsappMessage}`}
+    target="_blank"
+    rel="noopener noreferrer"
+   className="
+  flex
+  flex-col
+  items-center
+  justify-center
+  pl-5
+      gap-1
+      active:bg-white/5
+      transition-all
+    "
+  >
+    <FaWhatsapp
+      size={21}
+      className="text-[#25D366]"
+    />
+
+    <span
+      className="
+        text-[10px]
+        font-medium
+        tracking-[0.4px]
+        text-white
+      "
+    >
+      WhatsApp
+    </span>
+  </a>
+
 </div>
+      </div>
     </>
   );
 }
