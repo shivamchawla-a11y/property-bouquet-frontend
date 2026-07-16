@@ -550,38 +550,29 @@ group-hover:scale-105
       justify-between
     "
   >
-    <div className="flex gap-2">
-
-  <span
-    className="
-      px-3
-      py-1.5
-      rounded-full
-      bg-black/60
-      text-white
-      text-[10px]
-      font-semibold
-      tracking-wider
-    "
-  >
+    <div className="flex items-center gap-2 flex-wrap">
+  <span className="px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] font-semibold">
     LUXURY
   </span>
 
-  {property?.propertyTag && (
-    <span
-      className="
-        px-3
-        py-1.5
-        rounded-full
-        bg-[#D4AF37]
-        text-black
-        text-[10px]
-        font-bold
-      "
-    >
-      {property.propertyTag}
-    </span>
-  )}
+  {Array.isArray(property?.propertyTag) &&
+    property.propertyTag.map((tag) => {
+      const colors = {
+        Featured: "bg-yellow-400 text-black",
+        Trending: "bg-red-500 text-white",
+        Recommended: "bg-emerald-500 text-white",
+        New: "bg-sky-500 text-white",
+      };
+
+      return (
+        <span
+          key={tag}
+          className={`px-3 py-1.5 rounded-full text-[10px] font-semibold ${colors[tag] || "bg-[#D4AF37] text-black"}`}
+        >
+          {tag}
+        </span>
+      );
+    })}
 </div>
 
 <button
