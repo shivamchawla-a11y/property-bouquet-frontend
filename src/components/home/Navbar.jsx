@@ -382,12 +382,11 @@ tracking-[0.38em]
         text-white/85
         hover:text-[#d6aa53]
         transition
-        text-[11px]
-        xl:text-[12px]
+        text-[10px]
+        xl:text-[11px]
         font-medium
         tracking-[0.08em]
         pl-2.5
-        uppercase
       "
     >
       {item.title}

@@ -31,11 +31,40 @@ const fetchLocations = async () => {
     const data = await res.json();
 
     if (res.ok) {
-      const roots = (data.data || []).filter(
-        (item) => !item.parent
+      const tree = data.data || [];
+
+      // Gurgaon parent
+      const gurgaon = tree.find(
+        (item) => item.name.toLowerCase() === "gurgaon"
       );
 
-      setLocations(roots);
+      // Locations to display
+      const featuredLocations = [
+        "Dwarka expressway",
+        "Sohna",
+        "Golf Course Extension Road",
+        "SPR",
+      ];
+
+      // Filter only the selected locations
+      const filteredLocations = (gurgaon?.children || []).filter((location) =>
+        featuredLocations.some(
+          (name) =>
+            name.toLowerCase() === location.name.toLowerCase()
+        )
+      );
+
+      // Preserve the order defined above
+      const orderedLocations = featuredLocations
+        .map((name) =>
+          filteredLocations.find(
+            (location) =>
+              location.name.toLowerCase() === name.toLowerCase()
+          )
+        )
+        .filter(Boolean);
+
+      setLocations(orderedLocations);
     }
   } catch (err) {
     console.error(err);
@@ -103,7 +132,7 @@ if (loading) {
                 "Georgia, Times New Roman, serif",
             }}
           >
-            India’s Most Premium
+            Gurgaon’s Most Premium
             <br />
 
             <span className="text-[#b88a3b]">
@@ -128,7 +157,7 @@ if (loading) {
             }}
             className="max-w-[760px] mx-auto mt-7 text-[15px] leading-[2] text-black/55"
           >
-            Explore India’s highest-performing luxury
+            Explore Gurgaon’s highest-performing luxury
             micro-markets curated for appreciation,
             exclusivity, lifestyle and institutional-grade
             investment potential.
@@ -193,7 +222,12 @@ if (loading) {
               whileHover={{
                 y: -10,
               }}
-              className="group relative h-[340px] rounded-[28px] overflow-hidden"
+              className="group relative h-[390px]
+rounded-[34px]
+overflow-hidden
+border border-white/10
+shadow-[0_30px_80px_rgba(0,0,0,0.18)]
+transition-all duration-700"
             >
 
               {/* GLASS OUTER */}
@@ -223,7 +257,7 @@ if (loading) {
 />
 
               {/* OVERLAY */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-black/35 to-transparent" />
 
               {/* SHINE EFFECT */}
               <div className="absolute inset-0 overflow-hidden">
@@ -261,26 +295,34 @@ if (loading) {
                   
                 </div>
 
-                {/* APPRECIATION */}
-                <div className="mt-6 flex items-end justify-between">
+                {/* LUXURY CTA */}
+<div className="mt-7 pt-5 border-t border-white/10 flex items-center justify-between">
 
-                  <div>
+  <div>
+    <p className="text-[10px] uppercase tracking-[2px] text-white/50 mb-2">
+      Investment Corridor
+    </p>
 
-                    <p className="text-[10px] uppercase tracking-[1.5px] text-white/60 mb-2">
-                      Sub Locations
-                    </p>
+    <p className="text-[16px] font-medium text-white">
+      Explore Location
+    </p>
+  </div>
 
-                    <p className="text-[38px] leading-none font-semibold text-[#d7b26d]">
-                      {location.children?.length || 0}
-                    </p>
-                  </div>
+  <motion.div
+    whileHover={{ scale: 1.08 }}
+    className="w-14 h-14 rounded-full
+    bg-gradient-to-br
+    from-[#d8b46b]
+    via-[#c89d58]
+    to-[#a9782f]
+    flex items-center justify-center
+    text-black
+    shadow-[0_15px_40px_rgba(201,157,88,0.45)]"
+  >
+    <ArrowRight size={18} />
+  </motion.div>
 
-                  {/* ARROW */}
-                  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white group-hover:bg-[#c89d58] group-hover:text-black transition-all duration-300 shadow-lg">
-
-                    <ArrowRight size={17} />
-                  </div>
-                </div>
+</div>
               </div>
 
               {/* BORDER */}
