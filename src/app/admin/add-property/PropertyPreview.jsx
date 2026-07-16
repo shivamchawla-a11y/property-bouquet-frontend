@@ -1512,7 +1512,7 @@ lg:px-6
     <div className="max-w-[1450px] mx-auto w-full">
 
       {/* ================= MOBILE HERO IMAGE ================= */}
-<div className="block md:hidden mt-12 mb-8">
+<div className="block md:hidden mt-20 mb-8">
   <div className="overflow-hidden rounded-[26px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
 
     <img
