@@ -29,6 +29,7 @@ export default function PropertiesPage() {
   const [actionId, setActionId] = useState(null);
 
   const [filter, setFilter] = useState("all"); // active | inactive | all
+  const [selectedTags, setSelectedTags] = useState([]);
 
   // 🔥 TAG FILTER
   const [tagFilter, setTagFilter] = useState("All");
@@ -86,46 +87,52 @@ useEffect(() => {
 }, []);
 
   // ================= FEATURE UPDATE =================
-  const updatePropertyTag = async (id, tag) => {
-    try {
-      setActionId(id);
+  const updatePropertyTag = async (id) => {
+  try {
+    setActionId(id);
 
-      const res = await fetch(
-        `/api/properties/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            propertyTag: tag,
-          }),
-        }
+    const tags =
+      selectedTags.length > 0
+        ? selectedTags
+        : ["Normal"];
+
+    const res = await fetch(`/api/properties/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        propertyTag: tags,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setProperties((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                propertyTag: tags,
+              }
+            : item
+        )
       );
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setProperties((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? { ...item, propertyTag: tag }
-              : item
-          )
-        );
-
-        setFeatureModal(null);
-      } else {
-        alert(data.message || "Update failed ❌");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Server error ❌");
-    } finally {
-      setActionId(null);
+      setFeatureModal(null);
+      setSelectedTags([]);
+    } else {
+      alert(data.message || "Update failed ❌");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Server error ❌");
+  } finally {
+    setActionId(null);
+  }
+};
 
   // ================= SOFT DELETE =================
   const handleDelete = async (id) => {
@@ -217,9 +224,13 @@ const filtered = properties
         .toLowerCase()
         .includes(search.toLowerCase());
 
+    const tags = Array.isArray(p.propertyTag)
+  ? p.propertyTag
+  : [p.propertyTag || "Normal"];
+
     const tagMatch =
       tagFilter === "All" ||
-      (p.propertyTag || "Normal") === tagFilter;
+      tags.includes(tagFilter);
 
     const statusMatch =
       filter === "all"
@@ -300,10 +311,10 @@ return (
         );
 
       case "featured":
-        return (
-          (b.propertyTag === "Featured") -
-          (a.propertyTag === "Featured")
-        );
+  return (
+    (b.propertyTag?.includes("Featured") ? 1 : 0) -
+    (a.propertyTag?.includes("Featured") ? 1 : 0)
+  );
 
       default:
         return 0;
@@ -870,14 +881,24 @@ const developerOptions = [
 
                   {/* TAG */}
                   <td className="p-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center ${tagStyle(
-                      property.propertyTag || "Normal"
-                    )}`}
-                    >
-                      {property.propertyTag || "Normal"}
-                    </span>
-                  </td>
+  <div className="flex flex-wrap gap-1 max-w-[180px]">
+
+    {(Array.isArray(property.propertyTag)
+      ? property.propertyTag
+      : [property.propertyTag || "Normal"]
+    ).map((tag) => (
+      <span
+        key={tag}
+        className={`px-2 py-1 rounded-full text-[10px] font-bold ${tagStyle(
+          tag
+        )}`}
+      >
+        {tag}
+      </span>
+    ))}
+
+  </div>
+</td>
 
                   {/* STATUS */}
 <td className="p-3">
@@ -969,9 +990,15 @@ const developerOptions = [
 
         {/* TAG */}
         <button
-          onClick={() =>
-            setFeatureModal(property)
-          }
+          onClick={() => {
+  setFeatureModal(property);
+
+  setSelectedTags(
+    Array.isArray(property.propertyTag)
+      ? property.propertyTag
+      : [property.propertyTag || "Normal"]
+  );
+}}
           className="h-9 w-9 flex items-center justify-center rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-sm"
         >
           <Star size={14} />
@@ -1231,91 +1258,104 @@ const developerOptions = [
 
             </div>
 
-            {/* BODY */}
-            <div className="p-6 grid grid-cols-2 gap-4">
+            <div className="p-6">
 
-              {/* FEATURED */}
-              <button
-                onClick={() =>
-                  updatePropertyTag(
-                    featureModal._id,
-                    "Featured"
-                  )
-                }
-                className="h-24 rounded-2xl bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 flex flex-col items-center justify-center transition"
-              >
-                <Star className="text-yellow-600 mb-2" />
-                <span className="font-semibold text-yellow-700">
-                  Featured
-                </span>
-              </button>
+  {[
+    {
+      label: "Featured",
+      icon: <Star size={18} />,
+      color:
+        "bg-yellow-50 border-yellow-200 text-yellow-700",
+    },
+    {
+      label: "Recommended",
+      icon: <BadgeCheck size={18} />,
+      color:
+        "bg-blue-50 border-blue-200 text-blue-700",
+    },
+    {
+      label: "Trending",
+      icon: <TrendingUp size={18} />,
+      color:
+        "bg-pink-50 border-pink-200 text-pink-700",
+    },
+    {
+      label: "New",
+      icon: <Sparkles size={18} />,
+      color:
+        "bg-emerald-50 border-emerald-200 text-emerald-700",
+    },
+    {
+      label: "Normal",
+      icon: <Tag size={18} />,
+      color:
+        "bg-gray-50 border-gray-200 text-gray-700",
+    },
+  ].map((item) => {
 
-              {/* RECOMMENDED */}
-              <button
-                onClick={() =>
-                  updatePropertyTag(
-                    featureModal._id,
-                    "Recommended"
-                  )
-                }
-                className="h-24 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 flex flex-col items-center justify-center transition"
-              >
-                <BadgeCheck className="text-blue-600 mb-2" />
-                <span className="font-semibold text-blue-700">
-                  Recommended
-                </span>
-              </button>
+    const active = selectedTags.includes(item.label);
 
-              {/* TRENDING */}
-              <button
-                onClick={() =>
-                  updatePropertyTag(
-                    featureModal._id,
-                    "Trending"
-                  )
-                }
-                className="h-24 rounded-2xl bg-pink-50 hover:bg-pink-100 border border-pink-200 flex flex-col items-center justify-center transition"
-              >
-                <TrendingUp className="text-pink-600 mb-2" />
-                <span className="font-semibold text-pink-700">
-                  Trending
-                </span>
-              </button>
+    return (
+      <button
+        key={item.label}
+        onClick={() => {
+          setSelectedTags((prev) =>
+            prev.includes(item.label)
+              ? prev.filter((t) => t !== item.label)
+              : [...prev, item.label]
+          );
+        }}
+        className={`
+          w-full
+          mb-3
+          rounded-2xl
+          border
+          p-4
+          flex
+          items-center
+          justify-between
+          transition
 
-              {/* NEW */}
-              <button
-                onClick={() =>
-                  updatePropertyTag(
-                    featureModal._id,
-                    "New"
-                  )
-                }
-                className="h-24 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex flex-col items-center justify-center transition"
-              >
-                <Sparkles className="text-emerald-600 mb-2" />
-                <span className="font-semibold text-emerald-700">
-                  New
-                </span>
-              </button>
+          ${item.color}
 
-              {/* NORMAL */}
-              <button
-                onClick={() =>
-                  updatePropertyTag(
-                    featureModal._id,
-                    "Normal"
-                  )
-                }
-                className="col-span-2 h-20 rounded-2xl bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center gap-3 transition"
-              >
-                <Tag className="text-gray-700" />
+          ${
+            active
+              ? "ring-2 ring-[#0f3b2e] scale-[1.02]"
+              : "opacity-80 hover:opacity-100"
+          }
+        `}
+      >
+        <div className="flex items-center gap-3">
 
-                <span className="font-semibold text-gray-700">
-                  Normal Property
-                </span>
-              </button>
+          {item.icon}
 
-            </div>
+          <span className="font-semibold">
+            {item.label}
+          </span>
+
+        </div>
+
+        <input
+          type="checkbox"
+          checked={active}
+          readOnly
+          className="h-5 w-5"
+        />
+      </button>
+    );
+  })}
+
+  <button
+    onClick={() =>
+      updatePropertyTag(featureModal._id)
+    }
+    disabled={actionId === featureModal._id}
+    className="mt-5 w-full h-12 rounded-xl bg-[#0f3b2e] hover:bg-[#145240] text-white font-semibold transition"
+  >
+    Save Tags
+  </button>
+
+</div>
           </div>
         </div>
       )}

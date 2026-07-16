@@ -216,7 +216,7 @@ export default function FloatingContact() {
   justify-center
   pl-5
       gap-1
-      active:bg-white/5
+      active:bg-white/5 
       transition-all
     "
   >
