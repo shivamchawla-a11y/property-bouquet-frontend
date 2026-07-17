@@ -1,4 +1,4 @@
-const API = "/api";
+const API = "https://propertybouquet.com/api";
 
 const REVALIDATE_TIME = 3600;
 const BASE_URL = "https://propertybouquet.com";
