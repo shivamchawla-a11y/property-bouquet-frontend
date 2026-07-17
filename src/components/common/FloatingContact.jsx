@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Building2,
   Newspaper,
@@ -10,6 +11,14 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 
 export default function FloatingContact() {
+
+  const pathname = usePathname();
+
+  // Hide on admin pages
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   const phone = "919090106101";
 
   const whatsappMessage = encodeURIComponent(
