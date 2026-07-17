@@ -44,7 +44,7 @@ export default function InsightDetailPage() {
   async function fetchArticle() {
     try {
       const res = await fetch(
-        `${API}/api/news?status=published`,
+        `${API}/news?status=published`,
         {
           cache: "no-store",
         }

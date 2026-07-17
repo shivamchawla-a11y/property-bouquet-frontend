@@ -25,11 +25,11 @@ export default function FeaturedInsights() {
 async function fetchFeatured() {
   try {
     const res = await fetch(
-      `${API}/api/news?status=published`,
-      {
-        cache: "no-store",
-      }
-    );
+  `${API}/news?status=published`,
+  {
+    cache: "no-store",
+  }
+);
 
     const data = await res.json();
 
