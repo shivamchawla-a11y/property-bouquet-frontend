@@ -45,10 +45,10 @@ export default function InsightsPage() {
     try {
       setLoading(true);
 
-      const res = await fetch(API_URL, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const res = await fetch(`${API_URL}?all=true`, {
+  credentials: "include",
+  cache: "no-store",
+});
 
       const data = await res.json();
 
@@ -98,17 +98,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  status: "published",
-                }
-              : item
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     } finally {
@@ -138,17 +129,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  status: "draft",
-                }
-              : item
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     } finally {
@@ -179,17 +161,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  featured: !current,
-                }
-              : item
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     }
@@ -215,17 +188,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  isDeleted: true,
-                }
-              : item
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     }
@@ -244,17 +208,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  isDeleted: false,
-                }
-              : item
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     }
@@ -264,11 +219,11 @@ export default function InsightsPage() {
 
   const deleteForever = async (id) => {
     if (
-      !confirm(
-        "Delete permanently?"
-      )
-    )
-      return;
+  !confirm(
+    "This article will be permanently deleted.\n\nThis action cannot be undone."
+  )
+)
+  return;
 
     try {
       const res = await fetch(
@@ -280,13 +235,8 @@ export default function InsightsPage() {
       );
 
       if (res.ok) {
-        setNews((prev) =>
-          prev.filter(
-            (item) =>
-              item._id !== id
-          )
-        );
-      }
+  fetchNews();
+}
     } catch (err) {
       console.error(err);
     }
@@ -399,6 +349,19 @@ export default function InsightsPage() {
           </button>
 
           <button
+  onClick={() => setFilter("trash")}
+  className={`px-4 py-3 rounded-xl font-semibold transition ${
+    filter === "trash"
+      ? "bg-red-600 text-white"
+      : "border border-red-300 bg-white text-red-600 hover:bg-red-50"
+  }`}
+>
+  Trash (
+  {news.filter((n) => n.isDeleted).length}
+  )
+</button>
+
+          <button
             onClick={() =>
               router.push(
                 "/admin/insights/create"
@@ -426,7 +389,7 @@ export default function InsightsPage() {
 
       {/* ================= STATS ================= */}
 
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-5 gap-4">
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
 
@@ -531,9 +494,35 @@ export default function InsightsPage() {
               <Star className="text-yellow-600" />
             </div>
 
+            
+
           </div>
+          
         </div>
 
+<div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+
+  <div className="flex items-center justify-between">
+
+    <div>
+
+      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+        Trash
+      </p>
+
+      <h3 className="text-3xl font-extrabold text-red-600 mt-2">
+        {news.filter((n) => n.isDeleted).length}
+      </h3>
+
+    </div>
+
+    <div className="h-12 w-12 rounded-xl bg-red-50 flex items-center justify-center">
+      <Trash2 className="text-red-600" />
+    </div>
+
+  </div>
+
+</div>
       </div>
 
       {/* ================= FILTER BAR ================= */}

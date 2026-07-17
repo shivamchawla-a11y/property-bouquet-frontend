@@ -242,7 +242,7 @@ const mobileItems = navItems.map((item) => {
 >
       <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
         
-        <div className="h-[92px] flex items-center justify-between">
+        <div className="h-[72px] flex items-center justify-between">
           
           {/* LEFT */}
           <div className="flex items-center gap-10">

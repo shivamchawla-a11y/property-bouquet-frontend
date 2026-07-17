@@ -3,15 +3,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+
 
 export default function LatestInsights({ articles = [] }) {
+
+  const [showAll, setShowAll] = useState(false);
 
   const latestArticles = [...articles].sort(
   (a, b) =>
     new Date(b.publishDate) -
     new Date(a.publishDate)
 );
+
+const displayedArticles = showAll
+  ? latestArticles
+  : latestArticles.slice(0, 3);
+
   return (
     <div className="mt-16">
 
@@ -28,32 +37,37 @@ export default function LatestInsights({ articles = [] }) {
           Latest Articles
         </h2>
 
-        <Link
-          href="/insights"
-          className="
-            hidden
-            md:flex
-            items-center
-            gap-2
-            text-[#C89D58]
-            font-medium
-            hover:gap-3
-            transition-all
-          "
-        >
-          View All Articles
+        {latestArticles.length > 3 && (
+  <button
+    onClick={() => setShowAll(!showAll)}
+    className="
+      hidden
+      md:flex
+      items-center
+      gap-2
+      text-[#C89D58]
+      font-medium
+      hover:gap-3
+      transition-all
+    "
+  >
+    {showAll ? "Show Less" : "View All Articles"}
 
-          <ArrowRight size={18} />
-
-        </Link>
-
+    <motion.div
+      animate={{ rotate: showAll ? 90 : 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <ArrowRight size={18} />
+    </motion.div>
+  </button>
+)}
       </div>
 
       {/* Grid */}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-7">
 
-        {latestArticles.map((article) => (
+        {displayedArticles.map((article) => (
   <motion.div
     key={article._id}  
             whileHover={{
