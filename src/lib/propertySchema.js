@@ -116,7 +116,12 @@ export function buildPropertySchema(property, slug) {
     "@id": `${SITE_URL}/#website`,
   },
 
-  primaryImageOfPage: images[0],
+  primaryImageOfPage: images[0]
+  ? {
+      "@type": "ImageObject",
+      url: images[0],
+    }
+  : undefined,
 
   inLanguage: "en-IN",
 });
@@ -146,7 +151,10 @@ graph.push({
 
   url: SITE_URL,
 
-  logo: `${SITE_URL}/logo.png`,
+  logo: {
+  "@type": "ImageObject",
+  url: `${SITE_URL}/logo.png`,
+},
 
   sameAs: [
     "https://www.instagram.com/.....",
@@ -188,38 +196,46 @@ graph.push({
   // Residence
   // -------------------------
 
-  graph.push({
-    "@type": "Residence",
+ graph.push({
+  "@type": "Residence",
 
-    "@id": `${pageUrl}#residence`,
+  "@id": `${pageUrl}#residence`,
 
-    url: pageUrl,
+  url: pageUrl,
 
-    name: core.title,
+  name: core.title,
 
-    description:
-      overview.description ||
-      `Explore ${core.title}.`,
+  description:
+    overview.description ||
+    `Explore ${core.title}.`,
 
-    image: images,
+  image: images,
 
-    brand: {
-      "@type": "Brand",
-      name: core.developerName,
-    },
+  brand: core.developerName
+  ? {
+      "@id": `${pageUrl}#developer`,
+    }
+  : undefined,
 
-    address: {
-      "@id": `${pageUrl}#place`,
-    },
+  address: {
+    "@id": `${pageUrl}#place`,
+  },
 
-    amenityFeature: amenities.map((amenity) => ({
-      "@type": "LocationFeatureSpecification",
-      name: amenity,
-      value: true,
-    })),
+  amenityFeature: amenities.map((amenity) => ({
+    "@type": "LocationFeatureSpecification",
+    name: amenity,
+    value: true,
+  })),
 
-    additionalProperty,
-  });
+  additionalProperty,
+
+  offers:
+    !core.priceOnRequest && core.startingPrice
+      ? {
+          "@id": `${pageUrl}#offer`,
+        }
+      : undefined,
+});
 
     // -------------------------
   // Offer
@@ -227,67 +243,31 @@ graph.push({
 
   if (!core.priceOnRequest && core.startingPrice) {
     graph.push({
-      "@type": "Offer",
+  "@type": "Offer",
 
-      "@id": `${pageUrl}#offer`,
+  "@id": `${pageUrl}#offer`,
 
-      url: pageUrl,
+  url: pageUrl,
 
-      price: core.startingPrice,
+  price: core.startingPrice,
 
-      priceCurrency: "INR",
+  priceCurrency: "INR",
 
-      availability: "https://schema.org/InStock",
+  availability: "https://schema.org/InStock",
 
-      seller: {
-        "@type": "Organization",
-        name: "Property Bouquet",
-        url: SITE_URL,
-      },
+  itemCondition: "https://schema.org/NewCondition",
 
-      itemCondition: "https://schema.org/NewCondition",
-    });
+  itemOffered: {
+    "@id": `${pageUrl}#residence`,
+  },
+
+  seller: {
+    "@type": "Organization",
+    name: "Property Bouquet",
+    url: SITE_URL,
+  },
+});
   }
-
-  // -------------------------
-  // Product
-  // -------------------------
-
-  graph.push({
-    "@type": "Product",
-
-    "@id": `${pageUrl}#product`,
-
-    name: core.title,
-
-    url: pageUrl,
-
-    image: images,
-
-    description:
-      overview.description ||
-      `Luxury property by ${core.developerName || "Leading Developer"}.`,
-
-    brand: {
-      "@type": "Brand",
-      name: core.developerName || "Developer",
-    },
-
-    category:
-      property.categoryData?.categoryName || "Real Estate",
-
-    manufacturer: {
-      "@type": "Organization",
-      name: core.developerName || "Developer",
-    },
-
-    offers:
-      !core.priceOnRequest && core.startingPrice
-        ? {
-            "@id": `${pageUrl}#offer`,
-          }
-        : undefined,
-  });
 
   // -------------------------
   // Image Gallery
@@ -317,16 +297,21 @@ graph.push({
 
   if (core.developerName) {
     graph.push({
-      "@type": "Organization",
+  "@type": "Organization",
 
-      "@id": `${pageUrl}#developer`,
+  "@id": `${pageUrl}#developer`,
 
-      name: core.developerName,
+  name: core.developerName,
 
-      image: core.developerLogo,
+  url: pageUrl,
 
-      logo: core.developerLogo,
-    });
+  logo: core.developerLogo
+    ? {
+        "@type": "ImageObject",
+        url: core.developerLogo,
+      }
+    : undefined,
+});
   }
 
   // -------------------------
@@ -345,16 +330,30 @@ graph.push({
       name: "Available Floor Plans",
 
       itemListElement: floorPlans.map((plan) => ({
-        "@type": "Offer",
+  "@type": "Offer",
 
-        name: plan.unitType,
+  price: plan.price,
 
-        price: plan.price,
+  priceCurrency: "INR",
 
-        description: `${plan.area} • ${plan.bedrooms} Bedrooms`,
+  itemOffered: {
+    "@type": "Apartment",
 
-        image: plan.image,
-      })),
+    name: plan.unitType,
+
+    image: plan.image,
+
+    numberOfRooms: plan.bedrooms,
+
+    floorSize: plan.area
+      ? {
+          "@type": "QuantitativeValue",
+          value: plan.area,
+          unitText: "sq ft",
+        }
+      : undefined,
+  },
+})),
     });
   }
     // -------------------------
