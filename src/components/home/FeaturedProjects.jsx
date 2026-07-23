@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { useRef } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/utils/formatPrice";
@@ -22,13 +21,11 @@ export default function FeaturedProjects() {
     useState([]);
 
   const [loading, setLoading] = useState(true);
-const autoplay = useRef(
-  Autoplay({
-    delay: 3500,
-    stopOnInteraction: false,
-    stopOnMouseEnter: true,
-  })
-);
+const autoplay = Autoplay({
+  delay: 3500,
+  stopOnInteraction: false,
+  stopOnMouseEnter: true,
+});
 
 const [emblaRef, emblaApi] = useEmblaCarousel(
   {
@@ -36,7 +33,7 @@ const [emblaRef, emblaApi] = useEmblaCarousel(
     align: "start",
     slidesToScroll: 1,
   },
-  [autoplay.current]
+  [autoplay]
 );
 
 const handlePrev = () => emblaApi?.scrollPrev();
@@ -111,49 +108,24 @@ const handleNext = () => emblaApi?.scrollNext();
 
             {/* ARROWS */}
             <div className="flex justify-end gap-3 mb-5">
+  <button
+    onClick={handlePrev}
+    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+  >
+    <ChevronLeft size={18} />
+  </button>
 
-              <button
-  onClick={handlePrev}
-  className="
-    w-11 h-11
-    rounded-full
-    bg-[#171717]
-    text-white
-    border border-[#2d2d2d]
-    flex items-center justify-center
-    transition-all duration-300
-    hover:bg-[#c89948]
-    hover:border-[#c89948]
-    hover:scale-105
-    active:scale-95
-  "
->
-  <ChevronLeft size={18} />
-</button>
-
-<button
-  onClick={handleNext}
-  className="
-    w-11 h-11
-    rounded-full
-    bg-[#171717]
-    text-white
-    border border-[#2d2d2d]
-    flex items-center justify-center
-    transition-all duration-300
-    hover:bg-[#c89948]
-    hover:border-[#c89948]
-    hover:scale-105
-    active:scale-95
-  "
->
-  <ChevronRight size={18} />
-</button>
-            </div>
+  <button
+    onClick={handleNext}
+    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
+  >
+    <ChevronRight size={18} />
+  </button>
+</div>
 
             {/* CARDS */}
             <div
-  className="max-w-[1100px] mx-auto overflow-hidden"
+  className="max-w-[900px] overflow-hidden pr-3"
   ref={emblaRef}
 >
   <div className="flex -ml-2">
@@ -176,13 +148,12 @@ const handleNext = () => emblaApi?.scrollNext();
     key={item._id}
     href={`/${item.slug}`}
     className="
-block
 min-w-0
 flex-[0_0_100%]
 md:flex-[0_0_50%]
 xl:flex-[0_0_33.3333%]
-pl-3
-self-stretch
+pl-2
+block
 "
   >
     <motion.div
@@ -206,35 +177,36 @@ self-stretch
         scale: 1.01,
       }}
       className="
-        group
-        bg-white
-        rounded-[24px]
-        overflow-hidden
-        border
-        border-[#ebe5da]
-        shadow-[0_12px_40px_rgba(0,0,0,0.05)]
-        flex
-        flex-col
-        h-full
-        transition-all
-        duration-500
-        hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
-      "
+group
+bg-white
+rounded-[24px]
+overflow-hidden
+border
+border-[#ebe5da]
+shadow-[0_12px_40px_rgba(0,0,0,0.05)]
+flex
+flex-col
+h-full
+transition-all
+duration-500
+hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+"
     >
       {/* IMAGE */}
-      <div className="relative h-[180px] overflow-hidden">
+      <div className="relative h-[160px] overflow-hidden">
         <img
           src={
             item?.media?.heroImageUrl }
           alt={item?.coreDetails?.title}
           className="
-            w-full
-            h-full
-            object-cover
-            transition-transform
-            duration-700
-            group-hover:scale-110
-          "
+w-full
+h-full
+object-cover
+scale-110
+transition-transform
+duration-700
+group-hover:scale-125
+"
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
