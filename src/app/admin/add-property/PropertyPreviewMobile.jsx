@@ -1454,57 +1454,166 @@ const getShortLocation = (location) => {
       "
     >
       {(() => {
+  const paragraph1 =
+    overview?.description ||
+    "Eldeco Camelot is envisioned for those who value space, privacy and refined living.";
 
-        const paragraph1 =
-          overview?.description ||
-          "Eldeco Camelot is envisioned for those who value space, privacy and refined living.";
+  const paragraph2 =
+    aboutParagraph2 ||
+    "Designed with an emphasis on elegance and functionality.";
 
-        const paragraph2 =
-          aboutParagraph2 ||
-          "Designed with an emphasis on elegance and functionality.";
+  const isHtml = (text = "") => /<\/?[a-z][\s\S]*>/i.test(text);
 
-        const combinedText =
-          `${paragraph1} ${paragraph2}`;
+  const plainText = `${paragraph1} ${paragraph2}`.replace(
+    /<[^>]*>/g,
+    ""
+  );
 
-        const shouldTruncate =
-          combinedText.length > 280;
+  const shouldTruncate = plainText.length > 280;
 
-        const previewText =
-          combinedText.slice(0, 280);
+  return (
+    <>
+      <div
+        className={`relative overflow-hidden transition-all duration-500 ${
+          showAboutMore || !shouldTruncate
+            ? "max-h-[5000px]"
+            : "max-h-[180px]"
+        }`}
+      >
+        {/* FIRST PARAGRAPH */}
+        {isHtml(paragraph1) ? (
+          <div
+            className="
+              whitespace-normal
+              break-words
 
-        return (
-          <>
-            <p>
-              {showAboutMore || !shouldTruncate
-                ? combinedText
-                : `${previewText}...`}
+              [&_p]:mb-4
+              [&_p]:leading-[1.8]
+              [&_p]:text-[14px]
+              [&_p]:text-[#505050]
+
+              [&_strong]:font-semibold
+
+              [&_ul]:list-disc
+              [&_ul]:pl-5
+              [&_ul]:mb-4
+
+              [&_ol]:list-decimal
+              [&_ol]:pl-5
+              [&_ol]:mb-4
+
+              [&_li]:mb-2
+
+              [&_h1]:text-[22px]
+              [&_h1]:font-semibold
+              [&_h1]:mb-4
+
+              [&_h2]:text-[20px]
+              [&_h2]:font-semibold
+              [&_h2]:mb-3
+
+              [&_h3]:text-[18px]
+              [&_h3]:font-semibold
+              [&_h3]:mb-3
+
+              [&_a]:text-[#17342d]
+              [&_a]:underline
+
+              [&_img]:rounded-xl
+              [&_img]:my-4
+              [&_img]:max-w-full
+              [&_img]:h-auto
+            "
+            style={{ fontFamily: "Inter, sans-serif" }}
+            dangerouslySetInnerHTML={{
+              __html: paragraph1,
+            }}
+          />
+        ) : (
+          <p className="whitespace-pre-line break-words">
+            {paragraph1}
+          </p>
+        )}
+
+        {/* SECOND PARAGRAPH */}
+        {paragraph2 &&
+          (isHtml(paragraph2) ? (
+            <div
+              className="
+                mt-4
+                whitespace-normal
+                break-words
+
+                [&_p]:mb-4
+                [&_p]:leading-[1.8]
+                [&_p]:text-[14px]
+                [&_p]:text-[#505050]
+
+                [&_strong]:font-semibold
+
+                [&_ul]:list-disc
+                [&_ul]:pl-5
+
+                [&_ol]:list-decimal
+                [&_ol]:pl-5
+
+                [&_li]:mb-2
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: paragraph2,
+              }}
+            />
+          ) : (
+            <p className="mt-4 whitespace-pre-line break-words">
+              {paragraph2}
             </p>
+          ))}
 
-            {shouldTruncate && (
-              <button
-                type="button"
-                onClick={() =>
-                  setShowAboutMore(
-                    !showAboutMore
-                  )
-                }
-                className="
-                  mt-4
-                  text-[#b89149]
-                  text-[12px]
-                  uppercase
-                  tracking-[1px]
-                  font-semibold
-                "
-              >
-                {showAboutMore
-                  ? "Read Less"
-                  : "Read More"}
-              </button>
-            )}
-          </>
-        );
-      })()}
+        {/* Fade */}
+        {!showAboutMore && shouldTruncate && (
+          <div
+            className="
+              absolute
+              bottom-0
+              left-0
+              right-0
+              h-16
+              bg-gradient-to-t
+              from-[#f7f4ef]
+              via-[#f7f4ef]/80
+              to-transparent
+              pointer-events-none
+            "
+          />
+        )}
+      </div>
+
+      {shouldTruncate && (
+        <button
+          type="button"
+          onClick={() =>
+            setShowAboutMore(!showAboutMore)
+          }
+          className="
+            mt-4
+            text-[#b89149]
+            text-[12px]
+            uppercase
+            tracking-[1px]
+            font-semibold
+          "
+        >
+          {showAboutMore
+            ? "Read Less"
+            : "Read More"}
+        </button>
+      )}
+    </>
+  );
+})()}
     </div>
 
     {/* FEATURES */}

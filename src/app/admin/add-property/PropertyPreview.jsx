@@ -2082,145 +2082,259 @@ flex-wrap
   }}
 >
   {(() => {
-    const paragraph1 =
-      overview?.description ||
-      "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
+  const paragraph1 =
+    overview?.description ||
+    "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
 
-    const paragraph2 =
-      aboutParagraph2 ||
-      "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
+  const paragraph2 =
+    aboutParagraph2 ||
+    "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
 
-    const combinedText = `${paragraph1} ${paragraph2}`;
+  const isHtml = (text = "") => /<\/?[a-z][\s\S]*>/i.test(text);
 
-    const shouldTruncate = combinedText.length > 700;
-    const previewText = combinedText.slice(0, 700);
+  const plainText = `${paragraph1} ${paragraph2}`.replace(/<[^>]*>/g, "");
 
-    return (
-      <>
-        <p>
-          {showAboutMore || !shouldTruncate
-            ? combinedText
-            : `${previewText}...`}
-        </p>
+  const shouldTruncate = plainText.length > 700;
 
-        <div
-  className="
-    flex
-    flex-row
-    gap-3
-    mt-8
-    w-full
-    md:w-auto
-  "
->
+  return (
+    <>
+      <div
+        className={`relative overflow-hidden transition-all duration-500 ${
+          showAboutMore || !shouldTruncate
+            ? "max-h-[5000px]"
+            : "max-h-[340px]"
+        }`}
+      >
+        {/* FIRST PARAGRAPH */}
+        {isHtml(paragraph1) ? (
+          <div
+            className="
+              whitespace-normal
+              break-words
 
-  {/* READ MORE */}
-  {shouldTruncate && (
-  <button
-    type="button"
-    onClick={() => setShowAboutMore(!showAboutMore)}
-    className="
-      group
-      flex-1
-      md:flex-none
-      inline-flex
-      items-center
-      justify-center
-      gap-2
-      h-[50px]
-      md:h-[52px]
-      px-4
-      md:px-7
-      rounded-xl
-      border
-      border-[#17342d]
-      bg-transparent
-      text-[#17342d]
-      transition-all
-      duration-300
-      hover:bg-[#17342d]
-      hover:text-white
-      hover:-translate-y-[2px]
-    "
-  >
-    <span className="text-[12px] md:text-[13px] font-semibold uppercase tracking-[1.2px] md:tracking-[2px] whitespace-nowrap">
-      {showAboutMore ? "Read Less" : "Read More"}
-    </span>
+              [&_p]:mb-4
+              [&_p]:leading-[1.75]
+              [&_p]:text-[#505050]
+              [&_p]:text-[13px]
+              sm:[&_p]:text-[14px]
+              md:[&_p]:text-[15px]
 
-    <span
-      className="
-        text-base
-        md:text-lg
-        transition-transform
-        duration-300
-        group-hover:translate-x-1
-      "
-    >
-      →
-    </span>
-  </button>
-)}
+              [&_strong]:font-semibold
 
-  {/* DOWNLOAD */}
-  <button
-  type="button"
-  onClick={() => setShowModal(true)}
-  className="
-    group
-    flex-1
-    md:flex-none
-    inline-flex
-    items-center
-    justify-center
-    gap-2
-    h-[50px]
-    md:h-[52px]
-    px-4
-    md:px-8
-    rounded-xl
-    bg-[#17342d]
-    text-white
-    border
-    border-[#17342d]
-    shadow-[0_14px_35px_rgba(23,52,45,.18)]
-    transition-all
-    duration-300
-    hover:bg-[#c9a64b]
-    hover:border-[#c9a64b]
-    hover:text-[#17342d]
-    hover:-translate-y-[2px]
-  "
->
-  <Download
-    size={16}
-    strokeWidth={2.2}
-    className="
-      transition-transform
-      duration-300
-      group-hover:-translate-y-[2px]
-      shrink-0
-    "
-  />
+              [&_ul]:list-disc
+              [&_ul]:pl-6
+              [&_ul]:mb-4
 
-  <span
-    className="
-      text-[11px]
-      md:text-[12px]
-      uppercase
-      tracking-[1px]
-      md:tracking-[2px]
-      font-semibold
-      whitespace-nowrap
-    "
-  >
-    Download Brochure
-  </span>
-</button>
+              [&_ol]:list-decimal
+              [&_ol]:pl-6
+              [&_ol]:mb-4
 
-</div>
-      </>
-    );
-  })()}
+              [&_li]:mb-2
+
+              [&_h1]:text-[28px]
+              [&_h1]:font-semibold
+              [&_h1]:mb-4
+
+              [&_h2]:text-[24px]
+              [&_h2]:font-semibold
+              [&_h2]:mb-4
+
+              [&_h3]:text-[20px]
+              [&_h3]:font-semibold
+              [&_h3]:mb-4
+
+              [&_a]:text-[#17342d]
+              [&_a]:underline
+
+              [&_img]:rounded-xl
+              [&_img]:my-5
+              [&_img]:max-w-full
+              [&_img]:h-auto
+            "
+            style={{ fontFamily: "Inter, sans-serif" }}
+            dangerouslySetInnerHTML={{
+              __html: paragraph1,
+            }}
+          />
+        ) : (
+          <p className="whitespace-pre-line break-words">
+            {paragraph1}
+          </p>
+        )}
+
+        {/* SECOND PARAGRAPH */}
+        {paragraph2 &&
+          (isHtml(paragraph2) ? (
+            <div
+              className="
+                mt-5
+                whitespace-normal
+                break-words
+
+                [&_p]:mb-4
+                [&_p]:leading-[1.75]
+                [&_p]:text-[#505050]
+                [&_p]:text-[13px]
+                sm:[&_p]:text-[14px]
+                md:[&_p]:text-[15px]
+
+                [&_strong]:font-semibold
+
+                [&_ul]:list-disc
+                [&_ul]:pl-6
+
+                [&_ol]:list-decimal
+                [&_ol]:pl-6
+
+                [&_li]:mb-2
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: paragraph2,
+              }}
+            />
+          ) : (
+            <p className="mt-5 whitespace-pre-line break-words">
+              {paragraph2}
+            </p>
+          ))}
+
+        {/* Fade Overlay */}
+        {!showAboutMore && shouldTruncate && (
+          <div
+            className="
+              absolute
+              bottom-0
+              left-0
+              right-0
+              h-24
+              pointer-events-none
+              bg-gradient-to-t
+              from-[#f7f4ef]
+              via-[#f7f4ef]/85
+              to-transparent
+            "
+          />
+        )}
+      </div>
+
+      {/* BUTTONS */}
+      <div
+        className="
+          flex
+          flex-row
+          gap-3
+          mt-8
+          w-full
+          md:w-auto
+        "
+      >
+        {shouldTruncate && (
+          <button
+            type="button"
+            onClick={() => setShowAboutMore(!showAboutMore)}
+            className="
+              group
+              flex-1
+              md:flex-none
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              h-[50px]
+              md:h-[52px]
+              px-4
+              md:px-7
+              rounded-xl
+              border
+              border-[#17342d]
+              bg-transparent
+              text-[#17342d]
+              transition-all
+              duration-300
+              hover:bg-[#17342d]
+              hover:text-white
+              hover:-translate-y-[2px]
+            "
+          >
+            <span className="text-[12px] md:text-[13px] font-semibold uppercase tracking-[1.2px] md:tracking-[2px] whitespace-nowrap">
+              {showAboutMore ? "Read Less" : "Read More"}
+            </span>
+
+            <span
+              className="
+                text-base
+                md:text-lg
+                transition-transform
+                duration-300
+                group-hover:translate-x-1
+              "
+            >
+              →
+            </span>
+          </button>
+        )}
+
+                <button
+          type="button"
+          onClick={() => setShowModal(true)}
+          className="
+            group
+            flex-1
+            md:flex-none
+            inline-flex
+            items-center
+            justify-center
+            gap-2
+            h-[50px]
+            md:h-[52px]
+            px-4
+            md:px-8
+            rounded-xl
+            bg-[#17342d]
+            text-white
+            border
+            border-[#17342d]
+            shadow-[0_14px_35px_rgba(23,52,45,.18)]
+            transition-all
+            duration-300
+            hover:bg-[#c9a64b]
+            hover:border-[#c9a64b]
+            hover:text-[#17342d]
+            hover:-translate-y-[2px]
+          "
+        >
+          <Download
+            size={16}
+            strokeWidth={2.2}
+            className="
+              transition-transform
+              duration-300
+              group-hover:-translate-y-[2px]
+              shrink-0
+            "
+          />
+
+          <span
+            className="
+              text-[11px]
+              md:text-[12px]
+              uppercase
+              tracking-[1px]
+              md:tracking-[2px]
+              font-semibold
+              whitespace-nowrap
+            "
+          >
+            Download Brochure
+          </span>
+        </button>
+      </div>
+    </>
+  );
+})()}
 </div>
       </div>
     </div>
