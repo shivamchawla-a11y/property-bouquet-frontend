@@ -271,3 +271,152 @@ select.input option {
 .marquee-right:hover {
   animation-play-state: paused;
 }
+
+/* ===========================================================
+   LUXURY RICH TEXT
+=========================================================== */
+
+.prose-luxury {
+  font-family: Inter, sans-serif;
+  color: #505050;
+  font-size: 15px;
+  line-height: 1.9;
+  font-weight: 400;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.prose-luxury p {
+  margin-bottom: 22px;
+}
+
+.prose-luxury strong {
+  font-weight: 700;
+  color: #222;
+}
+
+.prose-luxury em {
+  font-style: italic;
+}
+
+/* Gold Links */
+
+.prose-luxury a {
+  color: #C6A15B;
+  font-weight: 600;
+  text-decoration: none;
+  transition: .25s ease;
+  border-bottom: 1px solid rgba(198,161,91,.45);
+}
+
+.prose-luxury a:hover {
+  color: #E5C97E;
+  border-bottom-color: #E5C97E;
+}
+
+/* Headings */
+
+.prose-luxury h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 30px 0 18px;
+  color:#17342d;
+}
+
+.prose-luxury h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 28px 0 16px;
+  color:#17342d;
+}
+
+.prose-luxury h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 24px 0 14px;
+  color:#17342d;
+}
+
+.prose-luxury h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 20px 0 12px;
+  color:#17342d;
+}
+
+/* Lists */
+
+.prose-luxury ul {
+  list-style: disc;
+  padding-left: 28px;
+  margin: 16px 0;
+}
+
+.prose-luxury ol {
+  list-style: decimal;
+  padding-left: 28px;
+  margin: 16px 0;
+}
+
+.prose-luxury li {
+  margin: 8px 0;
+}
+
+/* Quote */
+
+.prose-luxury blockquote {
+  margin: 22px 0;
+  padding: 18px 22px;
+  border-left: 4px solid #C6A15B;
+  background: #faf7f1;
+  font-style: italic;
+  color: #666;
+  border-radius: 0 10px 10px 0;
+}
+
+/* Tables */
+
+.prose-luxury table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+}
+
+.prose-luxury th,
+.prose-luxury td {
+  border: 1px solid #e5e5e5;
+  padding: 12px;
+}
+
+.prose-luxury th {
+  background: #f9f9f9;
+  font-weight: 600;
+}
+
+/* Images */
+
+.prose-luxury img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 18px;
+  margin: 24px auto;
+  display: block;
+  box-shadow: 0 10px 35px rgba(0,0,0,.12);
+}
+
+/* Code */
+
+.prose-luxury pre {
+  background: #111;
+  color: white;
+  border-radius: 14px;
+  padding: 18px;
+  overflow-x: auto;
+  margin: 22px 0;
+}
+
+.prose-luxury code {
+  background: #f4f4f4;
+  padding: 3px 7px;
+  border-radius: 6px;
+}

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import "quill-table-better/dist/quill-table-better.css";
+import "./RichTextEditor.css"; // <-- Add this
 
 const ReactQuill = dynamic(
   () => import("react-quill-new"),

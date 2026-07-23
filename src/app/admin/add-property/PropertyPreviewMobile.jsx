@@ -1483,47 +1483,7 @@ const getShortLocation = (location) => {
         {/* FIRST PARAGRAPH */}
         {isHtml(paragraph1) ? (
           <div
-            className="
-              whitespace-normal
-              break-words
-
-              [&_p]:mb-4
-              [&_p]:leading-[1.8]
-              [&_p]:text-[14px]
-              [&_p]:text-[#505050]
-
-              [&_strong]:font-semibold
-
-              [&_ul]:list-disc
-              [&_ul]:pl-5
-              [&_ul]:mb-4
-
-              [&_ol]:list-decimal
-              [&_ol]:pl-5
-              [&_ol]:mb-4
-
-              [&_li]:mb-2
-
-              [&_h1]:text-[22px]
-              [&_h1]:font-semibold
-              [&_h1]:mb-4
-
-              [&_h2]:text-[20px]
-              [&_h2]:font-semibold
-              [&_h2]:mb-3
-
-              [&_h3]:text-[18px]
-              [&_h3]:font-semibold
-              [&_h3]:mb-3
-
-              [&_a]:text-[#17342d]
-              [&_a]:underline
-
-              [&_img]:rounded-xl
-              [&_img]:my-4
-              [&_img]:max-w-full
-              [&_img]:h-auto
-            "
+            className="prose-luxury whitespace-normal break-words"
             style={{ fontFamily: "Inter, sans-serif" }}
             dangerouslySetInnerHTML={{
               __html: paragraph1,

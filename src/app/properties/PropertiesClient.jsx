@@ -215,13 +215,17 @@ if (location) {
 
     result = result.filter(
       (property) => {
-        const startPrice =
-  property?.coreDetails
-    ?.startingPrice || 0;
+        // Show "Price on Request" properties in all searches
+if (property?.coreDetails?.priceOnRequest) {
+  return true;
+}
+
+const startPrice =
+  property?.coreDetails?.startingPrice || 0;
 
 const maxPrice =
-  property?.coreDetails
-    ?.maxPrice || 0;
+  property?.coreDetails?.maxPrice ||
+  startPrice;
 
 return (
   maxPrice >= minBudget &&
@@ -672,28 +676,35 @@ group-hover:scale-105
   "
 >
   <span
-    className="
-      text-[10px]
-      uppercase
-      tracking-[2px]
-      text-white/60
-    "
-  >
-    Starting From
-  </span>
+  className="
+    text-[10px]
+    uppercase
+    tracking-[2px]
+    text-white/60
+  "
+>
+  {property?.coreDetails?.priceOnRequest
+    ? "Price"
+    : "Starting From"}
+</span>
 
   <span
-    className="
-      text-[#F5D77D]
-      text-[22px]
-      font-bold
-    "
-  >
-    ₹
-    {formatPrice(
-      property?.coreDetails?.startingPrice
-    )}
-  </span>
+  className="
+    text-[#F5D77D]
+    text-[22px]
+    font-bold
+  "
+>
+  {property?.coreDetails?.priceOnRequest ? (
+    "On Request"
+  ) : property?.coreDetails?.startingPrice ? (
+    <>₹{formatPrice(property.coreDetails.startingPrice)}</>
+  ) : property?.unitConfigurations?.[0]?.price ? (
+    <>₹{formatPrice(property.unitConfigurations[0].price)}</>
+  ) : (
+    "Price Unavailable"
+  )}
+</span>
 </div>
 
 {/* BOTTOM ROW */}

@@ -1,0 +1,115 @@
+/* ================= LINKS ================= */
+
+.ql-editor a {
+  color: #C6A15B !important;
+  text-decoration: none !important;
+  font-weight: 600;
+  transition: color .25s ease;
+}
+
+.ql-editor a:hover {
+  color: #E4C67B !important;
+  text-decoration: underline !important;
+}
+
+/* Optional: visited links stay gold */
+.ql-editor a:visited {
+  color: #C6A15B !important;
+}
+
+/* ================= HEADINGS ================= */
+
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4 {
+  font-weight: 700;
+  margin-top: 1.2rem;
+  margin-bottom: .75rem;
+}
+
+.ql-editor h1 {
+  font-size: 2rem;
+}
+
+.ql-editor h2 {
+  font-size: 1.7rem;
+}
+
+.ql-editor h3 {
+  font-size: 1.4rem;
+}
+
+.ql-editor h4 {
+  font-size: 1.2rem;
+}
+
+/* ================= BLOCKQUOTE ================= */
+
+.ql-editor blockquote {
+  border-left: 4px solid #C6A15B;
+  padding-left: 18px;
+  color: #666;
+  font-style: italic;
+  margin: 16px 0;
+}
+
+/* ================= LISTS ================= */
+
+.ql-editor ul,
+.ql-editor ol {
+  padding-left: 28px;
+}
+
+.ql-editor li {
+  margin: 6px 0;
+}
+
+/* ================= TABLE ================= */
+
+.ql-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+}
+
+.ql-editor table td,
+.ql-editor table th {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.ql-editor table th {
+  background: #f8f8f8;
+}
+
+/* ================= IMAGES ================= */
+
+.ql-editor img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 18px auto;
+  display: block;
+}
+
+/* ================= PARAGRAPHS ================= */
+
+.ql-editor p {
+  margin-bottom: 14px;
+  line-height: 1.8;
+}
+
+/* ================= CODE ================= */
+
+.ql-editor pre {
+  background: #111;
+  color: #fff;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.ql-editor code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 5px;
+}

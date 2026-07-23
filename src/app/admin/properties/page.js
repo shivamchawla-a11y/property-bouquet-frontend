@@ -847,12 +847,22 @@ const developerOptions = [
 
                   {/* PRICE */}
 <td className="p-3 text-[#0f3b2e] text-sm font-bold whitespace-nowrap">
-  {property.coreDetails?.startingPrice ? (
+  {property.coreDetails?.priceOnRequest ? (
+    <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[11px] font-semibold text-amber-700">
+      On Request
+    </span>
+  ) : property.coreDetails?.startingPrice &&
+    property.coreDetails?.maxPrice ? (
+    <>
+      ₹{formatPrice(property.coreDetails.startingPrice)} - ₹
+      {formatPrice(property.coreDetails.maxPrice)}
+    </>
+  ) : property.coreDetails?.startingPrice ? (
     <>₹{formatPrice(property.coreDetails.startingPrice)}</>
   ) : property.unitConfigurations?.[0]?.price ? (
     <>₹{formatPrice(property.unitConfigurations[0].price)}</>
   ) : (
-    "N/A"
+    <span className="text-gray-400 font-medium">N/A</span>
   )}
 </td>
 
