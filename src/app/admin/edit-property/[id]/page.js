@@ -72,6 +72,7 @@ import * as GiIcons from "react-icons/gi";
 import * as TbIcons from "react-icons/tb";
 import * as IoIcons from "react-icons/io5";
 import * as BsIcons from "react-icons/bs";
+import RichTextEditor from "../../RichTextEditor";
 
 export default function EditProperty() {
   const [step, setStep] = useState(1);
@@ -3697,28 +3698,24 @@ if (loading) {
       />
 
       {/* ABOUT DESCRIPTION */}
-      <textarea
-        className={`input min-h-[140px] mb-4 transition-all duration-200 ${
-  hasError("overview.description")
-    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-    : ""
-}`}
-        placeholder="About Description"
-        value={form.overview.description || ""}
-        onChange={(e) =>
-          handleChange(
-            "overview",
-            "description",
-            e.target.value
-          )
-        }
-      />
-
+      <div className="mb-4">
+        <RichTextEditor
+          value={form.overview.description || ""}
+          onChange={(value) =>
+            handleChange(
+              "overview",
+              "description",
+              value
+            )
+          }
+        />
+      </div>
+      
       {hasError("overview.description") && (
-  <p className="text-red-400 text-sm">
-    About Description is required
-  </p>
-)}
+        <p className="text-red-400 text-sm">
+          About Description is required
+        </p>
+      )}
 
       {/* SECOND PARAGRAPH */}
       <textarea
