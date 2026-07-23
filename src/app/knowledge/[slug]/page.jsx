@@ -8,7 +8,7 @@ import ArticleContent from "./components/ArticleContent";
 import ArticleSidebar from "./components/ArticleSidebar";
 import RelatedArticles from "./components/RelatedArticles";
 
-const API = "/api";
+const API = "https://propertybouquet.com/api";
 
 // =====================
 // Fetch Single Article

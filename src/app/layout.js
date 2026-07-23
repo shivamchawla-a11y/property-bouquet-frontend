@@ -68,9 +68,9 @@ export const metadata = {
     "Real Estate Platform",
   ],
 
-  alternates: {
-    canonical: "/",
-  },
+ alternates: {
+  canonical: "https://propertybouquet.com",
+},
 
   robots: {
     index: true,

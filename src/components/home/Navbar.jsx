@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -19,11 +20,13 @@ const navItems = [
   {
     title: "Locations",
     key: "locations",
-  },
-  {
+    href: "/properties",
+},
+{
     title: "Developers",
     key: "developers",
-  },
+    href: "/properties",
+},
   {
     title: "Knowledge Centre",
     href: "/knowledge",
@@ -45,7 +48,7 @@ const navItems = [
   },
   {
     title: "Tools",
-    href: "/tools",
+    href: "/",
     items: [
       "EMI Calculator",
       "ROI Calculator",
@@ -55,7 +58,7 @@ const navItems = [
   },
   {
     title: "About Us",
-    href: "/about",
+    href: "/",
     items: [
       "Company",
       "Our Team",
@@ -91,6 +94,8 @@ const [properties, setProperties] = useState([]);
 
 const [showLocationModal, setShowLocationModal] =
   useState(false);
+
+const router = useRouter();  
 
 const [locationSearch, setLocationSearch] =
   useState("");
@@ -375,8 +380,8 @@ tracking-[0.38em]
   {/* MENU TITLE */}
   <div className="flex items-center h-9">
     <Link
-      href={item.href || "#"}
-      className="
+    href={item.href ?? "/"}
+    className="
         flex
         items-center
         text-white/85
@@ -436,8 +441,9 @@ tracking-[0.38em]
 
                     // PROPERTIES
                     if (item.key === "properties") {
-                      window.location.href =
-                        `/properties?propertyType=${encodeURIComponent(sub)}`;
+                      router.push(
+    `/properties?propertyType=${encodeURIComponent(sub)}`
+);
                       return;
                     }
 
@@ -449,8 +455,9 @@ tracking-[0.38em]
                         return;
                       }
 
-                      window.location.href =
-                        `/properties?location=${encodeURIComponent(sub)}`;
+                      router.push(
+    `/properties?location=${encodeURIComponent(sub)}`
+);
                       return;
                     }
 
@@ -462,22 +469,22 @@ tracking-[0.38em]
                         return;
                       }
 
-                      window.location.href =
-                        `/properties?developer=${encodeURIComponent(sub)}`;
+                      router.push(
+    `/properties?developer=${encodeURIComponent(sub)}`
+);
                       return;
                     }
 
                     // KNOWLEDGE CENTRE
-                    if (item.title === "Knowledge Centre") {
-                      window.location.href =
-                        `/knowledge?category=${encodeURIComponent(sub)}`;
-                      return;
-                    }
+                    // KNOWLEDGE CENTRE
+if (item.title === "Knowledge Centre") {
+  router.push("/knowledge");
+  return;
+}
 
                     // PROPERTY INSIGHTS
                     if (item.title === "Property Insights") {
-                      window.location.href =
-                        `/insights?category=${encodeURIComponent(sub)}`;
+                      router.push("/insights");
                       return;
                     }
 
@@ -491,7 +498,7 @@ tracking-[0.38em]
                         "Area Converter": "/tools/area-converter",
                       };
 
-                      window.location.href = routes[sub];
+                      router.push(routes[sub]);
                       return;
                     }
 
@@ -504,7 +511,7 @@ tracking-[0.38em]
                         Careers: "/about/careers",
                       };
 
-                      window.location.href = routes[sub];
+                      router.push(routes[sub]);
                       return;
                     }
 
@@ -893,8 +900,9 @@ tracking-[0.38em]
                 onClick={() => {
 
                   if (item.key === "properties") {
-                    window.location.href =
-                      `/properties?propertyType=${encodeURIComponent(sub)}`;
+                    router.push(
+    `/properties?propertyType=${encodeURIComponent(sub)}`
+);
                     return;
                   }
 
@@ -908,8 +916,9 @@ tracking-[0.38em]
                       return;
                     }
 
-                    window.location.href =
-                      `/properties?location=${encodeURIComponent(sub)}`;
+                    router.push(
+    `/properties?location=${encodeURIComponent(sub)}`
+);
                     return;
                   }
 
@@ -923,8 +932,9 @@ tracking-[0.38em]
                       return;
                     }
 
-                    window.location.href =
-                      `/properties?developer=${encodeURIComponent(sub)}`;
+                    router.push(
+    `/properties?developer=${encodeURIComponent(sub)}`
+);
                     return;
                   }
 
@@ -1230,10 +1240,11 @@ tracking-[0.38em]
         onClick={() => {
   setShowDeveloperModal(false);
 
-  window.location.href =
+  router.push(
     `/properties?developer=${encodeURIComponent(
-      developer.name
-    )}`;
+        developer.name
+    )}`
+);
 }}
         className="
           w-full
@@ -1398,10 +1409,11 @@ tracking-[0.38em]
                 onClick={() => {
   setShowLocationModal(false);
 
-  window.location.href =
+ router.push(
     `/properties?location=${encodeURIComponent(
-      loc
-    )}`;
+        loc
+    )}`
+);
 }}
                 className="
                   w-full

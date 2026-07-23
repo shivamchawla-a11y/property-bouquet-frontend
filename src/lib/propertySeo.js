@@ -114,13 +114,17 @@ const generatedDescription =
   // Canonical
   // -------------------------------
 
-const canonical = `${SITE_URL}/${slug.replace(/^\/+/, "")}`;
+const canonical = new URL(
+  slug.replace(/^\/+/, ""),
+  SITE_URL.endsWith("/") ? SITE_URL : `${SITE_URL}/`
+).toString();
 
   // -------------------------------
   // Metadata
   // -------------------------------
 
   return {
+    metadataBase: new URL(SITE_URL),
     title,
 
     description,

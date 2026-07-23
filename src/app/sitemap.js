@@ -64,20 +64,20 @@ export default async function sitemap() {
     changeFrequency: "daily",
   });
 
-  addUrl(urls, `${BASE_URL}/developers`, {
-    priority: 0.92,
-    changeFrequency: "weekly",
-  });
+  // addUrl(urls, `${BASE_URL}/developers`, {
+  //   priority: 0.92,
+  //   changeFrequency: "weekly",
+  // });
 
-  addUrl(urls, `${BASE_URL}/locations`, {
-    priority: 0.90,
-    changeFrequency: "weekly",
-  });
+  // addUrl(urls, `${BASE_URL}/locations`, {
+  //   priority: 0.90,
+  //   changeFrequency: "weekly",
+  // });
 
-  addUrl(urls, `${BASE_URL}/categories`, {
-    priority: 0.88,
-    changeFrequency: "weekly",
-  });
+  // addUrl(urls, `${BASE_URL}/categories`, {
+  //   priority: 0.88,
+  //   changeFrequency: "weekly",
+  // });
 
   addUrl(urls, `${BASE_URL}/knowledge`, {
     priority: 0.86,
