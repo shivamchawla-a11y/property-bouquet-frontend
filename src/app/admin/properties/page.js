@@ -91,10 +91,7 @@ useEffect(() => {
   try {
     setActionId(id);
 
-    const tags =
-      selectedTags.length > 0
-        ? selectedTags
-        : ["Normal"];
+    const tags = selectedTags;
 
     const res = await fetch(`/api/properties/${id}`, {
       method: "PATCH",
@@ -993,11 +990,15 @@ const developerOptions = [
           onClick={() => {
   setFeatureModal(property);
 
-  setSelectedTags(
-    Array.isArray(property.propertyTag)
-      ? property.propertyTag
-      : [property.propertyTag || "Normal"]
-  );
+  const tags = Array.isArray(property.propertyTag)
+  ? property.propertyTag
+  : property.propertyTag
+  ? [property.propertyTag]
+  : [];
+
+setSelectedTags(
+  tags.filter((tag) => tag !== "Normal")
+);
 }}
           className="h-9 w-9 flex items-center justify-center rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-sm"
         >
