@@ -19,6 +19,7 @@ import {
   Newspaper,
   BookOpen,
   Route,
+  Layers3,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -66,6 +67,12 @@ export default function AdminLayout({ children }) {
   name: "Pages",
   path: "/admin/pages",
   icon: FileText,
+},
+
+{
+  name: "Collection Engine",
+  path: "/admin/collections",
+  icon: Layers3,
 },
 
 {
