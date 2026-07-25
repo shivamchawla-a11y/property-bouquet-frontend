@@ -16,6 +16,8 @@ export default function ToolBar({
   generateCollections,
   generating = false,
   refreshCollections,
+  publishPages,
+  publishing = false,
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
@@ -172,15 +174,28 @@ export default function ToolBar({
           </button>
 
           <button
-            disabled={!selectedPages.length}
-            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
-              selectedPages.length
-                ? "bg-[#0f3b2e] text-white hover:opacity-90"
-                : "cursor-not-allowed bg-gray-200 text-gray-500"
-            }`}
-          >
-            <CheckCircle2 size={18} />
-            Publish ({selectedPages.length})
+  onClick={publishPages}
+  disabled={!selectedPages.length || publishing}
+  className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+    selectedPages.length && !publishing
+      ? "bg-[#0f3b2e] text-white hover:opacity-90"
+      : "cursor-not-allowed bg-gray-200 text-gray-500"
+  }`}
+>
+            {publishing ? (
+  <>
+    <Loader2
+      size={18}
+      className="animate-spin"
+    />
+    Publishing...
+  </>
+) : (
+  <>
+    <CheckCircle2 size={18} />
+    Publish ({selectedPages.length})
+  </>
+)}
           </button>
 
           <button

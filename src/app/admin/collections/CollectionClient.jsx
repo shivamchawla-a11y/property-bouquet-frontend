@@ -22,6 +22,8 @@ export default function CollectionClient() {
   const [generating, setGenerating] =
     useState(false);
 
+    const [publishing, setPublishing] = useState(false);
+
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -147,6 +149,113 @@ export default function CollectionClient() {
   };
 
   // =====================================================
+// PUBLISH
+// =====================================================
+
+const publishLandingPage = async (id) => {
+  try {
+    const res = await fetch(
+      `${API}/landing-pages/${id}/publish`,
+      {
+        method: "PATCH",
+        credentials: "include",
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(
+        data.message || "Unable to publish."
+      );
+      return;
+    }
+
+    toast.success("Landing page published.");
+
+    await fetchLandingPages();
+  } catch (error) {
+    console.error(error);
+    toast.error("Unable to publish.");
+  }
+};
+
+// =====================================================
+// UNPUBLISH
+// =====================================================
+
+const unpublishLandingPage = async (id) => {
+  try {
+    const res = await fetch(
+      `${API}/landing-pages/${id}/unpublish`,
+      {
+        method: "PATCH",
+        credentials: "include",
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(
+        data.message || "Unable to unpublish."
+      );
+      return;
+    }
+
+    toast.success("Moved back to Draft.");
+
+    await fetchLandingPages();
+  } catch (error) {
+    console.error(error);
+    toast.error("Unable to unpublish.");
+  }
+};
+
+
+// =====================================================
+// BULK PUBLISH
+// =====================================================
+
+const publishPages = async () => {
+  if (!selectedPages.length) return;
+
+  if (
+    !window.confirm(
+      `Publish ${selectedPages.length} landing page(s)?`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setPublishing(true);
+
+    await Promise.all(
+      selectedPages.map((id) =>
+        fetch(`${API}/landing-pages/${id}/publish`, {
+          method: "PATCH",
+          credentials: "include",
+        })
+      )
+    );
+
+    toast.success(
+      `${selectedPages.length} landing page(s) published.`
+    );
+
+    setSelectedPages([]);
+
+    await fetchLandingPages();
+  } catch (error) {
+    console.error(error);
+    toast.error("Unable to publish pages.");
+  } finally {
+    setPublishing(false);
+  }
+};
+
+  // =====================================================
   // INITIAL LOAD
   // =====================================================
 
@@ -193,24 +302,22 @@ export default function CollectionClient() {
       <StatsCards stats={stats} />
 
       <ToolBar
-        selectedPages={selectedPages}
-        generateCollections={
-          generateCollections
-        }
-        generating={generating}
-        refreshCollections={
-          fetchLandingPages
-        }
-      />
+  selectedPages={selectedPages}
+  generateCollections={generateCollections}
+  generating={generating}
+  refreshCollections={fetchLandingPages}
+  publishPages={publishPages}
+  publishing={publishing}
+/>
 
       <LandingPagesTable
-        pages={landingPages}
-        selectedPages={selectedPages}
-        setSelectedPages={
-          setSelectedPages
-        }
-        openDrawer={openDrawer}
-      />
+  pages={landingPages}
+  selectedPages={selectedPages}
+  setSelectedPages={setSelectedPages}
+  openDrawer={openDrawer}
+  publishLandingPage={publishLandingPage}
+  unpublishLandingPage={unpublishLandingPage}
+/>
 
       <DetailsDrawer
         open={drawerOpen}
