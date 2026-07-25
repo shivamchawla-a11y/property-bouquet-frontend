@@ -8,16 +8,22 @@ import {
   CheckCircle2,
   Trash2,
   RefreshCw,
+  Loader2,
 } from "lucide-react";
 
-export default function ToolBar({ selectedPages = [] }) {
+export default function ToolBar({
+  selectedPages = [],
+  generateCollections,
+  generating = false,
+  refreshCollections,
+}) {
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("potential");
+  const [tab, setTab] = useState("all");
 
   const tabs = [
     {
-      id: "potential",
-      label: "Potential Pages",
+      id: "all",
+      label: "All Pages",
     },
     {
       id: "draft",
@@ -36,7 +42,7 @@ export default function ToolBar({ selectedPages = [] }) {
   return (
     <div className="rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-      {/* Tabs */}
+      {/* ===================== TABS ===================== */}
 
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 p-5">
 
@@ -47,7 +53,7 @@ export default function ToolBar({ selectedPages = [] }) {
             className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
               tab === item.id
                 ? "bg-[#0f3b2e] text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
+                : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
             {item.label}
@@ -56,7 +62,7 @@ export default function ToolBar({ selectedPages = [] }) {
 
       </div>
 
-      {/* Search + Actions */}
+      {/* ===================== SEARCH + ACTIONS ===================== */}
 
       <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
 
@@ -71,31 +77,98 @@ export default function ToolBar({ selectedPages = [] }) {
 
           <input
             type="text"
-            placeholder="Search title, slug..."
+            placeholder="Search title or slug..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-12 w-full rounded-2xl border border-gray-200 pl-11 pr-4 outline-none transition focus:border-[#c9a64b]"
+            className="
+              h-12
+              w-full
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              pl-11
+              pr-4
+              text-gray-900
+              placeholder:text-gray-400
+              outline-none
+              transition
+              focus:border-[#c9a64b]
+            "
           />
 
         </div>
 
-        {/* Right Buttons */}
+        {/* Buttons */}
 
         <div className="flex flex-wrap gap-3">
 
-          <button className="flex items-center gap-2 rounded-2xl border border-gray-200 px-5 py-3 font-medium transition hover:bg-gray-50">
+          <button
+            className="
+              flex
+              items-center
+              gap-2
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              px-5
+              py-3
+              font-medium
+              text-gray-700
+              transition
+              hover:bg-gray-50
+            "
+          >
             <Filter size={18} />
             Filters
           </button>
 
-          <button className="flex items-center gap-2 rounded-2xl border border-gray-200 px-5 py-3 font-medium transition hover:bg-gray-50">
+          <button
+            onClick={refreshCollections}
+            className="
+              flex
+              items-center
+              gap-2
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              px-5
+              py-3
+              font-medium
+              text-gray-700
+              transition
+              hover:bg-gray-50
+            "
+          >
             <RefreshCw size={18} />
             Refresh
           </button>
 
-          <button className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#c9a64b] to-[#e0be69] px-5 py-3 font-semibold text-black shadow transition hover:scale-[1.02]">
-            <Wand2 size={18} />
-            Generate Selected
+          <button
+            onClick={generateCollections}
+            disabled={generating}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold shadow transition ${
+              generating
+                ? "cursor-not-allowed bg-gray-300 text-gray-700"
+                : "bg-gradient-to-r from-[#c9a64b] to-[#e0be69] text-black hover:scale-[1.02]"
+            }`}
+          >
+            {generating ? (
+              <>
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Wand2 size={18} />
+                Generate Collections
+              </>
+            )}
           </button>
 
           <button
@@ -107,7 +180,7 @@ export default function ToolBar({ selectedPages = [] }) {
             }`}
           >
             <CheckCircle2 size={18} />
-            Publish
+            Publish ({selectedPages.length})
           </button>
 
           <button
@@ -119,7 +192,7 @@ export default function ToolBar({ selectedPages = [] }) {
             }`}
           >
             <Trash2 size={18} />
-            Delete
+            Delete ({selectedPages.length})
           </button>
 
         </div>

@@ -7,6 +7,7 @@ import {
   FileClock,
   MoreHorizontal,
   ChevronRight,
+  SearchX,
 } from "lucide-react";
 
 export default function LandingPagesTable({
@@ -15,59 +16,39 @@ export default function LandingPagesTable({
   setSelectedPages,
   openDrawer,
 }) {
-  const demoPages =
-    pages.length > 0
-      ? pages
-      : [
-          {
-            _id: "1",
-            title: "DLF Apartments in Sector 56 Gurgaon",
-            slug: "dlf-apartments-in-sector-56-gurgaon",
-            pageType: "Developer + Location",
-            propertyCount: 18,
-            seoScore: 97,
-            status: "draft",
-          },
-          {
-            _id: "2",
-            title: "Luxury Apartments in Gurgaon",
-            slug: "luxury-apartments-gurgaon",
-            pageType: "Category + Location",
-            propertyCount: 36,
-            seoScore: 94,
-            status: "published",
-          },
-          {
-            _id: "3",
-            title: "M3M Projects in Golf Course Road",
-            slug: "m3m-projects-golf-course-road",
-            pageType: "Developer + Location",
-            propertyCount: 14,
-            seoScore: 92,
-            status: "draft",
-          },
-        ];
+  // =====================================================
+  // SELECTION
+  // =====================================================
 
   const toggleSelection = (id) => {
     if (selectedPages.includes(id)) {
-      setSelectedPages(selectedPages.filter((item) => item !== id));
+      setSelectedPages(
+        selectedPages.filter((item) => item !== id)
+      );
     } else {
       setSelectedPages([...selectedPages, id]);
     }
   };
 
   const toggleAll = () => {
-    if (selectedPages.length === demoPages.length) {
+    if (
+      selectedPages.length === pages.length &&
+      pages.length
+    ) {
       setSelectedPages([]);
     } else {
-      setSelectedPages(demoPages.map((p) => p._id));
+      setSelectedPages(
+        pages.map((page) => page._id)
+      );
     }
   };
 
   return (
     <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-      {/* Header */}
+      {/* ===================================================== */}
+      {/* HEADER */}
+      {/* ===================================================== */}
 
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
 
@@ -77,184 +58,300 @@ export default function LandingPagesTable({
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Review generated landing pages before publishing.
+            Manage all generated landing pages.
           </p>
         </div>
 
         <span className="rounded-full bg-[#0f3b2e] px-4 py-2 text-sm font-semibold text-white">
-          {demoPages.length} Pages
+          {pages.length} Pages
         </span>
 
       </div>
 
-      <div className="overflow-x-auto">
+      {/* ===================================================== */}
+      {/* EMPTY */}
+      {/* ===================================================== */}
 
-        <table className="min-w-full">
+      {!pages.length ? (
+        <div className="flex flex-col items-center justify-center py-20">
 
-          <thead className="bg-[#fafafa]">
+          <SearchX
+            size={55}
+            className="text-gray-300"
+          />
 
-            <tr>
+          <h3 className="mt-5 text-xl font-bold text-gray-900">
+            No Landing Pages
+          </h3>
 
-              <th className="w-14 px-6 py-4">
+          <p className="mt-2 max-w-md text-center text-gray-500">
+            Click <b>Generate Collections</b> to automatically
+            discover all landing pages from your property database.
+          </p>
 
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedPages.length === demoPages.length &&
-                    demoPages.length > 0
-                  }
-                  onChange={toggleAll}
-                />
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
 
-              </th>
+          <table className="min-w-full">
 
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Landing Page
-              </th>
+            {/* ===================================================== */}
+            {/* HEAD */}
+            {/* ===================================================== */}
 
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Type
-              </th>
+            <thead className="bg-[#fafafa]">
 
-              <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Properties
-              </th>
+              <tr>
 
-              <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                SEO
-              </th>
-
-              <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Status
-              </th>
-
-              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {demoPages.map((page) => (
-
-              <tr
-                key={page._id}
-                className="cursor-pointer border-b border-gray-100 transition hover:bg-[#fafcfb]"
-                onClick={() => openDrawer(page)}
-              >
-
-                <td
-                  className="px-6 py-5"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <th className="w-14 px-6 py-4">
                   <input
                     type="checkbox"
-                    checked={selectedPages.includes(page._id)}
-                    onChange={() => toggleSelection(page._id)}
+                    checked={
+                      selectedPages.length ===
+                        pages.length && pages.length > 0
+                    }
+                    onChange={toggleAll}
                   />
-                </td>
+                </th>
 
-                <td className="px-6 py-5">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Landing Page
+                </th>
 
-                  <div>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Type
+                </th>
 
-                    <h3 className="font-semibold text-gray-900">
-                      {page.title}
-                    </h3>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Properties
+                </th>
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      /{page.slug}
-                    </p>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  SEO
+                </th>
 
-                  </div>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Status
+                </th>
 
-                </td>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Indexed
+                </th>
 
-                <td className="px-6 py-5">
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Generated
+                </th>
 
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                    {page.pageType}
-                  </span>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Updated
+                </th>
 
-                </td>
-
-                <td className="px-6 py-5 text-center">
-
-                  <span className="rounded-xl bg-[#f7f9f8] px-3 py-2 font-semibold text-[#0f3b2e]">
-                    {page.propertyCount}
-                  </span>
-
-                </td>
-
-                <td className="px-6 py-5 text-center">
-
-                  <span className="rounded-xl bg-green-50 px-3 py-2 font-semibold text-green-700">
-                    {page.seoScore}
-                  </span>
-
-                </td>
-
-                <td className="px-6 py-5 text-center">
-
-                  {page.status === "published" ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-700">
-                      <Globe size={14} />
-                      Published
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-1 text-sm font-semibold text-yellow-700">
-                      <FileClock size={14} />
-                      Draft
-                    </span>
-                  )}
-
-                </td>
-
-                <td
-                  className="px-6 py-5"
-                  onClick={(e) => e.stopPropagation()}
-                >
-
-                  <div className="flex justify-end gap-2">
-
-                    <button
-                      onClick={() => openDrawer(page)}
-                      className="rounded-xl p-2 hover:bg-gray-100"
-                    >
-                      <Eye size={18} />
-                    </button>
-
-                    <button className="rounded-xl p-2 hover:bg-gray-100">
-                      <Pencil size={18} />
-                    </button>
-
-                    <button className="rounded-xl p-2 hover:bg-gray-100">
-                      <MoreHorizontal size={18} />
-                    </button>
-
-                    <button
-                      onClick={() => openDrawer(page)}
-                      className="rounded-xl bg-[#0f3b2e] p-2 text-white"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-
-                  </div>
-
-                </td>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Actions
+                </th>
 
               </tr>
 
-            ))}
+            </thead>
 
-          </tbody>
+            {/* ===================================================== */}
+            {/* BODY */}
+            {/* ===================================================== */}
 
-        </table>
+            <tbody>
 
-      </div>
+              {pages.map((page) => (
+
+                <tr
+                  key={page._id}
+                  onClick={() => openDrawer(page)}
+                  className="cursor-pointer border-b border-gray-100 transition hover:bg-[#fafcfb]"
+                >
+
+                  {/* Checkbox */}
+
+                  <td
+                    className="px-6 py-5"
+                    onClick={(e) =>
+                      e.stopPropagation()
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPages.includes(
+                        page._id
+                      )}
+                      onChange={() =>
+                        toggleSelection(page._id)
+                      }
+                    />
+                  </td>
+
+                  {/* Title */}
+
+                  <td className="px-6 py-5">
+
+                    <div>
+
+                      <h3 className="font-semibold text-gray-900">
+                        {page.title}
+                      </h3>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        /{page.slug}
+                      </p>
+
+                    </div>
+
+                  </td>
+
+                  {/* Type */}
+
+                  <td className="px-6 py-5">
+
+                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                      {page.pageType}
+                    </span>
+
+                  </td>
+
+                  {/* Property Count */}
+
+                  <td className="px-6 py-5 text-center">
+
+                    <span className="rounded-xl bg-[#f7f9f8] px-3 py-2 font-semibold text-[#0f3b2e]">
+                      {page.propertyCount}
+                    </span>
+
+                  </td>
+
+                  {/* SEO */}
+
+                  <td className="px-6 py-5 text-center">
+
+                    <span className="rounded-xl bg-green-50 px-3 py-2 font-semibold text-green-700">
+                      {page.seoScore || 0}
+                    </span>
+
+                  </td>
+
+                  {/* Status */}
+
+                  <td className="px-6 py-5 text-center">
+
+                    {page.status ===
+                    "published" ? (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-700">
+                        <Globe size={14} />
+                        Published
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-1 text-sm font-semibold text-yellow-700">
+                        <FileClock size={14} />
+                        Draft
+                      </span>
+                    )}
+
+                  </td>
+
+                  {/* Indexed */}
+
+                  <td className="px-6 py-5 text-center">
+
+                    {page.indexed ? (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                        Yes
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                        No
+                      </span>
+                    )}
+
+                  </td>
+
+                  {/* Generated */}
+
+                  <td className="px-6 py-5 text-center">
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        page.generated
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-purple-100 text-purple-700"
+                      }`}
+                    >
+                      {page.generated
+                        ? "Generated"
+                        : "Manual"}
+                    </span>
+
+                  </td>
+
+                  {/* Updated */}
+
+                  <td className="px-6 py-5 text-center text-sm text-gray-600">
+
+                    {page.updatedAt
+                      ? new Date(
+                          page.updatedAt
+                        ).toLocaleDateString()
+                      : "-"}
+
+                  </td>
+
+                  {/* Actions */}
+
+                  <td
+                    className="px-6 py-5"
+                    onClick={(e) =>
+                      e.stopPropagation()
+                    }
+                  >
+
+                    <div className="flex justify-end gap-2">
+
+                      <button
+                        onClick={() =>
+                          openDrawer(page)
+                        }
+                        className="rounded-xl p-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        <Eye size={18} />
+                      </button>
+
+                      <button className="rounded-xl p-2 text-gray-700 hover:bg-gray-100">
+                        <Pencil size={18} />
+                      </button>
+
+                      <button className="rounded-xl p-2 text-gray-700 hover:bg-gray-100">
+                        <MoreHorizontal size={18} />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          openDrawer(page)
+                        }
+                        className="rounded-xl bg-[#0f3b2e] p-2 text-white"
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
+      )}
+
     </div>
   );
 }

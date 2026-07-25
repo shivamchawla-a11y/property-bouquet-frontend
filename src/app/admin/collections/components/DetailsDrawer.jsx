@@ -8,11 +8,10 @@ import {
   Building2,
   MapPin,
   Home,
-  FileText,
+  DollarSign,
   CheckCircle2,
   Trash2,
   Pencil,
-  ExternalLink,
 } from "lucide-react";
 
 export default function DetailsDrawer({
@@ -25,13 +24,15 @@ export default function DetailsDrawer({
   return (
     <>
       {/* Overlay */}
+
       <div
         onClick={onClose}
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-2xl overflow-y-auto border-l border-gray-200 bg-white shadow-2xl">
+
+      <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-2xl overflow-y-auto border-l border-gray-200 bg-white text-gray-900 shadow-2xl">
 
         {/* Header */}
 
@@ -42,10 +43,10 @@ export default function DetailsDrawer({
             <div>
 
               <div className="mb-3 inline-flex rounded-full bg-[#fff7df] px-3 py-1 text-xs font-semibold text-[#b68b1d]">
-                SEO Landing Page
+                {page.pageType}
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold">
                 {page.title}
               </h2>
 
@@ -57,9 +58,9 @@ export default function DetailsDrawer({
 
             <button
               onClick={onClose}
-              className="rounded-xl p-2 transition hover:bg-gray-100"
+              className="rounded-xl p-2 hover:bg-gray-100"
             >
-              <X size={22} />
+              <X />
             </button>
 
           </div>
@@ -68,56 +69,47 @@ export default function DetailsDrawer({
 
         <div className="space-y-8 p-8">
 
-          {/* Quick Stats */}
+          {/* Stats */}
 
           <div className="grid grid-cols-3 gap-4">
 
-            <div className="rounded-2xl bg-[#f7f9f8] p-5">
+            <div className="rounded-2xl bg-gray-50 p-5">
 
-              <Layers3
-                size={22}
-                className="mb-3 text-[#0f3b2e]"
-              />
+              <Layers3 className="mb-3 text-[#0f3b2e]" />
 
               <p className="text-sm text-gray-500">
                 Properties
               </p>
 
-              <h3 className="mt-1 text-2xl font-bold">
+              <h3 className="mt-2 text-2xl font-bold">
                 {page.propertyCount}
               </h3>
 
             </div>
 
-            <div className="rounded-2xl bg-[#f7f9f8] p-5">
+            <div className="rounded-2xl bg-gray-50 p-5">
 
-              <Globe
-                size={22}
-                className="mb-3 text-green-600"
-              />
+              <Globe className="mb-3 text-green-600" />
 
               <p className="text-sm text-gray-500">
                 SEO Score
               </p>
 
-              <h3 className="mt-1 text-2xl font-bold">
+              <h3 className="mt-2 text-2xl font-bold">
                 {page.seoScore}
               </h3>
 
             </div>
 
-            <div className="rounded-2xl bg-[#f7f9f8] p-5">
+            <div className="rounded-2xl bg-gray-50 p-5">
 
-              <Link2
-                size={22}
-                className="mb-3 text-[#c9a64b]"
-              />
+              <Link2 className="mb-3 text-[#c9a64b]" />
 
               <p className="text-sm text-gray-500">
                 Status
               </p>
 
-              <h3 className="mt-1 text-lg font-bold capitalize">
+              <h3 className="mt-2 text-xl font-bold capitalize">
                 {page.status}
               </h3>
 
@@ -125,72 +117,100 @@ export default function DetailsDrawer({
 
           </div>
 
-          {/* Generated Filters */}
+          {/* Filters */}
 
           <div>
 
             <h3 className="mb-4 text-lg font-bold">
-              Generated Filters
+              Applied Filters
             </h3>
 
             <div className="space-y-3">
 
-              <div className="flex items-center gap-3 rounded-2xl border p-4">
+              {page.filters?.developers?.length > 0 && (
+                <div className="flex items-center gap-3 rounded-xl border p-4">
 
-                <Building2
-                  size={20}
-                  className="text-[#0f3b2e]"
-                />
+                  <Building2 className="text-[#0f3b2e]" />
 
-                <div>
-                  <p className="text-xs text-gray-500">
-                    Developer
-                  </p>
+                  <div>
 
-                  <p className="font-semibold">
-                    DLF
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      Developers
+                    </p>
+
+                    <p className="font-semibold">
+                      {page.filters.developers.length}
+                    </p>
+
+                  </div>
+
                 </div>
+              )}
 
-              </div>
+              {page.filters?.locations?.length > 0 && (
+                <div className="flex items-center gap-3 rounded-xl border p-4">
 
-              <div className="flex items-center gap-3 rounded-2xl border p-4">
+                  <MapPin className="text-[#0f3b2e]" />
 
-                <MapPin
-                  size={20}
-                  className="text-[#0f3b2e]"
-                />
+                  <div>
 
-                <div>
-                  <p className="text-xs text-gray-500">
-                    Location
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      Locations
+                    </p>
 
-                  <p className="font-semibold">
-                    Sector 56 Gurgaon
-                  </p>
+                    <p className="font-semibold">
+                      {page.filters.locations.length}
+                    </p>
+
+                  </div>
+
                 </div>
+              )}
 
-              </div>
+              {page.filters?.categories?.length > 0 && (
+                <div className="flex items-center gap-3 rounded-xl border p-4">
 
-              <div className="flex items-center gap-3 rounded-2xl border p-4">
+                  <Home className="text-[#0f3b2e]" />
 
-                <Home
-                  size={20}
-                  className="text-[#0f3b2e]"
-                />
+                  <div>
 
-                <div>
-                  <p className="text-xs text-gray-500">
-                    Category
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      Categories
+                    </p>
 
-                  <p className="font-semibold">
-                    Apartments
-                  </p>
+                    <p className="font-semibold">
+                      {page.filters.categories.length}
+                    </p>
+
+                  </div>
+
                 </div>
+              )}
 
-              </div>
+              {(page.filters?.budget?.min ||
+                page.filters?.budget?.max) && (
+                <div className="flex items-center gap-3 rounded-xl border p-4">
+
+                  <DollarSign className="text-[#0f3b2e]" />
+
+                  <div>
+
+                    <p className="text-xs text-gray-500">
+                      Budget
+                    </p>
+
+                    <p className="font-semibold">
+                      ₹
+                      {page.filters?.budget?.min || 0}
+                      {" - "}
+                      ₹
+                      {page.filters?.budget?.max || 0}
+                    </p>
+
+                  </div>
+
+                </div>
+              )}
 
             </div>
 
@@ -206,101 +226,99 @@ export default function DetailsDrawer({
 
             <div className="rounded-2xl border p-5">
 
-              <p className="text-xl font-semibold text-[#1a0dab]">
-                {page.title}
+              <p className="text-xl font-semibold text-blue-700">
+                {page.seo?.metaTitle ||
+                  page.title}
               </p>
 
               <p className="mt-2 text-sm text-green-700">
-                https://propertybouquet.com/{page.slug}
+                https://propertybouquet.com/
+                {page.slug}
               </p>
 
               <p className="mt-4 text-sm leading-7 text-gray-600">
-                This landing page will automatically display all
-                matching properties based on the generated filters.
-                Meta title and description can be customized before
-                publishing.
+                {page.seo?.metaDescription ||
+                  "No meta description generated."}
               </p>
 
             </div>
 
           </div>
 
-          {/* Matching Properties */}
+          {/* Statistics */}
 
-          <div>
+          {page.statistics && (
+            <div>
 
-            <div className="mb-4 flex items-center justify-between">
-
-              <h3 className="text-lg font-bold">
-                Matching Properties
+              <h3 className="mb-4 text-lg font-bold">
+                Statistics
               </h3>
 
-              <span className="rounded-full bg-[#0f3b2e] px-3 py-1 text-sm font-semibold text-white">
-                {page.propertyCount}
-              </span>
+              <div className="grid grid-cols-2 gap-4">
 
-            </div>
-
-            <div className="space-y-3">
-
-              {[
-                "DLF The Arbour",
-                "DLF Privana",
-                "DLF Crest",
-              ].map((property) => (
-
-                <div
-                  key={property}
-                  className="flex items-center justify-between rounded-2xl border p-4"
-                >
-
-                  <div>
-
-                    <h4 className="font-semibold">
-                      {property}
-                    </h4>
-
-                    <p className="text-sm text-gray-500">
-                      Published
-                    </p>
-
+                <div className="rounded-xl border p-4">
+                  Average Price
+                  <div className="mt-2 font-bold">
+                    ₹
+                    {page.statistics.averagePrice?.toLocaleString()}
                   </div>
-
-                  <ExternalLink
-                    size={18}
-                    className="text-gray-400"
-                  />
-
                 </div>
 
-              ))}
+                <div className="rounded-xl border p-4">
+                  Min Price
+                  <div className="mt-2 font-bold">
+                    ₹
+                    {page.statistics.minPrice?.toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border p-4">
+                  Max Price
+                  <div className="mt-2 font-bold">
+                    ₹
+                    {page.statistics.maxPrice?.toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border p-4">
+                  Developers
+                  <div className="mt-2 font-bold">
+                    {page.statistics.developerCount}
+                  </div>
+                </div>
+
+              </div>
 
             </div>
-
-          </div>
+          )}
 
           {/* Actions */}
 
           <div className="grid grid-cols-2 gap-4">
 
-            <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#c9a64b] to-[#e0be69] py-4 font-semibold text-black transition hover:scale-[1.02]">
-              <CheckCircle2 size={18} />
-              Publish
+            <button className="rounded-xl bg-[#0f3b2e] py-4 font-semibold text-white">
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle2 size={18} />
+                Publish
+              </div>
             </button>
 
-            <button className="flex items-center justify-center gap-2 rounded-2xl border py-4 font-semibold transition hover:bg-gray-50">
-              <Pencil size={18} />
-              Edit SEO
+            <button className="rounded-xl border py-4 font-semibold text-gray-900 hover:bg-gray-50">
+              <div className="flex items-center justify-center gap-2">
+                <Pencil size={18} />
+                Edit SEO
+              </div>
             </button>
 
-            <button className="flex items-center justify-center gap-2 rounded-2xl border py-4 font-semibold transition hover:bg-gray-50">
-              <Globe size={18} />
+            <button className="rounded-xl border py-4 font-semibold text-gray-900 hover:bg-gray-50">
               Preview
             </button>
 
-            <button className="flex items-center justify-center gap-2 rounded-2xl bg-red-600 py-4 font-semibold text-white transition hover:bg-red-700">
-              <Trash2 size={18} />
-              Delete
+            <button className="rounded-xl bg-red-600 py-4 font-semibold text-white hover:bg-red-700">
+              <div className="flex items-center justify-center gap-2">
+                <Trash2 size={18} />
+                Delete
+              </div>
             </button>
 
           </div>
