@@ -40,7 +40,7 @@ export default function Header() {
             <span className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80">
               🚀 Auto Generated Pages
             </span>
-
+ 
             <span className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80">
               ⚡ Dynamic Property Filters
             </span>
