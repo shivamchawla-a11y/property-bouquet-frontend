@@ -18,6 +18,7 @@ export default function DetailsDrawer({
   open,
   page,
   onClose,
+  publishLandingPage,
 }) {
   if (!open || !page) return null;
 
@@ -296,12 +297,17 @@ export default function DetailsDrawer({
 
           <div className="grid grid-cols-2 gap-4">
 
-            <button className="rounded-xl bg-[#0f3b2e] py-4 font-semibold text-white">
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle2 size={18} />
-                Publish
-              </div>
-            </button>
+            <button
+  onClick={() => publishLandingPage(page._id)}
+  className="rounded-xl bg-[#0f3b2e] py-4 font-semibold text-white hover:bg-[#174b3a]"
+>
+  <div className="flex items-center justify-center gap-2">
+    <CheckCircle2 size={18} />
+    {page.status === "published"
+      ? "Published"
+      : "Publish"}
+  </div>
+</button>
 
             <button className="rounded-xl border py-4 font-semibold text-gray-900 hover:bg-gray-50">
               <div className="flex items-center justify-center gap-2">

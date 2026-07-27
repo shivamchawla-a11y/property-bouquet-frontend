@@ -18,6 +18,7 @@ export default function PropertyFilters({
   selectedAmenity,
   selectedPropertyType,
   selectedBhk,
+  baseUrl = "/properties",
 }) {
 
   const selectedAmenities =
@@ -38,6 +39,20 @@ export default function PropertyFilters({
   amenities: false,
 });
   const router = useRouter();
+
+  const baseUrl = landingPage
+  ? `/${landingPage.slug}`
+  : "/properties";
+
+  const navigate = (params) => {
+  const query = params.toString();
+
+  router.push(
+    query
+      ? `${baseUrl}?${query}`
+      : baseUrl
+  );
+};
 
 const [showDeveloperModal, setShowDeveloperModal] =
   useState(false);
@@ -200,6 +215,20 @@ const applyBudgetFilter = (
     );
   }
 
+  if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
   params.set(
     "budget",
     `${min * 100000}-${max * 100000}`
@@ -222,8 +251,8 @@ if (selectedBhk) {
 }
 
   router.push(
-    `/properties?${params.toString()}`
-  );
+  `${baseUrl}?${params.toString()}`
+);
 };
 
   const removeFilter = (type) => {
@@ -289,13 +318,7 @@ if (
   );
 }
 
-  router.push(
-    `/properties${
-      params.toString()
-        ? `?${params.toString()}`
-        : ""
-    }`
-  );
+  navigate(params);
 };
 
   const toggleSection = (key) => {
@@ -325,6 +348,20 @@ if (
         );
       }
 
+      if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
       if (selectedBudget) {
         params.set(
           "budget",
@@ -351,8 +388,8 @@ if (
       }
 
       router.push(
-        `/properties?${params.toString()}`
-      );
+  `${baseUrl}?${params.toString()}`
+);
     }}
     className={`
       px-4 py-2 rounded-full border
@@ -409,7 +446,7 @@ if (
   onClick={() => {
     setMinBudget(50);
     setMaxBudget(1000);
-    router.push("/properties");
+    router.push(`${baseUrl}`);
   }}
   className="text-sm font-semibold text-[#0f3b2e]"
 >
@@ -444,7 +481,7 @@ selectedAmenities.length > 0
   setMinBudget(50);
   setMaxBudget(1000);
 
-  router.push("/properties");
+  router.push(baseUrl);
 }}
         className="
           text-xs
@@ -592,6 +629,20 @@ selectedAmenities.length > 0
           );
         }
 
+        if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
         if (selectedBudget) {
           params.set(
             "budget",
@@ -613,9 +664,7 @@ selectedAmenities.length > 0
   );
 }
 
-        router.push(
-          `/properties?${params.toString()}`
-        );
+        navigate(params);
       }}
     >
       <X size={14} />
@@ -974,6 +1023,20 @@ selectedAmenities.length > 0
     );
   }
 
+  if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
   if (selectedBudget) {
     params.set(
       "budget",
@@ -988,9 +1051,7 @@ selectedAmenities.length > 0
     );
   }
 
-  router.push(
-    `/properties?${params.toString()}`
-  );
+  navigate(params);
 }}
               className="
                 h-4
@@ -1123,9 +1184,7 @@ selectedAmenities.length > 0
     );
   }
 
-  router.push(
-    `/properties?${params.toString()}`
-  );
+  navigate(params);
 }}
               className="
                 h-4
@@ -1242,6 +1301,20 @@ selectedAmenities.length > 0
               );
             }
 
+            if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
             if (selectedBudget) {
               params.set(
                 "budget",
@@ -1256,9 +1329,7 @@ selectedAmenities.length > 0
               );
             }
 
-            router.push(
-              `/properties?${params.toString()}`
-            );
+            navigate(params);
           }}
           className="
             h-4
@@ -1363,6 +1434,20 @@ selectedAmenities.length > 0
     );
   }
 
+  if (selectedPropertyType) {
+  params.set(
+    "propertyType",
+    selectedPropertyType
+  );
+}
+
+if (selectedBhk) {
+  params.set(
+    "bhk",
+    selectedBhk
+  );
+}
+
   if (selectedBudget) {
     params.set(
       "budget",
@@ -1397,9 +1482,7 @@ selectedAmenities.length > 0
     );
   }
 
-  router.push(
-    `/properties?${params.toString()}`
-  );
+  navigate(params);
 }}
               className="
                 h-4
@@ -1608,9 +1691,7 @@ if (selectedAmenities.length) {
   );
 }
 
-router.push(
-  `/properties?${params.toString()}`
-);
+navigate(params);
 
                 setShowDeveloperModal(
                   false

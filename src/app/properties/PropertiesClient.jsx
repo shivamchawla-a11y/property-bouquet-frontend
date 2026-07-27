@@ -17,7 +17,9 @@ import {
   Heart,
 } from "lucide-react";
 
-export default function PropertiesClient() {
+export default function PropertiesClient({
+  landingPage = null,
+}) {
   const API =
   "/api";
 
@@ -36,21 +38,25 @@ export default function PropertiesClient() {
   useSearchParams();
 
 const selectedLocation =
+  landingPage?.values?.location?.name ||
   searchParams.get("location");
 
 const selectedDeveloper =
+  landingPage?.values?.developer?.name ||
   searchParams.get("developer");
 
 const selectedBudget =
   searchParams.get("budget");
 
-  const selectedAmenity =
+const selectedAmenity =
   searchParams.get("amenity");
 
-  const selectedBhk =
+const selectedBhk =
+  landingPage?.values?.bhk ||
   searchParams.get("bhk");
 
-  const selectedPropertyType =
+const selectedPropertyType =
+  landingPage?.values?.category?.name ||
   searchParams.get("propertyType");
 
   // ================= FETCH =================
@@ -95,26 +101,33 @@ const selectedBudget =
   let result = [...properties];
 
   const search =
-    searchParams.get("search");
+  landingPage?.filters?.search ||
+  searchParams.get("search");
 
   const type =
-  searchParams.get(
-    "propertyType"
-  );
+  landingPage?.values?.category?.name ||
+  searchParams.get("propertyType");
 
   const location =
-    searchParams.get("location");
+  landingPage?.values?.location?.name ||
+  searchParams.get("location");
 
   const developer =
-    searchParams.get("developer");
+  landingPage?.values?.developer?.name ||
+  searchParams.get("developer");
 
   const budget =
-    searchParams.get("budget");
+  landingPage?.filters?.budget?.min != null &&
+  landingPage?.filters?.budget?.max != null
+    ? `${landingPage.filters.budget.min}-${landingPage.filters.budget.max}`
+    : searchParams.get("budget");
 
   const amenitiesParam =
+  landingPage?.filters?.amenities?.join(",") ||
   searchParams.get("amenity");
 
   const bhk =
+  landingPage?.values?.bhk ||
   searchParams.get("bhk");
 
 const selectedAmenities =
@@ -309,6 +322,7 @@ if (sortBy === "price-high-low") {
 }, [
   properties,
   searchParams,
+  landingPage,
   sortBy,
 ]);
 
@@ -357,8 +371,11 @@ if (sortBy === "price-high-low") {
   selectedBudget={selectedBudget}
   selectedAmenity={selectedAmenity}
   selectedBhk={selectedBhk}
-  selectedPropertyType={
-    selectedPropertyType
+  selectedPropertyType={selectedPropertyType}
+  baseUrl={
+    landingPage
+      ? `/${landingPage.slug}`
+      : "/properties"
   }
 />
           {/* RIGHT */}
@@ -392,7 +409,7 @@ if (sortBy === "price-high-low") {
                     text-[#081c15]
                   "
                 >
-                  Available Properties
+                  {landingPage?.title || "Available Properties"}
                 </h2>
 
                 <p className="text-gray-500 mt-2">
@@ -400,7 +417,7 @@ if (sortBy === "price-high-low") {
                   {
                     filteredProperties.length
                   }{" "}
-                  luxury residences
+                  properties
                 </p>
               </div>
 

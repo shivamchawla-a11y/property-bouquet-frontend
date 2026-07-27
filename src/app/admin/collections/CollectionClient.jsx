@@ -174,6 +174,16 @@ const publishLandingPage = async (id) => {
     toast.success("Landing page published.");
 
     await fetchLandingPages();
+
+    setSelectedPage((prev) =>
+      prev && prev._id === id
+        ? {
+            ...prev,
+            status: "published",
+            publishedAt: new Date(),
+          }
+        : prev
+    );
   } catch (error) {
     console.error(error);
     toast.error("Unable to publish.");
@@ -320,10 +330,11 @@ const publishPages = async () => {
 />
 
       <DetailsDrawer
-        open={drawerOpen}
-        page={selectedPage}
-        onClose={closeDrawer}
-      />
+  open={drawerOpen}
+  page={selectedPage}
+  onClose={closeDrawer}
+  publishLandingPage={publishLandingPage}
+/>
     </div>
   );
 }
