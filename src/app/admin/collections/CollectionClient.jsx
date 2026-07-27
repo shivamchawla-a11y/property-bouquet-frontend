@@ -24,6 +24,8 @@ export default function CollectionClient() {
 
     const [publishing, setPublishing] = useState(false);
 
+    const [deleting, setDeleting] = useState(false);
+
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -222,6 +224,88 @@ const unpublishLandingPage = async (id) => {
   }
 };
 
+// =====================================================
+// DELETE LANDING PAGE
+// =====================================================
+
+const deleteLandingPage = async (id) => {
+
+  try {
+
+    const res = await fetch(
+      `${API}/landing-pages/${id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+
+
+    const data = await res.json();
+
+
+    if (!res.ok) {
+
+      toast.error(
+        data.message || "Unable to delete."
+      );
+
+      return;
+
+    }
+
+
+    toast.success(
+      "Landing page deleted."
+    );
+
+
+    setLandingPages((prev)=>
+      prev.filter(
+        (page)=>page._id !== id
+      )
+    );
+
+
+    setSelectedPages((prev)=>
+      prev.filter(
+        (pageId)=>pageId !== id
+      )
+    );
+
+
+    closeDrawer();
+
+
+    await fetchLandingPages();
+
+
+  } catch(error){
+
+    console.error(error);
+
+    toast.error(
+      "Unable to delete landing page."
+    );
+
+  }
+
+};
+
+// =====================================================
+// EDIT LANDING PAGE
+// =====================================================
+
+const updateLandingPage = (page)=>{
+
+  console.log(
+    "Edit Landing Page:",
+    page
+  );
+
+
+};
+
 
 // =====================================================
 // BULK PUBLISH
@@ -263,6 +347,70 @@ const publishPages = async () => {
   } finally {
     setPublishing(false);
   }
+};
+
+// =====================================================
+// BULK DELETE
+// =====================================================
+
+const deletePages = async () => {
+
+  if(!selectedPages.length) return;
+
+
+  if(
+    !window.confirm(
+      `Delete ${selectedPages.length} landing page(s)?`
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    setDeleting(true);
+
+
+    await Promise.all(
+      selectedPages.map((id)=>
+        fetch(
+          `${API}/landing-pages/${id}`,
+          {
+            method:"DELETE",
+            credentials:"include",
+          }
+        )
+      )
+    );
+
+
+    toast.success(
+      `${selectedPages.length} landing page(s) deleted.`
+    );
+
+
+    setSelectedPages([]);
+
+
+    await fetchLandingPages();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    toast.error(
+      "Unable to delete pages."
+    );
+
+
+  }finally{
+
+    setDeleting(false);
+
+  }
+
 };
 
   // =====================================================
@@ -318,6 +466,8 @@ const publishPages = async () => {
   refreshCollections={fetchLandingPages}
   publishPages={publishPages}
   publishing={publishing}
+  deletePages={deletePages}
+  deleting={deleting}
 />
 
       <LandingPagesTable
@@ -334,7 +484,10 @@ const publishPages = async () => {
   page={selectedPage}
   onClose={closeDrawer}
   publishLandingPage={publishLandingPage}
+  updateLandingPage={updateLandingPage}
+  deleteLandingPage={deleteLandingPage}
 />
+
     </div>
   );
 }

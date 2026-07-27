@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   X,
   Globe,
@@ -19,7 +20,10 @@ export default function DetailsDrawer({
   page,
   onClose,
   publishLandingPage,
+  updateLandingPage,
+  deleteLandingPage,
 }) {
+  const router = useRouter();
   if (!open || !page) return null;
 
   return (
@@ -309,23 +313,71 @@ export default function DetailsDrawer({
   </div>
 </button>
 
-            <button className="rounded-xl border py-4 font-semibold text-gray-900 hover:bg-gray-50">
-              <div className="flex items-center justify-center gap-2">
-                <Pencil size={18} />
-                Edit SEO
-              </div>
-            </button>
+            <button
+  onClick={() =>
+    updateLandingPage(page)
+  }
+  className="
+    rounded-xl
+    border
+    py-4
+    font-semibold
+    text-gray-900
+    hover:bg-gray-50
+  "
+>
+  <div className="flex items-center justify-center gap-2">
+    <Pencil size={18} />
+    Edit SEO
+  </div>
+</button>
 
-            <button className="rounded-xl border py-4 font-semibold text-gray-900 hover:bg-gray-50">
-              Preview
-            </button>
+            <button
+  onClick={() =>
+    window.open(
+      `https://propertybouquet.com/${page.slug}`,
+      "_blank"
+    )
+  }
+  className="
+    rounded-xl
+    border
+    py-4
+    font-semibold
+    text-gray-900
+    hover:bg-gray-50
+  "
+>
+  Preview
+</button>
 
-            <button className="rounded-xl bg-red-600 py-4 font-semibold text-white hover:bg-red-700">
-              <div className="flex items-center justify-center gap-2">
-                <Trash2 size={18} />
-                Delete
-              </div>
-            </button>
+            <button
+  onClick={() => {
+
+    const confirmDelete =
+      window.confirm(
+        "Are you sure you want to delete this landing page?"
+      );
+
+    if(confirmDelete){
+      deleteLandingPage(page._id);
+    }
+
+  }}
+  className="
+    rounded-xl
+    bg-red-600
+    py-4
+    font-semibold
+    text-white
+    hover:bg-red-700
+  "
+>
+  <div className="flex items-center justify-center gap-2">
+    <Trash2 size={18} />
+    Delete
+  </div>
+</button>
 
           </div>
 

@@ -18,6 +18,8 @@ export default function ToolBar({
   refreshCollections,
   publishPages,
   publishing = false,
+  deletePages,
+  deleting = false,
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
@@ -200,16 +202,29 @@ export default function ToolBar({
           
 
           <button
-            disabled={!selectedPages.length}
-            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
-              selectedPages.length
-                ? "bg-red-600 text-white hover:bg-red-700"
-                : "cursor-not-allowed bg-gray-200 text-gray-500"
-            }`}
-          >
-            <Trash2 size={18} />
-            Delete ({selectedPages.length})
-          </button>
+  onClick={deletePages}
+  disabled={!selectedPages.length || deleting}
+  className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+    selectedPages.length && !deleting
+      ? "bg-red-600 text-white hover:bg-red-700"
+      : "cursor-not-allowed bg-gray-200 text-gray-500"
+  }`}
+>
+  {deleting ? (
+    <>
+      <Loader2
+        size={18}
+        className="animate-spin"
+      />
+      Deleting...
+    </>
+  ) : (
+    <>
+      <Trash2 size={18} />
+      Delete ({selectedPages.length})
+    </>
+  )}
+</button>
 
         </div>
 
