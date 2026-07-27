@@ -532,7 +532,9 @@ const currentProperties =
     mx-auto
     px-4
     mt-28
-    py-16
+    pt-16
+    pb-44
+    md:pb-20
   "
 >
         <div
