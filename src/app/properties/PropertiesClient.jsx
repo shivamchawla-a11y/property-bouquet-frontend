@@ -167,197 +167,141 @@ useEffect(() => {
 
   // ================= CATEGORY =================
 
-  const landingCategories =
-    landingPage?.filters?.categories || [];
+// ================= CATEGORY =================
+
+if(type){
+
+  const searchCategory =
+    type.toLowerCase().trim();
 
 
-  if(landingCategories.length){
+  result = result.filter((property)=>{
 
-    result = result.filter((property)=>{
-
-
-      const categoryId =
-      (
-        property?.categoryData?._id ||
-        property?.categoryData?.id
-      )?.toString();
+    const categoryName =
+      property?.categoryData?.categoryName
+      ?.toLowerCase()
+      .trim();
 
 
-
-      return landingCategories.some(
-        (id)=>
-          id.toString() === categoryId
-      );
-
-
-    });
-
-  }
-  else if(type){
-
-
-    result = result.filter(
-      (property)=>
-
-        property?.categoryData?.categoryName
-        ?.toLowerCase()
-        ===
-        type.toLowerCase()
-
+    return (
+      categoryName?.includes(searchCategory) ||
+      searchCategory.includes(categoryName)
     );
 
-  }
+  });
+
+}
 
 
 
+ // ================= LOCATION =================
+
+if(location){
+
+  const searchLocation =
+    location.toLowerCase().trim();
 
 
-  // ================= LOCATION =================
+  result = result.filter((property)=>{
 
 
-  const landingLocations =
-    landingPage?.filters?.locations || [];
+    const locationNames = [];
 
 
-
-  if(landingLocations.length){
-
-
-    result = result.filter((property)=>{
+    // From hierarchy
+    let current =
+      property?.locationData?.locationRef;
 
 
-      const locationId =
-      (
-        property?.locationData?.locationRef?._id ||
-        property?.locationData?.locationRef?.id
-      )?.toString();
+    while(current){
 
-
-
-      return landingLocations.some(
-        (id)=>
-          id.toString() === locationId
-      );
-
-
-    });
-
-
-  }
-  else if(location){
-
-
-    const searchLocation =
-      location.toLowerCase().trim();
-
-
-
-    result = result.filter((property)=>{
-
-
-      const locationRef =
-        property?.locationData?.locationRef;
-
-
-
-      const locationNames = [];
-
-
-      let current = locationRef;
-
-
-
-      while(current){
-
-        if(current.name){
-
-          locationNames.push(
-            current.name.toLowerCase()
-          );
-
-        }
-
-
-        current=current.parent;
-
+      if(current.name){
+        locationNames.push(
+          current.name.toLowerCase()
+        );
       }
 
+      current=current.parent;
+
+    }
 
 
-      return locationNames.some(
-        (name)=>
-          name.includes(searchLocation)
+    // Fallback
+    if(property?.locationData?.locationName){
+
+      locationNames.push(
+        property.locationData.locationName
+        .toLowerCase()
       );
 
-
-    });
-
-
-  }
+    }
 
 
+    if(property?.locationData?.customLocation){
 
-
-
-  // ================= DEVELOPER =================
-
-
-  const landingDevelopers =
-    landingPage?.filters?.developers || [];
-
-
-
-  if(landingDevelopers.length){
-
-
-    result = result.filter((property)=>{
-
-
-      const developerId =
-      (
-        property?.developer?._id ||
-        property?.developerData?._id ||
-        property?.developerRef?._id
-      )?.toString();
-
-
-
-      return landingDevelopers.some(
-        (id)=>
-          id.toString() === developerId
+      locationNames.push(
+        property.locationData.customLocation
+        .toLowerCase()
       );
 
-
-    });
-
-
-  }
-  else if(developer){
+    }
 
 
-    result = result.filter(
-      (property)=>
-
-        property?.developerName
-        ?.toLowerCase()
-        .includes(
-          developer.toLowerCase()
-        )
-
-        ||
-
-        property?.coreDetails?.developerName
-        ?.toLowerCase()
-        .includes(
-          developer.toLowerCase()
-        )
-
+    return locationNames.some(
+      name =>
+        name.includes(searchLocation)
     );
 
 
-  }
+  });
 
 
+}
+
+
+// ================= DEVELOPER =================
+
+
+if(developer){
+
+  const searchDeveloper =
+    developer.toLowerCase().trim();
+
+
+  result = result.filter((property)=>{
+
+
+    const developerNames = [
+
+      property?.developerName,
+
+      property?.coreDetails?.developerName,
+
+      property?.developer?.name,
+
+      property?.developerData?.name,
+
+      property?.developerRef?.name
+
+    ]
+    .filter(Boolean)
+    .map(
+      item =>
+        item.toLowerCase().trim()
+    );
+
+
+    return developerNames.some(
+      name =>
+        name.includes(searchDeveloper) ||
+        searchDeveloper.includes(name)
+    );
+
+
+  });
+
+
+}
 
 
 
