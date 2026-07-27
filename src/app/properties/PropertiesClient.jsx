@@ -538,8 +538,10 @@ const currentProperties =
         <div
   className="
     grid
+    grid-cols-1
     lg:grid-cols-[300px_1fr]
-    gap-8
+    gap-6
+    lg:gap-8
     items-start
   "
 >
@@ -603,7 +605,17 @@ const currentProperties =
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div
+  className="
+    flex
+    flex-col
+    sm:flex-row
+    sm:items-center
+    gap-3
+    w-full
+    sm:w-auto
+  "
+>
   <span
     className="
       text-sm
@@ -681,9 +693,11 @@ const currentProperties =
               <div
                 className="
                   grid
-                  md:grid-cols-2
+                  grid-cols-1
+                  sm:grid-cols-2
                   xl:grid-cols-3
-                  gap-8
+                  gap-5
+                  lg:gap-8
                 "
               >
                 {currentProperties.map(
@@ -692,20 +706,22 @@ const currentProperties =
   key={property._id}
   href={`/${property.slug}`}
   className="
-    group
-    relative
-    block
-    h-[420px]
-    overflow-hidden
-    rounded-[24px]
-    border
-    border-[#D4AF37]/25
-    bg-white
-    transition-all
-    duration-500
-    hover:-translate-y-1
-    hover:shadow-[0_18px_40px_rgba(0,0,0,0.12)]
-  "
+group
+relative
+block
+h-[370px]
+sm:h-[390px]
+lg:h-[420px]
+overflow-hidden
+rounded-[22px]
+border
+border-[#D4AF37]/25
+bg-white
+transition-all
+duration-500
+hover:-translate-y-1
+hover:shadow-[0_18px_40px_rgba(0,0,0,0.12)]
+"
 >
   {/* IMAGE */}
 
