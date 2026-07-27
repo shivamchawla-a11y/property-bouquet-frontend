@@ -95,237 +95,460 @@ const selectedPropertyType =
     fetchProperties();
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
   if (!properties.length) return;
 
   let result = [...properties];
 
+
   const search =
-  landingPage?.filters?.search ||
-  searchParams.get("search");
+    landingPage?.filters?.search ||
+    searchParams.get("search");
+
 
   const type =
-  landingPage?.values?.category?.name ||
-  searchParams.get("propertyType");
+    landingPage?.values?.category?.name ||
+    searchParams.get("propertyType");
+
 
   const location =
-  landingPage?.values?.location?.name ||
-  searchParams.get("location");
+    landingPage?.values?.location?.name ||
+    searchParams.get("location");
+
 
   const developer =
-  landingPage?.values?.developer?.name ||
-  searchParams.get("developer");
+    landingPage?.values?.developer?.name ||
+    searchParams.get("developer");
+
 
   const budget =
-  landingPage?.filters?.budget?.min != null &&
-  landingPage?.filters?.budget?.max != null
-    ? `${landingPage.filters.budget.min}-${landingPage.filters.budget.max}`
-    : searchParams.get("budget");
+    landingPage?.filters?.budget?.min != null &&
+    landingPage?.filters?.budget?.max != null
+      ? `${landingPage.filters.budget.min}-${landingPage.filters.budget.max}`
+      : searchParams.get("budget");
+
 
   const amenitiesParam =
-  landingPage?.filters?.amenities?.join(",") ||
-  searchParams.get("amenity");
+    landingPage?.filters?.amenities?.join(",") ||
+    searchParams.get("amenity");
+
 
   const bhk =
-  landingPage?.values?.bhk ||
-  searchParams.get("bhk");
+    landingPage?.values?.bhk ||
+    searchParams.get("bhk");
 
-const selectedAmenities =
-  amenitiesParam
-    ? amenitiesParam
-        .split(",")
-        .map((item) => item.trim())
-    : [];
 
-  // SEARCH
 
-  if (search) {
+  const selectedAmenities =
+    amenitiesParam
+      ? amenitiesParam
+          .split(",")
+          .map((item)=>item.trim())
+      : [];
+
+
+
+  // ================= SEARCH =================
+
+  if(search){
+
     result = result.filter(
-      (property) =>
+      (property)=>
         property?.coreDetails?.title
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
     );
+
   }
 
-  // PROPERTY TYPE
 
-  if (type) {
+
+  // ================= CATEGORY =================
+
+  const landingCategories =
+    landingPage?.filters?.categories || [];
+
+
+  if(landingCategories.length){
+
+    result = result.filter((property)=>{
+
+
+      const categoryId =
+      (
+        property?.categoryData?._id ||
+        property?.categoryData?.id
+      )?.toString();
+
+
+
+      return landingCategories.some(
+        (id)=>
+          id.toString() === categoryId
+      );
+
+
+    });
+
+  }
+  else if(type){
+
+
     result = result.filter(
-      (property) =>
+      (property)=>
+
         property?.categoryData?.categoryName
-          ?.toLowerCase() ===
+        ?.toLowerCase()
+        ===
         type.toLowerCase()
+
     );
+
   }
 
-  // LOCATION
 
-// ================= LOCATION =================
 
-if (location) {
 
-  const searchLocation =
-    location.toLowerCase().trim();
 
-  result = result.filter((property) => {
+  // ================= LOCATION =================
 
-    const locationRef =
-      property?.locationData?.locationRef;
 
-    const locationNames = [];
+  const landingLocations =
+    landingPage?.filters?.locations || [];
 
-    let current = locationRef;
 
-    while (current) {
 
-      if (current.name) {
-        locationNames.push(
-          current.name.toLowerCase()
-        );
+  if(landingLocations.length){
+
+
+    result = result.filter((property)=>{
+
+
+      const locationId =
+      (
+        property?.locationData?.locationRef?._id ||
+        property?.locationData?.locationRef?.id
+      )?.toString();
+
+
+
+      return landingLocations.some(
+        (id)=>
+          id.toString() === locationId
+      );
+
+
+    });
+
+
+  }
+  else if(location){
+
+
+    const searchLocation =
+      location.toLowerCase().trim();
+
+
+
+    result = result.filter((property)=>{
+
+
+      const locationRef =
+        property?.locationData?.locationRef;
+
+
+
+      const locationNames = [];
+
+
+      let current = locationRef;
+
+
+
+      while(current){
+
+        if(current.name){
+
+          locationNames.push(
+            current.name.toLowerCase()
+          );
+
+        }
+
+
+        current=current.parent;
+
       }
 
-      current = current.parent;
-    }
 
-    return locationNames.some((name) =>
-      name.includes(searchLocation)
-    );
 
-  });
+      return locationNames.some(
+        (name)=>
+          name.includes(searchLocation)
+      );
 
-}
-  // DEVELOPER
 
-  if (developer) {
-    result = result.filter(
-      (property) =>
-        property?.developerName
-          ?.toLowerCase()
-          .includes(
-            developer.toLowerCase()
-          ) ||
+    });
 
-        property?.coreDetails?.developerName
-          ?.toLowerCase()
-          .includes(
-            developer.toLowerCase()
-          )
-    );
+
   }
 
-  // BUDGET
 
-  if (budget) {
+
+
+
+  // ================= DEVELOPER =================
+
+
+  const landingDevelopers =
+    landingPage?.filters?.developers || [];
+
+
+
+  if(landingDevelopers.length){
+
+
+    result = result.filter((property)=>{
+
+
+      const developerId =
+      (
+        property?.developer?._id ||
+        property?.developerData?._id ||
+        property?.developerRef?._id
+      )?.toString();
+
+
+
+      return landingDevelopers.some(
+        (id)=>
+          id.toString() === developerId
+      );
+
+
+    });
+
+
+  }
+  else if(developer){
+
+
+    result = result.filter(
+      (property)=>
+
+        property?.developerName
+        ?.toLowerCase()
+        .includes(
+          developer.toLowerCase()
+        )
+
+        ||
+
+        property?.coreDetails?.developerName
+        ?.toLowerCase()
+        .includes(
+          developer.toLowerCase()
+        )
+
+    );
+
+
+  }
+
+
+
+
+
+  // ================= BUDGET =================
+
+
+  if(budget){
+
+
     const [
       minBudget,
-      maxBudget,
-    ] = budget
+      maxBudget
+    ] =
+    budget
       .split("-")
       .map(Number);
 
-    result = result.filter(
-      (property) => {
-        // Show "Price on Request" properties in all searches
-if (property?.coreDetails?.priceOnRequest) {
-  return true;
-}
 
-const startPrice =
-  property?.coreDetails?.startingPrice || 0;
 
-const maxPrice =
-  property?.coreDetails?.maxPrice ||
-  startPrice;
+    result = result.filter((property)=>{
 
-return (
-  maxPrice >= minBudget &&
-  startPrice <= maxBudget
-);
+
+      if(property?.coreDetails?.priceOnRequest){
+
+        return true;
+
       }
-    );
+
+
+
+      const startPrice =
+        property?.coreDetails?.startingPrice || 0;
+
+
+      const maxPrice =
+        property?.coreDetails?.maxPrice ||
+        startPrice;
+
+
+
+      return (
+        maxPrice >= minBudget &&
+        startPrice <= maxBudget
+      );
+
+
+    });
+
+
   }
 
-  // AMENITY
 
-if (selectedAmenities.length) {
-  result = result.filter((property) => {
 
-    const propertyAmenities =
-      property?.overview?.amenities?.map(
-        (item) =>
-          item?.heading
+
+
+  // ================= AMENITIES =================
+
+
+  if(selectedAmenities.length){
+
+
+    result = result.filter((property)=>{
+
+
+      const propertyAmenities =
+        property?.overview?.amenities?.map(
+          (item)=>
+            item?.heading
             ?.toLowerCase()
             .trim()
-      ) || [];
 
-    return selectedAmenities.every(
-      (amenity) =>
-        propertyAmenities.includes(
-          amenity
+        ) || [];
+
+
+
+      return selectedAmenities.every(
+        (amenity)=>
+
+          propertyAmenities.includes(
+            amenity
             .toLowerCase()
             .trim()
+          )
+
+      );
+
+
+    });
+
+
+  }
+
+
+
+
+
+  // ================= BHK =================
+
+
+  if(bhk){
+
+
+    result = result.filter(
+      (property)=>
+
+        property?.gatedContent?.floorPlans
+        ?.some(
+          (plan)=>
+
+            plan?.unitType
+            ?.toLowerCase()
+            .trim()
+            ===
+            bhk
+            .toLowerCase()
+            .trim()
+
         )
+
     );
-  });
-}
 
-// BHK
 
-if (bhk) {
-  result = result.filter(
-    (property) =>
-      property?.gatedContent?.floorPlans?.some(
-        (plan) =>
-          plan?.unitType
-            ?.toLowerCase()
-            .trim() ===
-          bhk
-            .toLowerCase()
-            .trim()
-      )
-  );
-}
+  }
 
- // SORTING
 
-if (sortBy === "newest") {
-  result.sort((a, b) => {
-    return (
-      new Date(b.createdAt) -
-      new Date(a.createdAt)
+
+
+
+  // ================= SORTING =================
+
+
+  if(sortBy==="newest"){
+
+
+    result.sort(
+      (a,b)=>
+
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+
     );
-  });
-}
 
-if (sortBy === "price-low-high") {
-  result.sort(
-    (a, b) =>
-      (a?.coreDetails?.startingPrice || 0) -
-      (b?.coreDetails?.startingPrice || 0)
-  );
-}
 
-if (sortBy === "price-high-low") {
-  result.sort(
-    (a, b) =>
-      (b?.coreDetails?.startingPrice || 0) -
+  }
+
+
+
+  if(sortBy==="price-low-high"){
+
+
+    result.sort(
+      (a,b)=>
+
       (a?.coreDetails?.startingPrice || 0)
-  );
-}
+      -
+      (b?.coreDetails?.startingPrice || 0)
 
-  setFilteredProperties(
-    result
-  );
-}, [
+    );
+
+
+  }
+
+
+
+  if(sortBy==="price-high-low"){
+
+
+    result.sort(
+      (a,b)=>
+
+      (b?.coreDetails?.startingPrice || 0)
+      -
+      (a?.coreDetails?.startingPrice || 0)
+
+    );
+
+
+  }
+
+
+
+
+  setFilteredProperties(result);
+
+
+},[
   properties,
   searchParams,
   landingPage,
-  sortBy,
+  sortBy
 ]);
-
 
   // ================= LOADING =================
 
