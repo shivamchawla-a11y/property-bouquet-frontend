@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
+import { formatDistanceToNow } from "date-fns";
 import {
   Users,
   Phone,
@@ -485,13 +486,15 @@ useEffect(() => {
 
               <th className="px-6 py-4 font-semibold">Status</th>
 
-              <th className="px-6 py-4 font-semibold">Priority</th>
+              <th className="px-6 py-4 font-semibold">
+                Received
+              </th>
 
               <th className="px-6 py-4 font-semibold">Agent</th>
 
-              <th className="px-6 py-4 font-semibold">Notes</th>
-
               <th className="px-6 py-4 font-semibold">Actions</th>
+
+              <th className="px-6 py-4 font-semibold">Notes</th>
 
             </tr>
 
@@ -572,19 +575,37 @@ useEffect(() => {
 
                   </td>
 
-                  {/* PRIORITY */}
+                  {/* RECEIVED */}
 
-                  <td className="px-6 py-5">
+<td className="px-6 py-5">
 
-                    <span
-                      className={`px-4 py-2 rounded-full text-xs font-bold ${priorityStyle(
-                        l.priority
-                      )}`}
-                    >
-                      {l.priority || "Warm"}
-                    </span>
+  <div className="flex flex-col">
 
-                  </td>
+    <span className="font-semibold text-gray-800">
+      {formatDistanceToNow(
+        new Date(l.createdAt),
+        {
+          addSuffix: true,
+        }
+      )}
+    </span>
+
+    <span className="text-xs text-gray-500 mt-1">
+      {new Date(l.createdAt).toLocaleString(
+        "en-IN",
+        {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      )}
+    </span>
+
+  </div>
+
+</td>
 
                   {/* AGENT */}
 
@@ -634,6 +655,32 @@ useEffect(() => {
 
                   </td>
 
+                   {/* ACTIONS */}
+
+                  <td className="px-6 py-5">
+
+                    <div className="flex gap-3">
+
+                      <button
+                        onClick={() => window.open(`tel:${l.phone}`)}
+                        className="bg-green-700 hover:bg-green-800 text-white p-3 rounded-xl"
+                      >
+                        <Phone size={16} />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          window.open(`https://wa.me/91${l.phone}`)
+                        }
+                        className="bg-[#25D366] hover:opacity-90 text-white p-3 rounded-xl"
+                      >
+                        <MessageCircle size={16} />
+                      </button>
+
+                    </div>
+
+                  </td>
+
                   {/* NOTES */}
 
                   <td className="px-6 py-5 w-[250px]">
@@ -676,31 +723,7 @@ useEffect(() => {
 
                   </td>
 
-                  {/* ACTIONS */}
-
-                  <td className="px-6 py-5">
-
-                    <div className="flex gap-3">
-
-                      <button
-                        onClick={() => window.open(`tel:${l.phone}`)}
-                        className="bg-green-700 hover:bg-green-800 text-white p-3 rounded-xl"
-                      >
-                        <Phone size={16} />
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          window.open(`https://wa.me/91${l.phone}`)
-                        }
-                        className="bg-[#25D366] hover:opacity-90 text-white p-3 rounded-xl"
-                      >
-                        <MessageCircle size={16} />
-                      </button>
-
-                    </div>
-
-                  </td>
+                 
 
                 </tr>
               ))

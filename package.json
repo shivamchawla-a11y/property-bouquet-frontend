@@ -12,6 +12,7 @@
     "@iconify/react": "^6.0.2",
     "@react-google-maps/api": "^2.20.8",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "date-fns": "^4.4.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.38.0",

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-
-
 import Navbar from "@/components/home/Navbar";
 import PropertyFilters from "@/utils/PropertyFilters";
 
@@ -34,6 +32,10 @@ export default function PropertiesClient({
 
   const [sortBy, setSortBy] =
     useState("newest");
+    const [currentPage, setCurrentPage] = useState(1);
+
+const CARDS_PER_PAGE = 9;
+
     const searchParams =
   useSearchParams();
 
@@ -484,7 +486,8 @@ if(developer){
 
 
 
-  setFilteredProperties(result);
+  setCurrentPage(1);
+setFilteredProperties(result);
 
 
 },[
@@ -494,6 +497,18 @@ if(developer){
   sortBy
 ]);
 
+const totalPages = Math.ceil(
+  filteredProperties.length / CARDS_PER_PAGE
+);
+
+const startIndex =
+  (currentPage - 1) * CARDS_PER_PAGE;
+
+const currentProperties =
+  filteredProperties.slice(
+    startIndex,
+    startIndex + CARDS_PER_PAGE
+  );
   // ================= LOADING =================
 
   if (loading) {
@@ -671,7 +686,7 @@ if(developer){
                   gap-8
                 "
               >
-                {filteredProperties.map(
+                {currentProperties.map(
                   (property) => (
                    <Link
   key={property._id}
@@ -980,6 +995,7 @@ group-hover:scale-105
                   )
                 )}
               </div>
+              
             ) : (
               <div
                 className="
@@ -1005,9 +1021,122 @@ group-hover:scale-105
                   filters.
                 </p>
               </div>
+              
             )}
+                        {/* PAGINATION */}
+
+{/* PAGINATION */}
+
+{totalPages > 1 && (
+  <div className="flex justify-center mt-12 gap-2 flex-wrap">
+
+    {/* Previous */}
+
+    <button
+      onClick={() => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+
+        window.scrollTo({
+  top: 0,
+  behavior: "smooth",
+});
+      }}
+      disabled={currentPage === 1}
+      className="
+        px-5
+        h-12
+        rounded-xl
+        border
+        border-[#D4AF37]/30
+        bg-white
+        text-[#081c15]
+        font-semibold
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+        hover:bg-[#D4AF37]
+        hover:text-black
+        transition-all
+        duration-300
+      "
+    >
+      Previous
+    </button>
+
+    {/* Page Numbers */}
+
+    {Array.from(
+      { length: totalPages },
+      (_, index) => index + 1
+    ).map((page) => (
+      <button
+        key={page}
+        onClick={() => {
+          setCurrentPage(page);
+
+         window.scrollTo({
+  top: 0,
+  behavior: "smooth",
+});
+        }}
+        className={`
+          w-12
+          h-12
+          rounded-xl
+          font-bold
+          transition-all
+          duration-300
+          ${
+            currentPage === page
+              ? "bg-[#D4AF37] text-black"
+              : "bg-white text-[#081c15] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black"
+          }
+        `}
+      >
+        {page}
+      </button>
+    ))}
+
+    {/* Next */}
+
+    <button
+      onClick={() => {
+        setCurrentPage((prev) =>
+          Math.min(prev + 1, totalPages)
+        );
+
+        window.scrollTo({
+  top: 0,
+  behavior: "smooth",
+});
+      }}
+      disabled={currentPage === totalPages}
+      className="
+        px-5
+        h-12
+        rounded-xl
+        border
+        border-[#D4AF37]/30
+        bg-white
+        text-[#081c15]
+        font-semibold
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+        hover:bg-[#D4AF37]
+        hover:text-black
+        transition-all
+        duration-300
+      "
+    >
+      Next
+    </button>
+
+  </div>
+)}
+            
           </div>
+          
         </div>
+        
       </section>
     </div>
   );
