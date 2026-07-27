@@ -40,10 +40,6 @@ export default function PropertyFilters({
 });
   const router = useRouter();
 
-  const baseUrl = landingPage
-  ? `/${landingPage.slug}`
-  : "/properties";
-
   const navigate = (params) => {
   const query = params.toString();
 
