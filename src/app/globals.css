@@ -377,7 +377,10 @@ select.input option {
 /* Tables */
 
 .prose-luxury table {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin: 24px 0;
 }
@@ -419,4 +422,36 @@ select.input option {
   background: #f4f4f4;
   padding: 3px 7px;
   border-radius: 6px;
+}
+
+/* ================= MOBILE RICH TEXT FIX ================= */
+
+.prose-luxury,
+.prose-luxury * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.prose-luxury img,
+.prose-luxury iframe,
+.prose-luxury video,
+.prose-luxury canvas,
+.prose-luxury svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose-luxury table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose-luxury pre {
+  overflow-x: auto;
+}
+
+.prose-luxury * {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

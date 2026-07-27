@@ -822,7 +822,7 @@ group-hover:scale-105
 <h3
   className="
     text-white
-    text-[28px]
+    text-[23px]
     font-black
     leading-[1.05]
     mb-2
