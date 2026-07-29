@@ -33,8 +33,10 @@ export default function PropertiesClient({
   const [sortBy, setSortBy] =
     useState("newest");
     const [currentPage, setCurrentPage] = useState(1);
+    const [visibleCards, setVisibleCards] = useState(9);
+    const [isDesktop, setIsDesktop] = useState(false);
 
-const CARDS_PER_PAGE = 9;
+    const CARDS_PER_PAGE = 9;
 
     const searchParams =
   useSearchParams();
@@ -486,7 +488,8 @@ if(developer){
 
 
 
-  setCurrentPage(1);
+setCurrentPage(1);
+setVisibleCards(CARDS_PER_PAGE);
 setFilteredProperties(result);
 
 
@@ -497,6 +500,19 @@ setFilteredProperties(result);
   sortBy
 ]);
 
+useEffect(() => {
+  const checkScreen = () => {
+    setIsDesktop(window.innerWidth >= 1024);
+  };
+
+  checkScreen();
+
+  window.addEventListener("resize", checkScreen);
+
+  return () =>
+    window.removeEventListener("resize", checkScreen);
+}, []);
+
 const totalPages = Math.ceil(
   filteredProperties.length / CARDS_PER_PAGE
 );
@@ -504,11 +520,12 @@ const totalPages = Math.ceil(
 const startIndex =
   (currentPage - 1) * CARDS_PER_PAGE;
 
-const currentProperties =
-  filteredProperties.slice(
-    startIndex,
-    startIndex + CARDS_PER_PAGE
-  );
+const currentProperties = isDesktop
+  ? filteredProperties.slice(0, visibleCards)
+  : filteredProperties.slice(
+      startIndex,
+      startIndex + CARDS_PER_PAGE
+    );
   // ================= LOADING =================
 
   if (loading) {
@@ -1045,6 +1062,7 @@ group-hover:scale-105
 
 {/* PAGINATION */}
 
+<div className="lg:hidden">
 {totalPages > 1 && (
   <div className="flex justify-center mt-12 gap-2 flex-wrap">
 
@@ -1150,7 +1168,34 @@ group-hover:scale-105
 
   </div>
 )}
-            
+ </div>
+
+{/* DESKTOP LOAD MORE */}
+
+<div className="hidden lg:flex justify-center mt-12">
+  {visibleCards < filteredProperties.length && (
+    <button
+      onClick={() =>
+        setVisibleCards((prev) => prev + CARDS_PER_PAGE)
+      }
+      className="
+        px-10
+        h-14
+        rounded-2xl
+        bg-[#D4AF37]
+        text-black
+        font-bold
+        shadow-lg
+        transition-all
+        duration-300
+        hover:scale-105
+        hover:bg-[#c89c20]
+      "
+    >
+      Load More
+    </button>
+  )}
+</div>           
           </div>
           
         </div>
