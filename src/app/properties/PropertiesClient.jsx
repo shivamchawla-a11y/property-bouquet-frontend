@@ -32,9 +32,7 @@ export default function PropertiesClient({
 
   const [sortBy, setSortBy] =
     useState("newest");
-    const [currentPage, setCurrentPage] = useState(1);
     const [visibleCards, setVisibleCards] = useState(9);
-    const [isDesktop, setIsDesktop] = useState(false);
 
     const CARDS_PER_PAGE = 9;
 
@@ -488,7 +486,6 @@ if(developer){
 
 
 
-setCurrentPage(1);
 setVisibleCards(CARDS_PER_PAGE);
 setFilteredProperties(result);
 
@@ -500,32 +497,11 @@ setFilteredProperties(result);
   sortBy
 ]);
 
-useEffect(() => {
-  const checkScreen = () => {
-    setIsDesktop(window.innerWidth >= 1024);
-  };
 
-  checkScreen();
-
-  window.addEventListener("resize", checkScreen);
-
-  return () =>
-    window.removeEventListener("resize", checkScreen);
-}, []);
-
-const totalPages = Math.ceil(
-  filteredProperties.length / CARDS_PER_PAGE
+const currentProperties = filteredProperties.slice(
+  0,
+  visibleCards
 );
-
-const startIndex =
-  (currentPage - 1) * CARDS_PER_PAGE;
-
-const currentProperties = isDesktop
-  ? filteredProperties.slice(0, visibleCards)
-  : filteredProperties.slice(
-      startIndex,
-      startIndex + CARDS_PER_PAGE
-    );
   // ================= LOADING =================
 
   if (loading) {
@@ -1058,121 +1034,10 @@ group-hover:scale-105
               </div>
               
             )}
-                        {/* PAGINATION */}
 
-{/* PAGINATION */}
+{/* LOAD MORE */}
 
-<div className="lg:hidden">
-{totalPages > 1 && (
-  <div className="flex justify-center mt-12 gap-2 flex-wrap">
-
-    {/* Previous */}
-
-    <button
-      onClick={() => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-
-        window.scrollTo({
-  top: 0,
-  behavior: "smooth",
-});
-      }}
-      disabled={currentPage === 1}
-      className="
-        px-5
-        h-12
-        rounded-xl
-        border
-        border-[#D4AF37]/30
-        bg-white
-        text-[#081c15]
-        font-semibold
-        disabled:opacity-40
-        disabled:cursor-not-allowed
-        hover:bg-[#D4AF37]
-        hover:text-black
-        transition-all
-        duration-300
-      "
-    >
-      Previous
-    </button>
-
-    {/* Page Numbers */}
-
-    {Array.from(
-      { length: totalPages },
-      (_, index) => index + 1
-    ).map((page) => (
-      <button
-        key={page}
-        onClick={() => {
-          setCurrentPage(page);
-
-         window.scrollTo({
-  top: 0,
-  behavior: "smooth",
-});
-        }}
-        className={`
-          w-12
-          h-12
-          rounded-xl
-          font-bold
-          transition-all
-          duration-300
-          ${
-            currentPage === page
-              ? "bg-[#D4AF37] text-black"
-              : "bg-white text-[#081c15] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black"
-          }
-        `}
-      >
-        {page}
-      </button>
-    ))}
-
-    {/* Next */}
-
-    <button
-      onClick={() => {
-        setCurrentPage((prev) =>
-          Math.min(prev + 1, totalPages)
-        );
-
-        window.scrollTo({
-  top: 0,
-  behavior: "smooth",
-});
-      }}
-      disabled={currentPage === totalPages}
-      className="
-        px-5
-        h-12
-        rounded-xl
-        border
-        border-[#D4AF37]/30
-        bg-white
-        text-[#081c15]
-        font-semibold
-        disabled:opacity-40
-        disabled:cursor-not-allowed
-        hover:bg-[#D4AF37]
-        hover:text-black
-        transition-all
-        duration-300
-      "
-    >
-      Next
-    </button>
-
-  </div>
-)}
- </div>
-
-{/* DESKTOP LOAD MORE */}
-
-<div className="hidden lg:flex justify-center mt-12">
+<div className="flex justify-center mt-12">
   {visibleCards < filteredProperties.length && (
     <button
       onClick={() =>
@@ -1195,7 +1060,7 @@ group-hover:scale-105
       Load More
     </button>
   )}
-</div>           
+</div>        
           </div>
           
         </div>
