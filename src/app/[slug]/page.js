@@ -6,11 +6,14 @@ import { notFound } from "next/navigation";
 import { buildPropertySEO } from "@/lib/propertySeo";
 import { buildPropertySchema } from "@/lib/propertySchema";
 
+import { buildLandingPageSEO } from "@/lib/landingPageSeo";
+import { buildLandingPageSchema } from "@/lib/landingPageSchema";
+
 const API = "https://propertybouquet.com";
 
 // ======================================================
 // PROPERTY
-// ======================================================s
+// ======================================================
 
 async function getProperty(slug) {
   try {
@@ -65,35 +68,33 @@ async function getLandingPage(slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
-  // Try Property First
+  // ------------------------------------
+  // PROPERTY
+  // ------------------------------------
+
   const property = await getProperty(slug);
 
   if (property) {
     return buildPropertySEO(property, slug);
   }
 
-  // Try Landing Page
+  // ------------------------------------
+  // LANDING PAGE
+  // ------------------------------------
+
   const landingPage = await getLandingPage(slug);
 
   if (landingPage) {
-    return {
-      title:
-        landingPage.seo?.metaTitle ||
-        landingPage.title,
-
-      description:
-        landingPage.seo?.metaDescription ||
-        "",
-
-      keywords:
-        landingPage.seo?.keywords || [],
-    };
+    return buildLandingPageSEO(landingPage, slug);
   }
+
+  // ------------------------------------
+  // NOT FOUND
+  // ------------------------------------
 
   return {
     title: "Page Not Found | Property Bouquet",
-    description:
-      "The requested page could not be found.",
+    description: "The requested page could not be found.",
   };
 }
 
@@ -111,10 +112,7 @@ export default async function Page({ params }) {
   const property = await getProperty(slug);
 
   if (property) {
-    const schema = buildPropertySchema(
-      property,
-      slug
-    );
+    const schema = buildPropertySchema(property, slug);
 
     return (
       <>
@@ -136,14 +134,24 @@ export default async function Page({ params }) {
   // LANDING PAGE
   // ------------------------------------
 
-  const landingPage =
-    await getLandingPage(slug);
+  const landingPage = await getLandingPage(slug);
 
   if (landingPage) {
+    const schema = buildLandingPageSchema(landingPage);
+
     return (
-      <PropertiesClient
-        landingPage={landingPage}
-      />
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schema),
+          }}
+        />
+
+        <div className="bg-white">
+          <PropertiesClient landingPage={landingPage} />
+        </div>
+      </>
     );
   }
 
