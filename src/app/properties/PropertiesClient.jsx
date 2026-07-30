@@ -1078,14 +1078,18 @@ group-hover:scale-105
   )}
 </div>        
           </div>
-          {showFilters && (
+        </div>
+        {/* MOBILE FILTER DRAWER */}
+{/* MOBILE FILTER DRAWER */}
+{showFilters && (
   <div className="fixed inset-0 z-[9999] lg:hidden">
-
+    {/* Overlay */}
     <div
       className="absolute inset-0 bg-black/60"
       onClick={() => setShowFilters(false)}
     />
 
+    {/* Drawer */}
     <div
       className="
         absolute
@@ -1094,19 +1098,19 @@ group-hover:scale-105
         h-full
         w-[88%]
         max-w-[360px]
-        bg-[#f8f8f8]
-        shadow-2xl
+        bg-white
         overflow-y-auto
+        shadow-2xl
       "
     >
-      <div className="sticky top-0 z-20 bg-white border-b p-5 flex items-center justify-between">
-        <h3 className="text-xl font-bold">
+      <div className="sticky top-0 bg-white z-20 border-b p-5 flex items-center justify-between">
+        <h2 className="text-xl font-bold">
           Filters
-        </h3>
+        </h2>
 
         <button
           onClick={() => setShowFilters(false)}
-          className="text-3xl leading-none"
+          className="text-3xl"
         >
           ×
         </button>
@@ -1118,6 +1122,7 @@ group-hover:scale-105
           onFiltered={(data) => {
             setFilteredProperties(data);
             setVisibleCards(CARDS_PER_PAGE);
+            setShowFilters(false);
           }}
           selectedLocation={selectedLocation}
           selectedDeveloper={selectedDeveloper}
@@ -1135,8 +1140,6 @@ group-hover:scale-105
     </div>
   </div>
 )}
-        </div>
-        
       </section>
     </div>
   );

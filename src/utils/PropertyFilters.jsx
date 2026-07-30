@@ -402,16 +402,8 @@ if (selectedBhk) {
 );
 
   return (
-    <aside
-  className="
-    hidden
-    lg:block
-    w-full
-    min-w-[380px]
-    [&_*]:text-[#111827]
-  "
->
-
+<aside className="w-full [&_*]:text-[#111827]">
+  
       <div
   className="
     sticky
