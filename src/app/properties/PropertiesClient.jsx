@@ -10,9 +10,10 @@ import { formatPrice } from "@/utils/formatPrice";
 
 import {
   MapPin,
-  ArrowRight,
+ ArrowRight,
   Home,
   Heart,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export default function PropertiesClient({
@@ -33,6 +34,7 @@ export default function PropertiesClient({
   const [sortBy, setSortBy] =
     useState("newest");
     const [visibleCards, setVisibleCards] = useState(9);
+    const [showFilters, setShowFilters] = useState(false);
 
     const CARDS_PER_PAGE = 9;
 
@@ -497,6 +499,13 @@ setFilteredProperties(result);
   sortBy
 ]);
 
+useEffect(() => {
+  document.body.style.overflow = showFilters ? "hidden" : "auto";
+
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [showFilters]);
 
 const currentProperties = filteredProperties.slice(
   0,
@@ -542,144 +551,151 @@ const currentProperties = filteredProperties.slice(
 >
           {/* FILTERS */}
 
-          <PropertyFilters
-  properties={properties}
-  onFiltered={setFilteredProperties}
-  selectedLocation={selectedLocation}
-  selectedDeveloper={selectedDeveloper}
-  selectedBudget={selectedBudget}
-  selectedAmenity={selectedAmenity}
-  selectedBhk={selectedBhk}
-  selectedPropertyType={selectedPropertyType}
-  baseUrl={
-    landingPage
-      ? `/${landingPage.slug}`
-      : "/properties"
-  }
-/>
+          <aside className="hidden lg:block sticky top-28 self-start">
+  <PropertyFilters
+    properties={properties}
+    onFiltered={setFilteredProperties}
+    selectedLocation={selectedLocation}
+    selectedDeveloper={selectedDeveloper}
+    selectedBudget={selectedBudget}
+    selectedAmenity={selectedAmenity}
+    selectedBhk={selectedBhk}
+    selectedPropertyType={selectedPropertyType}
+    baseUrl={
+      landingPage
+        ? `/${landingPage.slug}`
+        : "/properties"
+    }
+  />
+</aside>
           {/* RIGHT */}
 
           <div>
 
             {/* TOP BAR */}
 
-            <div
-              className="
-                bg-white
-                rounded-[30px]
-                p-6
-                shadow-lg
-                border
-                border-gray-100
-                flex
-                flex-col
-                md:flex-row
-                gap-5
-                md:items-center
-                md:justify-between
-                mb-10
-              "
-            >
-              <div>
-                <h2
-                  className="
-                    text-3xl
-                    font-black
-                    text-[#081c15]
-                  "
-                >
-                  {landingPage?.title || "Available Properties"}
-                </h2>
-
-                <p className="text-gray-500 mt-2">
-                  Showing{" "}
-                  {
-                    filteredProperties.length
-                  }{" "}
-                  properties
-                </p>
-              </div>
-
-              <div
+<div
   className="
+    bg-white
+    rounded-[30px]
+    p-6
+    shadow-lg
+    border
+    border-gray-100
     flex
     flex-col
-    sm:flex-row
-    sm:items-center
-    gap-3
-    w-full
-    sm:w-auto
+    md:flex-row
+    gap-5
+    md:items-center
+    md:justify-between
+    mb-10
   "
 >
-  <span
+  <div>
+    <h2
+      className="
+        text-3xl
+        font-black
+        text-[#081c15]
+      "
+    >
+      {landingPage?.title || "Available Properties"}
+    </h2>
+
+    <p className="text-gray-500 mt-2">
+      Showing {filteredProperties.length} properties
+    </p>
+  </div>
+
+  <div
     className="
-      text-sm
-      font-semibold
-      text-gray-500
-      whitespace-nowrap
+      flex
+      flex-col
+      sm:flex-row
+      sm:items-center
+      gap-3
+      w-full
+      sm:w-auto
     "
   >
-    Sort By
-  </span>
+    {/* MOBILE FILTER BUTTON */}
 
-  <div className="relative">
-    <select
-      value={sortBy}
-      onChange={(e) =>
-        setSortBy(e.target.value)
-      }
+    <button
+      onClick={() => setShowFilters(true)}
       className="
+        lg:hidden
         h-14
-        min-w-[240px]
-        pl-5
-        pr-12
+        px-6
         rounded-2xl
-        border
-        border-[#d4af37]/25
-        bg-white
-        text-[#081c15]
+        bg-[#081c15]
+        text-white
         font-semibold
-        shadow-[0_4px_20px_rgba(0,0,0,0.05)]
-        outline-none
-        appearance-none
-        cursor-pointer
         transition-all
-        duration-300
-        hover:border-[#D4AF37]/50
-        focus:border-[#D4AF37]
-        focus:ring-4
-        focus:ring-[#D4AF37]/10
+        hover:bg-[#0f2d22]
       "
     >
-      <option value="newest">
-        Newest First
-      </option>
+      Filters
+    </button>
 
-      <option value="price-low-high">
-        Price: Low to High
-      </option>
-
-      <option value="price-high-low">
-        Price: High to Low
-      </option>
-    </select>
-
-    <div
+    <span
       className="
-        absolute
-        right-5
-        top-1/2
-        -translate-y-1/2
-        pointer-events-none
-        text-[#D4AF37]
         text-sm
+        font-semibold
+        text-gray-500
+        whitespace-nowrap
       "
     >
-      ▼
+      Sort By
+    </span>
+
+    <div className="relative">
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        className="
+          h-14
+          min-w-[240px]
+          pl-5
+          pr-12
+          rounded-2xl
+          border
+          border-[#d4af37]/25
+          bg-white
+          text-[#081c15]
+          font-semibold
+          shadow-[0_4px_20px_rgba(0,0,0,0.05)]
+          outline-none
+          appearance-none
+          cursor-pointer
+          transition-all
+          duration-300
+          hover:border-[#D4AF37]/50
+          focus:border-[#D4AF37]
+          focus:ring-4
+          focus:ring-[#D4AF37]/10
+        "
+      >
+        <option value="newest">Newest First</option>
+        <option value="price-low-high">Price: Low to High</option>
+        <option value="price-high-low">Price: High to Low</option>
+      </select>
+
+      <div
+        className="
+          absolute
+          right-5
+          top-1/2
+          -translate-y-1/2
+          pointer-events-none
+          text-[#D4AF37]
+          text-sm
+        "
+      >
+        ▼
+      </div>
     </div>
   </div>
 </div>
-            </div>
 
             {/* GRID */}
 
@@ -1062,7 +1078,63 @@ group-hover:scale-105
   )}
 </div>        
           </div>
-          
+          {showFilters && (
+  <div className="fixed inset-0 z-[9999] lg:hidden">
+
+    <div
+      className="absolute inset-0 bg-black/60"
+      onClick={() => setShowFilters(false)}
+    />
+
+    <div
+      className="
+        absolute
+        left-0
+        top-0
+        h-full
+        w-[88%]
+        max-w-[360px]
+        bg-[#f8f8f8]
+        shadow-2xl
+        overflow-y-auto
+      "
+    >
+      <div className="sticky top-0 z-20 bg-white border-b p-5 flex items-center justify-between">
+        <h3 className="text-xl font-bold">
+          Filters
+        </h3>
+
+        <button
+          onClick={() => setShowFilters(false)}
+          className="text-3xl leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="p-5">
+        <PropertyFilters
+          properties={properties}
+          onFiltered={(data) => {
+            setFilteredProperties(data);
+            setVisibleCards(CARDS_PER_PAGE);
+          }}
+          selectedLocation={selectedLocation}
+          selectedDeveloper={selectedDeveloper}
+          selectedBudget={selectedBudget}
+          selectedAmenity={selectedAmenity}
+          selectedBhk={selectedBhk}
+          selectedPropertyType={selectedPropertyType}
+          baseUrl={
+            landingPage
+              ? `/${landingPage.slug}`
+              : "/properties"
+          }
+        />
+      </div>
+    </div>
+  </div>
+)}
         </div>
         
       </section>
