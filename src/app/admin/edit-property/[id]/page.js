@@ -4268,26 +4268,24 @@ if (loading) {
         />
 
         {/* DESCRIPTION */}
-        <textarea
-          className="input min-h-[120px] mb-4"
-          placeholder="Card Description"
-          value={item.subheading || ""}
-          onChange={(e) => {
+       <div className="mb-4">
+  <RichTextEditor
+    value={item.subheading || ""}
+    onChange={(value) => {
+      const updated = [
+        ...form.overview.highlights,
+      ];
 
-            const updated = [
-              ...form.overview.highlights,
-            ];
+      updated[index].subheading = value;
 
-            updated[index].subheading =
-              e.target.value;
-
-            handleChange(
-              "overview",
-              "highlights",
-              updated
-            );
-          }}
-        />
+      handleChange(
+        "overview",
+        "highlights",
+        updated
+      );
+    }}
+  />
+</div>
 
         {/* ICON */}
         <input

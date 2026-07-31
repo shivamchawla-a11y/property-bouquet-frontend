@@ -2608,23 +2608,53 @@ flex-wrap
               {item.heading || item.name}
             </h3>
 
-            {/* DESCRIPTION */}
-            <p
-              className="
-                relative
-                z-10
-                text-[#5c5c5c]
-                text-[12px]
-                sm:text-[13px]
-                leading-[1.8]
-                sm:leading-[1.9]
-              "
-              style={{
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              {item.subheading || item.desc}
-            </p>
+{/* DESCRIPTION */}
+<div
+  className="
+    relative
+    z-10
+    prose-luxury
+    max-w-full
+    text-[#5c5c5c]
+    text-[12px]
+    sm:text-[13px]
+    leading-[1.8]
+    sm:leading-[1.9]
+    overflow-hidden
+  "
+  style={{
+    fontFamily: "Inter, sans-serif",
+  }}
+>
+  {(() => {
+    const description =
+      item.subheading || item.desc || "";
+
+    const isHtml = /<\/?[a-z][\s\S]*>/i.test(description);
+
+    return isHtml ? (
+      <div
+        className="
+          max-w-full
+          overflow-hidden
+          whitespace-normal
+          break-words
+          [&_*]:max-w-full
+          [&_*]:break-words
+          [&_p]:m-0
+          [&_p]:mb-3
+        "
+        dangerouslySetInnerHTML={{
+          __html: description,
+        }}
+      />
+    ) : (
+      <p className="m-0 whitespace-pre-line break-words">
+        {description}
+      </p>
+    );
+  })()}
+</div>
 
             {/* BOTTOM GOLD LINE */}
             <div className="relative z-10 w-10 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7" />

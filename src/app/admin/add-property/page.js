@@ -3651,26 +3651,24 @@ const formatIndianPrice = (value) => {
 )}
 
             {/* DESCRIPTION */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Feature Description"
-              value={item.desc || ""}
-              onChange={(e) => {
+            <div className="mb-4">
+  <RichTextEditor
+    value={item.subheading || ""}
+    onChange={(value) => {
+      const updated = [
+        ...form.overview.highlights,
+      ];
 
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
+      updated[index].subheading = value;
 
-                updated[index].desc =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
+      handleChange(
+        "overview",
+        "highlights",
+        updated
+      );
+    }}
+  />
+</div>
 
             {/* ICON */}
             <input
