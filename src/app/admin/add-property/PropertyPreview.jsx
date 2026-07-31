@@ -5048,10 +5048,41 @@ else {
                   </summary>
 
                   {/* ANSWER */}
-                  <div className="px-7 pb-7 text-[#666] text-[15px] leading-[1.9] border-t border-[#ece3d8]">
-  <div className="pt-6 w-full">
-    {f.answer}
-  </div>
+                  {/* ANSWER */}
+<div className="px-7 pb-7 border-t border-[#ece3d8]">
+  {(() => {
+    const answer = f.answer || "";
+
+    const isHtml = (text = "") =>
+      /<\/?[a-z][\s\S]*>/i.test(text);
+
+    return isHtml(answer) ? (
+      <div
+        className="
+          prose-luxury
+          mt-5
+          whitespace-normal
+          break-words
+        "
+        dangerouslySetInnerHTML={{
+          __html: answer,
+        }}
+      />
+    ) : (
+      <p
+        className="
+          mt-5
+          text-[#666]
+          text-[15px]
+          leading-[1.9]
+          whitespace-pre-line
+          break-words
+        "
+      >
+        {answer}
+      </p>
+    );
+  })()}
 </div>
                 </details>
               )

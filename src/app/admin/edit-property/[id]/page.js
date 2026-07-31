@@ -6325,23 +6325,21 @@ if (loading) {
           />
 
           {/* ANSWER */}
-          <textarea
-            className="input min-h-[120px]"
-            value={f.answer || ""}
-            placeholder="Answer"
-            onChange={(e) => {
+<div className="mb-4">
+  <RichTextEditor
+    value={f.answer || ""}
+    onChange={(value) => {
+      const arr = [...form.faqs];
 
-              const arr = [...form.faqs];
+      arr[i].answer = value;
 
-              arr[i].answer =
-                e.target.value;
-
-              setForm((prev) => ({
-                ...prev,
-                faqs: arr,
-              }));
-            }}
-          />
+      setForm((prev) => ({
+        ...prev,
+        faqs: arr,
+      }));
+    }}
+  />
+</div>
         </div>
       ))}
       <button
