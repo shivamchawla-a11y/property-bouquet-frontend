@@ -7,6 +7,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  Phone,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -547,14 +548,33 @@ if (item.title === "Knowledge Centre") {
           {/* RIGHT */}
           <div className="flex items-center gap-3 relative">
 
-            {/* CONSULTATION BUTTON */}
-            <button
+            
+{/* CONSULTATION BUTTON */}
+<button
   onClick={onConsultationClick}
-  className="hidden lg:flex h-[44px] px-6 rounded-xl bg-gradient-to-b from-[#d9b061] to-[#b8862e] text-black font-semibold text-[11px] tracking-[0.12em] shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:scale-[1.03] transition uppercase items-center"
+  className="
+    hidden
+    lg:flex
+    items-center
+    gap-2
+    h-[44px]
+    px-4
+    rounded-xl
+    bg-gradient-to-b
+    from-[#d9b061]
+    to-[#b8862e]
+    text-black
+    shadow-[0_10px_35px_rgba(0,0,0,0.35)]
+    hover:scale-[1.03]
+    transition
+  "
 >
-  Private Consultation
-</button>
+  <Phone size={16} strokeWidth={2.4} />
 
+  <span className="font-bold text-[13px] tracking-[0.05em]">
+    +91 90901 06101
+  </span>
+</button>
             {/* MENU */}
             {/* DESKTOP ACCOUNT MENU */}
 <div className="relative hidden xl:block">
@@ -963,7 +983,8 @@ if (item.title === "Knowledge Centre") {
 
 
           {/* CONSULTATION BUTTON */}
-          <button
+          {/* CALL BUTTON */}
+<button
   onClick={onConsultationClick}
   className="
     w-full
@@ -974,12 +995,21 @@ if (item.title === "Knowledge Centre") {
     from-[#d9b061]
     to-[#b8862e]
     text-black
-    font-semibold
-    uppercase
-    tracking-[0.12em]
+    shadow-[0_10px_35px_rgba(0,0,0,0.35)]
+    hover:scale-[1.02]
+    transition-all
+    duration-300
+    flex
+    items-center
+    justify-center
+    gap-2
   "
 >
-  Private Consultation
+  <Phone size={18} strokeWidth={2.4} />
+
+  <span className="font-bold text-[15px] tracking-[0.04em]">
+    +91 90901 06101
+  </span>
 </button>
         </div>
         <div className="space-y-3 mb-8">
