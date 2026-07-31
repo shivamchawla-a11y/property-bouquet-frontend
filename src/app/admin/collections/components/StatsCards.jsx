@@ -4,7 +4,6 @@ import {
   Layers3,
   FileClock,
   Globe,
-  Lightbulb,
   TrendingUp,
 } from "lucide-react";
 
@@ -12,31 +11,24 @@ export default function StatsCards({ stats }) {
   const cards = [
     {
       title: "Total Landing Pages",
-      value: stats.total,
+      value: stats.total || 0,
       icon: Layers3,
       color: "from-[#c9a64b] to-[#e0be69]",
       bg: "bg-[#fffdf8]",
     },
     {
       title: "Draft Pages",
-      value: stats.draft,
+      value: stats.draft || 0,
       icon: FileClock,
       color: "from-[#0f3b2e] to-[#1d5d47]",
       bg: "bg-[#f7faf8]",
     },
     {
-      title: "Published",
-      value: stats.published,
+      title: "Published Pages",
+      value: stats.published || 0,
       icon: Globe,
       color: "from-[#1f8f57] to-[#36b37e]",
       bg: "bg-[#f8fffb]",
-    },
-    {
-      title: "Potential Pages",
-      value: stats.potential || 0,
-      icon: Lightbulb,
-      color: "from-[#7b61ff] to-[#9d7cff]",
-      bg: "bg-[#faf8ff]",
     },
     {
       title: "Average SEO Score",
@@ -48,7 +40,7 @@ export default function StatsCards({ stats }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
 
@@ -57,9 +49,9 @@ export default function StatsCards({ stats }) {
             key={card.title}
             className={`${card.bg} group relative overflow-hidden rounded-3xl border border-gray-200 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
           >
-            {/* Glow */}
+            {/* Background Glow */}
             <div
-              className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${card.color} opacity-10 blur-3xl transition group-hover:opacity-20`}
+              className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${card.color} opacity-10 blur-3xl transition-all duration-300 group-hover:opacity-20`}
             />
 
             <div className="relative z-10 flex items-start justify-between">

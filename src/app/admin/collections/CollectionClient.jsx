@@ -27,12 +27,11 @@ export default function CollectionClient() {
     const [deleting, setDeleting] = useState(false);
 
   const [stats, setStats] = useState({
-    total: 0,
-    draft: 0,
-    published: 0,
-    indexed: 0,
-    averageScore: 0,
-  });
+  total: 0,
+  draft: 0,
+  published: 0,
+  averageScore: 0,
+});
 
   const [potentialPages, setPotentialPages] =
     useState([]);
@@ -76,30 +75,26 @@ export default function CollectionClient() {
       setLandingPages(pages);
 
       setStats({
-        total: pages.length,
+  total: pages.length,
 
-        draft: pages.filter(
-          (page) => page.status === "draft"
-        ).length,
+  draft: pages.filter(
+    (page) => page.status === "draft"
+  ).length,
 
-        published: pages.filter(
-          (page) => page.status === "published"
-        ).length,
+  published: pages.filter(
+    (page) => page.status === "published"
+  ).length,
 
-        indexed: pages.filter(
-          (page) => page.indexed
-        ).length,
-
-        averageScore: pages.length
-          ? Math.round(
-              pages.reduce(
-                (sum, page) =>
-                  sum + (page.seoScore || 0),
-                0
-              ) / pages.length
-            )
-          : 0,
-      });
+  averageScore: pages.length
+    ? Math.round(
+        pages.reduce(
+          (sum, page) =>
+            sum + (page.seoScore || 0),
+          0
+        ) / pages.length
+      )
+    : 0,
+});
     } catch (error) {
       console.error(error);
     } finally {
@@ -177,15 +172,19 @@ const publishLandingPage = async (id) => {
 
     await fetchLandingPages();
 
-    setSelectedPage((prev) =>
-      prev && prev._id === id
-        ? {
-            ...prev,
-            status: "published",
-            publishedAt: new Date(),
-          }
-        : prev
-    );
+if (selectedPage?._id === id) {
+  const updated = await fetch(
+    `${API}/landing-pages/${id}`,
+    {
+      credentials: "include",
+    }
+  );
+
+  if (updated.ok) {
+    const json = await updated.json();
+    setSelectedPage(json.data);
+  }
+}
   } catch (error) {
     console.error(error);
     toast.error("Unable to publish.");
@@ -218,6 +217,20 @@ const unpublishLandingPage = async (id) => {
     toast.success("Moved back to Draft.");
 
     await fetchLandingPages();
+
+if (selectedPage?._id === id) {
+  const updated = await fetch(
+    `${API}/landing-pages/${id}`,
+    {
+      credentials: "include",
+    }
+  );
+
+  if (updated.ok) {
+    const json = await updated.json();
+    setSelectedPage(json.data);
+  }
+}
   } catch (error) {
     console.error(error);
     toast.error("Unable to unpublish.");
@@ -256,8 +269,8 @@ const deleteLandingPage = async (id) => {
 
 
     toast.success(
-      "Landing page deleted."
-    );
+  "Landing page permanently deleted."
+);
 
 
     setLandingPages((prev)=>
@@ -325,18 +338,26 @@ const publishPages = async () => {
   try {
     setPublishing(true);
 
-    await Promise.all(
-      selectedPages.map((id) =>
-        fetch(`${API}/landing-pages/${id}/publish`, {
-          method: "PATCH",
-          credentials: "include",
-        })
-      )
-    );
+    const responses = await Promise.all(
+  selectedPages.map((id) =>
+    fetch(`${API}/landing-pages/${id}/publish`, {
+      method: "PATCH",
+      credentials: "include",
+    })
+  )
+);
 
-    toast.success(
-      `${selectedPages.length} landing page(s) published.`
-    );
+const failed = responses.filter((r) => !r.ok);
+
+if (failed.length) {
+  toast.error(
+    `${failed.length} page(s) failed to publish.`
+  );
+} else {
+  toast.success(
+    `${selectedPages.length} landing page(s) published.`
+  );
+}
 
     setSelectedPages([]);
 
@@ -372,22 +393,29 @@ const deletePages = async () => {
     setDeleting(true);
 
 
-    await Promise.all(
-      selectedPages.map((id)=>
-        fetch(
-          `${API}/landing-pages/${id}`,
-          {
-            method:"DELETE",
-            credentials:"include",
-          }
-        )
-      )
-    );
+    const responses = await Promise.all(
+  selectedPages.map((id) =>
+    fetch(
+      `${API}/landing-pages/${id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    )
+  )
+);
 
+const failed = responses.filter((r) => !r.ok);
 
-    toast.success(
-      `${selectedPages.length} landing page(s) deleted.`
-    );
+if (failed.length) {
+  toast.error(
+    `${failed.length} page(s) failed to delete.`
+  );
+} else {
+  toast.success(
+    `${selectedPages.length} landing page(s) permanently deleted.`
+  );
+}
 
 
     setSelectedPages([]);
@@ -484,6 +512,7 @@ const deletePages = async () => {
   page={selectedPage}
   onClose={closeDrawer}
   publishLandingPage={publishLandingPage}
+  unpublishLandingPage={unpublishLandingPage}
   updateLandingPage={updateLandingPage}
   deleteLandingPage={deleteLandingPage}
 />

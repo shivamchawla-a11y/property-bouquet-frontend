@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   X,
   Globe,
@@ -10,9 +9,9 @@ import {
   MapPin,
   Home,
   DollarSign,
-  CheckCircle2,
   Trash2,
   Pencil,
+  FileClock,
 } from "lucide-react";
 
 export default function DetailsDrawer({
@@ -20,10 +19,11 @@ export default function DetailsDrawer({
   page,
   onClose,
   publishLandingPage,
+  unpublishLandingPage,
   updateLandingPage,
   deleteLandingPage,
 }) {
-  const router = useRouter();
+
   if (!open || !page) return null;
 
   return (
@@ -301,17 +301,27 @@ export default function DetailsDrawer({
 
           <div className="grid grid-cols-2 gap-4">
 
-            <button
-  onClick={() => publishLandingPage(page._id)}
-  className="rounded-xl bg-[#0f3b2e] py-4 font-semibold text-white hover:bg-[#174b3a]"
->
-  <div className="flex items-center justify-center gap-2">
-    <CheckCircle2 size={18} />
-    {page.status === "published"
-      ? "Published"
-      : "Publish"}
-  </div>
-</button>
+            {page.status === "published" ? (
+  <button
+    onClick={() => unpublishLandingPage(page._id)}
+    className="rounded-xl bg-yellow-500 py-4 font-semibold text-white hover:bg-yellow-600"
+  >
+    <div className="flex items-center justify-center gap-2">
+      <FileClock size={18} />
+      Move to Draft
+    </div>
+  </button>
+) : (
+  <button
+    onClick={() => publishLandingPage(page._id)}
+    className="rounded-xl bg-[#0f3b2e] py-4 font-semibold text-white hover:bg-[#174b3a]"
+  >
+    <div className="flex items-center justify-center gap-2">
+      <Globe size={18} />
+      Publish
+    </div>
+  </button>
+)}
 
             <button
   onClick={() =>
@@ -354,10 +364,9 @@ export default function DetailsDrawer({
             <button
   onClick={() => {
 
-    const confirmDelete =
-      window.confirm(
-        "Are you sure you want to delete this landing page?"
-      );
+    const confirmDelete = window.confirm(
+  "This will permanently delete this landing page.\n\nThis action cannot be undone.\n\nContinue?"
+);
 
     if(confirmDelete){
       deleteLandingPage(page._id);

@@ -344,10 +344,6 @@ useEffect(() => {
                 </th>
 
                 <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Indexed
-                </th>
-
-                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Generated
                 </th>
 
@@ -446,50 +442,34 @@ useEffect(() => {
 
                   {/* Status */}
 
-                  <td className="px-6 py-5 text-center">
+<td className="px-6 py-5 text-center">
 
-                    {page.status === "published" ? (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      unpublishLandingPage(page._id);
-    }}
-    className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-700 transition hover:bg-green-100"
-  >
-    <Globe size={14} />
-    Published
-  </button>
-) : (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      publishLandingPage(page._id);
-    }}
-    className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-1 text-sm font-semibold text-yellow-700 transition hover:bg-yellow-100"
-  >
-    <FileClock size={14} />
-    Draft
-  </button>
-)}
+  {page.status === "published" ? (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        unpublishLandingPage(page._id);
+      }}
+      className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-700 transition hover:bg-green-100"
+    >
+      <Globe size={14} />
+      Published
+    </button>
+  ) : (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        publishLandingPage(page._id);
+      }}
+      className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-1 text-sm font-semibold text-yellow-700 transition hover:bg-yellow-100"
+    >
+      <FileClock size={14} />
+      Draft
+    </button>
+  )}
 
+</td>
 
-                  </td>
-
-                  {/* Indexed */}
-
-                  <td className="px-6 py-5 text-center">
-
-                    {page.indexed ? (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-                        No
-                      </span>
-                    )}
-
-                  </td>
 
                   {/* Generated */}
 
@@ -541,9 +521,15 @@ useEffect(() => {
                         <Eye size={18} />
                       </button>
 
-                      <button className="rounded-xl p-2 text-gray-700 hover:bg-gray-100">
-                        <Pencil size={18} />
-                      </button>
+                      <button
+    onClick={(e) => {
+        e.stopPropagation();
+        openDrawer(page);
+    }}
+    className="rounded-xl p-2 text-gray-700 hover:bg-gray-100"
+>
+    <Pencil size={18} />
+</button>
 
                       <button className="rounded-xl p-2 text-gray-700 hover:bg-gray-100">
                         <MoreHorizontal size={18} />
