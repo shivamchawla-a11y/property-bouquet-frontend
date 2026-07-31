@@ -4,6 +4,14 @@ export const metadata = {
   title: "SEO Engine | Property Bouquet Admin",
 };
 
-export default function CollectionsPage() {
-  return <CollectionClient />;
+export default async function CollectionsPage({
+  searchParams,
+}) {
+  const params = await searchParams;
+
+  return (
+    <CollectionClient
+      editId={params.edit || null}
+    />
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import Header from "./components/Header";
@@ -10,8 +11,11 @@ import PotentialPages from "./components/PotentialPages";
 import LandingPagesTable from "./components/LandingPagesTable";
 import DetailsDrawer from "./components/DetailsDrawer";
 
-export default function CollectionClient() {
+export default function CollectionClient({
+  editId,
+}) {
   const API = "/api";
+const router = useRouter();
 
   // =====================================================
   // STATES
@@ -309,14 +313,8 @@ const deleteLandingPage = async (id) => {
 // EDIT LANDING PAGE
 // =====================================================
 
-const updateLandingPage = (page)=>{
-
-  console.log(
-    "Edit Landing Page:",
-    page
-  );
-
-
+const updateLandingPage = (page) => {
+  window.location.href = `/admin/seo-engine/edit/${page._id}`;
 };
 
 
@@ -448,6 +446,25 @@ if (failed.length) {
   useEffect(() => {
     fetchLandingPages();
   }, []);
+
+  useEffect(() => {
+  if (!editId || landingPages.length === 0) return;
+
+  const page = landingPages.find(
+    (item) => item._id === editId
+  );
+
+  if (page) {
+    setSelectedPage(page);
+    setDrawerOpen(true);
+
+    window.history.replaceState(
+      {},
+      "",
+      "/admin/seo-engine"
+    );
+  }
+}, [editId, landingPages]);
 
   // =====================================================
   // DRAWER
