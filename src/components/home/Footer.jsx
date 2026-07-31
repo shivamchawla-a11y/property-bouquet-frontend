@@ -437,43 +437,58 @@ export default function Footer() {
 
             {/* CENTER */}
 
-            <div className="flex flex-wrap justify-center items-center">
+            {/* CENTER */}
 
-              {[
-                "Privacy Policy",
-                "Terms of Use",
-                "Disclaimer",
-                "Sitemap",
-              ].map((item, index) => (
+<div className="flex flex-wrap justify-center items-center">
 
-                <div
-                  key={item}
-                  className="flex items-center"
-                >
+  {[
+    "Privacy Policy",
+    "Terms of Use",
+    "Disclaimer",
+    "Sitemap",
+  ].map((item, index) => (
 
-                  <button
-                    className="
-                    px-6
-                    text-white/65
-                    hover:text-[#C89B4F]
-                    transition-all
-                    duration-300
-                    "
-                  >
-                    {item}
-                  </button>
+    <div
+      key={item}
+      className="flex items-center"
+    >
 
-                  {index !== 3 && (
-                    <span className="text-[#8e6b2e]/50">
-                      |
-                    </span>
-                  )}
+      {item === "Sitemap" ? (
+        <Link
+          href="/sitemap.xml"
+          className="
+            px-6
+            text-white/65
+            hover:text-[#C89B4F]
+            transition-all
+            duration-300
+          "
+        >
+          {item}
+        </Link>
+      ) : (
+        <span
+          className="
+            px-6
+            text-white/65
+            cursor-default
+          "
+        >
+          {item}
+        </span>
+      )}
 
-                </div>
+      {index !== 3 && (
+        <span className="text-[#8e6b2e]/50">
+          |
+        </span>
+      )}
 
-              ))}
+    </div>
 
-            </div>
+  ))}
+
+</div>
 
             {/* RIGHT */}
 

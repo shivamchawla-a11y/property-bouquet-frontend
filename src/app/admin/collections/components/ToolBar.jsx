@@ -1,29 +1,36 @@
 "use client";
 
-import { useState } from "react";
 import {
   Search,
-  Filter,
   Wand2,
-  CheckCircle2,
   Trash2,
   RefreshCw,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function ToolBar({
+  search,
+  setSearch,
+  tab,
+  setTab,
+
   selectedPages = [],
+  totalPages = 0,
+
   generateCollections,
   generating = false,
+
   refreshCollections,
+
   publishPages,
+  publishAllPages,
   publishing = false,
+
   deletePages,
+  deleteAllPages,
   deleting = false,
 }) {
-  const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("all");
-
   const tabs = [
     {
       id: "all",
@@ -108,27 +115,6 @@ export default function ToolBar({
         <div className="flex flex-wrap gap-3">
 
           <button
-            className="
-              flex
-              items-center
-              gap-2
-              rounded-2xl
-              border
-              border-gray-200
-              bg-white
-              px-5
-              py-3
-              font-medium
-              text-gray-700
-              transition
-              hover:bg-gray-50
-            "
-          >
-            <Filter size={18} />
-            Filters
-          </button>
-
-          <button
             onClick={refreshCollections}
             className="
               flex
@@ -176,55 +162,62 @@ export default function ToolBar({
           </button>
 
           <button
-  onClick={publishPages}
-  disabled={!selectedPages.length || publishing}
-  className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
-    selectedPages.length && !publishing
-      ? "bg-[#0f3b2e] text-white hover:opacity-90"
-      : "cursor-not-allowed bg-gray-200 text-gray-500"
-  }`}
->
-            {publishing ? (
-  <>
-    <Loader2
-      size={18}
-      className="animate-spin"
-    />
-    Publishing...
-  </>
-) : (
-  <>
-    <CheckCircle2 size={18} />
-    Publish ({selectedPages.length})
-  </>
-)}
+            onClick={publishPages}
+            disabled={!selectedPages.length || publishing}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+              selectedPages.length && !publishing
+                ? "bg-[#0f3b2e] text-white hover:opacity-90"
+                : "cursor-not-allowed bg-gray-200 text-gray-500"
+            }`}
+          >
+            <CheckCircle2 size={18} />
+
+            {publishing
+              ? "Publishing..."
+              : `Publish (${selectedPages.length})`}
           </button>
-          
 
           <button
-  onClick={deletePages}
-  disabled={!selectedPages.length || deleting}
-  className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
-    selectedPages.length && !deleting
-      ? "bg-red-600 text-white hover:bg-red-700"
-      : "cursor-not-allowed bg-gray-200 text-gray-500"
-  }`}
->
-  {deleting ? (
-    <>
-      <Loader2
-        size={18}
-        className="animate-spin"
-      />
-      Deleting...
-    </>
-  ) : (
-    <>
-      <Trash2 size={18} />
-      Delete ({selectedPages.length})
-    </>
-  )}
-</button>
+            onClick={publishAllPages}
+            disabled={!totalPages || publishing}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+              totalPages && !publishing
+                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                : "cursor-not-allowed bg-gray-200 text-gray-500"
+            }`}
+          >
+            <CheckCircle2 size={18} />
+            Publish All ({totalPages})
+          </button>
+
+          <button
+            onClick={deletePages}
+            disabled={!selectedPages.length || deleting}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+              selectedPages.length && !deleting
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "cursor-not-allowed bg-gray-200 text-gray-500"
+            }`}
+          >
+            <Trash2 size={18} />
+
+            {deleting
+              ? "Deleting..."
+              : `Delete (${selectedPages.length})`}
+          </button>
+
+          <button
+            onClick={deleteAllPages}
+            disabled={!totalPages || deleting}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition ${
+              totalPages && !deleting
+                ? "bg-red-800 text-white hover:bg-red-900"
+                : "cursor-not-allowed bg-gray-200 text-gray-500"
+            }`}
+          >
+            <Trash2 size={18} />
+            Delete All ({totalPages})
+          </button>
 
         </div>
 

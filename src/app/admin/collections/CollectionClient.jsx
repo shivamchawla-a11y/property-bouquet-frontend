@@ -43,6 +43,9 @@ const router = useRouter();
   const [landingPages, setLandingPages] =
     useState([]);
 
+    const [search, setSearch] = useState("");
+const [tab, setTab] = useState("all");
+
   const [selectedPages, setSelectedPages] =
     useState([]);
 
@@ -368,6 +371,80 @@ if (failed.length) {
   }
 };
 
+
+const publishAllPages = async () => {
+  if (!landingPages.length) return;
+
+  if (
+    !window.confirm(
+      `Publish ALL ${landingPages.length} landing pages?`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setPublishing(true);
+
+    await Promise.all(
+      landingPages.map((page) =>
+        fetch(
+          `${API}/landing-pages/${page._id}/publish`,
+          {
+            method: "PATCH",
+            credentials: "include",
+          }
+        )
+      )
+    );
+
+    toast.success("All landing pages published.");
+
+    await fetchLandingPages();
+    setSelectedPages([]);
+  } catch {
+    toast.error("Unable to publish all pages.");
+  } finally {
+    setPublishing(false);
+  }
+};
+
+const deleteAllPages = async () => {
+  if (!landingPages.length) return;
+
+  if (
+    !window.confirm(
+      `Delete ALL ${landingPages.length} landing pages?\n\nThis cannot be undone.`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setDeleting(true);
+
+    await Promise.all(
+      landingPages.map((page) =>
+        fetch(
+          `${API}/landing-pages/${page._id}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        )
+      )
+    );
+
+    toast.success("All landing pages deleted.");
+
+    await fetchLandingPages();
+    setSelectedPages([]);
+  } catch {
+    toast.error("Unable to delete all pages.");
+  } finally {
+    setDeleting(false);
+  }
+};
 // =====================================================
 // BULK DELETE
 // =====================================================
@@ -481,6 +558,36 @@ if (failed.length) {
   };
 
   // =====================================================
+// FILTERED PAGES
+// =====================================================
+
+const filteredPages = landingPages.filter((page) => {
+  // Search
+  const matchesSearch =
+    page.title
+      ?.toLowerCase()
+      .includes(search.toLowerCase()) ||
+    page.slug
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
+
+  if (!matchesSearch) return false;
+
+  switch (tab) {
+    case "draft":
+      return page.status === "draft";
+
+    case "published":
+      return page.status === "published";
+
+    case "ignored":
+      return page.ignoreGeneration === true;
+
+    default:
+      return true;
+  }
+});
+  // =====================================================
   // LOADING
   // =====================================================
 
@@ -505,18 +612,25 @@ if (failed.length) {
       <StatsCards stats={stats} />
 
       <ToolBar
+  search={search}
+  setSearch={setSearch}
+  tab={tab}
+  setTab={setTab}
   selectedPages={selectedPages}
+  totalPages={landingPages.length}
   generateCollections={generateCollections}
   generating={generating}
   refreshCollections={fetchLandingPages}
   publishPages={publishPages}
+  publishAllPages={publishAllPages}
   publishing={publishing}
   deletePages={deletePages}
+  deleteAllPages={deleteAllPages}
   deleting={deleting}
 />
 
       <LandingPagesTable
-  pages={landingPages}
+  pages={filteredPages}
   selectedPages={selectedPages}
   setSelectedPages={setSelectedPages}
   openDrawer={openDrawer}
