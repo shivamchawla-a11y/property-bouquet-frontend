@@ -15,6 +15,7 @@ import {
   Heart,
   SlidersHorizontal,
 } from "lucide-react";
+import Footer from "@/components/home/Footer";
 
 export default function PropertiesClient({
   landingPage = null,
@@ -1141,6 +1142,7 @@ group-hover:scale-105
   </div>
 )}
       </section>
+      <Footer />
     </div>
   );
 }

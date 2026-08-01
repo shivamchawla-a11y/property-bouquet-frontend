@@ -574,7 +574,7 @@ if (item.title === "Knowledge Centre") {
   <Phone size={16} strokeWidth={2.4} />
 
   <span className="font-bold text-[13px] tracking-[0.05em]">
-    +91 9090 106 101
+   9090 106 101
   </span>
 </button>
             {/* MENU */}
@@ -586,7 +586,7 @@ if (item.title === "Knowledge Centre") {
         !accountDropdown
       )
     }
-    className="
+    className=" 
       w-[46px]
       h-[46px]
       rounded-full

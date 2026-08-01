@@ -1181,7 +1181,7 @@ xl:rounded-full
         leading-none
       "
     >
-      +91 9090 106 101
+      9090 106 101
     </span>
   </div>
 </button>
@@ -4909,7 +4909,7 @@ else {
 
             {/* BIGGER PHONE */}
             <div className="text-xl md:text-2xl font-semibold tracking-wide text-white">
-              {faqSection?.contactPhone || "+91 90901 06101"}
+              {faqSection?.contactPhone || "9090 106 101"}
             </div>
 
           </div>

@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   FaFacebookF,
   FaInstagram,
-  FaLinkedinIn,
   FaYoutube,
   FaGem,
   FaShieldAlt,
@@ -125,30 +124,54 @@ export default function Footer() {
 
     {/* SOCIAL */}
     <div className="flex gap-6 mt-14">
+  <a
+    href="https://www.facebook.com/profile.php?id=61592435707356"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+      w-12 h-12 rounded-full border border-[#B58A44]
+      text-[#C89B4F]
+      flex items-center justify-center
+      text-lg
+      hover:bg-[#C89B4F]
+      hover:text-black
+      transition-all duration-300
+    "
+  >
+    <FaFacebookF />
+  </a>
 
-      {[
-        <FaFacebookF />,
-        <FaInstagram />,
-        <FaLinkedinIn />,
-        <FaYoutube />,
-      ].map((icon, index) => (
-        <button
-          key={index}
-          className="
-            w-12 h-12 rounded-full border border-[#B58A44]
-            text-[#C89B4F]
-            flex items-center justify-center
-            text-lg
-            hover:bg-[#C89B4F]
-            hover:text-black
-            transition-all duration-300
-          "
-        >
-          {icon}
-        </button>
-      ))}
+ <a
+  href="https://www.instagram.com/propertybouquet/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="
+    w-12 h-12 rounded-full border border-[#B58A44]
+    text-[#C89B4F]
+    flex items-center justify-center
+    text-lg
+    hover:bg-[#C89B4F]
+    hover:text-black
+    transition-all duration-300
+  "
+>
+  <FaInstagram />
+</a>
 
-    </div>
+  <button
+    className="
+      w-12 h-12 rounded-full border border-[#B58A44]
+      text-[#C89B4F]
+      flex items-center justify-center
+      text-lg
+      hover:bg-[#C89B4F]
+      hover:text-black
+      transition-all duration-300
+    "
+  >
+    <FaYoutube />
+  </button>
+</div>
 
   </div>
 
@@ -162,17 +185,17 @@ export default function Footer() {
     <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
 
     <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
-
-      {exploreLinks.map((item) => (
-        <li
-          key={item}
-          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
-        >
-          {item}
-        </li>
-      ))}
-
-    </ul>
+  {exploreLinks.map((item) => (
+    <li key={item}>
+      <Link
+        href="/properties"
+        className="hover:text-[#C89B4F] transition-all duration-300"
+      >
+        {item}
+      </Link>
+    </li>
+  ))}
+</ul>
 
   </div>
 
@@ -186,17 +209,17 @@ export default function Footer() {
     <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
 
     <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
-
-      {knowledgeLinks.map((item) => (
-        <li
-          key={item}
-          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
-        >
-          {item}
-        </li>
-      ))}
-
-    </ul>
+  {knowledgeLinks.map((item) => (
+    <li key={item}>
+      <Link
+        href="/knowledge"
+        className="hover:text-[#C89B4F] transition-all duration-300"
+      >
+        {item}
+      </Link>
+    </li>
+  ))}
+</ul>
 
   </div>
 
@@ -210,17 +233,17 @@ export default function Footer() {
     <div className="w-8 h-[2px] bg-[#C89B4F] mt-4 mb-7" />
 
     <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
-
-      {insightLinks.map((item) => (
-        <li
-          key={item}
-          className="hover:text-[#C89B4F] cursor-pointer transition-all duration-300"
-        >
-          {item}
-        </li>
-      ))}
-
-    </ul>
+  {insightLinks.map((item) => (
+    <li key={item}>
+      <Link
+        href="/insights"
+        className="hover:text-[#C89B4F] transition-all duration-300"
+      >
+        {item}
+      </Link>
+    </li>
+  ))}
+</ul>
 
   </div>
 
@@ -347,14 +370,18 @@ export default function Footer() {
       </div>
 
       <div className="flex items-start gap-3">
-        <FaMapMarkerAlt className="text-[#C89B4F] mt-1" />
-        <span>Gurugram | Delhi NCR | Noida </span>
-      </div>
+  <FaMapMarkerAlt className="text-[#C89B4F] mt-1 shrink-0" />
 
-      <div className="flex items-center gap-3">
-        <FaClock className="text-[#C89B4F]" />
-        <span>Mon - Sun : 10:00 AM - 7:00 PM</span>
-      </div>
+  <a
+    href="https://maps.app.goo.gl/fF46yKyzBrB5ajDb9"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-[#C89B4F] transition-colors"
+  >
+    Suncity Success Tower, Golf Course Ext Road, Sector-65,
+    Gurugram, Haryana 122101
+  </a>
+</div>
 
     </div>
 
@@ -390,33 +417,31 @@ export default function Footer() {
       <FaWhatsapp />
     </div>
 
-    <div>
-      <p className="text-[#C89B4F] text-[11px] tracking-[3px] font-medium uppercase">
-        Talk to our
-      </p>
+    <div className="flex-1 flex flex-col justify-between">
+  <div>
+    <p className="text-[#C89B4F] text-[11px] tracking-[3px] font-medium uppercase">
+      Talk to our
+    </p>
 
-      <h4 className="text-[18px] font-light mt-1 text-white">
-        Property Expert
-      </h4>
+    <h4 className="text-[18px] font-light mt-1 text-white">
+      Property Expert
+    </h4>
 
-      <p className="mt-2 text-sm text-white/60">
-        Get instant assistance on WhatsApp
-      </p>
-    </div>
+    <p className="mt-2 text-sm text-white/60">
+      Get instant assistance on WhatsApp
+    </p>
   </div>
 
-  <div
-    className="
-      mt-10 flex justify-between items-center
-      text-[14px] text-white/80
-      group-hover:text-[#C89B4F]
-      transition-all
-    "
-  >
-    <span>+91 90901 06101</span>
+  <div className="mt-8 flex items-center justify-between">
+    <span className="text-[14px] text-white/80 group-hover:text-[#C89B4F] transition-colors">
+      +91 90901 06101
+    </span>
 
     <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
   </div>
+</div>
+  </div>
+
 </a>
 
 </div>
