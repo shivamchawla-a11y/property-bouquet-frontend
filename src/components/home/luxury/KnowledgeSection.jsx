@@ -215,7 +215,19 @@ return (
         </div>
 
         {/* CARDS */}
-        <div className="relative z-10 grid md:grid-cols-2 xl:grid-cols-5 gap-7 px-6 md:px-10 pb-10 md:pb-12">
+        <div className="
+  relative
+  z-10
+  grid
+  grid-cols-1
+  sm:grid-cols-2
+  lg:grid-cols-3
+  xl:grid-cols-4
+  gap-8
+  px-6
+  md:px-10
+  pb-12
+">
 
           {knowledgeArticles.map((item, index) => (
             <Link
@@ -236,7 +248,7 @@ return (
                   y: -10,
                   scale: 1.015,
                 }}
-                className={`group relative overflow-hidden rounded-[30px] border backdrop-blur-2xl min-h-[300px] transition-all duration-700 ${
+                className={`group relative overflow-hidden rounded-[30px] border backdrop-blur-2xl transition-all duration-700 ${
                   index === 0
                     ? "bg-gradient-to-br from-[#041e19]/95 via-[#072922]/95 to-[#03110d]/95 border-[#c89d58]/20 shadow-[0_30px_70px_rgba(0,0,0,0.3)]"
                     : "bg-white/55 border-white/70 shadow-[0_20px_55px_rgba(0,0,0,0.06)] hover:bg-white/75"
@@ -249,68 +261,102 @@ return (
                 {/* SHINE EFFECT */}
                 <div className="absolute top-0 -left-[130%] w-[70%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent rotate-[18deg] group-hover:left-[150%] transition-all duration-[1300ms]" />
 
-                <div className="relative z-10 p-7 flex flex-col h-full justify-between">
+               <div className="relative z-10 flex flex-col h-full">
 
-                  <div>
+  {/* IMAGE */}
+  <div className="relative aspect-[16/10] overflow-hidden">
 
-                    <div
-                      className={`relative w-[62px] h-[62px] rounded-[20px] flex items-center justify-center border mb-7 overflow-hidden ${
-                        index === 0
-                          ? "bg-[#c89d58]/10 border-[#c89d58]/20"
-                          : "bg-white/70 border-white"
-                      }`}
-                    >
+    <Image
+      src={item.featuredImage || "/knowledge-placeholder.jpg"}
+      alt={item.title}
+      fill
+      className="object-cover transition duration-700 group-hover:scale-110"
+    />
 
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-                      <BookOpen
-                        size={24}
-                        strokeWidth={1.8}
-                        className="relative z-10 text-[#c89d58]"
-                      />
+    <div className="absolute top-5 left-5">
 
-                    </div>
 
-                    <h3
-                      className={`text-[18px] leading-[1.45] font-semibold tracking-[-0.3px] ${
-                        index === 0
-                          ? "text-white"
-                          : "text-[#171717]"
-                      }`}
-                    >
-                      {item.title}
-                    </h3>
+    </div>
 
-                  </div>
+  </div>
 
-                  <div className="flex items-center justify-between mt-10">
+  <div className="flex-1 p-6 flex flex-col">
 
-                    <button
-                      className={`text-[13px] font-semibold tracking-wide ${
-                        index === 0
-                          ? "text-[#d6b06a]"
-                          : "text-[#b98b3c]"
-                      }`}
-                    >
-                      Read Article
-                    </button>
+    <div
+      className={`w-12 h-[2px] mb-6 ${
+        index === 0
+          ? "bg-[#c89d58]"
+          : "bg-[#c89d58]/70"
+      }`}
+    />
 
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        index === 0
-                          ? "bg-[#c89d58] text-black"
-                          : "bg-[#f3ece0] text-[#b98b3c] group-hover:bg-[#c89d58] group-hover:text-white"
-                      }`}
-                    >
-                      <ChevronRight
-                        size={16}
-                        className="group-hover:translate-x-[2px] transition"
-                      />
-                    </div>
+    <h3
+      className={`text-[20px]
+leading-[1.35]
+font-semibold
+line-clamp-2
+min-h-[56px] ${
+        index === 0
+          ? "text-white"
+          : "text-[#171717]"
+      }`}
+    >
+      {item.title}
+    </h3>
 
-                  </div>
+    <p
+      className={`mt-5 text-[14px] leading-7 line-clamp-3 ${
+        index === 0
+          ? "text-white/65"
+          : "text-black/55"
+      }`}
+    >
+      {item.shortDescription ||
+        item.metaDescription ||
+        "Luxury insights, investment opportunities and expert real estate guidance for premium buyers."}
+    </p>
 
-                </div>
+    <div className="mt-8 flex items-center justify-between">
+
+      <span
+        className={`text-[11px] uppercase tracking-[2px] ${
+          index === 0
+            ? "text-white/45"
+            : "text-black/45"
+        }`}
+      >
+        {new Date(item.createdAt).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })}
+      </span>
+
+      <div
+        className={`
+          w-11 h-11 rounded-full
+          flex items-center justify-center
+          transition-all duration-300
+          ${
+            index === 0
+              ? "bg-[#c89d58] text-black"
+              : "bg-[#f3ece0] text-[#b98b3c] group-hover:bg-[#c89d58] group-hover:text-white"
+          }
+        `}
+      >
+        <ChevronRight
+          size={17}
+          className="group-hover:translate-x-1 transition"
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
                 <div className="absolute inset-0 rounded-[30px] border border-white/10 pointer-events-none" />
 
