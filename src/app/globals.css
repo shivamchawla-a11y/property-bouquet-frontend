@@ -299,19 +299,17 @@ select.input option {
   font-style: italic;
 }
 
-/* Gold Links */
-
 .prose-luxury a {
-  color: #C6A15B;
-  font-weight: 600;
+  color: inherit;
+  font-weight: inherit;
   text-decoration: none;
-  transition: .25s ease;
-  border-bottom: 1px solid rgba(198,161,91,.45);
+  border: none;
+  transition: none;
 }
 
 .prose-luxury a:hover {
-  color: #E5C97E;
-  border-bottom-color: #E5C97E;
+  color: inherit;
+  border: none;
 }
 
 /* Headings */
