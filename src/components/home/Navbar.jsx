@@ -394,16 +394,23 @@ tracking-[0.38em]
     </Link>
 
     <button
-      type="button"
-      className="px-1 text-white/85 hover:text-[#d6aa53]"
-    >
-      <ChevronDown
-        size={13}
-        className={`transition duration-300 ${
-          active === item.title ? "rotate-180" : ""
-        }`}
-      />
-    </button>
+  type="button"
+  onClick={() => {
+    if (item.title === "About Us") {
+      router.push("/about");
+    }
+  }}
+  className="px-1 text-white/85 hover:text-[#d6aa53]"
+>
+  {item.title !== "About Us" && (
+    <ChevronDown
+      size={13}
+      className={`transition duration-300 ${
+        active === item.title ? "rotate-180" : ""
+      }`}
+    />
+  )}
+</button>
   </div>
 
   <AnimatePresence>
@@ -862,34 +869,43 @@ if (item.title === "Knowledge Centre") {
       className="border-b border-white/10"
     >
       <button
-        onClick={() =>
-          setMobileDropdown(
-            mobileDropdown === item.title
-              ? null
-              : item.title
-          )
-        }
-        className="
-          w-full
-          flex
-          items-center
-          justify-between
-          py-5
-          text-left
-          text-white
-          font-medium
-        "
-      >
+  onClick={() => {
+    // ABOUT US
+    if (item.title === "About Us") {
+      router.push("/about");
+      setMobileMenuOpen(false); // optional: closes mobile menu
+      return;
+    }
+
+    setMobileDropdown(
+      mobileDropdown === item.title
+        ? null
+        : item.title
+    );
+  }}
+  className="
+    w-full
+    flex
+    items-center
+    justify-between
+    py-5
+    text-left
+    text-white
+    font-medium
+  "
+>
         {item.title}
 
-        <ChevronDown
-          size={18}
-          className={`transition ${
-            mobileDropdown === item.title
-              ? "rotate-180"
-              : ""
-          }`}
-        />
+        {item.title !== "About Us" && (
+  <ChevronDown
+    size={18}
+    className={`transition ${
+      mobileDropdown === item.title
+        ? "rotate-180"
+        : ""
+    }`}
+  />
+)}
       </button>
 
       <AnimatePresence>

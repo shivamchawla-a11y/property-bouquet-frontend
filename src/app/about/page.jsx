@@ -8,6 +8,7 @@ import Footer from "@/components/home/Footer";
 
 import HeroSection from "@/components/aboutUs/HeroSection";
 import WhoWeAre from "@/components/aboutUs/WhoWeAre";
+import WhoWeAreMobile from "@/components/aboutUs/WhoWeAreMobile";
 import MissionVision from "@/components/aboutUs/MissionVision";
 import Values from "@/components/aboutUs/Values";
 
@@ -32,7 +33,15 @@ export default function AboutPage() {
 
       <HeroSection />
 
-      <WhoWeAre />
+      {/* Desktop */}
+      <div className="hidden md:block">
+        <WhoWeAre />
+      </div>
+
+      {/* Mobile */}
+      <div className="block md:hidden">
+        <WhoWeAreMobile />
+      </div>
 
       <MissionVision />
 
