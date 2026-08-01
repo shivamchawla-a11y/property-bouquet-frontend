@@ -10,7 +10,9 @@ import HeroSection from "@/components/aboutUs/HeroSection";
 import WhoWeAre from "@/components/aboutUs/WhoWeAre";
 import WhoWeAreMobile from "@/components/aboutUs/WhoWeAreMobile";
 import MissionVision from "@/components/aboutUs/MissionVision";
+import MissionVisionMobile from "@/components/aboutUs/MissionVisionMobile";
 import Values from "@/components/aboutUs/Values";
+import ValuesMobile from "@/components/aboutUs/ValuesMobile";
 
 export default function AboutPage() {
   const [showConsultation, setShowConsultation] = useState(false);
@@ -43,9 +45,21 @@ export default function AboutPage() {
         <WhoWeAreMobile />
       </div>
 
-      <MissionVision />
+      <div className="hidden lg:block">
+  <MissionVision />
+</div>
 
-      <Values />
+<div className="block lg:hidden">
+  <MissionVisionMobile />
+</div>
+
+      <div className="hidden lg:block">
+  <Values />
+</div>
+
+<div className="block lg:hidden">
+  <ValuesMobile />
+</div>
 
       <Footer />
 
