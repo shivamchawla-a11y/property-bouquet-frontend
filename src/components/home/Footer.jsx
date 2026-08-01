@@ -332,7 +332,7 @@ export default function Footer() {
   href="tel:+919090106101"
   className="hover:text-[#C89B4F] transition-colors"
 >
-  +91 90901 06101
+  +91 9090 106 101
 </a>
       </div>
 
