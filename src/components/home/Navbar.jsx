@@ -58,14 +58,9 @@ const navItems = [
     ],
   },
   {
-    title: "About Us",
-    href: "/",
-    items: [
-      "Company",
-      "Our Team",
-      "Careers",
-    ],
-  },
+  title: "About Us",
+  href: "/about",
+},
 ];
 
 export default function Navbar({
