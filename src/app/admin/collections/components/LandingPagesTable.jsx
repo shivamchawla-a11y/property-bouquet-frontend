@@ -60,13 +60,60 @@ export default function LandingPagesTable({
   const [currentPage, setCurrentPage] = useState(1);
 const [itemsPerPage, setItemsPerPage] = useState(10);
 const [sortBy, setSortBy] = useState("newest");
+const [statusFilter, setStatusFilter] = useState("all");
+
+const [propertyFilter, setPropertyFilter] =
+  useState("all");
+
+const filteredPages = useMemo(() => {
+  let data = [...pages];
+
+  // Status Filter
+  if (statusFilter !== "all") {
+    data = data.filter(
+      (page) => page.status === statusFilter
+    );
+  }
+
+  // Property Count Filter
+  if (propertyFilter !== "all") {
+    data = data.filter((page) => {
+      const count = page.propertyCount || 0;
+
+      switch (propertyFilter) {
+        case "1":
+          return count === 1;
+
+        case "2":
+          return count === 2;
+
+        case "3":
+          return count === 3;
+
+        case "4":
+          return count === 4;
+
+        case "5":
+          return count === 5;
+
+        case "5plus":
+          return count > 5;
+
+        default:
+          return true;
+      }
+    });
+  }
+
+  return data;
+}, [pages, statusFilter, propertyFilter]);
 
 const totalPages = Math.ceil(
-  pages.length / itemsPerPage
+  filteredPages.length / itemsPerPage
 );
 
 const sortedPages = useMemo(() => {
-  const data = [...pages];
+  const data = [...filteredPages];
 
   switch (sortBy) {
     case "newest":
@@ -156,13 +203,10 @@ const sortedPages = useMemo(() => {
           new Date(a.updatedAt)
       );
       break;
-
-    default:
-      break;
   }
 
   return data;
-}, [pages, sortBy]);
+}, [filteredPages, sortBy]);
 
 const paginatedPages = useMemo(() => {
   const start = (currentPage - 1) * itemsPerPage;
@@ -174,13 +218,13 @@ const paginatedPages = useMemo(() => {
 }, [sortedPages, currentPage, itemsPerPage]);
 
 const startItem =
-  pages.length === 0
+  filteredPages.length === 0
     ? 0
     : (currentPage - 1) * itemsPerPage + 1;
 
 const endItem = Math.min(
   currentPage * itemsPerPage,
-  pages.length
+  filteredPages.length
 );
 
 const getVisiblePages = () => {
@@ -223,16 +267,21 @@ useEffect(() => {
 
 useEffect(() => {
   setCurrentPage(1);
-}, [pages.length]);
+}, [
+  statusFilter,
+  propertyFilter,
+]);
 
   return (
     <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
       {/* ===================================================== */}
-      {/* HEADER */}
-      {/* ===================================================== */}
+{/* HEADER */}
+{/* ===================================================== */}
 
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+<div className="flex flex-col gap-6 border-b border-gray-100 bg-white px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
+
+  {/* Left */}
 
   <div>
     <h2 className="text-xl font-bold text-gray-900">
@@ -244,7 +293,11 @@ useEffect(() => {
     </p>
   </div>
 
-  <div className="flex items-center gap-3">
+  {/* Right */}
+
+  <div className="flex flex-wrap items-center gap-3">
+
+    {/* Sort */}
 
     <select
       value={sortBy}
@@ -252,23 +305,173 @@ useEffect(() => {
         setSortBy(e.target.value);
         setCurrentPage(1);
       }}
-      className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 outline-none"
+      className="
+        rounded-xl
+        border
+        border-gray-300
+        bg-white
+        px-4
+        py-2.5
+        text-sm
+        text-gray-900
+        outline-none
+        focus:border-[#0f3b2e]
+      "
     >
-      <option value="newest">Newest First</option>
-      <option value="oldest">Oldest First</option>
-      <option value="properties-desc">Most Properties</option>
-      <option value="properties-asc">Least Properties</option>
-      <option value="seo-desc">Highest SEO Score</option>
-      <option value="seo-asc">Lowest SEO Score</option>
-      <option value="published">Published First</option>
-      <option value="draft">Draft First</option>
-      <option value="updated">Recently Updated</option>
-      <option value="az">Title A → Z</option>
-      <option value="za">Title Z → A</option>
+      <option value="newest" className="text-gray-900">
+        Newest First
+      </option>
+
+      <option value="oldest" className="text-gray-900">
+        Oldest First
+      </option>
+
+      <option value="properties-desc" className="text-gray-900">
+        Most Properties
+      </option>
+
+      <option value="properties-asc" className="text-gray-900">
+        Least Properties
+      </option>
+
+      <option value="seo-desc" className="text-gray-900">
+        Highest SEO
+      </option>
+
+      <option value="seo-asc" className="text-gray-900">
+        Lowest SEO
+      </option>
+
+      <option value="updated" className="text-gray-900">
+        Recently Updated
+      </option>
+
+      <option value="az" className="text-gray-900">
+        A → Z
+      </option>
+
+      <option value="za" className="text-gray-900">
+        Z → A
+      </option>
     </select>
 
+    {/* Status */}
+
+    <select
+      value={statusFilter}
+      onChange={(e) => {
+        setStatusFilter(e.target.value);
+        setCurrentPage(1);
+      }}
+      className="
+        rounded-xl
+        border
+        border-gray-300
+        bg-white
+        px-4
+        py-2.5
+        text-sm
+        text-gray-900
+        outline-none
+        focus:border-[#0f3b2e]
+      "
+    >
+      <option value="all" className="text-gray-900">
+        All Status
+      </option>
+
+      <option value="published" className="text-gray-900">
+        Published
+      </option>
+
+      <option value="draft" className="text-gray-900">
+        Draft
+      </option>
+    </select>
+
+    {/* Property Count */}
+
+    <select
+      value={propertyFilter}
+      onChange={(e) => {
+        setPropertyFilter(e.target.value);
+        setCurrentPage(1);
+      }}
+      className="
+        rounded-xl
+        border
+        border-gray-300
+        bg-white
+        px-4
+        py-2.5
+        text-sm
+        text-gray-900
+        outline-none
+        focus:border-[#0f3b2e]
+      "
+    >
+      <option value="all" className="text-gray-900">
+        All Properties
+      </option>
+
+      <option value="1" className="text-gray-900">
+        1 Property
+      </option>
+
+      <option value="2" className="text-gray-900">
+        2 Properties
+      </option>
+
+      <option value="3" className="text-gray-900">
+        3 Properties
+      </option>
+
+      <option value="4" className="text-gray-900">
+        4 Properties
+      </option>
+
+      <option value="5" className="text-gray-900">
+        5 Properties
+      </option>
+
+      <option value="5plus" className="text-gray-900">
+        More than 5
+      </option>
+    </select>
+
+    {/* Reset */}
+
+    <button
+      onClick={() => {
+        setSortBy("newest");
+        setStatusFilter("all");
+        setPropertyFilter("all");
+        setCurrentPage(1);
+      }}
+      className="
+        rounded-xl
+        border
+        border-gray-300
+        bg-white
+        px-5
+        py-2.5
+        text-sm
+        font-medium
+        text-gray-900
+        transition-all
+        duration-200
+        hover:border-[#0f3b2e]
+        hover:bg-[#0f3b2e]
+        hover:text-white
+      "
+    >
+      Reset
+    </button>
+
+    {/* Counter */}
+
     <span className="rounded-full bg-[#0f3b2e] px-4 py-2 text-sm font-semibold text-white">
-      {pages.length} Pages
+      {filteredPages.length} Pages
     </span>
 
   </div>
@@ -279,7 +482,7 @@ useEffect(() => {
       {/* EMPTY */}
       {/* ===================================================== */}
 
-      {!pages.length ? (
+      {!filteredPages.length ? (
         <div className="flex flex-col items-center justify-center py-20">
 
           <SearchX
@@ -564,7 +767,7 @@ useEffect(() => {
   <div className="flex items-center gap-3 text-sm text-gray-600">
 
     <span>
-      Showing {startItem}-{endItem} of {pages.length}
+      Showing {startItem}-{endItem} of {filteredPages.length}
     </span>
 
     <select
