@@ -26,7 +26,7 @@ const navItems = [
 {
     title: "Developers",
     key: "developers",
-    href: "/properties",
+    href: "/all-developers",
 },
   {
     title: "Knowledge Centre",

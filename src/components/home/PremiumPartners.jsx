@@ -209,7 +209,69 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
       </div>
 
     </div>
+{/* VIEW ALL DEVELOPERS */}
+<div className="flex justify-center mt-14">
+  <Link href="/all-developers">
+    <button
+      className="
+        group
+        relative
+        overflow-hidden
+        rounded-full
+        border border-[#c89d58]
+        bg-gradient-to-r from-[#c89d58] to-[#d8b46b]
+        px-8 py-4
+        text-[13px]
+        font-semibold
+        uppercase
+        tracking-[2px]
+        text-white
+        shadow-[0_10px_35px_rgba(200,157,88,0.28)]
+        transition-all
+        duration-500
+        hover:-translate-y-1
+        hover:shadow-[0_18px_45px_rgba(200,157,88,0.4)]
+      "
+    >
+      <span className="relative z-10 flex items-center gap-3">
+        View All Developers
 
+        <svg
+          className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 12h14M13 5l7 7-7 7"
+          />
+        </svg>
+      </span>
+
+      {/* Shine Effect */}
+      <span
+        className="
+          absolute
+          top-0
+          -left-[120%]
+          h-full
+          w-[60%]
+          rotate-12
+          bg-gradient-to-r
+          from-transparent
+          via-white/40
+          to-transparent
+          transition-all
+          duration-1000
+          group-hover:left-[140%]
+        "
+      />
+    </button>
+  </Link>
+</div>
   </div>
 </section>
 
