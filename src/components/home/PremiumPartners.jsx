@@ -211,7 +211,7 @@ return ( <section className="py-24 bg-[#faf8f5] overflow-hidden"> <div className
     </div>
 {/* VIEW ALL DEVELOPERS */}
 <div className="flex justify-center mt-14">
-  <Link href="/all-developers">
+  <Link href="/developers">
     <button
       className="
         group
