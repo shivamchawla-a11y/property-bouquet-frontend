@@ -453,3 +453,30 @@ select.input option {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+.luxuryInput {
+  width: 100%;
+  height: 56px;
+  background: transparent;
+  border: 1px solid rgba(200, 157, 88, 0.25);
+  color: white;
+  padding: 0 18px;
+  border-radius: 6px;
+  outline: none;
+  transition: all .3s ease;
+  font-size: 15px;
+}
+
+.luxuryInput::placeholder {
+  color: rgba(255,255,255,.45);
+}
+
+.luxuryInput:focus {
+  border-color: #C89B4F;
+  box-shadow: 0 0 0 4px rgba(200,157,88,.08);
+}
+
+textarea.luxuryInput {
+  height: auto;
+  padding-top: 16px;
+}
