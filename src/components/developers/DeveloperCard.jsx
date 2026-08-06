@@ -6,7 +6,7 @@ import { ArrowRight, Bookmark } from "lucide-react";
 export default function DeveloperCard({ developer }) {
   return (
     <Link
-  href={`/properties?developer=${encodeURIComponent(developer.name)}`}
+  href={`/developers/${developer.slug}`}
   className="group block h-full"
 >
       <article

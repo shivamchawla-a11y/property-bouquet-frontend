@@ -61,6 +61,10 @@ const navItems = [
   title: "About Us",
   href: "/about",
 },
+{
+  title: "Contact",
+  href: "/contact",
+},
 ];
 
 export default function Navbar({
@@ -396,10 +400,16 @@ tracking-[0.38em]
     <button
   type="button"
   onClick={() => {
-    if (item.title === "About Us") {
-      router.push("/about");
-    }
-  }}
+  if (item.title === "About Us") {
+    router.push("/about");
+    return;
+  }
+
+  if (item.title === "Contact") {
+    router.push("/contact");
+    return;
+  }
+}}
   className="px-1 text-white/85 hover:text-[#d6aa53]"
 >
   {item.title !== "About Us" && (
@@ -896,13 +906,11 @@ if (item.title === "Knowledge Centre") {
 >
         {item.title}
 
-        {item.title !== "About Us" && (
+        {!["About Us", "Contact"].includes(item.title) && (
   <ChevronDown
-    size={18}
-    className={`transition ${
-      mobileDropdown === item.title
-        ? "rotate-180"
-        : ""
+    size={13}
+    className={`transition duration-300 ${
+      active === item.title ? "rotate-180" : ""
     }`}
   />
 )}
