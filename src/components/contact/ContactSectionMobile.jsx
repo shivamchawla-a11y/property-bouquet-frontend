@@ -1,0 +1,249 @@
+"use client";
+
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock3,
+  Lock,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
+
+export default function ContactSectionMobile() {
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    interest: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !form.name ||
+      !form.phone ||
+      !form.email ||
+      !form.interest ||
+      !form.message
+    ) {
+      return toast.error("Please fill all fields.");
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+
+    if (!phoneRegex.test(form.phone)) {
+      return toast.error("Please enter a valid phone number.");
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Something went wrong.");
+      }
+
+      toast.success("Thank you! We'll contact you shortly.");
+
+      setForm({
+        name: "",
+        phone: "",
+        email: "",
+        interest: "",
+        message: "",
+      });
+    } catch (err) {
+      toast.error(err.message || "Failed to submit enquiry.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="bg-white py-16">
+      <div className="max-w-md mx-auto px-5">
+
+        <p className="uppercase tracking-[3px] text-[11px] font-semibold text-[#C89B4F]">
+          Get In Touch
+        </p>
+
+        <h2 className="mt-4 font-playfair text-[34px] leading-tight text-[#222]">
+          Let's Find the Right
+          <br />
+          Property for You
+        </h2>
+
+        <div className="w-14 h-[2px] bg-[#C89B4F] mt-6 mb-6" />
+
+        <p className="text-[15px] leading-7 text-[#666]">
+          Whether you're looking to invest, purchase or explore premium
+          opportunities, our advisors are here to guide you.
+        </p>
+
+        <div className="mt-10 space-y-6">
+          <InfoCard
+            icon={<Phone size={18} />}
+            title="Phone"
+            value="+91 9090 106 101"
+          />
+
+          <InfoCard
+            icon={<Mail size={18} />}
+            title="Email"
+            value="connect@propertybouquet.com"
+          />
+
+          <InfoCard
+            icon={<MapPin size={18} />}
+            title="Office"
+            value="Suncity Success Tower, Golf Course Extension Road, Sector 65, Gurugram"
+          />
+
+          <InfoCard
+            icon={<Clock3 size={18} />}
+            title="Working Hours"
+            value={
+              <>
+                Mon – Sat : 10 AM – 7 PM
+                <br />
+                Sunday : By Appointment
+              </>
+            }
+          />
+        </div>
+
+        <div className="mt-12 rounded-3xl bg-[#041E19] border border-[#1A493D] p-6">
+
+          <p className="uppercase tracking-[3px] text-[11px] font-semibold text-[#C89B4F]">
+            Send Us A Message
+          </p>
+
+          <div className="w-10 h-[2px] bg-[#C89B4F] mt-4 mb-6" />
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="luxuryInput"
+            />
+
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              className="luxuryInput"
+            />
+
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              className="luxuryInput"
+            />
+
+            <select
+              name="interest"
+              value={form.interest}
+              onChange={handleChange}
+              className="luxuryInput"
+            >
+              <option value="">I'm Interested In</option>
+              <option>Buying Property</option>
+              <option>Luxury Apartment</option>
+              <option>Investment</option>
+              <option>Commercial</option>
+            </select>
+
+            <textarea
+              rows={5}
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Your Message"
+              className="luxuryInput resize-none"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-[52px] rounded-xl bg-[#D7AF67] text-[#111] font-semibold flex items-center justify-center gap-3 disabled:opacity-60"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  Send Message
+                  <ArrowRight size={17} />
+                </>
+              )}
+            </button>
+
+            <div className="flex items-start gap-2 text-[12px] text-white/60 pt-2">
+              <Lock size={14} className="mt-0.5 text-[#C89B4F]" />
+              <span>Your information is 100% safe and secure with us.</span>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+function InfoCard({ icon, title, value }) {
+  return (
+    <div className="flex items-start gap-4">
+
+      <div className="w-12 h-12 rounded-full bg-[#041E19] text-[#C89B4F] flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+
+      <div>
+
+        <p className="text-[12px] uppercase tracking-wide text-[#888]">
+          {title}
+        </p>
+
+        <div className="mt-1 text-[14px] leading-6 text-[#222]">
+          {value}
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
