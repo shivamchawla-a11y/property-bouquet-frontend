@@ -208,32 +208,31 @@ export default function ContactSection() {
               />
 
               <select
-                name="interest"
-                value={form.interest}
-                onChange={handleChange}
-                className="luxuryInput"
-              >
+  name="interest"
+  value={form.interest}
+  onChange={handleChange}
+  className="luxuryInput text-white"
+>
+  <option value="" className="text-black bg-white">
+    I'm Interested In
+  </option>
 
-                <option value="">
-                  I'm Interested In
-                </option>
+  <option className="text-black bg-white">
+    Buying Property
+  </option>
 
-                <option>
-                  Buying Property
-                </option>
+  <option className="text-black bg-white">
+    Luxury Apartment
+  </option>
 
-                <option>
-                  Luxury Apartment
-                </option>
+  <option className="text-black bg-white">
+    Investment
+  </option>
 
-                <option>
-                  Investment
-                </option>
-
-                <option>
-                  Commercial
-                </option>
-              </select>
+  <option className="text-black bg-white">
+    Commercial
+  </option>
+</select>
 
               <textarea
                 rows={5}
