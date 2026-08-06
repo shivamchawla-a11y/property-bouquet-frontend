@@ -5639,19 +5639,25 @@ else {
                   <div className="flex items-end justify-between gap-4">
 
                     {/* PRICE */}
-                    <div>
+<div>
+  <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
+    Starting Price
+  </p>
 
-                      <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
-                        Starting Price
-                      </p>
-
-                      <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
-                        ₹{" "}
-                        {formatPrice(
-                          project?.coreDetails?.startingPrice
-                        )}
-                      </h4>
-                    </div>
+  {project?.coreDetails?.priceOnRequest ? (
+    <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+      Price On Request
+    </h4>
+  ) : project?.coreDetails?.startingPrice ? (
+    <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
+      ₹ {formatPrice(project.coreDetails.startingPrice)}
+    </h4>
+  ) : (
+    <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+      Price On Request
+    </h4>
+  )}
+</div>
 
                     {/* BUTTON */}
                     <div className="group/button shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
