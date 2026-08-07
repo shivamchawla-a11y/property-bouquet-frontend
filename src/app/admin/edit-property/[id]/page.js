@@ -80,34 +80,30 @@ export default function EditProperty() {
   const { id } = useParams();
 
   const [form, setForm] = useState({
+    // ================= BASIC =================
     slug: "",
-  
     marketType: "Primary",
+    propertyTag: ["Normal"],
   
     // ================= CORE DETAILS =================
     coreDetails: {
       title: "",
   
       developerRef: "",
-  
       developerName: "",
-  
       developerLogo: "",
-  
       developerImage: "",
   
       startingPrice: "",
-  
       maxPrice: "",
+  
       priceOnRequest: false,
     },
   
     // ================= CATEGORY =================
     categoryData: {
       categoryRef: "",
-  
       categoryName: "",
-  
       customCategory: "",
     },
   
@@ -130,20 +126,19 @@ export default function EditProperty() {
   
     // ================= KEY METRICS =================
     keyMetrics: {
-    landArea: "",
-    possession: "",
-    status: "",
-    totalUnits: "",
-    totalTowers: "",
-    floors: "",
-    reraNumber: "",
+      landArea: "",
+      possession: "",
+      status: "",
+      totalUnits: "",
+      totalTowers: "",
+      floors: "",
+      reraNumber: "",
   
-    customMetrics: [],
-  },
+      customMetrics: [],
+    },
   
     // ================= OVERVIEW =================
     overview: {
-  
       // ABOUT SECTION
       aboutSectionNumber: "02",
   
@@ -169,12 +164,13 @@ export default function EditProperty() {
   
       highlights: [],
   
+      // AMENITIES
       amenities: [],
   
       // QUOTE
       highlightQuote: "",
   
-      // AMENITIES
+      // AMENITIES SECTION
       amenitiesSectionNumber: "04",
   
       amenitiesSectionLabel: "Project Amenities",
@@ -202,7 +198,6 @@ export default function EditProperty() {
   
     // ================= CONFIGURATION SECTION =================
     configurationSection: {
-  
       sectionNumber: "05",
   
       sectionLabel: "Residence Configurations",
@@ -223,17 +218,11 @@ export default function EditProperty() {
     unitConfigurations: [
       {
         unitType: "",
-  
         area: "",
-  
         price: "",
-  
         paymentPlan: "",
-  
         bedrooms: "",
-  
         bathrooms: "",
-  
         balconies: "",
       },
     ],
@@ -241,24 +230,18 @@ export default function EditProperty() {
     // ================= MEDIA =================
     media: {
       heroImageUrl: "",
-  
       gallery: [],
-  
       walkthroughUrl: "",
     },
   
     // ================= LOCATION DATA =================
     locationData: {
-  
       // BASIC
       locationRef: "",
-  
       locationName: "",
-  
       customLocation: "",
   
       address: "",
-  
       mapEmbedUrl: "",
   
       // SECTION HEADER
@@ -304,11 +287,8 @@ export default function EditProperty() {
       landmarks: [
         {
           name: "",
-  
           distance: "",
-  
           subtitle: "Premium Connectivity",
-  
           icon: "✦",
         },
       ],
@@ -317,45 +297,35 @@ export default function EditProperty() {
       bottomStrip: [
         {
           title: "Location that enhances life.",
-  
           desc: "Investment that appreciates.",
-  
           icon: "✦",
         },
   
         {
           title: "Strategically Connected",
-  
           desc:
             "Seamless access to major hubs and expressways.",
-  
           icon: "✦",
         },
   
         {
           title: "Thriving Neighborhood",
-  
           desc:
             "Surrounded by premium communities and landmarks.",
-  
           icon: "✦",
         },
   
         {
           title: "Future-Ready Development",
-  
           desc:
             "Infrastructure and growth that future-proofs your investment.",
-  
           icon: "✦",
         },
   
         {
           title: "High Investment Potential",
-  
           desc:
             "Prime location ensures long-term value appreciation.",
-  
           icon: "✦",
         },
       ],
@@ -363,7 +333,6 @@ export default function EditProperty() {
   
     // ================= MASTER PLAN SECTION =================
     masterPlanSection: {
-  
       sectionNumber: "08",
   
       topLabel: "MASTER PLAN",
@@ -392,33 +361,25 @@ export default function EditProperty() {
       bottomStrip: [
         {
           title: "Thoughtful Layouts",
-  
           desc: "Optimized space planning",
-  
           icon: "✦",
         },
   
         {
           title: "Landscape Greens",
-  
           desc: "Open green environments",
-  
           icon: "✦",
         },
   
         {
           title: "Premium Amenities",
-  
           desc: "Luxury lifestyle experiences",
-  
           icon: "✦",
         },
   
         {
           title: "Future-Ready Living",
-  
           desc: "Modern & sustainable planning",
-  
           icon: "✦",
         },
       ],
@@ -426,79 +387,88 @@ export default function EditProperty() {
   
     // ================= GATED CONTENT =================
     gatedContent: {
-  
       brochurePdfUrl: "",
   
       requireLogin: true,
   
+      configurationType: "Apartments",
+  
+      // FLOOR PLANS
       floorPlans: [
         {
           unitType: "",
-  
           area: "",
-  
           price: "",
-  
           paymentPlan: "",
-  
           bedrooms: "",
-  
           bathrooms: "",
-  
           balconies: "",
+          image: "",
+        },
+      ],
   
+      // PLOT CONFIGURATIONS
+      plotConfigurations: [
+        {
+          plotType: "",
+          plotArea: "",
+          price: "",
+          paymentPlan: "",
           image: "",
         },
       ],
     },
   
-      // ================= SEO =================
-  seoEngine: {
-  hasCustomSEO: false,
-  metaTitle: "",
-  metaDescription: "",
-  keywords: [],
-},
+    // ================= SEO =================
+    seoEngine: {
+      hasCustomSEO: false,
   
+      metaTitle: "",
   
-    // ================= FAQS =================
+      metaDescription: "",
+  
+      keywords: [],
+    },
+  
+    // ================= FAQ SECTION =================
     faqSection: {
+      sectionNumber: "09",
   
-    sectionNumber: "09",
+      topLabel: "FAQ",
   
-    topLabel: "FAQ",
+      headingLine1: "Frequently Asked Questions",
   
-    headingLine1: "Frequently Asked Questions",
+      headingHighlight: "",
   
-    headingHighlight: "",
+      description:
+        "Find answers to common questions about the project and your journey to your dream home.",
   
-    description:
-      "Find answers to common questions about the project and your journey to your dream home.",
+      developerLabel: "Luxury Developer",
   
-    developerLabel: "Luxury Developer",
+      contactTitle: "Still have questions?",
   
-    contactTitle: "Still have questions?",
+      contactDescription:
+        "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
   
-    contactDescription:
-      "Connect with our luxury property specialists and discover every detail crafted for elevated living.",
+      phone: "+91 90901 06101",
   
-    phone: "+91 90901 06101",
+      timing: "Monday — Sunday | 10 AM — 7 PM",
   
-    timing: "Monday — Sunday | 10 AM — 7 PM",
+      ctaTitle:
+        "Ready to experience your dream home?",
   
-    ctaTitle:
-      "Ready to experience your dream home?",
+      ctaDescription:
+        "Book a site visit and take the first step towards your dream home.",
   
-    ctaDescription:
-      "Book a site visit and take the first step towards your dream home.",
+      ctaButtonText: "Book A Site Visit",
   
-    ctaButtonText: "Book A Site Visit",
+      callLabel: "Call Us",
   
-    callLabel: "Call Us",
+      whatsappLabel: "WhatsApp",
+    },
   
-    whatsappLabel: "WhatsApp",
-  },
-  
+    // ================= FAQ DATA =================
+    faqs: [],
   });
 
     const [previewData, setPreviewData] = useState(form);

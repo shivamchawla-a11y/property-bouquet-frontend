@@ -625,472 +625,1148 @@ if (uploaded) {
 
 </div>
       {/* ================= FLOOR PLANS ================= */}
-<div>
-  <p className="text-white font-semibold mb-4">
-    Floor Plans
-  </p>
+{/* ================= CONFIGURATION TYPE ================= */}
 
-  {(
-    form.gatedContent?.floorPlans || []
-  ).map((floorPlan, i) => {
+<div className="mt-8">
 
-    // ✅ SAFE OBJECT NORMALIZATION
-    const fp = {
-      unitType: "",
-      area: "",
-      price: "",
-      paymentPlan: "",
-      bedrooms: "",
-      bathrooms: "",
-      balconies: "",
-      image: "",
-      ...floorPlan,
-    };
+  <div className="mb-5">
+    <p className="text-white font-semibold text-lg">
+      Property Configuration Type
+    </p>
 
-    return (
-      <div
-        key={i}
-        className="glass p-4 rounded-lg space-y-3 mb-4"
-      >
+    <p className="text-gray-400 text-sm mt-1">
+      Choose whether this property offers apartments or plots.
+    </p>
+  </div>
 
-        {/* UNIT TYPE */}
-        <input
-          className="input"
-          placeholder="Unit Type (e.g. 3 BHK)"
-          value={fp.unitType}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            arr[i] = {
-              ...fp,
-              unitType: e.target.value,
-            };
+    {/* ================= APARTMENTS ================= */}
 
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          gatedContent: {
+            ...prev.gatedContent,
+            configurationType: "Apartments",
+          },
+        }))
+      }
+      className={`
+        relative
+        p-6
+        rounded-2xl
+        border
+        text-left
+        transition-all
+        duration-300
+        ${
+          (form.gatedContent?.configurationType || "Apartments") ===
+          "Apartments"
+            ? "border-[#C6A15B] bg-[#C6A15B]/10 shadow-[0_0_25px_rgba(198,161,91,0.15)]"
+            : "border-white/10 bg-white/5 hover:border-white/30"
+        }
+      `}
+    >
 
-        {/* AREA */}
-        <input
-          className="input"
-          placeholder="Area (e.g. 3000 Sq Ft)"
-          value={fp.area}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
+      {(form.gatedContent?.configurationType || "Apartments") ===
+        "Apartments" && (
+        <div className="absolute top-4 right-4">
 
-            arr[i] = {
-              ...fp,
-              area: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* PRICE */}
-        <input
-          className="input"
-          placeholder="Price (e.g. ₹ 5 Cr)"
-          value={fp.price}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              price: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* PAYMENT PLAN */}
-        <input
-          className="input"
-          placeholder="Payment Plan (e.g. 30:70)"
-          value={fp.paymentPlan}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              paymentPlan: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* BEDROOMS */}
-        <input
-          className="input"
-          placeholder="Bedrooms (e.g. 4)"
-          value={fp.bedrooms}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              bedrooms: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* BATHROOMS */}
-        <input
-          className="input"
-          placeholder="Bathrooms (e.g. 4)"
-          value={fp.bathrooms}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              bathrooms: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* BALCONIES */}
-        <input
-          className="input"
-          placeholder="Balconies (e.g. 3)"
-          value={fp.balconies}
-          onChange={(e) => {
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              balconies: e.target.value,
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-        />
-
-        {/* ================= FLOOR PLAN IMAGE ================= */}
-<div>
-  <label className="block text-white font-semibold mb-3">
-    Floor Plan Image
-  </label>
-
-  <div
-    onClick={() =>
-      document
-        .getElementById(`fp-${i}`)
-        .click()
-    }
-    className={`
-      relative
-      group
-      cursor-pointer
-      overflow-hidden
-      rounded-2xl
-      border-2
-      border-dashed
-      border-white/20
-      bg-white/5
-      hover:border-[#C6A15B]
-      hover:bg-white/10
-      transition-all
-      duration-300
-    `}
-  >
-
-    {/* IMAGE EXISTS */}
-    {fp.image ? (
-
-      <div className="relative">
-
-        <img
-          src={fp.image}
-          alt="Floor Plan"
-          className="
-            w-full
-            h-[260px]
-            object-cover
-          "
-        />
-
-        {/* Overlay */}
-        <div
-          className="
-            absolute
-            inset-0
-            bg-black/50
-            opacity-0
-            group-hover:opacity-100
-            transition-all
-            duration-300
-            flex
-            flex-col
-            items-center
-            justify-center
-          "
-        >
-          <svg
-            className="w-8 h-8 text-white mb-2"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
-            />
-          </svg>
-
-          <p className="text-white font-medium">
-            Change Image
-          </p>
-        </div>
-
-        {/* Remove Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-
-            const arr = [
-              ...(form.gatedContent?.floorPlans || []),
-            ];
-
-            arr[i] = {
-              ...fp,
-              image: "",
-            };
-
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
-              },
-            }));
-          }}
-          className="
-            absolute
-            top-3
-            right-3
-            h-9
-            w-9
+          <div className="
+            h-6
+            w-6
             rounded-full
-            bg-red-500
-            text-white
+            bg-[#C6A15B]
+            text-black
             flex
             items-center
             justify-center
-            shadow-lg
-            hover:scale-110
-            transition
-          "
-        >
-          ✕
-        </button>
+            text-xs
+            font-bold
+          ">
+            ✓
+          </div>
+
+        </div>
+      )}
+
+      <div className="mb-4">
+
+        <div className="
+          h-12
+          w-12
+          rounded-xl
+          bg-white/10
+          flex
+          items-center
+          justify-center
+          text-[#C6A15B]
+          text-xl
+        ">
+          🏢
+        </div>
 
       </div>
 
-    ) : (
+      <h3 className="text-white font-semibold text-lg">
+        Apartments
+      </h3>
 
-      <div
-        className="
-          py-14
-          px-6
-          flex
-          flex-col
-          items-center
-          justify-center
-          text-center
-        "
-      >
+      <p className="text-gray-400 text-sm mt-1">
+        Configure BHK, area, price, payment plan and floor plan images.
+      </p>
 
-        <div
-          className="
-            h-16
-            w-16
+    </button>
+
+
+    {/* ================= PLOTS ================= */}
+
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          gatedContent: {
+            ...prev.gatedContent,
+            configurationType: "Plots",
+          },
+        }))
+      }
+      className={`
+        relative
+        p-6
+        rounded-2xl
+        border
+        text-left
+        transition-all
+        duration-300
+        ${
+          form.gatedContent?.configurationType === "Plots"
+            ? "border-[#C6A15B] bg-[#C6A15B]/10 shadow-[0_0_25px_rgba(198,161,91,0.15)]"
+            : "border-white/10 bg-white/5 hover:border-white/30"
+        }
+      `}
+    >
+
+      {form.gatedContent?.configurationType === "Plots" && (
+        <div className="absolute top-4 right-4">
+
+          <div className="
+            h-6
+            w-6
             rounded-full
-            bg-white/10
+            bg-[#C6A15B]
+            text-black
             flex
             items-center
             justify-center
+            text-xs
+            font-bold
+          ">
+            ✓
+          </div>
+
+        </div>
+      )}
+
+      <div className="mb-4">
+
+        <div className="
+          h-12
+          w-12
+          rounded-xl
+          bg-white/10
+          flex
+          items-center
+          justify-center
+          text-[#C6A15B]
+          text-xl
+        ">
+          🌳
+        </div>
+
+      </div>
+
+      <h3 className="text-white font-semibold text-lg">
+        Plots
+      </h3>
+
+      <p className="text-gray-400 text-sm mt-1">
+        Configure plot type, plot area, price, payment plan and plot image.
+      </p>
+
+    </button>
+
+  </div>
+
+</div>
+
+
+{/* ========================================================= */}
+{/* ================= APARTMENTS ============================ */}
+{/* ========================================================= */}
+
+{(
+  form.gatedContent?.configurationType || "Apartments"
+) === "Apartments" && (
+
+  <div className="mt-8">
+
+    <p className="text-white font-semibold mb-4">
+      Floor Plans
+    </p>
+
+    {(
+      form.gatedContent?.floorPlans || []
+    ).map((floorPlan, i) => {
+
+      const fp = {
+        unitType: "",
+        area: "",
+        price: "",
+        paymentPlan: "",
+        bedrooms: "",
+        bathrooms: "",
+        balconies: "",
+        image: "",
+        ...floorPlan,
+      };
+
+      return (
+        <div
+          key={i}
+          className="glass p-4 rounded-lg space-y-3 mb-4"
+        >
+
+          {/* UNIT TYPE */}
+
+          <input
+            className="input"
+            placeholder="Unit Type (e.g. 3 BHK)"
+            value={fp.unitType}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                unitType: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* AREA */}
+
+          <input
+            className="input"
+            placeholder="Area (e.g. 3000 Sq Ft)"
+            value={fp.area}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                area: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* PRICE */}
+
+          <input
+            className="input"
+            placeholder="Price (e.g. ₹ 5 Cr)"
+            value={fp.price}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                price: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* PAYMENT PLAN */}
+
+          <input
+            className="input"
+            placeholder="Payment Plan (e.g. 30:70)"
+            value={fp.paymentPlan}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                paymentPlan: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* BEDROOMS */}
+
+          <input
+            className="input"
+            placeholder="Bedrooms (e.g. 4)"
+            value={fp.bedrooms}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                bedrooms: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* BATHROOMS */}
+
+          <input
+            className="input"
+            placeholder="Bathrooms (e.g. 4)"
+            value={fp.bathrooms}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                bathrooms: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* BALCONIES */}
+
+          <input
+            className="input"
+            placeholder="Balconies (e.g. 3)"
+            value={fp.balconies}
+            onChange={(e) => {
+
+              const arr = [
+                ...(form.gatedContent?.floorPlans || []),
+              ];
+
+              arr[i] = {
+                ...fp,
+                balconies: e.target.value,
+              };
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+          />
+
+          {/* ================= FLOOR PLAN IMAGE ================= */}
+
+          <div>
+
+            <label className="block text-white font-semibold mb-3">
+              Floor Plan Image
+            </label>
+
+            <div
+              onClick={() =>
+                document
+                  .getElementById(`fp-${i}`)
+                  .click()
+              }
+              className="
+                relative
+                group
+                cursor-pointer
+                overflow-hidden
+                rounded-2xl
+                border-2
+                border-dashed
+                border-white/20
+                bg-white/5
+                hover:border-[#C6A15B]
+                hover:bg-white/10
+                transition-all
+                duration-300
+              "
+            >
+
+              {fp.image ? (
+
+                <div className="relative">
+
+                  <img
+                    src={fp.image}
+                    alt="Floor Plan"
+                    className="
+                      w-full
+                      h-[260px]
+                      object-cover
+                    "
+                  />
+
+                  <div
+                    className="
+                      absolute
+                      inset-0
+                      bg-black/50
+                      opacity-0
+                      group-hover:opacity-100
+                      transition-all
+                      duration-300
+                      flex
+                      flex-col
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <svg
+                      className="w-8 h-8 text-white mb-2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+                      />
+                    </svg>
+
+                    <p className="text-white font-medium">
+                      Change Image
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+
+                      e.stopPropagation();
+
+                      const arr = [
+                        ...(form.gatedContent?.floorPlans || []),
+                      ];
+
+                      arr[i] = {
+                        ...fp,
+                        image: "",
+                      };
+
+                      setForm((prev) => ({
+                        ...prev,
+                        gatedContent: {
+                          ...prev.gatedContent,
+                          floorPlans: arr,
+                        },
+                      }));
+
+                    }}
+                    className="
+                      absolute
+                      top-3
+                      right-3
+                      h-9
+                      w-9
+                      rounded-full
+                      bg-red-500
+                      text-white
+                      flex
+                      items-center
+                      justify-center
+                      shadow-lg
+                      hover:scale-110
+                      transition
+                    "
+                  >
+                    ✕
+                  </button>
+
+                </div>
+
+              ) : (
+
+                <div
+                  className="
+                    py-14
+                    px-6
+                    flex
+                    flex-col
+                    items-center
+                    justify-center
+                    text-center
+                  "
+                >
+
+                  <div
+                    className="
+                      h-16
+                      w-16
+                      rounded-full
+                      bg-white/10
+                      flex
+                      items-center
+                      justify-center
+                      mb-4
+                    "
+                  >
+                    <svg
+                      className="w-8 h-8 text-[#C6A15B]"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                  </div>
+
+                  <h4 className="text-white font-semibold text-lg">
+                    Upload Floor Plan
+                  </h4>
+
+                  <p className="text-gray-400 text-sm mt-2">
+                    Drag & drop or click to upload
+                  </p>
+
+                  <p className="text-gray-500 text-xs mt-1">
+                    JPG, PNG, WEBP • Max 5MB
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+            <input
+              id={`fp-${i}`}
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => {
+
+                handleFloorPlanUpload(
+                  e.target.files[0],
+                  i
+                );
+
+                e.target.value = "";
+
+              }}
+            />
+
+          </div>
+
+
+          {/* REMOVE FLOOR PLAN */}
+
+          <button
+            type="button"
+            onClick={() => {
+
+              const arr =
+                form.gatedContent?.floorPlans?.filter(
+                  (_, idx) => idx !== i
+                ) || [];
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  floorPlans: arr,
+                },
+              }));
+
+            }}
+            className="text-red-400 text-sm"
+          >
+            ❌ Remove Floor Plan
+          </button>
+
+        </div>
+      );
+
+    })}
+
+
+    {/* ADD FLOOR PLAN */}
+
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          gatedContent: {
+            ...prev.gatedContent,
+
+            configurationType: "Apartments",
+
+            floorPlans: [
+              ...(prev.gatedContent?.floorPlans || []),
+
+              {
+                unitType: "",
+                area: "",
+                price: "",
+                paymentPlan: "",
+                bedrooms: "",
+                bathrooms: "",
+                balconies: "",
+                image: "",
+              },
+            ],
+          },
+        }))
+      }
+      className="
+        mt-4
+        px-5
+        py-3
+        rounded-2xl
+        bg-[#C6A15B]
+        text-black
+        font-semibold
+        hover:scale-[1.02]
+        transition
+      "
+    >
+      + Add Floor Plan
+    </button>
+
+  </div>
+
+)}
+
+
+{/* ========================================================= */}
+{/* ================= PLOTS ================================= */}
+{/* ========================================================= */}
+
+{form.gatedContent?.configurationType === "Plots" && (
+
+  <div className="mt-8">
+
+    <p className="text-white font-semibold mb-4">
+      Plot Configurations
+    </p>
+
+    {(
+      form.gatedContent?.plotConfigurations || []
+    ).map((plot, i) => {
+
+      const p = {
+        plotType: "",
+        plotArea: "",
+        price: "",
+        paymentPlan: "",
+        image: "",
+        ...plot,
+      };
+
+      const updatePlot = (field, value) => {
+
+        const arr = [
+          ...(form.gatedContent?.plotConfigurations || []),
+        ];
+
+        arr[i] = {
+          ...p,
+          [field]: value,
+        };
+
+        setForm((prev) => ({
+          ...prev,
+          gatedContent: {
+            ...prev.gatedContent,
+            plotConfigurations: arr,
+          },
+        }));
+
+      };
+
+      return (
+        <div
+          key={i}
+          className="
+            glass
+            p-4
+            rounded-lg
+            space-y-3
             mb-4
           "
         >
-          <svg
-            className="w-8 h-8 text-[#C6A15B]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+
+          {/* PLOT TYPE */}
+
+          <input
+            className="input"
+            placeholder="Plot Type (e.g. Residential Plot)"
+            value={p.plotType}
+            onChange={(e) =>
+              updatePlot(
+                "plotType",
+                e.target.value
+              )
+            }
+          />
+
+
+          {/* PLOT AREA */}
+
+          <input
+            className="input"
+            placeholder="Plot Area (e.g. 300 Sq Yards)"
+            value={p.plotArea}
+            onChange={(e) =>
+              updatePlot(
+                "plotArea",
+                e.target.value
+              )
+            }
+          />
+
+
+          {/* PRICE */}
+
+          <input
+            className="input"
+            placeholder="Price (e.g. ₹ 4 Cr)"
+            value={p.price}
+            onChange={(e) =>
+              updatePlot(
+                "price",
+                e.target.value
+              )
+            }
+          />
+
+
+          {/* PAYMENT PLAN */}
+
+          <input
+            className="input"
+            placeholder="Payment Plan (e.g. 20:80)"
+            value={p.paymentPlan}
+            onChange={(e) =>
+              updatePlot(
+                "paymentPlan",
+                e.target.value
+              )
+            }
+          />
+
+
+          {/* ================= PLOT IMAGE ================= */}
+
+          <div>
+
+            <label className="block text-white font-semibold mb-3">
+              Plot Image
+            </label>
+
+            <div
+              onClick={() =>
+                document
+                  .getElementById(`plot-${i}`)
+                  .click()
+              }
+              className="
+                relative
+                group
+                cursor-pointer
+                overflow-hidden
+                rounded-2xl
+                border-2
+                border-dashed
+                border-white/20
+                bg-white/5
+                hover:border-[#C6A15B]
+                hover:bg-white/10
+                transition-all
+                duration-300
+              "
+            >
+
+              {p.image ? (
+
+                <div className="relative">
+
+                  <img
+                    src={p.image}
+                    alt="Plot"
+                    className="
+                      w-full
+                      h-[260px]
+                      object-cover
+                    "
+                  />
+
+                  <div
+                    className="
+                      absolute
+                      inset-0
+                      bg-black/50
+                      opacity-0
+                      group-hover:opacity-100
+                      transition-all
+                      duration-300
+                      flex
+                      flex-col
+                      items-center
+                      justify-center
+                    "
+                  >
+
+                    <svg
+                      className="w-8 h-8 text-white mb-2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4"
+                      />
+                    </svg>
+
+                    <p className="text-white font-medium">
+                      Change Image
+                    </p>
+
+                  </div>
+
+
+                  {/* REMOVE IMAGE */}
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+
+                      e.stopPropagation();
+
+                      updatePlot(
+                        "image",
+                        ""
+                      );
+
+                    }}
+                    className="
+                      absolute
+                      top-3
+                      right-3
+                      h-9
+                      w-9
+                      rounded-full
+                      bg-red-500
+                      text-white
+                      flex
+                      items-center
+                      justify-center
+                      shadow-lg
+                      hover:scale-110
+                      transition
+                    "
+                  >
+                    ✕
+                  </button>
+
+                </div>
+
+              ) : (
+
+                <div
+                  className="
+                    py-14
+                    px-6
+                    flex
+                    flex-col
+                    items-center
+                    justify-center
+                    text-center
+                  "
+                >
+
+                  <div
+                    className="
+                      h-16
+                      w-16
+                      rounded-full
+                      bg-white/10
+                      flex
+                      items-center
+                      justify-center
+                      mb-4
+                    "
+                  >
+
+                    <svg
+                      className="w-8 h-8 text-[#C6A15B]"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+
+                  </div>
+
+                  <h4 className="text-white font-semibold text-lg">
+                    Upload Plot Image
+                  </h4>
+
+                  <p className="text-gray-400 text-sm mt-2">
+                    Drag & drop or click to upload
+                  </p>
+
+                  <p className="text-gray-500 text-xs mt-1">
+                    JPG, PNG, WEBP • Max 5MB
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+
+            <input
+              id={`plot-${i}`}
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={async (e) => {
+
+                const file =
+                  e.target.files[0];
+
+                if (!file) return;
+
+                if (!validateFile(file)) {
+                  e.target.value = "";
+                  return;
+                }
+
+                setUploading(true);
+
+                const uploaded =
+                  await uploadImage(file);
+
+                if (uploaded) {
+
+                  setForm((prev) => {
+
+                    const arr = [
+                      ...(prev.gatedContent
+                        ?.plotConfigurations || []),
+                    ];
+
+                    const existing = {
+                      plotType: "",
+                      plotArea: "",
+                      price: "",
+                      paymentPlan: "",
+                      image: "",
+                      ...(arr[i] || {}),
+                    };
+
+                    arr[i] = {
+                      ...existing,
+                      image: uploaded.url,
+                    };
+
+                    return {
+                      ...prev,
+                      gatedContent: {
+                        ...prev.gatedContent,
+                        plotConfigurations: arr,
+                      },
+                    };
+
+                  });
+
+                }
+
+                setUploading(false);
+
+                e.target.value = "";
+
+              }}
             />
-          </svg>
+
+          </div>
+
+
+          {/* REMOVE PLOT */}
+
+          <button
+            type="button"
+            onClick={() => {
+
+              const arr =
+                form.gatedContent?.plotConfigurations?.filter(
+                  (_, idx) => idx !== i
+                ) || [];
+
+              setForm((prev) => ({
+                ...prev,
+                gatedContent: {
+                  ...prev.gatedContent,
+                  plotConfigurations: arr,
+                },
+              }));
+
+            }}
+            className="
+              text-red-400
+              text-sm
+            "
+          >
+            ❌ Remove Plot
+          </button>
+
         </div>
-
-        <h4 className="text-white font-semibold text-lg">
-          Upload Floor Plan
-        </h4>
-
-        <p className="text-gray-400 text-sm mt-2">
-          Drag & drop or click to upload
-        </p>
-
-        <p className="text-gray-500 text-xs mt-1">
-          JPG, PNG, WEBP • Max 5MB
-        </p>
-
-      </div>
-
-    )}
-  </div>
-
-  <input
-    id={`fp-${i}`}
-    type="file"
-    hidden
-    accept="image/*"
-    onChange={(e) => {
-      handleFloorPlanUpload(
-        e.target.files[0],
-        i
       );
 
-      e.target.value = "";
-    }}
-  />
-</div>
+    })}
 
-        {/* REMOVE FLOOR PLAN */}
-        <button
-          type="button"
-          onClick={() => {
-            const arr =
-              form.gatedContent?.floorPlans?.filter(
-                (_, idx) => idx !== i
-              ) || [];
 
-            setForm((prev) => ({
-              ...prev,
-              gatedContent: {
-                ...prev.gatedContent,
-                floorPlans: arr,
+    {/* ADD PLOT */}
+
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          gatedContent: {
+
+            ...prev.gatedContent,
+
+            configurationType: "Plots",
+
+            plotConfigurations: [
+              ...(prev.gatedContent?.plotConfigurations || []),
+
+              {
+                plotType: "",
+                plotArea: "",
+                price: "",
+                paymentPlan: "",
+                image: "",
               },
-            }));
-          }}
-          className="text-red-400 text-sm"
-        >
-          ❌ Remove Floor Plan
-        </button>
-      </div>
-    );
-  })}
+            ],
 
-  {/* ================= ADD FLOOR PLAN ================= */}
-  <button
-    type="button"
-    onClick={() =>
-      setForm((prev) => ({
-        ...prev,
-        gatedContent: {
-          ...prev.gatedContent,
-          floorPlans: [
-            ...(prev.gatedContent?.floorPlans || []),
+          },
+        }))
+      }
+      className="
+        mt-4
+        px-5
+        py-3
+        rounded-2xl
+        bg-[#C6A15B]
+        text-black
+        font-semibold
+        hover:scale-[1.02]
+        transition
+      "
+    >
+      + Add Plot
+    </button>
 
-            {
-              unitType: "",
-              area: "",
-              price: "",
-              paymentPlan: "",
-              bedrooms: "",
-              bathrooms: "",
-              balconies: "",
-              image: "",
-            },
-          ],
-        },
-      }))
-    }
-    className="
-mt-4
-px-5
-py-3
-rounded-2xl
-bg-[#C6A15B]
-text-black
-font-semibold
-hover:scale-[1.02]
-transition
-"
-  >
-    + Add Floor Plan
-  </button>
-</div>
+  </div>
+
+)}
+
     </div>
   );
 }
