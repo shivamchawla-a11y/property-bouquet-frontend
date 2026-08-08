@@ -942,39 +942,67 @@ const safeForm = {
       property.masterPlanSection?.masterPlanImage || "",
   },
 
-  // ================= GATED =================
-  gatedContent: {
-    brochurePdfUrl:
-      property.gatedContent?.brochurePdfUrl || "",
+  // ================= GATED CONTENT =================
+gatedContent: {
+  brochurePdfUrl:
+    property.gatedContent?.brochurePdfUrl || "",
 
-    requireLogin:
-      property.gatedContent?.requireLogin ?? true,
+  requireLogin:
+    property.gatedContent?.requireLogin ?? true,
 
-    floorPlans:
-      property.gatedContent?.floorPlans?.length > 0
-        ? property.gatedContent.floorPlans.map((f) => ({
-            unitType: f.unitType || "",
-            area: f.area || "",
-            price: f.price || "",
-            paymentPlan: f.paymentPlan || "",
-            bedrooms: f.bedrooms || "",
-            bathrooms: f.bathrooms || "",
-            balconies: f.balconies || "",
-            image: f.image || "",
-          }))
-        : [
-            {
-              unitType: "",
-              area: "",
-              price: "",
-              paymentPlan: "",
-              bedrooms: "",
-              bathrooms: "",
-              balconies: "",
-              image: "",
-            },
-          ],
-  },
+  // IMPORTANT: preserve configuration type
+  configurationType:
+    property.gatedContent?.configurationType ||
+    "Apartments",
+
+  // ================= FLOOR PLANS =================
+  floorPlans:
+    Array.isArray(property.gatedContent?.floorPlans) &&
+    property.gatedContent.floorPlans.length > 0
+      ? property.gatedContent.floorPlans.map((f) => ({
+          unitType: f?.unitType || "",
+          area: f?.area || "",
+          price: f?.price || "",
+          paymentPlan: f?.paymentPlan || "",
+          bedrooms: f?.bedrooms || "",
+          bathrooms: f?.bathrooms || "",
+          balconies: f?.balconies || "",
+          image: f?.image || "",
+        }))
+      : [
+          {
+            unitType: "",
+            area: "",
+            price: "",
+            paymentPlan: "",
+            bedrooms: "",
+            bathrooms: "",
+            balconies: "",
+            image: "",
+          },
+        ],
+
+  // ================= PLOT CONFIGURATIONS =================
+  plotConfigurations:
+    Array.isArray(property.gatedContent?.plotConfigurations) &&
+    property.gatedContent.plotConfigurations.length > 0
+      ? property.gatedContent.plotConfigurations.map((p) => ({
+          plotType: p?.plotType || "",
+          plotArea: p?.plotArea || "",
+          price: p?.price || "",
+          paymentPlan: p?.paymentPlan || "",
+          image: p?.image || "",
+        }))
+      : [
+          {
+            plotType: "",
+            plotArea: "",
+            price: "",
+            paymentPlan: "",
+            image: "",
+          },
+        ],
+},
 
   // ================= SEO =================
   seoEngine: {
@@ -1510,6 +1538,23 @@ const validConfigurations =
       },
 
       unitConfigurations: validConfigurations,
+
+      gatedContent: {
+  ...form.gatedContent,
+
+  configurationType:
+    form.gatedContent?.configurationType || "Apartments",
+
+  floorPlans:
+    Array.isArray(form.gatedContent?.floorPlans)
+      ? form.gatedContent.floorPlans
+      : [],
+
+  plotConfigurations:
+    Array.isArray(form.gatedContent?.plotConfigurations)
+      ? form.gatedContent.plotConfigurations
+      : [],
+},
 
       seoEngine: {
   hasCustomSEO,
