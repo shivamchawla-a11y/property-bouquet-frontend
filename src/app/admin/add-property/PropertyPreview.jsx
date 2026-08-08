@@ -3846,38 +3846,38 @@ else {
                 {/* ================================================= */}
 
                 {isPlots && (
-                  <div className="mt-8 sm:mt-10">
+  <div className="mt-8 sm:mt-10">
 
-                    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3">
 
-                      <div
-                        className="
-                          mt-[5px]
-                          text-[#c9a64b]
-                          text-[14px]
-                        "
-                      >
-                        ⊚
-                      </div>
+      <div
+        className="
+          mt-[5px]
+          flex-shrink-0
+          w-[7px]
+          h-[7px]
+          rounded-full
+          bg-[#c9a64b]
+        "
+      />
 
-                      <p
-                        className="
-                          text-[#4f4f4f]
-                          text-[13px]
-                          sm:text-[14px]
-                          leading-[1.9]
-                        "
-                      >
-                        Premium plot configuration with
-                        thoughtfully planned dimensions,
-                        flexible payment options and
-                        excellent development potential.
-                      </p>
+      <p
+        className="
+          text-[#4f4f4f]
+          text-[13px]
+          sm:text-[14px]
+          leading-[1.9]
+        "
+      >
+        Premium residential plots thoughtfully planned for
+        comfortable living, future growth and long-term
+        investment potential.
+      </p>
 
-                    </div>
+    </div>
 
-                  </div>
-                )}
+  </div>
+)}
 
 
                 {/* ================================================= */}
@@ -4184,7 +4184,613 @@ else {
 
           </div>
 
-        </motion.div>
+                </motion.div>
+
+
+        {/* ========================================================= */}
+        {/* ================= PLOT FEATURES ========================= */}
+        {/* ========================================================= */}
+
+        {isPlots && (
+          <motion.div
+            variants={fadeUp}
+            className="
+              mt-8
+              md:mt-10
+              bg-[#f9f8f4]
+              border
+              border-[#e4dfd5]
+              rounded-[18px]
+              md:rounded-[20px]
+              overflow-hidden
+              shadow-[0_12px_35px_rgba(0,0,0,0.035)]
+            "
+          >
+
+            {/* ================= FEATURE HEADER ================= */}
+
+            <div
+              className="
+                px-6
+                sm:px-8
+                md:px-10
+                pt-6
+                sm:pt-7
+                md:pt-8
+                pb-5
+                md:pb-6
+              "
+            >
+
+              <h3
+                className="
+                  text-[#17342d]
+                  text-[17px]
+                  sm:text-[18px]
+                  md:text-[19px]
+                  uppercase
+                  tracking-[1px]
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                Plot Features
+              </h3>
+
+            </div>
+
+
+            {/* ================= FEATURES GRID ================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-3
+                xl:grid-cols-6
+                border-t
+                border-[#e4dfd5]
+              "
+            >
+
+              {/* ================= FEATURE 1 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  last:border-r-0
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 19.5c1.5-2.8 4-4.2 6.5-4.2S15.5 16.7 17 19.5"
+                    />
+                    <circle cx="7" cy="9" r="2.2" />
+                    <circle cx="12" cy="7" r="2.2" />
+                    <circle cx="17" cy="9" r="2.2" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.5 19.5h17"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Spacious plots in a
+                  <br />
+                  well-planned layout
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 2 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  lg:border-b-0
+                  xl:border-r
+                  sm:border-r-0
+                  lg:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 17h18"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 17l2-8h10l2 8"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 9l-2-3M16 9l2-3"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 20h4M16 20h4"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Wide internal roads
+                  <br />
+                  and landscaping
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 3 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 21V9"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 9c2-2 4-2 6 0v12"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14 13h4"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14 17h4"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 21h14"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 6h4M5 3h6"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Underground utilities
+                  <br />
+                  and infrastructure
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 4 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r-0
+                  lg:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 3l7 3v5c0 4.7-2.8 7.9-7 10-4.2-2.1-7-5.3-7-10V6l7-3z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12l2 2 4-4"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  24×7 Security in
+                  <br />
+                  a gated community
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 5 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 20V9l8-5 8 5v11"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 20v-5h8v5"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 10h.01M12 10h.01M17 10h.01"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Close to schools,
+                  <br />
+                  hospitals & hubs
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 6 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 21V8l7-4 7 4v13"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 21v-6h8v6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2M9 10h6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 21h18"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Ideal for living or
+                  <br />
+                  long-term investment
+                </p>
+
+              </div>
+
+            </div>
+
+          </motion.div>
+        )}
 
       </div>
 
