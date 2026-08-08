@@ -3103,15 +3103,33 @@ else {
 </motion.section>
 
 {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
-{gatedContent?.floorPlans?.length > 0 && (() => {
 
-  // ✅ ACTIVE FLOOR PLAN
-  const activeFloorPlan =
-    gatedContent.floorPlans?.[activePlan] || {};
+{(() => {
+  const configurationType =
+    gatedContent?.configurationType || "Apartments";
 
-  const hasFloorPlanImage =
-    activeFloorPlan?.image &&
-    activeFloorPlan.image.trim() !== "";
+  const isPlots = configurationType === "Plots";
+
+  const configurations = isPlots
+    ? gatedContent?.plotConfigurations || []
+    : gatedContent?.floorPlans || [];
+
+  // No configuration data = don't render section
+  if (!configurations.length) return null;
+
+  // Prevent invalid active index
+  const safeActivePlan =
+    activePlan >= 0 && activePlan < configurations.length
+      ? activePlan
+      : 0;
+
+  const activeConfiguration =
+    configurations[safeActivePlan] || {};
+
+  const hasConfigurationImage =
+    activeConfiguration?.image &&
+    typeof activeConfiguration.image === "string" &&
+    activeConfiguration.image.trim() !== "";
 
   return (
     <motion.section
@@ -3129,79 +3147,165 @@ else {
       "
     >
 
-      {/* SOFT GLOW */}
-      <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
+      {/* ================= SOFT GLOW ================= */}
+
+      <div
+        className="
+          absolute
+          top-0
+          left-0
+          w-[420px]
+          h-[420px]
+          bg-[#c9a64b]/10
+          blur-[130px]
+          rounded-full
+          pointer-events-none
+        "
+      />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6">
 
-        {/* ================= HEADING ================= */}
-<motion.div
-  variants={fadeUp}
-  className="text-center mb-12 md:mb-16"
->
-  {/* SECTION LABEL */}
-  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
-    <p
-      className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
-      style={{
-        fontFamily: "Inter, sans-serif",
-        fontWeight: 600,
-      }}
-    >
-      {configurationSection?.sectionNumber || "05"}
-    </p>
+        {/* ========================================================= */}
+        {/* ================= HEADING =============================== */}
+        {/* ========================================================= */}
 
-    <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
+        <motion.div
+          variants={fadeUp}
+          className="text-center mb-12 md:mb-16"
+        >
 
-    <p
-      className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
-      style={{
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      {configurationSection?.sectionLabel ||
-        "Residence Configurations"}
-    </p>
-  </div>
+          {/* ================= SECTION LABEL ================= */}
 
-  {/* TITLE */}
-  <motion.h2
-    variants={fadeUp}
-    className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] px-2"
-    style={{
-      fontFamily: "Cormorant Garamond, serif",
-    }}
-  >
-    {configurationSection?.titleLine1 ||
-      "Residences Tailored"}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
 
-    <span className="text-[#b58b47]">
-      {" "}
-      {configurationSection?.titleLine2 ||
-        "to Your Lifestyle"}
-    </span>
-  </motion.h2>
+            <p
+              className="
+                text-[#b89149]
+                text-[10px]
+                sm:text-[11px]
+                tracking-[2px]
+                sm:tracking-[3px]
+                uppercase
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              {configurationSection?.sectionNumber || "05"}
+            </p>
 
-  {/* DIVIDER */}
-  <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
-    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
-  </div>
+            <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
 
-  {/* SUBTEXT */}
-  <motion.p
-    variants={fadeUp}
-    className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2"
-    style={{
-      fontFamily: "Inter, sans-serif",
-      fontWeight: 300,
-    }}
-  >
-    {configurationSection?.subheading ||
-      "Thoughtfully designed layouts that redefine space, privacy, and luxury."}
-  </motion.p>
-</motion.div>
+            <p
+              className="
+                text-[#2d4137]
+                text-[10px]
+                sm:text-[11px]
+                tracking-[2px]
+                sm:tracking-[3px]
+                uppercase
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              {configurationSection?.sectionLabel ||
+                "Residence Configurations"}
+            </p>
 
-        {/* ================= MAIN CARD ================= */}
+          </div>
+
+
+          {/* ================= TITLE ================= */}
+
+          <motion.h2
+            variants={fadeUp}
+            className="
+              text-[34px]
+              sm:text-5xl
+              md:text-6xl
+              font-light
+              text-[#17342d]
+              leading-[1.05]
+              px-2
+            "
+            style={{
+              fontFamily: "Cormorant Garamond, serif",
+            }}
+          >
+            {configurationSection?.titleLine1 ||
+              "Residences Tailored"}
+
+            <span className="text-[#b58b47]">
+              {" "}
+              {configurationSection?.titleLine2 ||
+                "to Your Lifestyle"}
+            </span>
+          </motion.h2>
+
+
+          {/* ================= DIVIDER ================= */}
+
+          <div
+            className="
+              w-20
+              md:w-24
+              h-[1px]
+              bg-[#c8a66a]
+              mx-auto
+              mt-5
+              relative
+            "
+          >
+            <div
+              className="
+                absolute
+                left-1/2
+                top-1/2
+                -translate-x-1/2
+                -translate-y-1/2
+                w-2
+                h-2
+                rotate-45
+                bg-[#c8a66a]
+              "
+            />
+          </div>
+
+
+          {/* ================= SUBTEXT ================= */}
+
+          <motion.p
+            variants={fadeUp}
+            className="
+              max-w-3xl
+              mx-auto
+              mt-6
+              md:mt-7
+              text-[#6b6b6b]
+              text-[14px]
+              sm:text-base
+              md:text-lg
+              leading-relaxed
+              px-2
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            {configurationSection?.subheading ||
+              "Thoughtfully designed layouts that redefine space, privacy, and luxury."}
+          </motion.p>
+
+        </motion.div>
+
+
+        {/* ========================================================= */}
+        {/* ================= MAIN CARD ============================= */}
+        {/* ========================================================= */}
+
         <motion.div
           variants={fadeUp}
           className="
@@ -3217,224 +3321,323 @@ else {
           "
         >
 
-          <div>
+          {/* ======================================================= */}
+          {/* ================= CONFIGURATION TABS ================== */}
+          {/* ======================================================= */}
 
- {/* ================= CONFIGURATION TABS ================= */}
-
-<div
-  className="
-    flex
-    overflow-x-auto
-    bg-[#f5f0e7]
-    border-b
-    border-[#e6dccb]
-  "
->
-  {gatedContent.floorPlans.map((u, i) => {
-    const active = activePlan === i;
-
-    return (
-      <button
-        key={i}
-        onClick={() => setActivePlan(i)}
-        className={`
-          relative
-          flex-1
-          min-w-[190px]
-          px-8
-          py-6
-          text-left
-          transition-all
-          duration-300
-          border-r
-          last:border-r-0
-          border-[#e6dccb]
-          group
-          overflow-hidden
-
-          ${
-            active
-              ? "bg-[#03261d] text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
-              : "bg-[#faf7f2] hover:bg-white hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
-          }
-        `}
-      >
-        {/* GOLD LINE */}
-        <div
-          className={`
-            absolute
-            left-0
-            top-0
-            h-full
-            w-[3px]
-            transition-all
-            duration-300
-
-            ${
-              active
-                ? "bg-[#c9a64b]"
-                : "bg-transparent group-hover:bg-[#d0ac63]"
-            }
-          `}
-        />
-
-        {/* ACTIVE BOTTOM LINE */}
-        {active && (
-          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#c9a64b]" />
-        )}
-
-        <h3
-          className={`
-            text-[24px]
-            leading-none
-            transition-colors
-            duration-300
-
-            ${
-              active
-                ? "text-white"
-                : "text-[#17342d] group-hover:text-[#0f2b22]"
-            }
-          `}
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-            fontWeight: 500,
-          }}
-        >
-          {u.unitType}
-        </h3>
-
-        <p
-          className={`
-            mt-2
-            text-[14px]
-            transition-colors
-            duration-300
-
-            ${
-              active
-                ? "text-[#d7b367]"
-                : "text-[#8b6f3d] group-hover:text-[#b58b47]"
-            }
-          `}
-        >
-          {u.area}
-        </p>
-
-        {!active && (
           <div
             className="
-              absolute
-              inset-0
-              opacity-0
-              group-hover:opacity-100
-              transition-opacity
-              duration-300
-              pointer-events-none
-              bg-gradient-to-r
-              from-transparent
-              via-white/40
-              to-transparent
+              flex
+              overflow-x-auto
+              bg-[#f5f0e7]
+              border-b
+              border-[#e6dccb]
+              scrollbar-hide
             "
-          />
-        )}
-      </button>
-    );
-  })}
-</div>
+          >
 
-            {/* ================= RIGHT CONTENT ================= */}
-            <div className="p-5 sm:p-6 lg:p-8">
+            {configurations.map((configuration, index) => {
 
-              <div className="grid lg:grid-cols-[1.45fr_0.65fr] gap-10 lg:gap-12 items-start">
+              const active = safeActivePlan === index;
 
-                {/* ================= DETAILS ================= */}
-                <div>
+              const tabTitle = isPlots
+                ? configuration?.plotType || `Plot ${index + 1}`
+                : configuration?.unitType || `Configuration ${index + 1}`;
+
+              const tabArea = isPlots
+                ? configuration?.plotArea || "Plot Area"
+                : configuration?.area || "Residence Area";
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActivePlan(index)}
+                  className={`
+                    relative
+                    flex-1
+                    min-w-[190px]
+                    px-8
+                    py-6
+                    text-left
+                    transition-all
+                    duration-300
+                    border-r
+                    last:border-r-0
+                    border-[#e6dccb]
+                    group
+                    overflow-hidden
+
+                    ${
+                      active
+                        ? "bg-[#03261d] text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+                        : "bg-[#faf7f2] hover:bg-white hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                    }
+                  `}
+                >
+
+                  {/* ================= GOLD SIDE LINE ================= */}
+
+                  <div
+                    className={`
+                      absolute
+                      left-0
+                      top-0
+                      h-full
+                      w-[3px]
+                      transition-all
+                      duration-300
+
+                      ${
+                        active
+                          ? "bg-[#c9a64b]"
+                          : "bg-transparent group-hover:bg-[#d0ac63]"
+                      }
+                    `}
+                  />
+
+
+                  {/* ================= ACTIVE BOTTOM LINE ================= */}
+
+                  {active && (
+                    <div
+                      className="
+                        absolute
+                        bottom-0
+                        left-0
+                        w-full
+                        h-[3px]
+                        bg-[#c9a64b]
+                      "
+                    />
+                  )}
+
+
+                  {/* ================= TAB TITLE ================= */}
 
                   <h3
-                    className="
-                      text-[#1b3127]
-                      text-[34px]
-                      sm:text-[42px]
+                    className={`
+                      text-[24px]
                       leading-none
-                    "
+                      transition-colors
+                      duration-300
+
+                      ${
+                        active
+                          ? "text-white"
+                          : "text-[#17342d] group-hover:text-[#0f2b22]"
+                      }
+                    `}
                     style={{
-                      fontFamily:
-                        "Georgia, Times New Roman, serif",
+                      fontFamily: "Cormorant Garamond, serif",
+                      fontWeight: 500,
                     }}
                   >
-                    {activeFloorPlan?.unitType || "Luxury Unit"}
+                    {tabTitle}
                   </h3>
 
+
+                  {/* ================= TAB AREA ================= */}
+
                   <p
-                    className="
-                      mt-3
-                      text-[#b89149]
-                      text-[16px]
-                      sm:text-[18px]
-                    "
+                    className={`
+                      mt-2
+                      text-[14px]
+                      transition-colors
+                      duration-300
+
+                      ${
+                        active
+                          ? "text-[#d7b367]"
+                          : "text-[#8b6f3d] group-hover:text-[#b58b47]"
+                      }
+                    `}
                   >
-                    {activeFloorPlan?.area || "Luxury Residences"}
+                    {tabArea}
                   </p>
 
-                  <div className="w-14 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7 mb-6 sm:mb-7" />
 
-                  {/* ================= METRICS ================= */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-y-6 gap-x-0">
+                  {/* ================= HOVER SHINE ================= */}
+
+                  {!active && (
+                    <div
+                      className="
+                        absolute
+                        inset-0
+                        opacity-0
+                        group-hover:opacity-100
+                        transition-opacity
+                        duration-300
+                        pointer-events-none
+                        bg-gradient-to-r
+                        from-transparent
+                        via-white/40
+                        to-transparent
+                      "
+                    />
+                  )}
+
+                </button>
+              );
+            })}
+
+          </div>
+
+
+          {/* ======================================================= */}
+          {/* ================= CONTENT ============================= */}
+          {/* ======================================================= */}
+
+          <div className="p-5 sm:p-6 lg:p-8">
+
+            <div
+              className="
+                grid
+                lg:grid-cols-[1.45fr_0.65fr]
+                gap-10
+                lg:gap-12
+                items-start
+              "
+            >
+
+              {/* =================================================== */}
+              {/* ================= DETAILS ========================= */}
+              {/* =================================================== */}
+
+              <div>
+
+                {/* ================= TYPE ================= */}
+
+                <h3
+                  className="
+                    text-[#1b3127]
+                    text-[34px]
+                    sm:text-[42px]
+                    leading-none
+                  "
+                  style={{
+                    fontFamily:
+                      "Georgia, Times New Roman, serif",
+                  }}
+                >
+                  {isPlots
+                    ? activeConfiguration?.plotType ||
+                      "Premium Plot"
+                    : activeConfiguration?.unitType ||
+                      "Luxury Unit"}
+                </h3>
+
+
+                {/* ================= AREA ================= */}
+
+                <p
+                  className="
+                    mt-3
+                    text-[#b89149]
+                    text-[16px]
+                    sm:text-[18px]
+                  "
+                >
+                  {isPlots
+                    ? activeConfiguration?.plotArea ||
+                      "Premium Plot Area"
+                    : activeConfiguration?.area ||
+                      "Luxury Residences"}
+                </p>
+
+
+                {/* ================= GOLD DIVIDER ================= */}
+
+                <div
+                  className="
+                    w-14
+                    h-[1px]
+                    bg-[#c9a64b]
+                    mt-6
+                    sm:mt-7
+                    mb-6
+                    sm:mb-7
+                  "
+                />
+
+
+                {/* ================================================= */}
+                {/* ================= METRICS ======================= */}
+                {/* ================================================= */}
+
+                {isPlots ? (
+
+                  /* ================= PLOT METRICS ================= */
+
+                  <div
+                    className="
+                      grid
+                      grid-cols-2
+                      md:grid-cols-3
+                      gap-y-6
+                      gap-x-0
+                    "
+                  >
 
                     {[
-                    {
-                      label: "Bedrooms",
-                      value: activeFloorPlan?.bedrooms || "3",
-                      icon: Bed,
-                    },
-                    {
-                      label: "Bathrooms",
-                      value: activeFloorPlan?.bathrooms || "3",
-                      icon: Bath,
-                    },
-                    {
-                      label: "Balconies",
-                      value: activeFloorPlan?.balconies || "2",
-                      icon: Building2,
-                    },
-                    {
-                      label: "Price",
-                      value: activeFloorPlan?.price || "On Request",
-                      icon: IndianRupee,
-                    },
-                    {
-                      label: "Payment Plan",
-                      value: activeFloorPlan?.paymentPlan || "Flexible",
-                      icon: WalletCards,
-                    },
-                  ].map((item, index) => (
+                      {
+                        label: "Plot Area",
+                        value:
+                          activeConfiguration?.plotArea ||
+                          "On Request",
+                        icon: Building2,
+                      },
+                      {
+                        label: "Price",
+                        value:
+                          activeConfiguration?.price ||
+                          "On Request",
+                        icon: IndianRupee,
+                      },
+                      {
+                        label: "Payment Plan",
+                        value:
+                          activeConfiguration?.paymentPlan ||
+                          "Flexible",
+                        icon: WalletCards,
+                      },
+                    ].map((item, index) => (
+
                       <div
-  key={index}
-  className={`
-    border-r
-    last:border-r-0
-    border-[#e2d6c2]
-    pr-4
-    min-w-0
-  `}
->
+                        key={index}
+                        className="
+                          border-r
+                          last:border-r-0
+                          border-[#e2d6c2]
+                          pr-4
+                          min-w-0
+                        "
+                      >
 
                         <div className="mb-2">
-  <item.icon
-    className="w-5 h-5 sm:w-6 sm:h-6 text-[#c9a64b]"
-    strokeWidth={1.7}
-  />
-</div>
+
+                          <item.icon
+                            className="
+                              w-5
+                              h-5
+                              sm:w-6
+                              sm:h-6
+                              text-[#c9a64b]
+                            "
+                            strokeWidth={1.7}
+                          />
+
+                        </div>
+
 
                         <p
                           className="
-                          text-[#1f352c]
-                          text-[15px]
-                          lg:text-[17px]
-                          leading-snug
-                          break-words
-                        "
+                            text-[#1f352c]
+                            text-[15px]
+                            lg:text-[17px]
+                            leading-snug
+                            break-words
+                          "
                           style={{
                             fontFamily:
                               "Georgia, Times New Roman, serif",
@@ -3442,6 +3645,7 @@ else {
                         >
                           {item.value}
                         </p>
+
 
                         <p
                           className="
@@ -3456,28 +3660,165 @@ else {
                         >
                           {item.label}
                         </p>
+
                       </div>
+
                     ))}
+
                   </div>
 
-                  {/* ================= FEATURES ================= */}
-                  <div className="mt-8 sm:mt-10 space-y-4">
+                ) : (
 
-                    {(configurationSection?.features?.length > 0
-                      ? configurationSection.features
-                      : [
-                          "Spacious living & dining area",
-                          "Wide balconies for natural light & ventilation",
-                          "Master suite with walk-in wardrobe",
-                          "Dedicated utility area",
-                        ]
-                    ).map((item, index) => (
+                  /* ================= APARTMENT METRICS ================= */
+
+                  <div
+                    className="
+                      grid
+                      grid-cols-2
+                      md:grid-cols-5
+                      gap-y-6
+                      gap-x-0
+                    "
+                  >
+
+                    {[
+                      {
+                        label: "Bedrooms",
+                        value:
+                          activeConfiguration?.bedrooms ||
+                          "On Request",
+                        icon: Bed,
+                      },
+                      {
+                        label: "Bathrooms",
+                        value:
+                          activeConfiguration?.bathrooms ||
+                          "On Request",
+                        icon: Bath,
+                      },
+                      {
+                        label: "Balconies",
+                        value:
+                          activeConfiguration?.balconies ||
+                          "On Request",
+                        icon: Building2,
+                      },
+                      {
+                        label: "Price",
+                        value:
+                          activeConfiguration?.price ||
+                          "On Request",
+                        icon: IndianRupee,
+                      },
+                      {
+                        label: "Payment Plan",
+                        value:
+                          activeConfiguration?.paymentPlan ||
+                          "Flexible",
+                        icon: WalletCards,
+                      },
+                    ].map((item, index) => (
+
                       <div
                         key={index}
-                        className="flex items-start gap-3"
+                        className="
+                          border-r
+                          last:border-r-0
+                          border-[#e2d6c2]
+                          pr-4
+                          min-w-0
+                        "
                       >
 
-                        <div className="mt-[5px] text-[#c9a64b] text-[14px]">
+                        <div className="mb-2">
+
+                          <item.icon
+                            className="
+                              w-5
+                              h-5
+                              sm:w-6
+                              sm:h-6
+                              text-[#c9a64b]
+                            "
+                            strokeWidth={1.7}
+                          />
+
+                        </div>
+
+
+                        <p
+                          className="
+                            text-[#1f352c]
+                            text-[15px]
+                            lg:text-[17px]
+                            leading-snug
+                            break-words
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                          }}
+                        >
+                          {item.value}
+                        </p>
+
+
+                        <p
+                          className="
+                            mt-2
+                            text-[#6a6a6a]
+                            text-[10px]
+                            lg:text-[10.5px]
+                            leading-[1.7]
+                            uppercase
+                            tracking-[1px]
+                          "
+                        >
+                          {item.label}
+                        </p>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+                )}
+
+
+                {/* ================================================= */}
+                {/* ================= FEATURES ====================== */}
+                {/* ================================================= */}
+
+                {!isPlots && (
+                  <div className="mt-8 sm:mt-10 space-y-4">
+
+                    {(
+                      configurationSection?.features?.length > 0
+                        ? configurationSection.features
+                        : [
+                            "Spacious living & dining area",
+                            "Wide balconies for natural light & ventilation",
+                            "Master suite with walk-in wardrobe",
+                            "Dedicated utility area",
+                          ]
+                    ).map((item, index) => (
+
+                      <div
+                        key={index}
+                        className="
+                          flex
+                          items-start
+                          gap-3
+                        "
+                      >
+
+                        <div
+                          className="
+                            mt-[5px]
+                            text-[#c9a64b]
+                            text-[14px]
+                          "
+                        >
                           ⊚
                         </div>
 
@@ -3491,181 +3832,362 @@ else {
                         >
                           {item}
                         </p>
+
                       </div>
+
                     ))}
+
                   </div>
-
-                  {/* BUTTON */}
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="
-                      mt-8
-                      sm:mt-10
-                      w-full
-                      sm:w-auto
-                      h-[50px]
-                      sm:h-[52px]
-                      px-7
-                      sm:px-8
-                      rounded-[8px]
-                      bg-[#03261d]
-                      hover:bg-[#0a3328]
-                      transition-all
-                      duration-300
-                      text-white
-                      flex
-                      items-center
-                      justify-center
-                      gap-3
-                      text-[14px]
-                      sm:text-[15px]
-                    "
-                  >
-                    {configurationSection?.buttonText ||
-                      "Unlock Floor Plan"}
-
-                    <span className="text-[#d7b367] text-[18px]">
-                      →
-                    </span>
-                  </button>
-                </div>
-
-                {/* ================= FLOOR PLAN ================= */}
-<div className="relative">
-
-  <div
-    className="
-      relative
-      rounded-[16px]
-      md:rounded-[18px]
-      border
-      border-[#e3d7c5]
-      bg-[#f6f2eb]
-      p-3
-      sm:p-4
-      md:p-5
-      shadow-[0_12px_35px_rgba(0,0,0,0.06)]
-      overflow-hidden
-    "
-  >
-
-    {/* ================= IF FLOOR PLAN EXISTS ================= */}
-    {hasFloorPlanImage ? (
-
-      <img
-        src={activeFloorPlan.image}
-        alt="floor-plan"
-        className="
-          w-full
-          h-[260px]
-          sm:h-[360px]
-          md:h-[500px]
-          object-contain
-        "
-      />
-
-    ) : (
-
-      <>
-        {/* PLACEHOLDER BLUR */}
-        <div className="relative h-[260px] sm:h-[360px] md:h-[500px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
-
-          {/* FAKE FLOOR PLAN LINES */}
-          <div className="absolute inset-0 opacity-40">
-            <div className="absolute top-10 left-10 w-40 h-24 border border-[#cbb58c]" />
-            <div className="absolute top-40 left-28 w-56 h-32 border border-[#cbb58c]" />
-            <div className="absolute bottom-20 right-20 w-44 h-28 border border-[#cbb58c]" />
-          </div>
-
-          {/* BLUR OVERLAY */}
-          <div className="absolute inset-0 backdrop-blur-[5px] bg-white/30" />
-
-          {/* LOCK CONTENT */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-
-            {/* LOCK ICON */}
-            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-2xl border border-white/50">
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-9 h-9 text-[#0b2c23]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16 11V7a4 4 0 10-8 0v4m-2 0h12a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z"
-                />
-              </svg>
-            </div>
-
-            {/* TITLE */}
-            <h4
-              className="mt-7 text-[#17342d] text-[28px] sm:text-[34px]"
-              style={{
-                fontFamily:
-                  "Georgia, Times New Roman, serif",
-              }}
-            >
-              Unlock Floor Plan
-            </h4>
+                )}
 
 
-            {/* BUTTON */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="
-                mt-7
-                h-[52px]
-                px-8
-                rounded-full
-                bg-[#03261d]
-                hover:bg-[#0a3328]
-                text-white
-                text-[14px]
-                tracking-[1px]
-                uppercase
-                flex
-                items-center
-                gap-3
-                transition-all
-                duration-300
-                shadow-xl
-              "
-            >
+                {/* ================================================= */}
+                {/* ================= PLOT DESCRIPTION ============== */}
+                {/* ================================================= */}
 
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5 text-[#d7b367]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2z"
-                />
-              </svg>
+                {isPlots && (
+                  <div className="mt-8 sm:mt-10">
 
-              Unlock Now
-            </button>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-</div>
+                    <div className="flex items-start gap-3">
+
+                      <div
+                        className="
+                          mt-[5px]
+                          text-[#c9a64b]
+                          text-[14px]
+                        "
+                      >
+                        ⊚
+                      </div>
+
+                      <p
+                        className="
+                          text-[#4f4f4f]
+                          text-[13px]
+                          sm:text-[14px]
+                          leading-[1.9]
+                        "
+                      >
+                        Premium plot configuration with
+                        thoughtfully planned dimensions,
+                        flexible payment options and
+                        excellent development potential.
+                      </p>
+
+                    </div>
+
+                  </div>
+                )}
+
+
+                {/* ================================================= */}
+                {/* ================= BUTTON ======================== */}
+                {/* ================================================= */}
+
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  className="
+                    mt-8
+                    sm:mt-10
+                    w-full
+                    sm:w-auto
+                    h-[50px]
+                    sm:h-[52px]
+                    px-7
+                    sm:px-8
+                    rounded-[8px]
+                    bg-[#03261d]
+                    hover:bg-[#0a3328]
+                    transition-all
+                    duration-300
+                    text-white
+                    flex
+                    items-center
+                    justify-center
+                    gap-3
+                    text-[14px]
+                    sm:text-[15px]
+                  "
+                >
+
+                  {configurationSection?.buttonText ||
+                    "Unlock Floor Plan"}
+
+                  <span className="text-[#d7b367] text-[18px]">
+                    →
+                  </span>
+
+                </button>
 
               </div>
+
+
+              {/* =================================================== */}
+              {/* ================= IMAGE =========================== */}
+              {/* =================================================== */}
+
+              <div className="relative">
+
+                <div
+                  className="
+                    relative
+                    rounded-[16px]
+                    md:rounded-[18px]
+                    border
+                    border-[#e3d7c5]
+                    bg-[#f6f2eb]
+                    p-3
+                    sm:p-4
+                    md:p-5
+                    shadow-[0_12px_35px_rgba(0,0,0,0.06)]
+                    overflow-hidden
+                  "
+                >
+
+                  {/* ================================================= */}
+                  {/* ================= IMAGE EXISTS ================== */}
+                  {/* ================================================= */}
+
+                  {hasConfigurationImage ? (
+
+                    <img
+                      src={activeConfiguration.image}
+                      alt={
+                        isPlots
+                          ? activeConfiguration?.plotType ||
+                            "Plot configuration"
+                          : activeConfiguration?.unitType ||
+                            "Floor plan"
+                      }
+                      className="
+                        w-full
+                        h-[260px]
+                        sm:h-[360px]
+                        md:h-[500px]
+                        object-contain
+                      "
+                    />
+
+                  ) : (
+
+                    /* ================================================= */
+                    /* ================= LOCKED PLACEHOLDER ============ */
+                    /* ================================================= */
+
+                    <div
+                      className="
+                        relative
+                        h-[260px]
+                        sm:h-[360px]
+                        md:h-[500px]
+                        overflow-hidden
+                        rounded-[12px]
+                        bg-gradient-to-br
+                        from-[#f3ede2]
+                        to-[#ece3d4]
+                      "
+                    >
+
+                      {/* ================= FAKE PLAN LINES ================= */}
+
+                      <div className="absolute inset-0 opacity-40">
+
+                        <div
+                          className="
+                            absolute
+                            top-10
+                            left-10
+                            w-40
+                            h-24
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            top-40
+                            left-28
+                            w-56
+                            h-32
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            bottom-20
+                            right-20
+                            w-44
+                            h-28
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            top-20
+                            right-16
+                            w-28
+                            h-20
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                      </div>
+
+
+                      {/* ================= BLUR ================= */}
+
+                      <div
+                        className="
+                          absolute
+                          inset-0
+                          backdrop-blur-[5px]
+                          bg-white/30
+                        "
+                      />
+
+
+                      {/* ================= LOCK CONTENT ================= */}
+
+                      <div
+                        className="
+                          absolute
+                          inset-0
+                          flex
+                          flex-col
+                          items-center
+                          justify-center
+                          text-center
+                          px-6
+                        "
+                      >
+
+                        {/* ================= LOCK ICON ================= */}
+
+                        <div
+                          className="
+                            w-20
+                            h-20
+                            rounded-full
+                            bg-white/90
+                            backdrop-blur-xl
+                            flex
+                            items-center
+                            justify-center
+                            shadow-2xl
+                            border
+                            border-white/50
+                          "
+                        >
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-9 h-9 text-[#0b2c23]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M16 11V7a4 4 0 10-8 0v4m-2 0h12a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z"
+                            />
+                          </svg>
+
+                        </div>
+
+
+                        {/* ================= LOCK TITLE ================= */}
+
+                        <h4
+                          className="
+                            mt-7
+                            text-[#17342d]
+                            text-[28px]
+                            sm:text-[34px]
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                          }}
+                        >
+                          {isPlots
+                            ? "Unlock Plot Plan"
+                            : "Unlock Floor Plan"}
+                        </h4>
+
+
+                        {/* ================= LOCK BUTTON ================= */}
+
+                        <button
+                          type="button"
+                          onClick={() => setShowModal(true)}
+                          className="
+                            mt-7
+                            h-[52px]
+                            px-8
+                            rounded-full
+                            bg-[#03261d]
+                            hover:bg-[#0a3328]
+                            text-white
+                            text-[14px]
+                            tracking-[1px]
+                            uppercase
+                            flex
+                            items-center
+                            gap-3
+                            transition-all
+                            duration-300
+                            shadow-xl
+                          "
+                        >
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5 text-[#d7b367]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                            />
+                          </svg>
+
+                          Unlock Now
+
+                        </button>
+
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
             </div>
+
           </div>
+
         </motion.div>
+
       </div>
+
     </motion.section>
   );
 })()}
