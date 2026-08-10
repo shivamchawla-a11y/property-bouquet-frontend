@@ -19,53 +19,92 @@ export default function AllDevelopersPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("latest");
 
+  // =========================================================
+  // FETCH DEVELOPERS
+  // =========================================================
+
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchDevelopers = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch("/api/developers");
+
+        if (!res.ok) {
+          throw new Error(
+            `Failed to fetch developers: ${res.status}`
+          );
+        }
+
+        const data = await res.json();
+
+        if (!isMounted) return;
+
+        if (data?.success) {
+          setDevelopers(data.data || []);
+        } else {
+          setDevelopers([]);
+        }
+      } catch (err) {
+        console.error(
+          "Failed to fetch developers:",
+          err
+        );
+
+        if (isMounted) {
+          setDevelopers([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchDevelopers();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const fetchDevelopers = async () => {
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/developers");
-      const data = await res.json();
-
-      if (data.success) {
-        setDevelopers(data.data || []);
-      } else {
-        setDevelopers([]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch developers:", err);
-      setDevelopers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // =========================================================
+  // FILTER + SORT
+  // =========================================================
 
   const filteredDevelopers = useMemo(() => {
     let filtered = [...developers];
 
-    // Search
+    // SEARCH
     if (search.trim()) {
-      filtered = filtered.filter((developer) =>
-        developer.name
-          ?.toLowerCase()
-          .includes(search.toLowerCase())
+      const searchValue =
+        search.trim().toLowerCase();
+
+      filtered = filtered.filter(
+        (developer) =>
+          developer?.name
+            ?.toLowerCase()
+            .includes(searchValue)
       );
     }
 
-    // Sorting
+    // SORT
     switch (sort) {
       case "az":
         filtered.sort((a, b) =>
-          a.name.localeCompare(b.name)
+          (a?.name || "").localeCompare(
+            b?.name || ""
+          )
         );
         break;
 
       case "za":
         filtered.sort((a, b) =>
-          b.name.localeCompare(a.name)
+          (b?.name || "").localeCompare(
+            a?.name || ""
+          )
         );
         break;
 
@@ -77,42 +116,101 @@ export default function AllDevelopersPage() {
     return filtered;
   }, [developers, search, sort]);
 
+  // =========================================================
+  // PAGE
+  // =========================================================
+
   return (
-    <main className="bg-[#faf8f4] overflow-x-hidden">
+    <main className="min-h-screen bg-[#f7f5f0] text-[#161616]">
 
-      {/* Hero */}
-      <section className="relative">
+      {/* ===================================================== */}
+      {/* HERO */}
+      {/* ===================================================== */}
 
+      <section
+        aria-labelledby="developers-page-heading"
+        className="relative"
+      >
         <div className="absolute inset-x-0 top-0 z-50">
           <Navbar />
         </div>
 
         <HeroSection />
 
+        {/* SEO H1 SUPPORT
+            Keep the actual H1 inside HeroSection.
+            This visually-hidden fallback is intentionally
+            NOT added if HeroSection already has the H1.
+        */}
       </section>
 
-      {/* Stats */}
-      <StatsBar />
+      {/* ===================================================== */}
+      {/* DEVELOPER STATISTICS */}
+      {/* ===================================================== */}
 
-      {/* Filters */}
-      <Filters
-        search={search}
-        setSearch={setSearch}
-        sort={sort}
-        setSort={setSort}
-      />
+      <section
+        aria-label="Developer statistics"
+      >
+        <StatsBar />
+      </section>
 
-      {/* Developers */}
-      <DevelopersGrid
-        developers={filteredDevelopers}
-        loading={loading}
-      />
+      {/* ===================================================== */}
+      {/* DEVELOPER SEARCH & FILTERS */}
+      {/* ===================================================== */}
 
-      <WhyPartner/>
+      <section
+        aria-label="Search and filter real estate developers"
+      >
+        <Filters
+          search={search}
+          setSearch={setSearch}
+          sort={sort}
+          setSort={setSort}
+        />
+      </section>
 
-      <AdvisorCTA/>
+      {/* ===================================================== */}
+      {/* DEVELOPERS DIRECTORY */}
+      {/* ===================================================== */}
 
-      <Footer/>
+      <section
+        aria-labelledby="developer-directory-heading"
+        className="scroll-mt-24"
+      >
+        <h2
+          id="developer-directory-heading"
+          className="sr-only"
+        >
+          Real Estate Developers
+        </h2>
+
+        <DevelopersGrid
+          developers={filteredDevelopers}
+          loading={loading}
+        />
+      </section>
+
+      {/* ===================================================== */}
+      {/* WHY PARTNER */}
+      {/* ===================================================== */}
+
+      <section aria-labelledby="why-partner-heading">
+        <WhyPartner />
+      </section>
+
+      {/* ===================================================== */}
+      {/* ADVISOR CTA */}
+      {/* ===================================================== */}
+
+      <section aria-label="Speak with a property advisor">
+        <AdvisorCTA />
+      </section>
+
+      {/* ===================================================== */}
+      {/* FOOTER */}
+      {/* ===================================================== */}
+
+      <Footer />
     </main>
   );
 }
