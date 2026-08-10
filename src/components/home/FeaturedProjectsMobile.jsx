@@ -338,37 +338,45 @@ export default function FeaturedProjectsMobile() {
 
                     </div>
 
-                    <div className="border-t border-[#ece7df] mt-5 pt-5">
+                    {/* PRICE */}
+<div className="mt-3">
+  <p
+    className="
+      text-[11px]
+      uppercase
+      tracking-[1px]
+      text-black/45
+      mb-2
+    "
+  >
+    {item?.coreDetails?.priceOnRequest
+      ? "Price"
+      : "Starting Price"}
+  </p>
 
-                                              <p
-                        className="
-                          text-[11px]
-                          uppercase
-                          tracking-[1.2px]
-                          text-black/45
-                          mb-2
-                        "
-                      >
-                        Starting Price
-                      </p>
-
-                      <h4
-                        className="
-                          text-[30px]
-                          font-bold
-                          text-[#111]
-                          leading-none
-                        "
-                      >
-                        ₹
-                        {formatPrice(
-                          item?.coreDetails?.startingPrice ||
-                            item?.unitConfigurations?.[0]?.price ||
-                            0
-                        )}
-                      </h4>
-
-                    </div>
+  <h4
+    className="
+      text-[24px]
+      font-bold
+      text-[#111]
+      leading-none
+    "
+  >
+    {item?.coreDetails?.priceOnRequest ? (
+      "On Request"
+    ) : item?.coreDetails?.startingPrice ? (
+      <>
+        ₹{formatPrice(item.coreDetails.startingPrice)}
+      </>
+    ) : item?.unitConfigurations?.[0]?.price ? (
+      <>
+        ₹{formatPrice(item.unitConfigurations[0].price)}
+      </>
+    ) : (
+      "Price Unavailable"
+    )}
+  </h4>
+</div>
 
                     <div
                       className="
