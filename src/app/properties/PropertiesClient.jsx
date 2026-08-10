@@ -512,16 +512,66 @@ const currentProperties = filteredProperties.slice(
   0,
   visibleCards
 );
-  // ================= LOADING =================
 
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        Loading Properties...
+// ================= LOADING =================
+
+if (loading) {
+  return (
+    <div className="min-h-screen bg-[#fbfaf7] px-6 flex items-center justify-center">
+      <div className="flex w-full max-w-[420px] flex-col items-center text-center">
+
+        {/* LOGO */}
+        <div className="relative flex items-center justify-center">
+          {/* Soft Glow */}
+          <div className="absolute h-28 w-28 rounded-full bg-[#D4AF37]/10 blur-2xl animate-pulse" />
+
+          {/* Logo Container */}
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]">
+            <img
+              src="/logo.webp"
+              alt="Property Bouquet"
+              className="h-14 w-14 object-contain"
+            />
+          </div>
+        </div>
+
+        {/* BRAND */}
+        <h2 className="mt-7 font-serif text-[25px] font-medium tracking-[0.5px] text-[#10251f]">
+          Property Bouquet
+        </h2>
+
+        {/* LOADING TEXT */}
+        <p className="mt-2 text-[11px] font-medium uppercase tracking-[2.5px] text-[#b58b45]">
+          Discovering Properties
+        </p>
+
+        {/* LOADING BAR */}
+        <div className="mt-7 h-[2px] w-[180px] overflow-hidden rounded-full bg-[#e9e2d5]">
+          <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent animate-[loading_1.5s_ease-in-out_infinite]" />
+        </div>
+
+        {/* SUBTEXT */}
+        <p className="mt-4 text-[11px] leading-5 text-[#999]">
+          Curating the finest properties for you...
+        </p>
+
       </div>
-    );
-  }
 
+      {/* ANIMATION */}
+      <style jsx>{`
+        @keyframes loading {
+          0% {
+            transform: translateX(-100%);
+          }
+
+          100% {
+            transform: translateX(200%);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
   return (
     <div className="bg-[#f7f7f7] min-h-screen">
 
