@@ -12,31 +12,73 @@ import Footer from "@/components/home/Footer";
 
 export default function AreaConverterPage() {
   return (
-    <main className="min-h-screen bg-[#faf9f6]">
-
-      {/* NAVBAR */}
+    <main className="min-h-screen bg-white text-[#10251f]">
+      {/* ===================================================== */}
+      {/* NAVBAR                                                */}
+      {/* ===================================================== */}
       <Navbar />
 
-      {/* HERO */}
-      <HeroSection />
+      {/* ===================================================== */}
+      {/* HERO                                                  */}
+      {/* ===================================================== */}
+      <section aria-labelledby="area-converter-heading">
+        <HeroSection />
+      </section>
 
-      {/* CONVERTER */}
-      <AreaConverterTool />
+      {/* ===================================================== */}
+      {/* AREA CONVERTER TOOL                                   */}
+      {/* ===================================================== */}
+      <section
+        aria-label="Area conversion calculator"
+        className="relative"
+      >
+        <AreaConverterTool />
+      </section>
 
-      {/* TABLE */}
-      <ConversionTable />
+      {/* ===================================================== */}
+      {/* CONVERSION TABLE                                      */}
+      {/* ===================================================== */}
+      <section
+        aria-labelledby="area-conversion-table-heading"
+        className="relative"
+      >
+        <ConversionTable />
+      </section>
 
-      {/* OTHER TOOLS */}
-      <OtherConverters />
+      {/* ===================================================== */}
+      {/* ABOUT AREA CONVERTER                                  */}
+      {/* ===================================================== */}
+      <section
+        aria-labelledby="about-area-converter-heading"
+        className="relative"
+      >
+        <AboutAreaConverter />
+      </section>
 
-      {/* ABOUT */}
-      <AboutAreaConverter />
+      {/* ===================================================== */}
+      {/* OTHER CONVERTERS                                      */}
+      {/* ===================================================== */}
+      <section
+        aria-labelledby="other-converters-heading"
+        className="relative"
+      >
+        <OtherConverters />
+      </section>
 
-      {/* FAQ */}
-      <FAQSection />
+      {/* ===================================================== */}
+      {/* FAQ                                                   */}
+      {/* ===================================================== */}
+      <section
+        aria-labelledby="area-converter-faq-heading"
+        className="relative"
+      >
+        <FAQSection />
+      </section>
 
-      <Footer/>
-
+      {/* ===================================================== */}
+      {/* FOOTER                                                */}
+      {/* ===================================================== */}
+      <Footer />
     </main>
   );
 }

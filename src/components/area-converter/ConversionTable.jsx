@@ -1,69 +1,162 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import {
+  ChevronDown,
+  ArrowRight,
+  Calculator,
+} from "lucide-react";
 
 const rows = [
   {
     unit: "1 sq ft",
-    values: [
-      "0.111 sq yd",
-      "0.00002296",
-      "0.00000929",
-      "0.000917",
-      "0.000748",
-    ],
+    squareFeet: "1 sq ft",
+    squareYards: "0.111 sq yd",
+    acres: "0.00002296",
+    hectares: "0.00000929",
+    gunthaPune: "0.000917",
+    gunthaNagpur: "0.000748",
   },
   {
     unit: "1 sq yd",
-    values: [
-      "1 sq yd",
-      "0.0002066",
-      "0.00008361",
-      "0.00825",
-      "0.00672",
-    ],
+    squareFeet: "9 sq ft",
+    squareYards: "1 sq yd",
+    acres: "0.0002066",
+    hectares: "0.00008361",
+    gunthaPune: "0.00825",
+    gunthaNagpur: "0.00672",
   },
   {
     unit: "1 Acre",
-    values: [
-      "4,840 sq yd",
-      "1 Acre",
-      "0.404686",
-      "40.4686",
-      "33.0539",
-    ],
+    squareFeet: "43,560 sq ft",
+    squareYards: "4,840 sq yd",
+    acres: "1 Acre",
+    hectares: "0.404686",
+    gunthaPune: "40.4686",
+    gunthaNagpur: "33.0539",
   },
   {
     unit: "1 Hectare",
-    values: [
-      "11,960.95 sq yd",
-      "2.471 Acres",
-      "1 Hectare",
-      "100",
-      "81.81",
-    ],
+    squareFeet: "107,639.1 sq ft",
+    squareYards: "11,960.95 sq yd",
+    acres: "2.471 Acres",
+    hectares: "1 Hectare",
+    gunthaPune: "100",
+    gunthaNagpur: "81.81",
+  },
+];
+
+const additionalRows = [
+  {
+    unit: "1 Guntha (Pune)",
+    squareFeet: "1,089 sq ft",
+    squareYards: "121 sq yd",
+    acres: "0.025 Acre",
+    hectares: "0.010117 Hectare",
+    gunthaPune: "1",
+    gunthaNagpur: "1.333",
+  },
+  {
+    unit: "1 Guntha (Nagpur)",
+    squareFeet: "1,600 sq ft",
+    squareYards: "177.78 sq yd",
+    acres: "0.03673 Acre",
+    hectares: "0.01486 Hectare",
+    gunthaPune: "0.75",
+    gunthaNagpur: "1",
+  },
+];
+
+const columns = [
+  {
+    key: "squareFeet",
+    label: "Square Feet",
+    short: "sq ft",
+  },
+  {
+    key: "squareYards",
+    label: "Square Yards",
+    short: "sq yd",
+  },
+  {
+    key: "acres",
+    label: "Acres",
+    short: "Acres",
+  },
+  {
+    key: "hectares",
+    label: "Hectares",
+    short: "Hectares",
+  },
+  {
+    key: "gunthaPune",
+    label: "Guntha (Pune)",
+    short: "Guntha Pune",
+  },
+  {
+    key: "gunthaNagpur",
+    label: "Guntha (Nagpur)",
+    short: "Guntha Nagpur",
   },
 ];
 
 export default function ConversionTable() {
   const [showMore, setShowMore] = useState(false);
 
+  const visibleRows = showMore
+    ? [...rows, ...additionalRows]
+    : rows;
+
   return (
-    <section className="w-full bg-[#fdfcf9]">
-      <div className="mx-auto max-w-[1450px] px-5 pb-12 xl:px-8">
+    <section className="w-full">
+      <div className="mx-auto max-w-[1450px] px-5 pb-14 xl:px-8">
 
         {/* ===================================================== */}
         {/* HEADER                                                */}
         {/* ===================================================== */}
 
-        <div className="flex items-end justify-between gap-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
-          <div>
+          <div className="max-w-[760px]">
+
+            <div className="mb-2 flex items-center gap-2">
+
+              <span
+                className="
+                  inline-flex
+                  h-7
+                  w-7
+                  items-center
+                  justify-center
+                  rounded-lg
+                  bg-[#17382e]
+                  text-[#d7b66a]
+                "
+              >
+                <Calculator
+                  size={14}
+                  strokeWidth={1.8}
+                />
+              </span>
+
+              <span
+                className="
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.22em]
+                  text-[#8a7552]
+                "
+              >
+                Quick Reference
+              </span>
+
+            </div>
+
             <h2
               className="
                 font-serif
-                text-[26px]
+                text-[27px]
                 font-normal
                 leading-tight
                 text-[#10251f]
@@ -75,25 +168,37 @@ export default function ConversionTable() {
 
             <p
               className="
-                mt-1
+                mt-2
+                max-w-[680px]
                 text-[11px]
                 leading-5
                 text-[#6b6b6b]
+                md:text-[12px]
               "
             >
-              Quick reference for commonly used area conversions in
-              real estate.
+              Quickly compare commonly used land and property
+              measurement units including{" "}
+              <strong className="font-semibold text-[#37443f]">
+                square feet, square yards, acres, hectares
+              </strong>{" "}
+              and regional{" "}
+              <strong className="font-semibold text-[#37443f]">
+                Guntha
+              </strong>{" "}
+              measurements.
             </p>
+
           </div>
 
-          {/* VIEW OTHER UNITS */}
+          {/* DESKTOP BUTTON */}
 
           <button
             type="button"
-            onClick={() => setShowMore(!showMore)}
+            onClick={() => setShowMore((prev) => !prev)}
             className="
               hidden
               h-[40px]
+              shrink-0
               items-center
               gap-2
               rounded-lg
@@ -108,210 +213,297 @@ export default function ConversionTable() {
               transition-all
               duration-300
               hover:border-[#c9a64b]
+              hover:bg-[#fcfaf5]
               hover:text-[#10251f]
               sm:flex
             "
           >
-            <span className="text-[#333333]">
-              View Other Units
+            <span>
+              {showMore
+                ? "Show Fewer Units"
+                : "View Other Units"}
             </span>
 
             <ChevronDown
               size={14}
               strokeWidth={1.8}
               className={`
-                text-[#333333]
                 transition-transform
                 duration-300
-                ${showMore ? "rotate-180" : ""}
+                ${
+                  showMore
+                    ? "rotate-180"
+                    : ""
+                }
               `}
             />
           </button>
+
         </div>
 
         {/* ===================================================== */}
-        {/* TABLE                                                 */}
+        {/* MOBILE SCROLL HINT                                   */}
         {/* ===================================================== */}
 
         <div
           className="
             mt-5
-            overflow-x-auto
+            flex
+            items-center
+            justify-between
             rounded-lg
+            border
+            border-[#eee8dc]
+            bg-[#faf8f3]
+            px-4
+            py-2.5
+            sm:hidden
+          "
+        >
+          <div className="flex items-center gap-2">
+
+            <span className="text-[10px] text-[#6b6b6b]">
+              Swipe horizontally to view all units
+            </span>
+
+          </div>
+
+          <ArrowRight
+            size={13}
+            className="text-[#8c7651]"
+          />
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* TABLE WRAPPER                                        */}
+        {/* ===================================================== */}
+
+        <div
+          className="
+            relative
+            mt-3
+            overflow-hidden
+            rounded-xl
             border
             border-[#e4ddd1]
             bg-white
-            shadow-[0_4px_20px_rgba(0,0,0,0.025)]
+            shadow-[0_6px_25px_rgba(0,0,0,0.035)]
+            sm:mt-5
           "
         >
-          <table
+
+          {/* GOLD TOP ACCENT */}
+
+          <div
             className="
+              h-[2px]
               w-full
-              min-w-[850px]
-              border-collapse
-              text-center
+              bg-gradient-to-r
+              from-transparent
+              via-[#c9a64b]
+              to-transparent
+              opacity-70
+            "
+          />
+
+          {/* ================================================= */}
+          {/* SCROLL CONTAINER                                 */}
+          {/* ================================================= */}
+
+          <div
+            className="
+              overflow-x-auto
+              overscroll-x-contain
+              scrollbar-thin
+              scrollbar-thumb-[#d8d0c2]
+              scrollbar-track-transparent
             "
           >
-            {/* ================================================= */}
-            {/* TABLE HEADER                                      */}
-            {/* ================================================= */}
 
-            <thead>
-              <tr className="bg-[#faf8f3]">
+            <table
+              className="
+                w-full
+                min-w-[920px]
+                border-collapse
+                text-center
+              "
+            >
 
-                <th
-                  className="
-                    border-r
-                    border-[#e7e0d3]
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Square Feet (sq ft)
-                </th>
+              {/* ================================================= */}
+              {/* HEADER                                            */}
+              {/* ================================================= */}
 
-                <th
-                  className="
-                    border-r
-                    border-[#e7e0d3]
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Square Yards (sq yd)
-                </th>
+              <thead>
 
-                <th
-                  className="
-                    border-r
-                    border-[#e7e0d3]
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Acres
-                </th>
+                <tr className="bg-[#faf8f3]">
 
-                <th
-                  className="
-                    border-r
-                    border-[#e7e0d3]
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Hectares
-                </th>
+                  {/* UNIT */}
 
-                <th
-                  className="
-                    border-r
-                    border-[#e7e0d3]
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Guntha (Pune)
-                </th>
-
-                <th
-                  className="
-                    px-4
-                    py-3
-                    text-[11px]
-                    font-semibold
-                    leading-5
-                    text-[#202020]
-                  "
-                >
-                  Guntha (Nagpur)
-                </th>
-
-              </tr>
-            </thead>
-
-            {/* ================================================= */}
-            {/* TABLE BODY                                        */}
-            {/* ================================================= */}
-
-            <tbody>
-
-              {rows.map((row) => (
-                <tr
-                  key={row.unit}
-                  className="
-                    border-t
-                    border-[#eee8dc]
-                    transition-colors
-                    duration-200
-                    hover:bg-[#fcfaf5]
-                  "
-                >
-
-                  {/* FIRST COLUMN */}
-
-                  <td
+                  <th
                     className="
+                      sticky
+                      left-0
+                      z-20
+                      min-w-[145px]
                       border-r
-                      border-[#eee8dc]
+                      border-[#e7e0d3]
+                      bg-[#faf8f3]
                       px-4
-                      py-3
-                      text-[11px]
-                      font-medium
-                      leading-5
-                      text-[#333333]
+                      py-4
+                      text-left
+                      text-[10px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.05em]
+                      text-[#17382e]
                     "
                   >
-                    {row.unit}
-                  </td>
+                    Base Unit
+                  </th>
 
-                  {/* REMAINING COLUMNS */}
-
-                  {row.values.map((value, index) => (
-                    <td
-                      key={`${row.unit}-${index}`}
-                      className={`
+                  {columns.map((column) => (
+                    <th
+                      key={column.key}
+                      className="
+                        min-w-[145px]
+                        border-r
+                        border-[#e7e0d3]
                         px-4
-                        py-3
-                        text-[11px]
+                        py-4
+                        text-[10px]
+                        font-semibold
                         leading-5
-                        text-[#4a4a4a]
-                        ${
-                          index !== row.values.length - 1
-                            ? "border-r border-[#eee8dc]"
-                            : ""
-                        }
-                      `}
+                        text-[#202020]
+                        last:border-r-0
+                      "
                     >
-                      {value}
-                    </td>
+                      <span className="hidden md:inline">
+                        {column.label}
+                      </span>
+
+                      <span className="md:hidden">
+                        {column.short}
+                      </span>
+                    </th>
                   ))}
 
                 </tr>
-              ))}
 
-            </tbody>
-          </table>
+              </thead>
+
+              {/* ================================================= */}
+              {/* BODY                                              */}
+              {/* ================================================= */}
+
+              <tbody>
+
+                {visibleRows.map(
+                  (row, rowIndex) => (
+                    <tr
+                      key={row.unit}
+                      className="
+                        border-t
+                        border-[#eee8dc]
+                        transition-colors
+                        duration-200
+                        hover:bg-[#fcfaf5]
+                      "
+                    >
+
+                      {/* BASE UNIT */}
+
+                      <td
+                        className="
+                          sticky
+                          left-0
+                          z-10
+                          border-r
+                          border-[#eee8dc]
+                          bg-white
+                          px-4
+                          py-4
+                          text-left
+                          text-[11px]
+                          font-semibold
+                          leading-5
+                          text-[#17382e]
+                          transition-colors
+                          duration-200
+                          group-hover:bg-[#fcfaf5]
+                        "
+                      >
+                        <div className="flex items-center gap-2">
+
+                          <span
+                            className="
+                              h-1.5
+                              w-1.5
+                              shrink-0
+                              rounded-full
+                              bg-[#c9a64b]
+                            "
+                          />
+
+                          <span>
+                            {row.unit}
+                          </span>
+
+                        </div>
+                      </td>
+
+                      {/* DATA */}
+
+                      {columns.map(
+                        (
+                          column,
+                          columnIndex
+                        ) => (
+                          <td
+                            key={`${row.unit}-${column.key}`}
+                            className="
+                              border-r
+                              border-[#eee8dc]
+                              px-4
+                              py-4
+                              text-[11px]
+                              leading-5
+                              text-[#4a4a4a]
+                              last:border-r-0
+                            "
+                          >
+                            {row[column.key]}
+                          </td>
+                        )
+                      )}
+
+                    </tr>
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          {/* MOBILE RIGHT EDGE FADE */}
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              right-0
+              top-0
+              h-full
+              w-8
+              bg-gradient-to-l
+              from-white
+              to-transparent
+              sm:hidden
+            "
+          />
+
         </div>
 
         {/* ===================================================== */}
@@ -320,11 +512,13 @@ export default function ConversionTable() {
 
         <button
           type="button"
-          onClick={() => setShowMore(!showMore)}
+          onClick={() =>
+            setShowMore((prev) => !prev)
+          }
           className="
             mt-4
             flex
-            h-[42px]
+            h-[44px]
             w-full
             items-center
             justify-center
@@ -341,25 +535,72 @@ export default function ConversionTable() {
             transition-all
             duration-300
             hover:border-[#c9a64b]
+            hover:bg-[#fcfaf5]
             hover:text-[#10251f]
             sm:hidden
           "
         >
-          <span className="text-[#333333]">
-            View Other Units
+          <span>
+            {showMore
+              ? "Show Fewer Units"
+              : "View Other Units"}
           </span>
 
           <ChevronDown
             size={14}
             strokeWidth={1.8}
             className={`
-              text-[#333333]
               transition-transform
               duration-300
-              ${showMore ? "rotate-180" : ""}
+              ${
+                showMore
+                  ? "rotate-180"
+                  : ""
+              }
             `}
           />
         </button>
+
+        {/* ===================================================== */}
+        {/* INFORMATION NOTE                                     */}
+        {/* ===================================================== */}
+
+        <div
+          className="
+            mt-5
+            rounded-lg
+            border
+            border-[#eee7db]
+            bg-[#f8f5ee]
+            px-4
+            py-3.5
+            md:px-5
+          "
+        >
+
+          <p
+            className="
+              text-[10px]
+              leading-5
+              text-[#706d67]
+              md:text-[11px]
+            "
+          >
+            <strong className="font-semibold text-[#17382e]">
+              Note:
+            </strong>{" "}
+            Area conversion values can vary for certain
+            traditional or region-specific units.{" "}
+            <strong className="font-semibold text-[#17382e]">
+              Guntha measurements
+            </strong>{" "}
+            may differ by local convention, so always
+            verify the applicable measurement standard
+            when using these values for legal,
+            registration or valuation purposes.
+          </p>
+
+        </div>
 
       </div>
     </section>
