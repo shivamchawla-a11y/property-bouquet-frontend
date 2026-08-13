@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import InvestmentForm from "./InvestmentForm";
+import ConsultationModal from "../home/ConsultationModal";
 
 /* =========================================================
    INITIAL FORM
@@ -1564,112 +1565,53 @@ function PerformanceItem({
    KEY INSIGHTS
 ========================================================= */
 
+/* =========================================================
+   INVESTMENT INSIGHTS
+========================================================= */
+
 function KeyInsights({ data }) {
-  const appreciationRate = 12.25;
+  const firstYear = data.yearly?.[0];
+
+  const annualCashFlow =
+    firstYear?.rentalCashFlow || 0;
+
+  const totalReturns =
+    data.totalRentalIncome +
+    data.totalAppreciation;
 
   const appreciationContribution =
-    data.grossReturns > 0
-      ? (data.totalAppreciation / data.grossReturns) * 100
+    totalReturns > 0
+      ? (data.totalAppreciation / totalReturns) * 100
       : 0;
 
-  const firstYearCashFlow =
-    data.yearly?.[0]?.rentalCashFlow || 0;
+  const rentalContribution =
+    totalReturns > 0
+      ? (data.totalRentalIncome / totalReturns) * 100
+      : 0;
 
-  const isPositiveCashFlow = firstYearCashFlow >= 0;
+  const isPositiveCashFlow =
+    annualCashFlow >= 0;
 
-  const insights = [
-    {
-      icon: Leaf,
-      eyebrow: "GROWTH",
-      title: "High Growth Potential",
-      text: (
-        <>
-          This scenario uses{" "}
-          <strong className="font-semibold text-[#263d35]">
-            {appreciationRate.toFixed(2)}% annual appreciation
-          </strong>{" "}
-          as the assumed property growth rate.
-        </>
-      ),
-    },
+  const isProfitable =
+    data.totalProfit > 0;
 
-    {
-      icon: WalletCards,
-      eyebrow: "CASH FLOW",
-      title: isPositiveCashFlow
-        ? "Positive Cash Flow"
-        : "Negative Cash Flow",
-      text: isPositiveCashFlow ? (
-        <>
-          Rental income covers operating expenses and financing costs,
-          generating{" "}
-          <strong className="font-semibold text-[#263d35]">
-            positive annual cash flow
-          </strong>
-          .
-        </>
-      ) : (
-        <>
-          Current rental income does not fully cover operating expenses
-          and EMI, resulting in{" "}
-          <strong className="font-semibold text-[#263d35]">
-            negative annual cash flow
-          </strong>
-          .
-        </>
-      ),
-    },
-
-    {
-      icon: ShieldCheck,
-      eyebrow: "RETURNS",
-      title: "Investment Return",
-      text: (
-        <>
-          Estimated investor profit is{" "}
-          <strong className="font-semibold text-[#263d35]">
-            ₹ {formatINR(data.totalProfit)}
-          </strong>{" "}
-          over {data.holdingPeriod} years, before taxes and selling
-          costs.
-        </>
-      ),
-    },
-
-    {
-      icon: Sparkles,
-      eyebrow: "WEALTH",
-      title: "Long-Term Wealth",
-      text: (
-        <>
-          Property appreciation contributes approximately{" "}
-          <strong className="font-semibold text-[#263d35]">
-            {appreciationContribution.toFixed(1)}%
-          </strong>{" "}
-          of gross investment returns in this scenario.
-        </>
-      ),
-    },
-  ];
+  const isStrongROI =
+    data.roi >= 50;
 
   return (
     <section
       className="
-        relative
-        mt-5
+        mt-4
         overflow-hidden
-        rounded-[14px]
+        rounded-[12px]
         border
-        border-[#e6dfd3]
-        bg-[#fdfcf9]
-        shadow-[0_8px_35px_rgba(35,45,40,0.035)]
+        border-[#e5ded2]
+        bg-white
       "
     >
-      {/* TOP ACCENT */}
-
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c9a64b]/60 to-transparent" />
-
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <div
         className="
@@ -1677,255 +1619,597 @@ function KeyInsights({ data }) {
           flex-col
           gap-3
           border-b
-          border-[#ebe5db]
+          border-[#ebe5dc]
           px-5
           py-5
-          sm:flex-row
-          sm:items-center
-          sm:justify-between
+          md:flex-row
+          md:items-center
+          md:justify-between
           md:px-6
         "
       >
-        <div className="flex items-center gap-3">
-          <div
-            className="
-              flex
-              h-[38px]
-              w-[38px]
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-[#d5b15f]/30
-              bg-[#f4eee1]
-            "
-          >
-            <TrendingUp
-              size={17}
-              strokeWidth={1.5}
-              className="text-[#a47a2c]"
-            />
-          </div>
-
-          <div>
-            <p
+        <div>
+          <div className="flex items-center gap-2">
+            <div
               className="
-                text-[8px]
-                font-semibold
-                uppercase
-                tracking-[0.22em]
-                text-[#b08a42]
+                flex
+                h-[32px]
+                w-[32px]
+                items-center
+                justify-center
+                rounded-full
+                bg-[#f4ecd9]
               "
             >
-              Investment Analysis
-            </p>
+              <TrendingUp
+                size={16}
+                strokeWidth={1.7}
+                className="text-[#b88b36]"
+              />
+            </div>
 
             <h3
               className="
-                mt-0.5
                 font-serif
-                text-[18px]
-                leading-tight
+                text-[19px]
+                leading-none
                 text-[#10251f]
               "
             >
-              Key Insights
+              Investment Insights
             </h3>
           </div>
+
+          <p
+            className="
+              mt-2
+              max-w-[680px]
+              text-[10px]
+              leading-[1.7]
+              text-[#777]
+              md:text-[11px]
+            "
+          >
+            A quick view of your projected profitability,
+            returns and cash-flow position based on the
+            assumptions entered above.
+          </p>
         </div>
 
-        <p
-          className="
-            max-w-[360px]
-            text-[9px]
-            leading-5
-            text-[#858078]
-            sm:text-right
-          "
+        {/* PROFIT STATUS */}
+
+        <div
+          className={`
+            inline-flex
+            w-fit
+            items-center
+            gap-2
+            rounded-full
+            border
+            px-3
+            py-2
+            ${
+              isProfitable
+                ? "border-[#cfe2d8] bg-[#f1f8f4] text-[#176b51]"
+                : "border-[#ead2cf] bg-[#fcf4f3] text-[#a54d45]"
+            }
+          `}
         >
-          A quick view of the factors influencing your projected
-          investment performance.
-        </p>
+          <span
+            className={`
+              h-[6px]
+              w-[6px]
+              rounded-full
+              ${
+                isProfitable
+                  ? "bg-[#176b51]"
+                  : "bg-[#a54d45]"
+              }
+            `}
+          />
+
+          <span className="text-[9px] font-semibold">
+            {isProfitable
+              ? "Projected Profit"
+              : "Projected Loss"}
+          </span>
+        </div>
       </div>
 
-      {/* INSIGHTS */}
+      {/* =====================================================
+          PRIMARY FINANCIAL OUTCOME
+      ===================================================== */}
 
       <div
         className="
           grid
           grid-cols-1
-          divide-y
-          divide-[#ebe5db]
+          border-b
+          border-[#ebe5dc]
           sm:grid-cols-2
-          sm:divide-x
-          sm:divide-y-0
           lg:grid-cols-4
-          lg:divide-x
         "
       >
-        {insights.map((item, index) => {
-          const Icon = item.icon;
+        {/* NET PROFIT */}
 
-          return (
-            <div
-              key={item.title}
-              className="
-                group
-                relative
-                px-5
-                py-5
-                transition-all
-                duration-300
-                hover:bg-[#faf8f3]
-                md:px-6
-                md:py-6
-              "
-            >
-              {/* GOLD HOVER LINE */}
+        <InsightMetric
+          label="Estimated Net Profit"
+          value={`₹ ${formatINR(
+            data.totalProfit
+          )}`}
+          description={`Over ${data.holdingPeriod} years`}
+          highlight={isProfitable}
+        />
 
+        {/* ROI */}
+
+        <InsightMetric
+          label="Equity ROI"
+          value={formatPercent(data.roi)}
+          description={`Total return on initial equity`}
+          highlight={isStrongROI}
+        />
+
+        {/* IRR */}
+
+        <InsightMetric
+          label="Annualized Return"
+          value={formatPercent(
+            data.annualizedROI
+          )}
+          description="Estimated IRR"
+        />
+
+        {/* FINAL WEALTH */}
+
+        <InsightMetric
+          label="Final Investor Wealth"
+          value={`₹ ${formatINR(
+            data.totalWealth
+          )}`}
+          description={`After ${data.holdingPeriod} years`}
+          noBorder
+        />
+      </div>
+
+      {/* =====================================================
+          RETURN BREAKDOWN
+      ===================================================== */}
+
+      <div className="px-5 py-5 md:px-6">
+        <div className="mb-4">
+          <p
+            className="
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.12em]
+              text-[#9a927f]
+            "
+          >
+            Where Your Returns Come From
+          </p>
+        </div>
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-3
+            md:grid-cols-3
+          "
+        >
+          {/* APPRECIATION */}
+
+          <InsightCard
+            icon={Sparkles}
+            title="Property Appreciation"
+            value={`₹ ${formatINR(
+              data.totalAppreciation
+            )}`}
+            percentage={`${appreciationContribution.toFixed(
+              1
+            )}% of gross returns`}
+            description={`Based on the assumed annual appreciation rate.`}
+          />
+
+          {/* RENTAL */}
+
+          <InsightCard
+            icon={WalletCards}
+            title="Net Rental Income"
+            value={`₹ ${formatINR(
+              data.totalRentalIncome
+            )}`}
+            percentage={`${rentalContribution.toFixed(
+              1
+            )}% of gross returns`}
+            description={`After operating expenses over the holding period.`}
+          />
+
+          {/* FINANCING */}
+
+          <InsightCard
+            icon={ShieldCheck}
+            title="Financing Cost"
+            value={`₹ ${formatINR(
+              data.totalInterestPaid
+            )}`}
+            percentage="Total interest paid"
+            description={`Loan principal repayment is building your property equity.`}
+          />
+        </div>
+
+        {/* =================================================
+            CASH FLOW + BREAK EVEN
+        ================================================= */}
+
+        <div
+          className="
+            mt-3
+            grid
+            grid-cols-1
+            gap-3
+            md:grid-cols-2
+          "
+        >
+          {/* CASH FLOW */}
+
+          <div
+            className="
+              rounded-[9px]
+              border
+              border-[#e8e1d7]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="flex items-start gap-3">
               <div
-                className="
-                  absolute
-                  inset-x-5
-                  top-0
-                  h-[2px]
-                  origin-left
-                  scale-x-0
-                  bg-[#c9a64b]
-                  transition-transform
-                  duration-300
-                  group-hover:scale-x-100
-                  md:inset-x-6
-                "
-              />
-
-              {/* ICON */}
-
-              <div
-                className="
+                className={`
                   flex
-                  h-[42px]
-                  w-[42px]
+                  h-[36px]
+                  w-[36px]
+                  shrink-0
                   items-center
                   justify-center
                   rounded-full
-                  border
-                  border-[#dfe6df]
-                  bg-[#f0f4ef]
-                  transition-all
-                  duration-300
-                  group-hover:border-[#d7c28c]
-                  group-hover:bg-[#f5efe2]
-                "
+                  ${
+                    isPositiveCashFlow
+                      ? "bg-[#e7f1eb]"
+                      : "bg-[#f7e9e7]"
+                  }
+                `}
               >
-                <Icon
-                  size={18}
-                  strokeWidth={1.5}
-                  className="
-                    text-[#45675b]
-                    transition-colors
-                    duration-300
-                    group-hover:text-[#a47a2c]
-                  "
+                <WalletCards
+                  size={16}
+                  strokeWidth={1.6}
+                  className={
+                    isPositiveCashFlow
+                      ? "text-[#176b51]"
+                      : "text-[#a54d45]"
+                  }
                 />
               </div>
 
-              {/* EYEBROW */}
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-[#222]">
+                  Annual Cash Flow
+                </p>
 
-              <p
-                className="
-                  mt-5
-                  text-[7px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.2em]
-                  text-[#b18a43]
-                "
-              >
-                {item.eyebrow}
-              </p>
+                <p
+                  className={`
+                    mt-1
+                    font-serif
+                    text-[19px]
+                    leading-none
+                    ${
+                      isPositiveCashFlow
+                        ? "text-[#176b51]"
+                        : "text-[#a54d45]"
+                    }
+                  `}
+                >
+                  {annualCashFlow >= 0
+                    ? "+"
+                    : "-"}
+                  ₹{" "}
+                  {formatINR(
+                    Math.abs(
+                      annualCashFlow
+                    )
+                  )}
+                </p>
 
-              {/* TITLE */}
-
-              <h4
-                className="
-                  mt-1
-                  font-serif
-                  text-[15px]
-                  leading-tight
-                  text-[#182b25]
-                "
-              >
-                {item.title}
-              </h4>
-
-              {/* DESCRIPTION */}
-
-              <p
-                className="
-                  mt-2
-                  text-[9px]
-                  leading-[1.8]
-                  text-[#77736d]
-                "
-              >
-                {item.text}
-              </p>
-
-              {/* NUMBER */}
-
-              <div
-                className="
-                  pointer-events-none
-                  absolute
-                  bottom-4
-                  right-5
-                  font-serif
-                  text-[30px]
-                  leading-none
-                  text-[#eee9df]
-                  transition-colors
-                  duration-300
-                  group-hover:text-[#e6ddca]
-                  md:right-6
-                "
-              >
-                0{index + 1}
+                <p className="mt-2 text-[9px] leading-4 text-[#777]">
+                  {isPositiveCashFlow
+                    ? "Your rental income currently covers operating expenses and EMI."
+                    : "Your rental income currently does not fully cover operating expenses and EMI."}
+                </p>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
 
-      {/* DISCLAIMER */}
+          {/* BREAK EVEN */}
 
-      <div
-        className="
-          flex
-          items-start
-          gap-2
-          border-t
-          border-[#ebe5db]
-          bg-[#faf9f5]
-          px-5
-          py-3
-          md:px-6
-        "
-      >
-        <ShieldCheck
-          size={12}
-          strokeWidth={1.5}
-          className="mt-[1px] shrink-0 text-[#9b8a69]"
-        />
+          <div
+            className="
+              rounded-[9px]
+              border
+              border-[#e8e1d7]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="
+                  flex
+                  h-[36px]
+                  w-[36px]
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-[#f4ecd9]
+                "
+              >
+                <TrendingUp
+                  size={16}
+                  strokeWidth={1.6}
+                  className="text-[#b88b36]"
+                />
+              </div>
 
-        <p className="text-[8px] leading-4 text-[#8a867f]">
-          These insights are based on the assumptions entered above and
-          are for illustrative purposes only. Actual investment returns
-          may vary.
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-[#222]">
+                  Equity Break-Even
+                </p>
+
+                <p className="mt-1 font-serif text-[19px] leading-none text-[#10251f]">
+                  {data.breakEvenYear
+                    ? `Year ${data.breakEvenYear}`
+                    : "Not reached"}
+                </p>
+
+                <p className="mt-2 text-[9px] leading-4 text-[#777]">
+                  {data.breakEvenYear
+                    ? `Your projected property equity and cumulative cash flow recover the initial equity contribution by Year ${data.breakEvenYear}.`
+                    : "The initial equity contribution is not recovered within the selected holding period."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =================================================
+            DYNAMIC CONCLUSION
+        ================================================= */}
+
+        <div
+          className="
+            mt-4
+            rounded-[9px]
+            border
+            border-[#dfe8e2]
+            bg-[#f3f8f5]
+            px-4
+            py-4
+          "
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="
+                mt-[1px]
+                flex
+                h-[30px]
+                w-[30px]
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                bg-[#dfeee6]
+              "
+            >
+              <Leaf
+                size={15}
+                strokeWidth={1.6}
+                className="text-[#176b51]"
+              />
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold text-[#17382e]">
+                What this means for your investment
+              </p>
+
+              <p className="mt-1 text-[9px] leading-[1.8] text-[#5f6d66]">
+                {isProfitable ? (
+                  <>
+                    Based on the current assumptions,
+                    this investment projects an
+                    estimated{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      ₹{" "}
+                      {formatINR(
+                        data.totalProfit
+                      )}{" "}
+                      profit
+                    </strong>{" "}
+                    over{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      {data.holdingPeriod} years
+                    </strong>
+                    , equivalent to a{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      {formatPercent(
+                        data.roi
+                      )}{" "}
+                      equity ROI
+                    </strong>
+                    . Your projected property
+                    appreciation contributes{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      ₹{" "}
+                      {formatINR(
+                        data.totalAppreciation
+                      )}
+                    </strong>
+                    , while net rental income contributes{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      ₹{" "}
+                      {formatINR(
+                        data.totalRentalIncome
+                      )}
+                    </strong>
+                    .
+                  </>
+                ) : (
+                  <>
+                    Based on the current assumptions,
+                    the investment does not currently
+                    project a positive profit within the
+                    selected holding period. Consider
+                    adjusting the{" "}
+                    <strong className="font-semibold text-[#17382e]">
+                      purchase price, financing,
+                      rental income or holding period
+                    </strong>{" "}
+                    and recalculate the scenario.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* =================================================
+            ASSUMPTION NOTE
+        ================================================= */}
+
+        <p className="mt-4 text-[8px] leading-4 text-[#999]">
+          * Returns are estimates based on the assumptions
+          entered into the calculator. Property appreciation,
+          rental income and future returns are not guaranteed.
+          Taxes, brokerage and selling costs are excluded unless
+          specifically included in the calculator inputs.
         </p>
       </div>
     </section>
+  );
+}
+
+
+/* =========================================================
+   INSIGHT METRIC
+========================================================= */
+
+function InsightMetric({
+  label,
+  value,
+  description,
+  highlight = false,
+  noBorder = false,
+}) {
+  return (
+    <div
+      className={`
+        min-h-[108px]
+        px-5
+        py-5
+        ${
+          !noBorder
+            ? "border-b sm:border-r sm:border-b-0 border-[#ebe5dc]"
+            : ""
+        }
+      `}
+    >
+      <p className="text-[9px] font-medium text-[#8a8378]">
+        {label}
+      </p>
+
+      <p
+        className={`
+          mt-2
+          font-serif
+          text-[23px]
+          leading-none
+          ${
+            highlight
+              ? "text-[#176b51]"
+              : "text-[#10251f]"
+          }
+        `}
+      >
+        {value}
+      </p>
+
+      <p className="mt-2 text-[8px] leading-4 text-[#999]">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+
+/* =========================================================
+   INSIGHT CARD
+========================================================= */
+
+function InsightCard({
+  icon: Icon,
+  title,
+  value,
+  percentage,
+  description,
+}) {
+  return (
+    <div
+      className="
+        rounded-[9px]
+        border
+        border-[#e8e1d7]
+        bg-[#fbfaf7]
+        p-4
+      "
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="
+            flex
+            h-[34px]
+            w-[34px]
+            shrink-0
+            items-center
+            justify-center
+            rounded-full
+            bg-[#f0eadf]
+          "
+        >
+          <Icon
+            size={15}
+            strokeWidth={1.6}
+            className="text-[#b88b36]"
+          />
+        </div>
+
+        <p className="text-[10px] font-semibold text-[#333]">
+          {title}
+        </p>
+      </div>
+
+      <p className="mt-4 font-serif text-[19px] leading-none text-[#10251f]">
+        {value}
+      </p>
+
+      <p className="mt-2 text-[8px] font-medium text-[#176b51]">
+        {percentage}
+      </p>
+
+      <p className="mt-2 text-[9px] leading-4 text-[#777]">
+        {description}
+      </p>
+    </div>
   );
 }
 
@@ -2232,6 +2516,9 @@ export default function ROICalculator() {
   const [calculated, setCalculated] =
     useState(true);
 
+    const [showLeadModal, setShowLeadModal] =
+  useState(false);
+
   /* =======================================================
      RESULTS
   ======================================================= */
@@ -2288,6 +2575,179 @@ export default function ROICalculator() {
     setCalculated(true);
   };
 
+  const roiLeadDetails = {
+  /* =========================
+     INVESTMENT DETAILS
+  ========================= */
+
+  propertyType:
+    formData?.investment?.propertyType || "",
+
+  location:
+    formData?.investment?.location || "",
+
+  propertyValue:
+    Number(
+      formData?.investment?.propertyValue
+    ) || 0,
+
+  carpetArea:
+    Number(
+      formData?.investment?.carpetArea
+    ) || 0,
+
+  purchaseDate:
+    formData?.investment?.purchaseDate || "",
+
+  holdingPeriod:
+    Number(
+      formData?.investment?.holdingPeriod
+    ) || 0,
+
+  /* =========================
+     FINANCING
+  ========================= */
+
+  downPayment:
+    Number(
+      formData?.breakdown?.downPayment
+    ) || 0,
+
+  downPaymentPercent:
+    Number(
+      formData?.breakdown?.downPaymentPercent
+    ) || 0,
+
+  loanAmount:
+    Number(
+      formData?.breakdown?.loanAmount
+    ) || 0,
+
+  loanPercent:
+    Number(
+      formData?.breakdown?.loanPercent
+    ) || 0,
+
+  interestRate:
+    Number(
+      formData?.breakdown?.interestRate
+    ) || 0,
+
+  loanTenure:
+    Number(
+      formData?.breakdown?.loanTenure
+    ) || 0,
+
+  /* =========================
+     RENTAL
+  ========================= */
+
+  monthlyRent:
+    Number(
+      formData?.rental?.monthlyRent
+    ) || 0,
+
+  rentEscalation:
+    Number(
+      formData?.rental?.rentEscalation
+    ) || 0,
+
+  /* =========================
+     EXPENSES
+  ========================= */
+
+  maintenance:
+    Number(
+      formData?.expenses?.maintenance
+    ) || 0,
+
+  propertyTax:
+    Number(
+      formData?.expenses?.propertyTax
+    ) || 0,
+
+  insurance:
+    Number(
+      formData?.expenses?.insurance
+    ) || 0,
+
+  otherExpenses:
+    Number(
+      formData?.expenses?.other
+    ) || 0,
+
+  /* =========================
+     CALCULATED RESULTS
+  ========================= */
+
+  totalInvestment:
+    Number(
+      results?.totalInvestment
+    ) || 0,
+
+  totalProfit:
+    Number(
+      results?.totalProfit
+    ) || 0,
+
+  totalAppreciation:
+    Number(
+      results?.totalAppreciation
+    ) || 0,
+
+  grossReturns:
+    Number(
+      results?.grossReturns
+    ) || 0,
+
+  roi:
+    Number(
+      results?.roi
+    ) || 0,
+
+  annualizedROI:
+    Number(
+      results?.annualizedROI
+    ) || 0,
+
+  cashOnCashReturn:
+    Number(
+      results?.cashOnCashReturn
+    ) || 0,
+
+  breakEvenYear:
+    Number(
+      results?.breakEvenYear
+    ) || 0,
+
+  totalInterestPaid:
+    Number(
+      results?.totalInterestPaid
+    ) || 0,
+
+  totalPrincipalRepaid:
+    Number(
+      results?.totalPrincipalRepaid
+    ) || 0,
+
+  remainingLoanBalance:
+    Number(
+      results?.remainingLoanBalance
+    ) || 0,
+
+  finalEquity:
+    Number(
+      results?.finalEquity
+    ) || 0,
+
+  totalWealth:
+    Number(
+      results?.totalWealth
+    ) || 0,
+};
+
+
+
   return (
     <section className="bg-[#faf9f6] py-5 md:py-6">
       <div className="mx-auto max-w-[1450px] px-5 xl:px-8">
@@ -2338,57 +2798,44 @@ export default function ROICalculator() {
               </div>
 
               <button
-                type="button"
-                className="
-                  hidden
-                  h-[34px]
-                  items-center
-                  gap-2
-                  rounded-md
-                  border
-                  border-[#cfc9bf]
-                  bg-white
-                  px-4
-                  text-[9px]
-                  text-[#222]
-                  transition
-                  hover:border-[#c9a64b]
-                  hover:text-[#17382e]
-                  sm:flex
-                "
-              >
-                View Detailed Report
-                <Download
-                  size={12}
-                />
-              </button>
+  type="button"
+  onClick={() => setShowLeadModal(true)}
+  className="
+    group
+    inline-flex
+    h-[50px]
+    items-center
+    justify-center
+    gap-2
+    rounded-xl
+    bg-[#c9a64b]
+    px-6
+    text-[10px]
+    font-semibold
+    uppercase
+    tracking-[1.8px]
+    text-[#101010]
+    shadow-[0_10px_30px_rgba(201,166,75,0.16)]
+    transition-all
+    duration-300
+    hover:bg-[#d8b46b]
+    hover:shadow-[0_14px_40px_rgba(201,166,75,0.28)]
+    active:scale-[0.99]
+  "
+>
+  Get My Detailed ROI Analysis
+
+  <ArrowRight
+    size={15}
+    className="
+      transition-transform
+      duration-300
+      group-hover:translate-x-1
+    "
+  />
+</button>
             </div>
 
-            {/* MOBILE REPORT */}
-
-            <button
-              type="button"
-              className="
-                mt-3
-                flex
-                h-[36px]
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-md
-                border
-                border-[#ddd7cc]
-                text-[9px]
-                text-[#333]
-                sm:hidden
-              "
-            >
-              View Detailed Report
-              <Download
-                size={12}
-              />
-            </button>
 
             {/* RESULTS */}
 
@@ -2433,6 +2880,12 @@ export default function ROICalculator() {
           <ScenarioBanner />
         )}
       </div>
+      <ConsultationModal
+  open={showLeadModal}
+  onClose={() => setShowLeadModal(false)}
+  roiDetails={roiLeadDetails}
+/>
     </section>
   );
+  
 }
