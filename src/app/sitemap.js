@@ -261,6 +261,16 @@ export default async function sitemap() {
     changeFrequency: "monthly",
   });
 
+    /**
+   * Human-facing sitemap page
+   *
+   * https://propertybouquet.com/sitemap
+   */
+  addUrl(sitemap, "/sitemap", {
+    priority: 0.65,
+    changeFrequency: "monthly",
+  });
+
   /* =========================================================
      DYNAMIC WEBSITE DATA
   ========================================================= */

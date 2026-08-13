@@ -480,7 +480,7 @@ export default function Footer() {
 
       {item === "Sitemap" ? (
         <Link
-          href="/sitemap.xml"
+          href="/sitemap"
           className="
             px-6
             text-white/65
