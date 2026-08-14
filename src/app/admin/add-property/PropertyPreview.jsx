@@ -3606,12 +3606,13 @@ else {
                       <div
                         key={index}
                         className="
-                          border-r
-                          last:border-r-0
-                          border-[#e2d6c2]
-                          pr-4
-                          min-w-0
-                        "
+                        border-r
+                        last:border-r-0
+                        border-[#e2d6c2]
+                        px-4
+                        md:px-6
+                        min-w-0
+                      "
                       >
 
                         <div className="mb-2">
@@ -3722,12 +3723,13 @@ else {
                       <div
                         key={index}
                         className="
-                          border-r
-                          last:border-r-0
-                          border-[#e2d6c2]
-                          pr-4
-                          min-w-0
-                        "
+                        border-r
+                        last:border-r-0
+                        border-[#e2d6c2]
+                        px-4
+                        md:px-6
+                        min-w-0
+                      "
                       >
 
                         <div className="mb-2">
