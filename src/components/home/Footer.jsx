@@ -675,7 +675,7 @@ export default function Footer() {
 
                     <Link
                       key={page._id}
-                      href={`/collections/${page.slug}`}
+                      href={`/${page.slug}`}
                       className="
                         group
                         border
