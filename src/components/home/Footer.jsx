@@ -127,18 +127,18 @@ export default function Footer() {
          */
 
         const qualifyingCollections = pages
-          .filter(
-            (page) =>
-              page?.status === "published" &&
-              page?.isDeleted !== true &&
-              page?.ignoreGeneration !== true &&
-              Number(page?.propertyCount || 0) > 5
-          )
-          .sort(
-            (a, b) =>
-              Number(b.propertyCount || 0) -
-              Number(a.propertyCount || 0)
-          );
+  .filter(
+    (page) =>
+      page?.status === "published" &&
+      page?.isDeleted !== true &&
+      page?.ignoreGeneration !== true &&
+      Number(page?.propertyCount || 0) >= 5
+  )
+  .sort(
+    (a, b) =>
+      Number(b.propertyCount || 0) -
+      Number(a.propertyCount || 0)
+  );
 
         setCollections(qualifyingCollections);
       } catch (error) {
