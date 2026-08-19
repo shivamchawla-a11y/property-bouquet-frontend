@@ -6750,14 +6750,18 @@ else {
                   <div>
 
                     <h3
-                      className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
-                      style={{
-                        fontFamily:
-                          "Cormorant Garamond, serif",
-                      }}
-                    >
-                      {project?.coreDetails?.title}
-                    </h3>
+  className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+  style={{
+    fontFamily: "Cormorant Garamond, serif",
+  }}
+>
+  <Link
+    href={`/${project.slug}`}
+    className="hover:text-[#e0bd7d] transition-colors duration-300"
+  >
+    {project?.coreDetails?.title}
+  </Link>
+</h3>
 
                     <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-7 relative">
 
@@ -6810,11 +6814,6 @@ else {
                   </div>
                 </div>
 
-                {/* LINK */}
-                <Link
-                  href={`/${project.slug}`}
-                  className="absolute inset-0 z-30"
-                />
               </div>
             </motion.div>
           ))}
