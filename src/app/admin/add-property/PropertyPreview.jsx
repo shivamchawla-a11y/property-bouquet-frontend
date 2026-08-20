@@ -6486,6 +6486,7 @@ else {
           </p>
 
           <div className="w-14 h-[1px] bg-[#c8a66a]" />
+
         </div>
 
         <h2
@@ -6504,9 +6505,11 @@ else {
         <div className="w-28 h-[1px] bg-[#c8a66a] mx-auto mt-7 relative">
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[#c8a66a]" />
+
         </div>
 
       </motion.div>
+
 
       {/* ================= ABOUT DEVELOPER ================= */}
       {developerDescription && (
@@ -6543,14 +6546,15 @@ else {
                     <p className="uppercase tracking-[4px] text-[#b58b47] text-xs font-medium">
                       About The Developer
                     </p>
+
                   </div>
+
 
                   {/* HEADING */}
                   <h2
                     className="text-5xl md:text-6xl leading-[1.05] font-light text-[#17342d]"
                     style={{
-                      fontFamily:
-                        "Cormorant Garamond, serif",
+                      fontFamily: "Cormorant Garamond, serif",
                     }}
                   >
                     The Legacy Of
@@ -6558,21 +6562,25 @@ else {
                     <span className="block text-[#b58b47] mt-2">
                       {developerName}
                     </span>
+
                   </h2>
+
 
                   {/* DIVIDER */}
                   <div className="w-24 h-[1px] bg-[#c8a66a] mt-8 mb-8 relative">
 
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+
                   </div>
+
 
                   {/* DESCRIPTION */}
                   <p className="text-[#5f5f5f] text-[16px] md:text-[18px] leading-[1.75] whitespace-pre-line font-light max-w-3xl">
-                  {developerDescription}
-                </p>
+                    {developerDescription}
+                  </p>
 
-                  
                 </div>
+
 
                 {/* ================= RIGHT IMAGE ================= */}
                 <div className="relative">
@@ -6593,11 +6601,13 @@ else {
                           className="text-[#d4b071]"
                           size={90}
                         />
+
                       </div>
                     )}
 
                     {/* OVERLAY */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/20 to-transparent" />
+
 
                     {/* LOGO */}
                     {developerLogo && (
@@ -6605,11 +6615,13 @@ else {
 
                         <img
                           src={developerLogo}
-                          alt={developerName}
+                          alt={`${developerName} logo`}
                           className="w-full h-full object-contain"
                         />
+
                       </div>
                     )}
+
 
                     {/* BOTTOM CARD */}
                     <div className="absolute bottom-7 left-7 right-7">
@@ -6623,8 +6635,7 @@ else {
                         <h3
                           className="text-white text-3xl md:text-4xl leading-tight font-light"
                           style={{
-                            fontFamily:
-                              "Cormorant Garamond, serif",
+                            fontFamily: "Cormorant Garamond, serif",
                           }}
                         >
                           Crafted With Vision,
@@ -6634,16 +6645,26 @@ else {
                         <div className="w-16 h-[1px] bg-[#d4b071] mt-6 relative">
 
                           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+
                         </div>
+
                       </div>
+
                     </div>
+
                   </div>
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </motion.div>
       )}
+
 
       {/* ================= OTHER PROJECTS HEADING ================= */}
       <motion.div
@@ -6653,6 +6674,7 @@ else {
         variants={fadeUp}
         className="text-center mb-16"
       >
+
         <h2
           className="text-4xl md:text-6xl leading-[1.1] font-light text-[#17342d]"
           style={{
@@ -6664,160 +6686,247 @@ else {
           <span className="inline-block text-[#b58b47] ml-2">
             {developerName}
           </span>
+
         </h2>
 
         <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-6 relative">
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+
         </div>
+
       </motion.div>
+
 
       {/* ================= PROJECT GRID ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
 
         {developerProjects
-  ?.filter(
-    (project) =>
-      project?.status === "published" &&
-      project?.isDeleted !== true &&
-      project?.deletedFromStatus !== "trash"
-  )
-  .slice(0, 4)
-  .map((project, i) => (
+          ?.filter(
+            (project) =>
+              project?.status === "published" &&
+              project?.isDeleted !== true &&
+              project?.deletedFromStatus !== "trash"
+          )
+          .slice(0, 4)
+          .map((project, i) => {
 
-            <motion.div
-              key={project._id || i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              whileHover={{
-                y: -10,
-              }}
-              className="group relative rounded-[34px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)] transition-all duration-700"
-            >
+            const projectUrl = project?.slug
+              ? `/${project.slug}`
+              : null;
 
-              {/* IMAGE */}
-              <div className="relative h-[460px] overflow-hidden">
+            const projectTitle =
+              project?.coreDetails?.title || "Property";
 
-                {project?.media?.heroImageUrl?.trim() ? (
-                <img
-                  src={project.media.heroImageUrl}
-                  alt={project?.coreDetails?.title || "Property"}
-                  className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
-                />
-              ) : (
-                <div className="w-full h-full bg-[#0f0f0f]" />
-              )}
+            return (
+              <motion.div
+                key={project?._id || i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                whileHover={{
+                  y: -10,
+                }}
+                className="group relative rounded-[34px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)] transition-all duration-700"
+              >
 
-                {/* OVERLAY */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/35 to-transparent" />
+                {/* ================= PROJECT IMAGE ================= */}
+                <div className="relative h-[460px] overflow-hidden">
 
-                {/* BADGE */}
-                <div className="absolute top-6 left-6 z-20">
+                  {project?.media?.heroImageUrl?.trim() ? (
+                    projectUrl ? (
+                      <Link
+                        href={projectUrl}
+                        aria-label={`View ${projectTitle}`}
+                        className="absolute inset-0 block"
+                      >
 
-                  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+                        <img
+                          src={project.media.heroImageUrl}
+                          alt={projectTitle}
+                          className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+                        />
 
-                    <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
+                      </Link>
+                    ) : (
+                      <img
+                        src={project.media.heroImageUrl}
+                        alt={projectTitle}
+                        className="w-full h-full object-cover"
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-full bg-[#0f0f0f]" />
+                  )}
 
-                    <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
-                      Premium Development
-                    </span>
+
+                  {/* OVERLAY */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/35 to-transparent pointer-events-none" />
+
+
+                  {/* BADGE */}
+                  <div className="absolute top-6 left-6 z-20 pointer-events-none">
+
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+
+                      <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
+
+                      <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
+                        Premium Development
+                      </span>
+
+                    </div>
+
                   </div>
-                </div>
 
-                {/* CONTENT */}
-                <div className="absolute inset-0 flex flex-col justify-end p-8 z-20">
 
-                  {/* LOCATION */}
-                  <div className="mb-6">
+                  {/* CONTENT */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-8 z-20 pointer-events-none">
 
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full">
+                    {/* LOCATION */}
+                    <div className="mb-6">
 
-                      <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
+                      <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full">
 
-                      <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
+                        <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
 
-                        {getShortLocation(
-                          project?.locationData?.locationName
+                        <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
+                          {getShortLocation(
+                            project?.locationData?.locationName
+                          )}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* TITLE */}
+                    <div>
+
+                      {projectUrl ? (
+                        <h3
+                          className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+                          style={{
+                            fontFamily: "Cormorant Garamond, serif",
+                          }}
+                        >
+
+                          <Link
+                            href={projectUrl}
+                            aria-label={`View ${projectTitle}`}
+                            className="pointer-events-auto hover:text-[#e0bd7d] transition-colors duration-300"
+                          >
+                            {projectTitle}
+                          </Link>
+
+                        </h3>
+                      ) : (
+                        <h3
+                          className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+                          style={{
+                            fontFamily: "Cormorant Garamond, serif",
+                          }}
+                        >
+                          {projectTitle}
+                        </h3>
+                      )}
+
+
+                      <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-7 relative">
+
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+
+                      </div>
+
+                    </div>
+
+
+                    {/* BOTTOM */}
+                    <div className="flex items-end justify-between gap-4">
+
+                      {/* PRICE */}
+                      <div>
+
+                        <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
+                          Starting Price
+                        </p>
+
+                        {project?.coreDetails?.priceOnRequest ? (
+                          <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+                            Price On Request
+                          </h4>
+                        ) : project?.coreDetails?.startingPrice ? (
+                          <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
+                            ₹ {formatPrice(project.coreDetails.startingPrice)}
+                          </h4>
+                        ) : (
+                          <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+                            Price On Request
+                          </h4>
                         )}
 
-                      </span>
+                      </div>
+
+
+                      {/* ARROW LINK */}
+                      {projectUrl ? (
+                        <Link
+                          href={projectUrl}
+                          aria-label={`View ${projectTitle}`}
+                          className="pointer-events-auto shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+                        >
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5 transition duration-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
+
+                        </Link>
+                      ) : (
+                        <div className="shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
+
+                        </div>
+                      )}
+
                     </div>
+
                   </div>
 
-                  {/* TITLE */}
-                  <div>
-
-                    <h3
-  className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
-  style={{
-    fontFamily: "Cormorant Garamond, serif",
-  }}
->
-  <Link
-    href={`/${project.slug}`}
-    className="hover:text-[#e0bd7d] transition-colors duration-300"
-  >
-    {project?.coreDetails?.title}
-  </Link>
-</h3>
-
-                    <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-7 relative">
-
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
-                    </div>
-                  </div>
-
-                  {/* BOTTOM */}
-                  <div className="flex items-end justify-between gap-4">
-
-                    {/* PRICE */}
-<div>
-  <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
-    Starting Price
-  </p>
-
-  {project?.coreDetails?.priceOnRequest ? (
-    <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
-      Price On Request
-    </h4>
-  ) : project?.coreDetails?.startingPrice ? (
-    <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
-      ₹ {formatPrice(project.coreDetails.startingPrice)}
-    </h4>
-  ) : (
-    <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
-      Price On Request
-    </h4>
-  )}
-</div>
-
-                    {/* BUTTON */}
-                    <div className="group/button shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
-
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5 group-hover/button:translate-x-0.5 transition duration-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
-                    </div>
-                  </div>
                 </div>
 
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
+
       </div>
+
 
       {/* ================= CTA ================= */}
       <motion.div
@@ -6838,6 +6947,7 @@ else {
           {/* SHINE */}
           <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition duration-1000" />
 
+
           {/* ICON */}
           <div className="relative z-10 w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071]">
 
@@ -6855,7 +6965,9 @@ else {
                 d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
               />
             </svg>
+
           </div>
+
 
           {/* TEXT */}
           <div className="relative z-10 text-left">
@@ -6867,7 +6979,9 @@ else {
             <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
               View All Projects By {developerName}
             </h4>
+
           </div>
+
 
           {/* ARROW */}
           <div className="relative z-10 text-[#d4b071] group-hover:translate-x-1 transition duration-300">
@@ -6878,7 +6992,7 @@ else {
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={1.8}
             >
               <path
                 strokeLinecap="round"
@@ -6886,9 +7000,13 @@ else {
                 d="M13 7l5 5m0 0l-5 5m5-5H6"
               />
             </svg>
+
           </div>
+
         </Link>
+
       </motion.div>
+
     </div>
   </section>
 )}
