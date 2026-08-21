@@ -7,6 +7,7 @@ import {
   Playfair_Display,
   Montserrat,
 } from "next/font/google";
+
 import FloatingContact from "@/components/common/FloatingContact";
 
 const playfair = Playfair_Display({
@@ -76,6 +77,7 @@ export const metadata = {
     index: true,
     follow: true,
     nocache: false,
+
     googleBot: {
       index: true,
       follow: true,
@@ -91,9 +93,13 @@ export const metadata = {
     locale: "en_IN",
     url: "https://propertybouquet.com",
     siteName: "Property Bouquet",
-    title: "Property Bouquet | Luxury Real Estate in India",
+
+    title:
+      "Property Bouquet | Luxury Real Estate in India",
+
     description:
       "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
+
     images: [
       {
         url: "/og-image.jpg",
@@ -106,94 +112,54 @@ export const metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Property Bouquet | Luxury Real Estate in India",
+
+    title:
+      "Property Bouquet | Luxury Real Estate in India",
+
     description:
       "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
+
     images: ["/og-image.jpg"],
+
     imageAlt: "Property Bouquet Luxury Real Estate",
-  },
-
-  icons: {
-    icon: [
-      {
-        url: "/favicon.ico",
-        type: "image/x-icon",
-      },
-      {
-        url: "/favicon-16x16.png",
-        sizes: "16x16",
-        type: "image/png",
-      },
-      {
-        url: "/favicon-32x32.png",
-        sizes: "32x32",
-        type: "image/png",
-      },
-      {
-        url: "/favicon-48x48.png",
-        sizes: "48x48",
-        type: "image/png",
-      },
-      {
-        url: "/android-chrome-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        url: "/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
-    ],
-
-    apple: [
-      {
-        url: "/apple-touch-icon.png",
-        sizes: "180x180",
-      },
-    ],
-
-    shortcut: "/favicon.ico",
   },
 };
 
-export default function RootLayout({
-  children,
-}) {
+export default function RootLayout({ children }) {
   return (
-  <html
-    lang="en"
-    className={`${playfair.variable} ${montserrat.variable}`}
-  >
-    <body>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(siteSchema),
-        }}
-      />
+    <html
+      lang="en"
+      className={`${playfair.variable} ${montserrat.variable}`}
+    >
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteSchema),
+          }}
+        />
 
-      {children}
+        {children}
 
-      {/* Floating WhatsApp & Call Buttons */}
-      <FloatingContact />
+        {/* Floating WhatsApp & Call Buttons */}
+        <FloatingContact />
 
-      <Toaster
-        position="top-right"
-        containerStyle={{
-          zIndex: 2147483647,
-        }}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#1f1f1f",
-            color: "#fff",
-            border: "1px solid #333",
-            fontSize: "14px",
-          },
-        }}
-      />
-    </body>
-  </html>
-);
+        <Toaster
+          position="top-right"
+          containerStyle={{
+            zIndex: 2147483647,
+          }}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "#1f1f1f",
+              color: "#fff",
+              border: "1px solid #333",
+              fontSize: "14px",
+            },
+          }}
+        />
+      </body>
+    </html>
+  );
 }
