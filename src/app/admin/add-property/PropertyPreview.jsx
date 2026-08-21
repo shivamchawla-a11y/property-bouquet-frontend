@@ -154,7 +154,7 @@ const ICONS = {
   ...BsIcons,
 };
 
-export default function PropertyPreview({ form, insideAdmin = false, developers = [] }) {
+export default function PropertyPreview({ form, insideAdmin = false, developers = [], developerData }) {
   if (!form) return null;
 
 const {
@@ -171,6 +171,11 @@ const {
   categoryData = {},
   configurationSection = {},
 } = form;
+
+const developerProjects =
+  Array.isArray(developerData?.properties)
+    ? developerData.properties
+    : [];
 
 const aboutSectionNumber =
   overview?.aboutSectionNumber || "02";
@@ -214,13 +219,18 @@ const featureBar =
         },
       ];
 
-  function getDeveloperLogo() {
-  // ✅ 1. Direct logo (highest priority)
+ function getDeveloperLogo() {
+  // 1. Direct property value
   if (coreDetails?.developerLogo) {
     return coreDetails.developerLogo;
   }
 
-  // ✅ 2. Populated object
+  // 2. Server-fetched developer data
+  if (developerData?.developer?.logo) {
+    return developerData.developer.logo;
+  }
+
+  // 3. Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
@@ -228,11 +238,12 @@ const featureBar =
     return coreDetails.developerRef.logo || "";
   }
 
-  // ✅ 3. Lookup from developers list
+  // 4. Existing developers list fallback
   if (coreDetails?.developerRef) {
     const dev = developers.find(
       (d) => d._id === coreDetails.developerRef
     );
+
     return dev?.logo || "";
   }
 
@@ -241,13 +252,17 @@ const featureBar =
 
   // ================= DEVELOPER IMAGE RESOLVER =================
 function getDeveloperImage() {
-
-  // ✅ Direct custom image
+  // 1. Direct property value
   if (coreDetails?.developerImage) {
     return coreDetails.developerImage;
   }
 
-  // ✅ If populated object from backend
+  // 2. Server-fetched developer data
+  if (developerData?.developer?.image) {
+    return developerData.developer.image;
+  }
+
+  // 3. Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
@@ -255,7 +270,7 @@ function getDeveloperImage() {
     return coreDetails.developerRef.image || "";
   }
 
-  // ✅ If only ID exists
+  // 4. Existing developers list fallback
   if (coreDetails?.developerRef) {
     const dev = developers.find(
       (d) => d._id === coreDetails.developerRef
@@ -281,8 +296,6 @@ const [scrolled, setScrolled] = useState(false);
 const [activeSection, setActiveSection] = useState("overview");
 const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);
-  const [developerProjects, setDeveloperProjects] =
-  useState([]);
   const [showAboutMore, setShowAboutMore] =
   useState(false);
 
@@ -659,15 +672,18 @@ const locationName = getLocationName();
 
   const developerName = getDeveloperName();
 
-  // ================= DEVELOPER DESCRIPTION RESOLVER =================
 const getDeveloperDescription = () => {
-
-  // ✅ Direct custom description
+  // 1. Direct custom description
   if (coreDetails?.developerDescription?.trim()) {
     return coreDetails.developerDescription;
   }
 
-  // ✅ If populated object from backend
+  // 2. Server-fetched developer description
+  if (developerData?.developer?.description?.trim()) {
+    return developerData.developer.description;
+  }
+
+  // 3. Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
@@ -677,9 +693,8 @@ const getDeveloperDescription = () => {
     );
   }
 
-  // ✅ If only ID exists
+  // 4. Existing developers list fallback
   if (coreDetails?.developerRef) {
-
     const dev = developers.find(
       (d) => d._id === coreDetails.developerRef
     );
@@ -693,80 +708,6 @@ const getDeveloperDescription = () => {
 const developerDescription =
   getDeveloperDescription();
 
-
-useEffect(() => {
-
-  if (!developerName) return;
-
-  const fetchDeveloperProjects = async () => {
-
-    try {
-
-      const developerSlug = developerName
-        ?.toLowerCase()
-        ?.replace(/\s+/g, "-");
-
-      const res = await fetch(
-        `/api/developers/${developerSlug}`
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-
-        // ✅ PROJECTS
-        setDeveloperProjects(
-          data.properties || []
-        );
-
-        // ✅ AUTO LOAD DESCRIPTION
-        if (
-          data.developer?.description &&
-          !coreDetails?.developerDescription
-        ) {
-          form.coreDetails.developerDescription =
-            data.developer.description;
-        }
-
-        // ✅ AUTO LOAD IMAGE
-        if (
-          data.developer?.image &&
-          !coreDetails?.developerImage
-        ) {
-          form.coreDetails.developerImage =
-            data.developer.image;
-        }
-
-        // ✅ AUTO LOAD LOGO
-        if (
-          data.developer?.logo &&
-          !coreDetails?.developerLogo
-        ) {
-          form.coreDetails.developerLogo =
-            data.developer.logo;
-        }
-
-      } else {
-
-        setDeveloperProjects([]);
-
-      }
-
-    } catch (err) {
-
-      console.error(
-        "Error fetching developer projects:",
-        err
-      );
-
-      setDeveloperProjects([]);
-
-    }
-  };
-
-  fetchDeveloperProjects();
-
-}, [developerName]);
 
 const getShortLocation = (location) => {
   if (!location) return "Gurgaon";

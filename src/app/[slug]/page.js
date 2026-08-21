@@ -32,6 +32,7 @@ async function getProperty(slug) {
 
     return data.data;
   } catch (err) {
+    console.error("Property fetch error:", err);
     return null;
   }
 }
@@ -57,6 +58,87 @@ async function getLandingPage(slug) {
 
     return data.data;
   } catch (err) {
+    console.error("Landing page fetch error:", err);
+    return null;
+  }
+}
+
+// ======================================================
+// DEVELOPER DATA
+// ======================================================
+
+async function getDeveloperData(developerName, developerRef) {
+  try {
+    // --------------------------------------------------
+    // 1. Determine developer slug
+    // --------------------------------------------------
+
+    let developerSlug = "";
+
+    // If developerRef is populated
+    if (
+      developerRef &&
+      typeof developerRef === "object"
+    ) {
+      if (developerRef.slug) {
+        developerSlug = developerRef.slug;
+      } else if (developerRef.name) {
+        developerSlug = developerRef.name
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-");
+      }
+    }
+
+    // If developerName exists
+    if (!developerSlug && developerName) {
+      developerSlug = developerName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
+    }
+
+    if (!developerSlug) {
+      return null;
+    }
+
+    // --------------------------------------------------
+    // 2. Fetch developer
+    // --------------------------------------------------
+
+    const res = await fetch(
+      `${API}/api/developers/${developerSlug}`,
+      {
+        next: {
+          revalidate: 300,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      console.error(
+        "Developer fetch failed:",
+        developerSlug,
+        res.status
+      );
+
+      return null;
+    }
+
+    const data = await res.json();
+
+    return {
+      developer: data?.developer || null,
+      properties: Array.isArray(data?.properties)
+        ? data.properties
+        : [],
+    };
+  } catch (err) {
+    console.error(
+      "Developer data fetch error:",
+      err
+    );
+
     return null;
   }
 }
@@ -94,7 +176,8 @@ export async function generateMetadata({ params }) {
 
   return {
     title: "Page Not Found | Property Bouquet",
-    description: "The requested page could not be found.",
+    description:
+      "The requested page could not be found.",
   };
 }
 
@@ -112,7 +195,24 @@ export default async function Page({ params }) {
   const property = await getProperty(slug);
 
   if (property) {
-    const schema = buildPropertySchema(property, slug);
+    // --------------------------------------------------
+    // FETCH DEVELOPER DATA SERVER-SIDE
+    // --------------------------------------------------
+
+    const developerData =
+      await getDeveloperData(
+        property?.coreDetails?.developerName,
+        property?.coreDetails?.developerRef
+      );
+
+    // --------------------------------------------------
+    // BUILD PROPERTY SCHEMA
+    // --------------------------------------------------
+
+    const schema = buildPropertySchema(
+      property,
+      slug
+    );
 
     return (
       <>
@@ -124,7 +224,10 @@ export default async function Page({ params }) {
         />
 
         <div className="bg-white">
-          <PropertyPreview form={property} />
+          <PropertyPreview
+            form={property}
+            developerData={developerData}
+          />
         </div>
       </>
     );
@@ -137,7 +240,8 @@ export default async function Page({ params }) {
   const landingPage = await getLandingPage(slug);
 
   if (landingPage) {
-    const schema = buildLandingPageSchema(landingPage);
+    const schema =
+      buildLandingPageSchema(landingPage);
 
     return (
       <>
@@ -149,7 +253,9 @@ export default async function Page({ params }) {
         />
 
         <div className="bg-white">
-          <PropertiesClient landingPage={landingPage} />
+          <PropertiesClient
+            landingPage={landingPage}
+          />
         </div>
       </>
     );
