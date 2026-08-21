@@ -74,17 +74,15 @@ export async function generateMetadata({ params }) {
 
   const data = await getDeveloper(slug);
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // REAL 404 METADATA
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (!data?.developer) {
     return {
       title: "Developer Not Found | Property Bouquet",
-
       description:
         "The requested real estate developer could not be found on Property Bouquet.",
-
       robots: {
         index: false,
         follow: true,
@@ -96,77 +94,93 @@ export async function generateMetadata({ params }) {
 
   const developerName =
     developer?.name?.trim() ||
-    "Luxury Real Estate Developer";
+    "Real Estate Developer";
 
-  // ----------------------------------------------------------
-  // DESCRIPTION
-  // ----------------------------------------------------------
+  // ==========================================================
+  // DEVELOPER DESCRIPTION
+  // ==========================================================
 
   const rawDescription =
     developer?.description
       ?.replace(/\s+/g, " ")
       .trim();
 
+  // We use the developer's actual description when available,
+  // but make the metadata description search-intent focused.
   const description =
     rawDescription ||
-    `Explore premium properties, luxury residences, projects, prices, floor plans and investment opportunities by ${developerName} on Property Bouquet.`;
+    `Explore ${developerName} properties and residential projects in Gurgaon. View project details, prices, floor plans, locations and investment opportunities on Property Bouquet.`;
 
+  // Keep meta description within an SEO-friendly length.
   const metaDescription =
     description.length > 160
       ? `${description.substring(0, 157).trim()}...`
       : description;
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // TITLE
-  // ----------------------------------------------------------
+  // ==========================================================
 
-  const title = `${developerName} Properties | Projects, Prices & Floor Plans | Property Bouquet`;
+  const title =
+    `${developerName} Properties & Projects in Gurgaon | Property Bouquet`;
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // CANONICAL
-  //
-  // IMPORTANT:
-  // Query parameters such as ?budget=, ?location=,
-  // ?propertyType= etc. should NOT create separate canonical
-  // URLs for this developer landing page.
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const canonicalUrl =
     `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // OG IMAGE
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const developerImage =
     developer?.image ||
     developer?.logo ||
     `${SITE_URL}/og-image.jpg`;
 
-  // ----------------------------------------------------------
-  // KEYWORDS
-  // ----------------------------------------------------------
+  // ==========================================================
+  // DEVELOPER-SPECIFIC KEYWORDS
+  // ==========================================================
 
   const keywords = [
+    // Primary
     `${developerName} properties`,
     `${developerName} projects`,
-    `${developerName} properties Gurgaon`,
-    `${developerName} projects Gurgaon`,
-    `${developerName} luxury projects`,
-    `${developerName} flats`,
+    `${developerName} Gurgaon`,
+
+    // Residential intent
+    `${developerName} residential projects`,
+    `${developerName} residential properties`,
     `${developerName} apartments`,
-    `${developerName} price`,
+    `${developerName} flats`,
+
+    // Commercial / broader project intent
+    `${developerName} new projects`,
+    `${developerName} upcoming projects`,
+    `${developerName} luxury projects`,
+
+    // Buyer research intent
+    `${developerName} property price`,
+    `${developerName} project price`,
     `${developerName} floor plans`,
-    `${developerName} real estate`,
-    "luxury properties Gurgaon",
-    "premium properties Gurgaon",
-    "real estate developers Gurgaon",
-    "Property Bouquet",
+    `${developerName} project details`,
+
+    // Location intent
+    `${developerName} properties in Gurgaon`,
+    `${developerName} projects in Gurgaon`,
+    `${developerName} properties in Gurugram`,
+    `${developerName} projects in Gurugram`,
+
+    // Brand / platform
+    `${developerName} Property Bouquet`,
+    "Property Bouquet developers",
   ];
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // RETURN METADATA
-  // ----------------------------------------------------------
+  // ==========================================================
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -196,6 +210,7 @@ export async function generateMetadata({ params }) {
 
     openGraph: {
       type: "website",
+
       locale: "en_IN",
 
       url: canonicalUrl,
@@ -211,7 +226,7 @@ export async function generateMetadata({ params }) {
           url: developerImage,
           width: 1200,
           height: 630,
-          alt: `${developerName} - Property Bouquet`,
+          alt: `${developerName} Properties & Projects - Property Bouquet`,
         },
       ],
     },
