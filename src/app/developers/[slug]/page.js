@@ -2,21 +2,7 @@ import { notFound } from "next/navigation";
 import DeveloperSlugClient from "./DeveloperSlugClient";
 
 const SITE_URL = "https://propertybouquet.com";
-
-// ============================================================
-// BACKEND API
-// ============================================================
-// IMPORTANT:
-// Keep BACKEND_API_URL in your .env.production as:
-// BACKEND_API_URL=https://property-bouquet-backend.onrender.com/api
-//
-// We keep the Render URL as a fallback so the page still works
-// if the environment variable has not been added yet.
-// ============================================================
-
-const API_BASE_URL =
-  process.env.BACKEND_API_URL ||
-  "https://property-bouquet-backend.onrender.com/api";
+const API = "https://propertybouquet.com";
 
 // ============================================================
 // FETCH DEVELOPER DATA
@@ -26,29 +12,44 @@ async function getDeveloper(slug) {
   if (!slug) return null;
 
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/developers/${encodeURIComponent(slug)}`,
+    const res = await fetch(
+      `${API}/api/developers/${encodeURIComponent(slug)}`,
       {
-        cache: "no-store",
+        next: {
+          revalidate: 300,
+        },
       }
     );
 
-    if (!response.ok) {
+    if (!res.ok) {
+      console.error(
+        `Developer fetch failed for "${slug}":`,
+        res.status
+      );
+
       return null;
     }
 
-    const data = await response.json();
+    const data = await res.json();
 
     if (!data?.developer) {
       return null;
     }
 
-    const publishedProperties = (data.properties || []).filter(
-      (property) =>
-        property?.status === "published" &&
-        property?.isDeleted !== true &&
-        property?.deletedFromStatus !== "trash"
-    );
+    // ----------------------------------------------------------
+    // ONLY PUBLISHED + NON-DELETED PROPERTIES
+    // ----------------------------------------------------------
+
+    const publishedProperties = Array.isArray(
+      data.properties
+    )
+      ? data.properties.filter(
+          (property) =>
+            property?.status === "published" &&
+            property?.isDeleted !== true &&
+            property?.deletedFromStatus !== "trash"
+        )
+      : [];
 
     return {
       developer: data.developer,
@@ -56,7 +57,7 @@ async function getDeveloper(slug) {
     };
   } catch (error) {
     console.error(
-      `Error fetching developer "${slug}":`,
+      `Developer data fetch error for "${slug}":`,
       error
     );
 
@@ -65,7 +66,7 @@ async function getDeveloper(slug) {
 }
 
 // ============================================================
-// GENERATE METADATA
+// METADATA
 // ============================================================
 
 export async function generateMetadata({ params }) {
@@ -73,11 +74,17 @@ export async function generateMetadata({ params }) {
 
   const data = await getDeveloper(slug);
 
+  // ----------------------------------------------------------
+  // REAL 404 METADATA
+  // ----------------------------------------------------------
+
   if (!data?.developer) {
     return {
       title: "Developer Not Found | Property Bouquet",
+
       description:
         "The requested real estate developer could not be found on Property Bouquet.",
+
       robots: {
         index: false,
         follow: true,
@@ -86,51 +93,89 @@ export async function generateMetadata({ params }) {
   }
 
   const developer = data.developer;
-  const properties = data.properties || [];
 
   const developerName =
-    developer?.name?.trim() || "Luxury Real Estate Developer";
+    developer?.name?.trim() ||
+    "Luxury Real Estate Developer";
+
+  // ----------------------------------------------------------
+  // DESCRIPTION
+  // ----------------------------------------------------------
+
+  const rawDescription =
+    developer?.description
+      ?.replace(/\s+/g, " ")
+      .trim();
 
   const description =
-    developer?.description?.replace(/\s+/g, " ").trim() ||
+    rawDescription ||
     `Explore premium properties, luxury residences, projects, prices, floor plans and investment opportunities by ${developerName} on Property Bouquet.`;
 
-  const shortDescription =
+  const metaDescription =
     description.length > 160
       ? `${description.substring(0, 157).trim()}...`
       : description;
 
+  // ----------------------------------------------------------
+  // TITLE
+  // ----------------------------------------------------------
+
   const title = `${developerName} Properties | Projects, Prices & Floor Plans | Property Bouquet`;
 
-  const canonicalUrl = `${SITE_URL}/developers/${encodeURIComponent(
-    slug
-  )}`;
+  // ----------------------------------------------------------
+  // CANONICAL
+  //
+  // IMPORTANT:
+  // Query parameters such as ?budget=, ?location=,
+  // ?propertyType= etc. should NOT create separate canonical
+  // URLs for this developer landing page.
+  // ----------------------------------------------------------
+
+  const canonicalUrl =
+    `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
+
+  // ----------------------------------------------------------
+  // OG IMAGE
+  // ----------------------------------------------------------
 
   const developerImage =
     developer?.image ||
     developer?.logo ||
     `${SITE_URL}/og-image.jpg`;
 
+  // ----------------------------------------------------------
+  // KEYWORDS
+  // ----------------------------------------------------------
+
+  const keywords = [
+    `${developerName} properties`,
+    `${developerName} projects`,
+    `${developerName} properties Gurgaon`,
+    `${developerName} projects Gurgaon`,
+    `${developerName} luxury projects`,
+    `${developerName} flats`,
+    `${developerName} apartments`,
+    `${developerName} price`,
+    `${developerName} floor plans`,
+    `${developerName} real estate`,
+    "luxury properties Gurgaon",
+    "premium properties Gurgaon",
+    "real estate developers Gurgaon",
+    "Property Bouquet",
+  ];
+
+  // ----------------------------------------------------------
+  // RETURN METADATA
+  // ----------------------------------------------------------
+
   return {
+    metadataBase: new URL(SITE_URL),
+
     title,
 
-    description: shortDescription,
+    description: metaDescription,
 
-    keywords: [
-      `${developerName} properties`,
-      `${developerName} projects`,
-      `${developerName} properties Gurgaon`,
-      `${developerName} projects Gurgaon`,
-      `${developerName} luxury projects`,
-      `${developerName} flats`,
-      `${developerName} apartments`,
-      `${developerName} price`,
-      `${developerName} floor plans`,
-      `${developerName} real estate`,
-      "luxury properties Gurgaon",
-      "premium properties Gurgaon",
-      "Property Bouquet",
-    ],
+    keywords,
 
     alternates: {
       canonical: canonicalUrl,
@@ -139,6 +184,7 @@ export async function generateMetadata({ params }) {
     robots: {
       index: true,
       follow: true,
+
       googleBot: {
         index: true,
         follow: true,
@@ -151,10 +197,15 @@ export async function generateMetadata({ params }) {
     openGraph: {
       type: "website",
       locale: "en_IN",
+
       url: canonicalUrl,
+
       siteName: "Property Bouquet",
+
       title,
-      description: shortDescription,
+
+      description: metaDescription,
+
       images: [
         {
           url: developerImage,
@@ -167,13 +218,12 @@ export async function generateMetadata({ params }) {
 
     twitter: {
       card: "summary_large_image",
-      title,
-      description: shortDescription,
-      images: [developerImage],
-    },
 
-    other: {
-      "og:updated_time": new Date().toISOString(),
+      title,
+
+      description: metaDescription,
+
+      images: [developerImage],
     },
   };
 }
@@ -195,28 +245,39 @@ export default async function DeveloperSlugPage({
 }) {
   const { slug } = await params;
 
+  // ----------------------------------------------------------
+  // SERVER-SIDE FETCH
+  // ----------------------------------------------------------
+
   const data = await getDeveloper(slug);
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // REAL 404
-  // ==========================================================
+  // ----------------------------------------------------------
 
   if (!data?.developer) {
     notFound();
   }
 
   const developer = data.developer;
+
   const properties = data.properties || [];
 
-  const developerName =
-    developer?.name?.trim() || "Luxury Real Estate Developer";
+  // ----------------------------------------------------------
+  // BASIC DATA
+  // ----------------------------------------------------------
 
-  const canonicalUrl = `${SITE_URL}/developers/${encodeURIComponent(
-    slug
-  )}`;
+  const developerName =
+    developer?.name?.trim() ||
+    "Luxury Real Estate Developer";
+
+  const canonicalUrl =
+    `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
 
   const developerDescription =
-    developer?.description?.replace(/\s+/g, " ").trim() ||
+    developer?.description
+      ?.replace(/\s+/g, " ")
+      .trim() ||
     `Explore premium real estate projects and luxury properties by ${developerName} on Property Bouquet.`;
 
   const developerImage =
@@ -225,11 +286,12 @@ export default async function DeveloperSlugPage({
     `${SITE_URL}/og-image.jpg`;
 
   // ==========================================================
-  // DEVELOPER JSON-LD
+  // DEVELOPER SCHEMA
   // ==========================================================
 
   const developerSchema = {
     "@context": "https://schema.org",
+
     "@type": "Organization",
 
     "@id": `${canonicalUrl}#organization`,
@@ -257,49 +319,62 @@ export default async function DeveloperSlugPage({
 
     memberOf: {
       "@type": "Organization",
+
       name: "Property Bouquet",
+
       url: SITE_URL,
     },
   };
 
   // ==========================================================
-  // BREADCRUMB JSON-LD
+  // BREADCRUMB SCHEMA
   // ==========================================================
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
+
     "@type": "BreadcrumbList",
 
     itemListElement: [
       {
         "@type": "ListItem",
+
         position: 1,
+
         name: "Home",
+
         item: SITE_URL,
       },
 
       {
         "@type": "ListItem",
+
         position: 2,
+
         name: "Developers",
+
         item: `${SITE_URL}/developers`,
       },
 
       {
         "@type": "ListItem",
+
         position: 3,
+
         name: developerName,
+
         item: canonicalUrl,
       },
     ],
   };
 
   // ==========================================================
-  // COLLECTION PAGE JSON-LD
+  // COLLECTION PAGE SCHEMA
   // ==========================================================
 
   const collectionSchema = {
     "@context": "https://schema.org",
+
     "@type": "CollectionPage",
 
     "@id": `${canonicalUrl}#collection`,
@@ -312,13 +387,17 @@ export default async function DeveloperSlugPage({
 
     isPartOf: {
       "@type": "WebSite",
+
       name: "Property Bouquet",
+
       url: SITE_URL,
     },
 
     about: {
       "@type": "Organization",
+
       name: developerName,
+
       url: canonicalUrl,
     },
 
@@ -350,6 +429,10 @@ export default async function DeveloperSlugPage({
     },
   };
 
+  // ==========================================================
+  // RETURN SERVER HTML
+  // ==========================================================
+
   return (
     <>
       {/* ======================================================
@@ -359,7 +442,9 @@ export default async function DeveloperSlugPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(developerSchema),
+          __html: safeJsonLd(
+            developerSchema
+          ),
         }}
       />
 
@@ -370,18 +455,22 @@ export default async function DeveloperSlugPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(breadcrumbSchema),
+          __html: safeJsonLd(
+            breadcrumbSchema
+          ),
         }}
       />
 
       {/* ======================================================
-          COLLECTION JSON-LD
+          COLLECTION PAGE JSON-LD
       ====================================================== */}
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(collectionSchema),
+          __html: safeJsonLd(
+            collectionSchema
+          ),
         }}
       />
 

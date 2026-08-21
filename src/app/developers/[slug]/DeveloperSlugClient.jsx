@@ -3,11 +3,11 @@
 import { formatPrice } from "@/utils/formatPrice";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
 import PropertyFilters from "@/utils/PropertyFilters";
+import Footer from "@/components/home/Footer";
 
 import {
   MapPin,
@@ -19,8 +19,6 @@ import {
   X,
 } from "lucide-react";
 
-import Footer from "@/components/home/Footer";
-
 export default function DeveloperSlugClient({
   developer,
   properties = [],
@@ -29,10 +27,9 @@ export default function DeveloperSlugClient({
   const searchParams = useSearchParams();
 
   const [filteredProperties, setFilteredProperties] =
-    useState(properties);
+    useState([]);
 
-  const [sortBy, setSortBy] =
-    useState("newest");
+  const [sortBy, setSortBy] = useState("newest");
 
   const [visibleCards, setVisibleCards] =
     useState(9);
@@ -66,16 +63,10 @@ export default function DeveloperSlugClient({
     searchParams.get("propertyType");
 
   // ============================================================
-  // FILTERING
+  // INITIAL / URL FILTERING
   // ============================================================
 
   useEffect(() => {
-    if (!properties.length) {
-      setFilteredProperties([]);
-      setVisibleCards(CARDS_PER_PAGE);
-      return;
-    }
-
     let result = [...properties];
 
     // ==========================================================
@@ -86,14 +77,13 @@ export default function DeveloperSlugClient({
       searchParams.get("search");
 
     if (search) {
-      const searchValue =
-        search.toLowerCase().trim();
-
       result = result.filter(
         (property) =>
           property?.coreDetails?.title
             ?.toLowerCase()
-            .includes(searchValue)
+            .includes(
+              search.toLowerCase()
+            )
       );
     }
 
@@ -151,7 +141,8 @@ export default function DeveloperSlugClient({
           // ----------------------------------------------------
 
           let current =
-            property?.locationData?.locationRef;
+            property?.locationData
+              ?.locationRef;
 
           while (current) {
             if (current?.name) {
@@ -222,14 +213,21 @@ export default function DeveloperSlugClient({
         (property) => {
           const developerNames = [
             property?.developerName,
-            property?.coreDetails?.developerName,
+
+            property?.coreDetails
+              ?.developerName,
+
             property?.developer?.name,
+
             property?.developerData?.name,
+
             property?.developerRef?.name,
           ]
             .filter(Boolean)
             .map((item) =>
-              item.toLowerCase().trim()
+              item
+                .toLowerCase()
+                .trim()
             );
 
           return developerNames.some(
@@ -261,14 +259,17 @@ export default function DeveloperSlugClient({
         .map(Number);
 
       if (
-        Number.isFinite(minBudget) &&
-        Number.isFinite(maxBudget)
+        Number.isFinite(
+          minBudget
+        ) &&
+        Number.isFinite(
+          maxBudget
+        )
       ) {
         result = result.filter(
           (property) => {
-            // Price on request always remains
-            // visible during budget searches.
-
+            // Price on request always
+            // remains visible.
             if (
               property?.coreDetails
                 ?.priceOnRequest
@@ -277,20 +278,19 @@ export default function DeveloperSlugClient({
             }
 
             const startPrice =
-              Number(
-                property?.coreDetails
-                  ?.startingPrice
-              ) || 0;
+              property?.coreDetails
+                ?.startingPrice || 0;
 
             const maxPrice =
-              Number(
-                property?.coreDetails
-                  ?.maxPrice
-              ) || startPrice;
+              property?.coreDetails
+                ?.maxPrice ||
+              startPrice;
 
             return (
-              maxPrice >= minBudget &&
-              startPrice <= maxBudget
+              maxPrice >=
+                minBudget &&
+              startPrice <=
+                maxBudget
             );
           }
         );
@@ -349,9 +349,6 @@ export default function DeveloperSlugClient({
       searchParams.get("bhk");
 
     if (bhk) {
-      const selectedBhkValue =
-        bhk.toLowerCase().trim();
-
       result = result.filter(
         (property) =>
           property?.gatedContent
@@ -361,7 +358,9 @@ export default function DeveloperSlugClient({
                 plan?.unitType
                   ?.toLowerCase()
                   .trim() ===
-                selectedBhkValue
+                bhk
+                  .toLowerCase()
+                  .trim()
             )
       );
     }
@@ -370,7 +369,9 @@ export default function DeveloperSlugClient({
     // SORTING
     // ==========================================================
 
-    if (sortBy === "newest") {
+    if (
+      sortBy === "newest"
+    ) {
       result.sort(
         (a, b) =>
           new Date(
@@ -389,16 +390,14 @@ export default function DeveloperSlugClient({
       result.sort(
         (a, b) =>
           (
-            Number(
-              a?.coreDetails
-                ?.startingPrice
-            ) || 0
+            a?.coreDetails
+              ?.startingPrice ||
+            0
           ) -
           (
-            Number(
-              b?.coreDetails
-                ?.startingPrice
-            ) || 0
+            b?.coreDetails
+              ?.startingPrice ||
+            0
           )
       );
     }
@@ -410,23 +409,17 @@ export default function DeveloperSlugClient({
       result.sort(
         (a, b) =>
           (
-            Number(
-              b?.coreDetails
-                ?.startingPrice
-            ) || 0
+            b?.coreDetails
+              ?.startingPrice ||
+            0
           ) -
           (
-            Number(
-              a?.coreDetails
-                ?.startingPrice
-            ) || 0
+            a?.coreDetails
+              ?.startingPrice ||
+            0
           )
       );
     }
-
-    // ==========================================================
-    // FINAL RESULT
-    // ==========================================================
 
     setVisibleCards(
       CARDS_PER_PAGE
@@ -440,7 +433,7 @@ export default function DeveloperSlugClient({
   ]);
 
   // ============================================================
-  // BODY LOCK FOR MOBILE FILTER DRAWER
+  // BODY LOCK
   // ============================================================
 
   useEffect(() => {
@@ -1002,13 +995,11 @@ export default function DeveloperSlugClient({
                     gap-2
                   "
                 >
-
                   <SlidersHorizontal
                     size={17}
                   />
 
                   Filters
-
                 </button>
 
                 <div className="rounded-2xl border border-[#E6DDCC] bg-white px-7 py-4 shadow-sm">
@@ -1150,7 +1141,8 @@ export default function DeveloperSlugClient({
                             <>
                               ₹
                               {formatPrice(
-                                property.coreDetails
+                                property
+                                  .coreDetails
                                   .startingPrice
                               )}
                             </>
@@ -1190,9 +1182,11 @@ export default function DeveloperSlugClient({
 
                             <span className="text-sm truncate">
 
-                              {property?.locationData
+                              {property
+                                ?.locationData
                                 ?.locationName ||
-                                property?.locationData
+                                property
+                                  ?.locationData
                                   ?.customLocation ||
                                 "Prime Location"}
 
@@ -1236,7 +1230,7 @@ export default function DeveloperSlugClient({
 
                         </div>
 
-                        <button className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
+                        <div className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
 
                           Explore Property
 
@@ -1245,7 +1239,7 @@ export default function DeveloperSlugClient({
                             className="group-hover:translate-x-1 transition"
                           />
 
-                        </button>
+                        </div>
 
                       </div>
 
@@ -1295,7 +1289,8 @@ export default function DeveloperSlugClient({
                   onClick={() =>
                     setVisibleCards(
                       (prev) =>
-                        prev + CARDS_PER_PAGE
+                        prev +
+                        CARDS_PER_PAGE
                     )
                   }
                   className="
@@ -1389,9 +1384,7 @@ export default function DeveloperSlugClient({
                   text-gray-700
                 "
               >
-
                 <X size={20} />
-
               </button>
 
             </div>
