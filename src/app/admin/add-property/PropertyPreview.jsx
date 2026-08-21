@@ -6643,14 +6643,22 @@ else {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
 
         {developerProjects
-          ?.filter(
-            (project) =>
-              project?.status === "published" &&
-              project?.isDeleted !== true &&
-              project?.deletedFromStatus !== "trash"
-          )
-          .slice(0, 4)
-          .map((project, i) => {
+  ?.filter((project) => {
+    if (
+      project?.status !== "published" ||
+      project?.isDeleted === true ||
+      project?.deletedFromStatus === "trash"
+    ) {
+      return false;
+    }
+
+    const currentSlug = form?.slug?.trim()?.toLowerCase();
+    const projectSlug = project?.slug?.trim()?.toLowerCase();
+
+    return projectSlug && projectSlug !== currentSlug;
+  })
+  .slice(0, 4)
+  .map((project, i) => {
 
             const projectUrl = project?.slug
               ? `/${project.slug}`
