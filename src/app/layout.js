@@ -33,8 +33,6 @@ export const metadata = {
 
   applicationName: "Property Bouquet",
 
-  manifest: "/site.webmanifest",
-
   category: "Real Estate",
 
   creator: "Property Bouquet",
