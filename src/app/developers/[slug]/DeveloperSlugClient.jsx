@@ -26,8 +26,12 @@ export default function DeveloperSlugClient({
 }) {
   const searchParams = useSearchParams();
 
+  // IMPORTANT:
+  // Start with the server-provided properties instead of [].
+  // This allows project cards + their <a href> links to exist
+  // in the initial server-rendered HTML / View Page Source.
   const [filteredProperties, setFilteredProperties] =
-    useState([]);
+    useState(() => [...properties]);
 
   const [sortBy, setSortBy] = useState("newest");
 
@@ -81,9 +85,7 @@ export default function DeveloperSlugClient({
         (property) =>
           property?.coreDetails?.title
             ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            )
+            .includes(search.toLowerCase())
       );
     }
 
@@ -110,12 +112,8 @@ export default function DeveloperSlugClient({
           }
 
           return (
-            categoryName.includes(
-              searchCategory
-            ) ||
-            searchCategory.includes(
-              categoryName
-            )
+            categoryName.includes(searchCategory) ||
+            searchCategory.includes(categoryName)
           );
         }
       );
@@ -141,8 +139,7 @@ export default function DeveloperSlugClient({
           // ----------------------------------------------------
 
           let current =
-            property?.locationData
-              ?.locationRef;
+            property?.locationData?.locationRef;
 
           while (current) {
             if (current?.name) {
@@ -161,8 +158,7 @@ export default function DeveloperSlugClient({
           // ----------------------------------------------------
 
           if (
-            property?.locationData
-              ?.locationName
+            property?.locationData?.locationName
           ) {
             locationNames.push(
               property.locationData.locationName
@@ -176,8 +172,7 @@ export default function DeveloperSlugClient({
           // ----------------------------------------------------
 
           if (
-            property?.locationData
-              ?.customLocation
+            property?.locationData?.customLocation
           ) {
             locationNames.push(
               property.locationData.customLocation
@@ -188,9 +183,7 @@ export default function DeveloperSlugClient({
 
           return locationNames.some(
             (name) =>
-              name.includes(
-                searchLocation
-              )
+              name.includes(searchLocation)
           );
         }
       );
@@ -214,8 +207,7 @@ export default function DeveloperSlugClient({
           const developerNames = [
             property?.developerName,
 
-            property?.coreDetails
-              ?.developerName,
+            property?.coreDetails?.developerName,
 
             property?.developer?.name,
 
@@ -232,12 +224,8 @@ export default function DeveloperSlugClient({
 
           return developerNames.some(
             (name) =>
-              name.includes(
-                searchDeveloper
-              ) ||
-              searchDeveloper.includes(
-                name
-              )
+              name.includes(searchDeveloper) ||
+              searchDeveloper.includes(name)
           );
         }
       );
@@ -259,17 +247,12 @@ export default function DeveloperSlugClient({
         .map(Number);
 
       if (
-        Number.isFinite(
-          minBudget
-        ) &&
-        Number.isFinite(
-          maxBudget
-        )
+        Number.isFinite(minBudget) &&
+        Number.isFinite(maxBudget)
       ) {
         result = result.filter(
           (property) => {
-            // Price on request always
-            // remains visible.
+            // Price on request always remains visible.
             if (
               property?.coreDetails
                 ?.priceOnRequest
@@ -287,10 +270,8 @@ export default function DeveloperSlugClient({
               startPrice;
 
             return (
-              maxPrice >=
-                minBudget &&
-              startPrice <=
-                maxBudget
+              maxPrice >= minBudget &&
+              startPrice <= maxBudget
             );
           }
         );
@@ -369,9 +350,7 @@ export default function DeveloperSlugClient({
     // SORTING
     // ==========================================================
 
-    if (
-      sortBy === "newest"
-    ) {
+    if (sortBy === "newest") {
       result.sort(
         (a, b) =>
           new Date(
@@ -384,39 +363,33 @@ export default function DeveloperSlugClient({
     }
 
     if (
-      sortBy ===
-      "price-low-high"
+      sortBy === "price-low-high"
     ) {
       result.sort(
         (a, b) =>
           (
             a?.coreDetails
-              ?.startingPrice ||
-            0
+              ?.startingPrice || 0
           ) -
           (
             b?.coreDetails
-              ?.startingPrice ||
-            0
+              ?.startingPrice || 0
           )
       );
     }
 
     if (
-      sortBy ===
-      "price-high-low"
+      sortBy === "price-high-low"
     ) {
       result.sort(
         (a, b) =>
           (
             b?.coreDetails
-              ?.startingPrice ||
-            0
+              ?.startingPrice || 0
           ) -
           (
             a?.coreDetails
-              ?.startingPrice ||
-            0
+              ?.startingPrice || 0
           )
       );
     }
@@ -1076,188 +1049,206 @@ export default function DeveloperSlugClient({
 
             </div>
 
-            {/* GRID */}
+            {/* ==================================================
+                GRID
+            ================================================== */}
 
             {currentProperties.length > 0 ? (
 
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
                 {currentProperties.map(
-                  (property) => (
+                  (property) => {
 
-                    <div
-                      key={property._id}
-                      className="
-                        group
-                        relative
-                        bg-white
-                        rounded-[32px]
-                        overflow-hidden
-                        border
-                        border-gray-100
-                        shadow-lg
-                        hover:shadow-2xl
-                        transition-all
-                        duration-500
-                      "
-                    >
+                    const propertySlug =
+                      property?.slug;
 
-                      {/* IMAGE */}
+                    const propertyTitle =
+                      property?.coreDetails
+                        ?.title ||
+                      "Luxury property";
 
-                      <div className="relative h-[320px] overflow-hidden">
+                    /*
+                     * IMPORTANT SEO CHANGE:
+                     *
+                     * The entire project card is now a real
+                     * Next.js <Link>.
+                     *
+                     * Next.js renders this as:
+                     *
+                     * <a href="/property-slug">
+                     *
+                     * This makes the project URL a genuine
+                     * crawlable internal link.
+                     */
 
-                        <img
-                          src={
-                            property?.media
-                              ?.heroImageUrl ||
-                            "/placeholder.jpg"
-                          }
-                          alt={
-                            property?.coreDetails
-                              ?.title ||
-                            "Luxury property"
-                          }
-                          className="
-                            w-full
-                            h-full
-                            object-cover
-                            group-hover:scale-110
-                            transition
-                            duration-700
-                          "
-                        />
+                    return (
+                      <Link
+                        key={property._id}
+                        href={
+                          propertySlug
+                            ? `/${propertySlug}`
+                            : "#"
+                        }
+                        aria-label={`View ${propertyTitle}`}
+                        className="
+                          group
+                          relative
+                          block
+                          bg-white
+                          rounded-[32px]
+                          overflow-hidden
+                          border
+                          border-gray-100
+                          shadow-lg
+                          hover:shadow-2xl
+                          transition-all
+                          duration-500
+                        "
+                      >
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                        {/* IMAGE */}
 
-                        {/* PRICE */}
+                        <div className="relative h-[320px] overflow-hidden">
 
-                        <div className="absolute top-5 right-5 bg-[#081c15] text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl">
-
-                          {property?.coreDetails
-                            ?.priceOnRequest ? (
-                            "On Request"
-                          ) : property?.coreDetails
-                              ?.startingPrice ? (
-                            <>
-                              ₹
-                              {formatPrice(
-                                property
-                                  .coreDetails
-                                  .startingPrice
-                              )}
-                            </>
-                          ) : property
-                              ?.unitConfigurations?.[0]
-                              ?.price ? (
-                            <>
-                              ₹
-                              {formatPrice(
-                                property
-                                  .unitConfigurations[0]
-                                  .price
-                              )}
-                            </>
-                          ) : (
-                            "Price Unavailable"
-                          )}
-
-                        </div>
-
-                        {/* CONTENT */}
-
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-
-                          <h3 className="text-2xl font-black leading-tight">
-
-                            {
-                              property?.coreDetails
-                                ?.title
+                          <img
+                            src={
+                              property?.media
+                                ?.heroImageUrl ||
+                              "/placeholder.jpg"
                             }
+                            alt={
+                              propertyTitle
+                            }
+                            className="
+                              w-full
+                              h-full
+                              object-cover
+                              group-hover:scale-110
+                              transition
+                              duration-700
+                            "
+                          />
 
-                          </h3>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-                          <div className="flex items-center gap-2 text-white/80 mt-3">
+                          {/* PRICE */}
 
-                            <MapPin size={16} />
+                          <div className="absolute top-5 right-5 bg-[#081c15] text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl">
 
-                            <span className="text-sm truncate">
+                            {property?.coreDetails
+                              ?.priceOnRequest ? (
+                              "On Request"
+                            ) : property?.coreDetails
+                                ?.startingPrice ? (
+                              <>
+                                ₹
+                                {formatPrice(
+                                  property
+                                    .coreDetails
+                                    .startingPrice
+                                )}
+                              </>
+                            ) : property
+                                ?.unitConfigurations?.[0]
+                                ?.price ? (
+                              <>
+                                ₹
+                                {formatPrice(
+                                  property
+                                    .unitConfigurations[0]
+                                    .price
+                                )}
+                              </>
+                            ) : (
+                              "Price Unavailable"
+                            )}
 
-                              {property
-                                ?.locationData
-                                ?.locationName ||
-                                property
+                          </div>
+
+                          {/* CONTENT */}
+
+                          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+
+                            <h3 className="text-2xl font-black leading-tight">
+
+                              {
+                                property?.coreDetails
+                                  ?.title
+                              }
+
+                            </h3>
+
+                            <div className="flex items-center gap-2 text-white/80 mt-3">
+
+                              <MapPin size={16} />
+
+                              <span className="text-sm truncate">
+
+                                {property
                                   ?.locationData
-                                  ?.customLocation ||
-                                "Prime Location"}
+                                  ?.locationName ||
+                                  property
+                                    ?.locationData
+                                    ?.customLocation ||
+                                  "Prime Location"}
 
-                            </span>
+                              </span>
+
+                            </div>
 
                           </div>
 
                         </div>
 
-                      </div>
+                        {/* BOTTOM */}
 
-                      {/* BOTTOM */}
+                        <div className="p-6">
 
-                      <div className="p-6">
+                          <div className="flex items-center justify-between mb-5 text-sm text-black/60">
 
-                        <div className="flex items-center justify-between mb-5 text-sm text-black/60">
+                            <span>
+                              {property
+                                ?.unitConfigurations?.[0]
+                                ?.bedrooms
+                                ? `${property.unitConfigurations[0].bedrooms} Beds`
+                                : "Luxury"}
+                            </span>
 
-                          <span>
-                            {property
-                              ?.unitConfigurations?.[0]
-                              ?.bedrooms
-                              ? `${property.unitConfigurations[0].bedrooms} Beds`
-                              : "Luxury"}
-                          </span>
+                            <span>
+                              {property
+                                ?.unitConfigurations?.[0]
+                                ?.bathrooms
+                                ? `${property.unitConfigurations[0].bathrooms} Baths`
+                                : "Residence"}
+                            </span>
 
-                          <span>
-                            {property
-                              ?.unitConfigurations?.[0]
-                              ?.bathrooms
-                              ? `${property.unitConfigurations[0].bathrooms} Baths`
-                              : "Residence"}
-                          </span>
+                            <span>
+                              {property
+                                ?.unitConfigurations?.[0]
+                                ?.area
+                                ? `${property.unitConfigurations[0].area} Sq.Ft.`
+                                : "Premium"}
+                            </span>
 
-                          <span>
-                            {property
-                              ?.unitConfigurations?.[0]
-                              ?.area
-                              ? `${property.unitConfigurations[0].area} Sq.Ft.`
-                              : "Premium"}
-                          </span>
+                          </div>
+
+                          <div className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
+
+                            Explore Property
+
+                            <ArrowRight
+                              size={18}
+                              className="group-hover:translate-x-1 transition"
+                            />
+
+                          </div>
 
                         </div>
 
-                        <div className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
-
-                          Explore Property
-
-                          <ArrowRight
-                            size={18}
-                            className="group-hover:translate-x-1 transition"
-                          />
-
-                        </div>
-
-                      </div>
-
-                      {/* LINK */}
-
-                      <Link
-                        href={`/${property.slug}`}
-                        className="absolute inset-0 z-10"
-                        aria-label={`View ${
-                          property?.coreDetails
-                            ?.title ||
-                          "property"
-                        }`}
-                      />
-
-                    </div>
-
-                  )
+                      </Link>
+                    );
+                  }
                 )}
 
               </div>
