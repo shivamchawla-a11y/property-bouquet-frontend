@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import Script from "next/script";
 import { Toaster } from "react-hot-toast";
 import { siteSchema } from "@/lib/schema/siteSchema";
 
@@ -130,6 +131,25 @@ export default function RootLayout({ children }) {
       className={`${playfair.variable} ${montserrat.variable}`}
     >
       <body>
+        {/* Google Analytics 4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-YQQKE9JP9L"
+          strategy="afterInteractive"
+        />
+
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YQQKE9JP9L');
+          `}
+        </Script>
+
+        {/* Website Schema */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
