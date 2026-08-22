@@ -171,53 +171,85 @@ export default function Navbar({
         // DEVELOPERS
         // =====================================================
 
-        const uniqueDevelopers = [
-  ...new Map(
-    propertyData
-      .filter(
-        (property) =>
-          property?.coreDetails?.developerName
-      )
-      .map((property) => {
-        const developer =
-          property?.coreDetails?.developerRef;
+        // =====================================================
+// DEVELOPERS
+// Sorted by number of properties
+// Highest property count first
+// Alphabetical order used as tie-breaker
+// =====================================================
 
-        const developerName =
-          property.coreDetails.developerName;
+const developerMap = new Map();
 
-        const developerSlug =
-          developer?.slug ||
-          developer?.name?.toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "") ||
-          developerName
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "");
+propertyData.forEach((property) => {
+  const developerName =
+    property?.coreDetails?.developerName;
 
-        return [
-          developerName,
-          {
-            name: developerName,
-            slug: developerSlug,
+  if (!developerName) return;
 
-            logo:
-              developer?.logo ||
-              developer?.image ||
-              property.coreDetails?.developerLogo ||
-              property.coreDetails?.developerImage ||
-              "/placeholder.png",
-          },
-        ];
-      })
-  ).values(),
-].sort((a, b) =>
-  a.name.localeCompare(b.name)
+  const developer =
+    property?.coreDetails?.developerRef;
+
+  const existing =
+    developerMap.get(developerName);
+
+  // -----------------------------------------------------
+  // Developer already exists → increase property count
+  // -----------------------------------------------------
+
+  if (existing) {
+    existing.propertyCount += 1;
+    return;
+  }
+
+  // -----------------------------------------------------
+  // Generate developer slug
+  // Prefer backend developer slug if available
+  // -----------------------------------------------------
+
+  const developerSlug =
+    developer?.slug ||
+    developerName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  // -----------------------------------------------------
+  // First property for this developer
+  // -----------------------------------------------------
+
+  developerMap.set(developerName, {
+    name: developerName,
+
+    slug: developerSlug,
+
+    logo:
+      developer?.logo ||
+      developer?.image ||
+      property.coreDetails?.developerLogo ||
+      property.coreDetails?.developerImage ||
+      "/placeholder.png",
+
+    propertyCount: 1,
+  });
+});
+
+// -------------------------------------------------------
+// SORT
+// 1. Most properties first
+// 2. Alphabetical order if property count is equal
+// -------------------------------------------------------
+
+const uniqueDevelopers = Array.from(
+  developerMap.values()
+).sort(
+  (a, b) =>
+    b.propertyCount - a.propertyCount ||
+    a.name.localeCompare(b.name)
 );
 
-        setDevelopers(uniqueDevelopers);
+setDevelopers(uniqueDevelopers);
+
 
         // =====================================================
         // PROPERTY TYPES
