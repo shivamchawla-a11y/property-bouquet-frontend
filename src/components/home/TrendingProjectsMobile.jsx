@@ -50,15 +50,27 @@ export default function TrendingProjectsMobile() {
         const data = await res.json();
 
         if (data.success) {
-          const published = (data.data || []).filter(
-            (property) =>
-              property.status === "published" &&
-              property.isDeleted === false &&
-              property.isActive === true
-          );
+  const published = (data.data || []).filter(
+    (property) =>
+      property.status === "published" &&
+      property.isDeleted === false &&
+      property.isActive === true
+  );
 
-          setTrendingProperties(published);
-        }
+  // ================= RANDOM SHUFFLE =================
+  const shuffled = [...published];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [shuffled[i], shuffled[j]] = [
+      shuffled[j],
+      shuffled[i],
+    ];
+  }
+
+  setProperties(shuffled);
+}
       } catch (err) {
         console.error(err);
       } finally {
