@@ -476,7 +476,7 @@ useEffect(() => {
     "configuration",
     "gallery",
     "location",
-    "contact",
+    "faq",
   ];
 
   const handleScrollSpy = () => {
@@ -1052,7 +1052,7 @@ xl:rounded-full
       { label: "FLOOR PLAN", id: "configuration" },
       { label: "GALLERY", id: "gallery" },
       { label: "LOCATION", id: "location" },
-      { label: "CONTACT", id: "contact" },
+      { label: "FAQ's", id: "faq" },
     ].map((item) => (
       <button
         key={item.id}
@@ -1269,8 +1269,8 @@ xl:rounded-full
                   id: "location",
                 },
                 {
-                  label: "Contact",
-                  id: "contact",
+                  label: "Faq's",
+                  id: "faq",
                 },
               ].map((item, index) => (
                 <button
@@ -1471,8 +1471,87 @@ lg:px-6
 
       <div className="max-w-[860px]">
 
-        {/* LABEL */}
-        <motion.div
+  {/* ================= VISIBLE BREADCRUMB ================= */}
+  <motion.nav
+    variants={fadeUp}
+    aria-label="Breadcrumb"
+    className="
+      mb-6
+      sm:mb-7
+      flex
+      items-center
+      flex-wrap
+      gap-x-2
+      gap-y-1
+      text-[10px]
+      sm:text-[11px]
+      md:text-[12px]
+      tracking-[0.8px]
+      sm:tracking-[1px]
+      font-light
+    "
+    style={{
+      fontFamily: "Inter, sans-serif",
+    }}
+  >
+    {/* HOME */}
+    <a
+      href="/"
+      className="
+        text-white/55
+        hover:text-[#d8b46b]
+        transition-colors
+        duration-300
+      "
+    >
+      Home
+    </a>
+
+    {/* SEPARATOR */}
+    <span
+      aria-hidden="true"
+      className="text-[#d8b46b]/60"
+    >
+      ›
+    </span>
+
+    {/* PROPERTIES */}
+    <a
+      href="/properties"
+      className="
+        text-white/55
+        hover:text-[#d8b46b]
+        transition-colors
+        duration-300
+      "
+    >
+      Properties
+    </a>
+
+    {/* SEPARATOR */}
+    <span
+      aria-hidden="true"
+      className="text-[#d8b46b]/60"
+    >
+      ›
+    </span>
+
+    {/* CURRENT PROPERTY */}
+    <span
+      aria-current="page"
+      className="
+        text-white/85
+        max-w-[260px]
+        sm:max-w-[400px]
+        truncate
+      "
+    >
+      {coreDetails?.title || "Property"}
+    </span>
+  </motion.nav>
+
+  {/* LABEL */}
+  <motion.div 
           variants={fadeUp}
           className="inline-flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6 flex-wrap"
         >
@@ -5799,7 +5878,7 @@ else {
 {/* ================= PREMIUM FAQ SECTION ================= */}
 {faqs.filter((f) => f.question).length > 0 && (
   <section
-    id="contact"
+    id="faq"
     className="relative bg-[#f7f3ee] py-24 overflow-hidden"
   >
 
