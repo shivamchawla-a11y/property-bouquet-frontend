@@ -40,13 +40,6 @@ export default function WhyPartner() {
   return (
     <section className="relative py-14 lg:py-16 overflow-hidden">
 
-      {/* Background */}
-      <img
-        src="/developers/pattern.png"
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-[0.05] pointer-events-none"
-      />
-
       <div className="relative max-w-[1380px] mx-auto px-5 lg:px-8">
 
         {/* Heading */}

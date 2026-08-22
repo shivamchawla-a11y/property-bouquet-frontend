@@ -21,20 +21,6 @@ export default function AdvisorCTA() {
           {/* Background Glow */}
           <div className="absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-[#D4AF37]/5 blur-3xl" />
 
-          {/* Skyline */}
-          <img
-            src="/developers/city-outline.png"
-            alt=""
-            className="
-              absolute
-              left-5
-              bottom-0
-              h-[90px]
-              opacity-[0.08]
-              pointer-events-none
-              select-none
-            "
-          />
 
           <div
             className="

@@ -11,6 +11,7 @@ const SITE_URL = "https://propertybouquet.com";
  * Schema graph includes:
  *
  * - WebPage
+ * - WebSite
  * - BreadcrumbList
  * - RealEstateListing
  * - Residence
@@ -18,7 +19,9 @@ const SITE_URL = "https://propertybouquet.com";
  * - Organization / Developer
  * - Offer
  * - OfferCatalog / Floor Plans
+ * - OfferCatalog / Plot Configurations
  * - ImageObject
+ * - FAQPage
  *
  * The graph is intentionally connected using @id values.
  *
@@ -109,10 +112,7 @@ function addIfValue(object, key, value) {
 // MAIN FUNCTION
 // ============================================================
 
-export function buildPropertySchema(
-  property,
-  slug
-) {
+export function buildPropertySchema(property, slug) {
   if (!property || !slug) {
     return {
       "@context": "https://schema.org",
@@ -257,6 +257,9 @@ export function buildPropertySchema(
   const floorPlansId =
     `${pageUrl}#floorplans`;
 
+  const faqId =
+    `${pageUrl}#faq`;
+
   // ==========================================================
   // IMAGES
   // ==========================================================
@@ -281,16 +284,13 @@ export function buildPropertySchema(
   // ==========================================================
 
   const amenities = cleanArray(
-    Array.isArray(
-      overview.amenities
-    )
-      ? overview.amenities
-          .map(
-            (item) =>
-              item?.heading ||
-              item?.name ||
-              item?.title
-          )
+    Array.isArray(overview.amenities)
+      ? overview.amenities.map(
+          (item) =>
+            item?.heading ||
+            item?.name ||
+            item?.title
+        )
       : []
   );
 
@@ -354,23 +354,26 @@ export function buildPropertySchema(
   const place = {
     "@type": "Place",
 
-    "@id": placeId,
+    "@id":
+      placeId,
 
     name:
       locationName,
 
     address,
 
-    containedInPlace:
-      locationHierarchy.length > 1
-        ? {
+    ...(locationHierarchy.length > 1
+      ? {
+          containedInPlace: {
             "@type": "Place",
+
             name:
               locationHierarchy[
                 locationHierarchy.length - 1
               ],
-          }
-        : undefined,
+          },
+        }
+      : {}),
   };
 
   // ==========================================================
@@ -539,11 +542,6 @@ export function buildPropertySchema(
     ) &&
     maxPrice > 0;
 
-  const hasPriceRange =
-    hasStartingPrice &&
-    hasMaxPrice &&
-    maxPrice >= startingPrice;
-
   const priceOnRequest =
     core.priceOnRequest === true;
 
@@ -568,6 +566,7 @@ export function buildPropertySchema(
             logo: {
               "@type":
                 "ImageObject",
+
               url:
                 developerLogo,
             },
@@ -741,9 +740,9 @@ export function buildPropertySchema(
       pageUrl,
 
     name:
-      `${propertyName} ${
+      `${propertyName}${
         locationName
-          ? `in ${locationName}`
+          ? ` in ${locationName}`
           : ""
       }`.trim(),
 
@@ -808,9 +807,9 @@ export function buildPropertySchema(
         `${SITE_URL}/#website`,
     },
 
-    primaryImageOfPage:
-      images[0]
-        ? {
+    ...(images[0]
+      ? {
+          primaryImageOfPage: {
             "@type":
               "ImageObject",
 
@@ -825,8 +824,9 @@ export function buildPropertySchema(
 
             caption:
               propertyName,
-          }
-        : undefined,
+          },
+        }
+      : {}),
 
     mainEntity: {
       "@id":
@@ -842,6 +842,15 @@ export function buildPropertySchema(
       "@id":
         `${pageUrl}#breadcrumb`,
     },
+
+    ...(faqs.length
+      ? {
+          subjectOf: {
+            "@id":
+              faqId,
+          },
+        }
+      : {}),
   };
 
   // ==========================================================
@@ -982,7 +991,7 @@ export function buildPropertySchema(
   const floorPlanOffers = [];
 
   floorPlans.forEach(
-    (plan, index) => {
+    (plan) => {
       const unitType =
         cleanString(
           plan?.unitType ||
@@ -1031,9 +1040,7 @@ export function buildPropertySchema(
             }
           : {}),
 
-        ...(Number.isFinite(
-          area
-        ) &&
+        ...(Number.isFinite(area) &&
         area > 0
           ? {
               floorSize: {
@@ -1117,139 +1124,133 @@ export function buildPropertySchema(
     plotConfigurations.length
   ) {
     const plotItems =
-      plotConfigurations
-        .map(
-          (plot, index) => {
-            const name =
-              cleanString(
-                plot?.name ||
-                  plot?.title ||
-                  plot?.range ||
-                  plot?.plotSize
-              );
+      plotConfigurations.map(
+        (plot, index) => {
+          const name =
+            cleanString(
+              plot?.name ||
+                plot?.title ||
+                plot?.range ||
+                plot?.plotSize
+            );
 
-            const sqYd =
-              Number(
-                plot?.sqYd ||
-                  plot?.squareYards ||
-                  plot?.sizeSqYd
-              );
+          const sqYd =
+            Number(
+              plot?.sqYd ||
+                plot?.squareYards ||
+                plot?.sizeSqYd
+            );
 
-            const sqFt =
-              Number(
-                plot?.sqFt ||
-                  plot?.squareFeet ||
-                  plot?.sizeSqFt
-              );
+          const sqFt =
+            Number(
+              plot?.sqFt ||
+                plot?.squareFeet ||
+                plot?.sizeSqFt
+            );
 
-            const price =
-              Number(
-                plot?.price
-              );
+          const price =
+            Number(
+              plot?.price
+            );
 
-            const image =
-              toAbsoluteUrl(
-                plot?.image ||
-                  plot?.imageUrl
-              );
+          const image =
+            toAbsoluteUrl(
+              plot?.image ||
+                plot?.imageUrl
+            );
 
-            const additional =
-              [];
+          const additional = [];
 
-            if (
-              Number.isFinite(
-                sqYd
-              ) &&
-              sqYd > 0
-            ) {
-              additional.push({
-                "@type":
-                  "PropertyValue",
-
-                name:
-                  "Plot Size",
-
-                value:
-                  sqYd,
-
-                unitCode:
-                  "YRD",
-              });
-            }
-
-            if (
-              Number.isFinite(
-                sqFt
-              ) &&
-              sqFt > 0
-            ) {
-              additional.push({
-                "@type":
-                  "PropertyValue",
-
-                name:
-                  "Plot Area",
-
-                value:
-                  sqFt,
-
-                unitCode:
-                  "FTK",
-              });
-            }
-
-            const plotResidence = {
+          if (
+            Number.isFinite(sqYd) &&
+            sqYd > 0
+          ) {
+            additional.push({
               "@type":
-                "Residence",
+                "PropertyValue",
 
               name:
-                name ||
-                `Plot Configuration ${
-                  index + 1
-                }`,
+                "Plot Size",
 
-              ...(image
-                ? {
-                    image:
-                      image,
-                  }
-                : {}),
+              value:
+                sqYd,
 
-              ...(additional.length
-                ? {
-                    additionalProperty:
-                      additional,
-                  }
-                : {}),
-            };
-
-            return {
-              "@type":
-                "ListItem",
-
-              position:
-                index + 1,
-
-              item: {
-                "@type":
-                  "Offer",
-
-                ...(price > 0
-                  ? {
-                      price:
-                        price,
-
-                      priceCurrency:
-                        "INR",
-                    }
-                  : {}),
-
-                itemOffered:
-                  plotResidence,
-              },
-            };
+              unitCode:
+                "YRD",
+            });
           }
-        );
+
+          if (
+            Number.isFinite(sqFt) &&
+            sqFt > 0
+          ) {
+            additional.push({
+              "@type":
+                "PropertyValue",
+
+              name:
+                "Plot Area",
+
+              value:
+                sqFt,
+
+              unitCode:
+                "FTK",
+            });
+          }
+
+          const plotResidence = {
+            "@type":
+              "Residence",
+
+            name:
+              name ||
+              `Plot Configuration ${
+                index + 1
+              }`,
+
+            ...(image
+              ? {
+                  image:
+                    image,
+                }
+              : {}),
+
+            ...(additional.length
+              ? {
+                  additionalProperty:
+                    additional,
+                }
+              : {}),
+          };
+
+          return {
+            "@type":
+              "ListItem",
+
+            position:
+              index + 1,
+
+            item: {
+              "@type":
+                "Offer",
+
+              ...(price > 0
+                ? {
+                    price:
+                      price,
+
+                    priceCurrency:
+                      "INR",
+                  }
+                : {}),
+
+              itemOffered:
+                plotResidence,
+            },
+          };
+        }
+      );
 
     plotCatalog = {
       "@type":
@@ -1270,17 +1271,93 @@ export function buildPropertySchema(
   }
 
   // ==========================================================
-  // FAQ
+  // FAQ SCHEMA
   // ==========================================================
   //
-  // We intentionally do NOT output FAQPage markup here.
+  // Uses only FAQ questions and answers that actually exist.
   //
-  // Google currently limits FAQ rich results primarily to
-  // authoritative government and health websites.
+  // FAQPage is included in the structured-data graph.
   //
-  // The FAQ content can still be indexed normally as visible
-  // page content.
+  // IMPORTANT:
+  // Google currently restricts FAQ rich results primarily to
+  // authoritative government and health websites. Therefore,
+  // this markup should not be added with the expectation that
+  // Google will necessarily show FAQ rich-result snippets.
+  //
+  // The FAQ content should also be visibly present on the page.
   // ==========================================================
+
+  let faqPage;
+
+  const validFaqs = faqs
+    .map((faq) => {
+      const question =
+        cleanString(
+          faq?.question ||
+            faq?.title ||
+            faq?.heading
+        );
+
+      const answer =
+        cleanString(
+          faq?.answer ||
+            faq?.content ||
+            faq?.description
+        );
+
+      if (!question || !answer) {
+        return null;
+      }
+
+      return {
+        question,
+        answer,
+      };
+    })
+    .filter(Boolean);
+
+  if (validFaqs.length) {
+    faqPage = {
+      "@type":
+        "FAQPage",
+
+      "@id":
+        faqId,
+
+      url:
+        `${pageUrl}#faqs`,
+
+      name:
+        `${propertyName} Frequently Asked Questions`,
+
+      inLanguage:
+        "en-IN",
+
+      isPartOf: {
+        "@id":
+          webPageId,
+      },
+
+      mainEntity:
+        validFaqs.map(
+          (faq) => ({
+            "@type":
+              "Question",
+
+            name:
+              faq.question,
+
+            acceptedAnswer: {
+              "@type":
+                "Answer",
+
+              text:
+                faq.answer,
+            },
+          })
+        ),
+    };
+  }
 
   // ==========================================================
   // GRAPH
@@ -1288,15 +1365,10 @@ export function buildPropertySchema(
 
   const graph = [
     webPage,
-
     website,
-
     breadcrumb,
-
     place,
-
     residence,
-
     realEstateListing,
   ];
 
@@ -1347,6 +1419,16 @@ export function buildPropertySchema(
   if (plotCatalog) {
     graph.push(
       plotCatalog
+    );
+  }
+
+  // ==========================================================
+  // FAQ
+  // ==========================================================
+
+  if (faqPage) {
+    graph.push(
+      faqPage
     );
   }
 
