@@ -233,6 +233,22 @@ export async function generateMetadata({ params }) {
     getDeveloperLocations(properties);
 
   // ==========================================================
+  // DYNAMIC LOCATION PHRASE
+  // ==========================================================
+
+  let locationPhrase = "";
+
+  if (locations.length === 1) {
+    locationPhrase = ` in ${locations[0]}`;
+  } else if (locations.length === 2) {
+    locationPhrase = ` in ${locations[0]} and ${locations[1]}`;
+  } else if (locations.length > 2) {
+    locationPhrase = ` in ${locations
+      .slice(0, 3)
+      .join(", ")}`;
+  }
+
+  // ==========================================================
   // SEO DESCRIPTION
   // ==========================================================
 
@@ -241,21 +257,15 @@ export async function generateMetadata({ params }) {
   if (developerDescription) {
     description = `Explore ${developerName} properties and projects on Property Bouquet. ${developerDescription}`;
 
-    if (locations.length > 0) {
-      description += ` Projects available in ${locations
-        .slice(0, 2)
-        .join(" and ")}.`;
+    if (locationPhrase) {
+      description += ` Discover projects${locationPhrase}.`;
     }
   } else {
     description =
       `Explore ${developerName} projects and properties on Property Bouquet. View prices, floor plans, locations, amenities and project details`;
 
-    if (locations.length > 0) {
-      description += ` in ${locations
-        .slice(0, 3)
-        .join(", ")}`;
-    } else {
-      description += " in Gurgaon";
+    if (locationPhrase) {
+      description += locationPhrase;
     }
 
     description += ".";
@@ -272,7 +282,7 @@ export async function generateMetadata({ params }) {
   // ==========================================================
 
   const title =
-    `${developerName} Projects in Gurgaon | Prices, Floor Plans & Locations | Property Bouquet`;
+    `${developerName} Projects & Properties | Prices, Floor Plans & Locations | Property Bouquet`;
 
   // ==========================================================
   // CANONICAL
@@ -298,11 +308,6 @@ export async function generateMetadata({ params }) {
     `${developerName} projects`,
     `${developerName} properties`,
     `${developerName} real estate`,
-    `${developerName} Gurgaon`,
-    `${developerName} projects in Gurgaon`,
-    `${developerName} properties in Gurgaon`,
-    `${developerName} projects in Gurugram`,
-    `${developerName} properties in Gurugram`,
     `${developerName} residential projects`,
     `${developerName} apartments`,
     `${developerName} flats`,
@@ -313,6 +318,12 @@ export async function generateMetadata({ params }) {
     `${developerName} project details`,
     `${developerName} project locations`,
     `${developerName} amenities`,
+    ...locations
+      .slice(0, 10)
+      .map(
+        (location) =>
+          `${developerName} projects in ${location}`
+      ),
     ...projectNames.slice(0, 10),
     "Property Bouquet",
     "Property Bouquet developers",
@@ -447,6 +458,22 @@ export default async function DeveloperSlugPage({
     getDeveloperLocations(properties);
 
   // ==========================================================
+  // DYNAMIC LOCATION DESCRIPTION
+  // ==========================================================
+
+  let locationDescription = "";
+
+  if (locations.length === 1) {
+    locationDescription = ` Projects are available in ${locations[0]}.`;
+  } else if (locations.length === 2) {
+    locationDescription = ` Projects are available in ${locations[0]} and ${locations[1]}.`;
+  } else if (locations.length > 2) {
+    locationDescription = ` Projects are available across ${locations
+      .slice(0, 5)
+      .join(", ")}.`;
+  }
+
+  // ==========================================================
   // DEVELOPER ORGANIZATION SCHEMA
   // ==========================================================
 
@@ -495,12 +522,13 @@ export default async function DeveloperSlugPage({
 
     url: canonicalUrl,
 
-    name: `${developerName} Projects in Gurgaon`,
+    name: `${developerName} Projects & Properties`,
 
     headline:
-      `${developerName} Projects in Gurgaon`,
+      `${developerName} Projects & Properties`,
 
-    description: developerDescription,
+    description:
+      `${developerDescription}${locationDescription}`,
 
     inLanguage: "en-IN",
 
@@ -635,10 +663,10 @@ export default async function DeveloperSlugPage({
       `${developerName} Projects and Properties`,
 
     headline:
-      `${developerName} Projects in Gurgaon`,
+      `${developerName} Projects and Properties`,
 
     description:
-      `Explore ${developerName} projects and properties on Property Bouquet.`,
+      `Explore ${developerName} projects and properties on Property Bouquet.${locationDescription}`,
 
     inLanguage: "en-IN",
 
