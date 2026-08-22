@@ -172,37 +172,50 @@ export default function Navbar({
         // =====================================================
 
         const uniqueDevelopers = [
-          ...new Map(
-            propertyData
-              .filter(
-                (property) =>
-                  property?.coreDetails?.developerName
-              )
-              .map((property) => {
-                const developer =
-                  property?.coreDetails?.developerRef;
+  ...new Map(
+    propertyData
+      .filter(
+        (property) =>
+          property?.coreDetails?.developerName
+      )
+      .map((property) => {
+        const developer =
+          property?.coreDetails?.developerRef;
 
-                return [
-                  property.coreDetails.developerName,
-                  {
-                    name:
-                      property.coreDetails.developerName,
+        const developerName =
+          property.coreDetails.developerName;
 
-                    logo:
-                      developer?.logo ||
-                      developer?.image ||
-                      property.coreDetails
-                        ?.developerLogo ||
-                      property.coreDetails
-                        ?.developerImage ||
-                      "/placeholder.png",
-                  },
-                ];
-              })
-          ).values(),
-        ].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+        const developerSlug =
+          developer?.slug ||
+          developer?.name?.toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "") ||
+          developerName
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+        return [
+          developerName,
+          {
+            name: developerName,
+            slug: developerSlug,
+
+            logo:
+              developer?.logo ||
+              developer?.image ||
+              property.coreDetails?.developerLogo ||
+              property.coreDetails?.developerImage ||
+              "/placeholder.png",
+          },
+        ];
+      })
+  ).values(),
+].sort((a, b) =>
+  a.name.localeCompare(b.name)
+);
 
         setDevelopers(uniqueDevelopers);
 
@@ -325,23 +338,29 @@ export default function Navbar({
     // =======================================================
 
     if (item.key === "developers") {
-      if (sub === "View All Developers →") {
-        closeMobileMenu();
-        setDeveloperSearch("");
-        setShowDeveloperModal(true);
-        return;
-      }
+  if (sub === "View All Developers →") {
+    closeMobileMenu();
+    setDeveloperSearch("");
+    setShowDeveloperModal(true);
+    return;
+  }
 
-      closeMobileMenu();
+  const developer = developers.find(
+    (item) => item.name === sub
+  );
 
-      router.push(
-        `/properties?developer=${encodeURIComponent(
-          sub
-        )}`
-      );
+  closeMobileMenu();
 
-      return;
-    }
+  if (developer?.slug) {
+    router.push(
+      `/developers/${encodeURIComponent(
+        developer.slug
+      )}`
+    );
+  }
+
+  return;
+}
 
     // =======================================================
     // KNOWLEDGE CENTRE
@@ -503,22 +522,28 @@ export default function Navbar({
     // =======================================================
 
     if (item.key === "developers") {
-      if (sub === "View All Developers →") {
-        setDeveloperSearch("");
-        setShowDeveloperModal(true);
-        setActive(null);
-        return;
-      }
+  if (sub === "View All Developers →") {
+    setDeveloperSearch("");
+    setShowDeveloperModal(true);
+    setActive(null);
+    return;
+  }
 
-      router.push(
-        `/properties?developer=${encodeURIComponent(
-          sub
-        )}`
-      );
+  const developer = developers.find(
+    (item) => item.name === sub
+  );
 
-      setActive(null);
-      return;
-    }
+  if (developer?.slug) {
+    router.push(
+      `/developers/${encodeURIComponent(
+        developer.slug
+      )}`
+    );
+  }
+
+  setActive(null);
+  return;
+}
 
     // =======================================================
     // KNOWLEDGE CENTRE
@@ -1620,11 +1645,13 @@ export default function Navbar({
                           false
                         );
 
-                        router.push(
-                          `/properties?developer=${encodeURIComponent(
-                            developer.name
-                          )}`
-                        );
+                        if (developer?.slug) {
+  router.push(
+    `/developers/${encodeURIComponent(
+      developer.slug
+    )}`
+  );
+}
                       }}
                       className="
                         w-full
