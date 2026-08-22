@@ -5,7 +5,7 @@ const WEBSITE_ID = `${SITE_URL}/#website`;
 const BRAND_ID = `${SITE_URL}/#brand`;
 const HOMEPAGE_ID = `${SITE_URL}/#homepage`;
 
-const LOGO_URL = `${SITE_URL}/logo.png`;
+const LOGO_URL = `${SITE_URL}/logo.webp`;
 const OG_IMAGE_URL = `${SITE_URL}/og-image.jpg`;
 
 export const siteSchema = {
