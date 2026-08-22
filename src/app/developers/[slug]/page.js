@@ -40,9 +40,7 @@ async function getDeveloper(slug) {
     // ONLY PUBLISHED + NON-DELETED PROPERTIES
     // ----------------------------------------------------------
 
-    const publishedProperties = Array.isArray(
-      data.properties
-    )
+    const publishedProperties = Array.isArray(data.properties)
       ? data.properties.filter(
           (property) =>
             property?.status === "published" &&
@@ -66,6 +64,132 @@ async function getDeveloper(slug) {
 }
 
 // ============================================================
+// TEXT HELPERS
+// ============================================================
+
+function cleanText(value) {
+  if (!value || typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function truncateDescription(text, maxLength = 160) {
+  const cleaned = cleanText(text);
+
+  if (!cleaned) {
+    return "";
+  }
+
+  if (cleaned.length <= maxLength) {
+    return cleaned;
+  }
+
+  return `${cleaned
+    .substring(0, maxLength - 3)
+    .trim()}...`;
+}
+
+// ============================================================
+// URL HELPERS
+// ============================================================
+
+function buildDeveloperUrl(slug) {
+  return `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
+}
+
+function buildPropertyUrl(slug) {
+  return `${SITE_URL}/${encodeURIComponent(slug)}`;
+}
+
+// ============================================================
+// GET PROJECT LOCATION NAMES
+// ============================================================
+
+function getPropertyLocation(property) {
+  const locations = [];
+
+  const locationData = property?.locationData;
+
+  if (locationData?.locationName) {
+    locations.push(
+      cleanText(locationData.locationName)
+    );
+  }
+
+  if (locationData?.customLocation) {
+    locations.push(
+      cleanText(locationData.customLocation)
+    );
+  }
+
+  let current = locationData?.locationRef;
+
+  while (current) {
+    if (current?.name) {
+      const name = cleanText(current.name);
+
+      if (
+        name &&
+        !locations.some(
+          (existing) =>
+            existing.toLowerCase() ===
+            name.toLowerCase()
+        )
+      ) {
+        locations.push(name);
+      }
+    }
+
+    current = current.parent;
+  }
+
+  return locations.filter(Boolean);
+}
+
+// ============================================================
+// DEVELOPER LOCATION SUMMARY
+// ============================================================
+
+function getDeveloperLocations(properties) {
+  const locations = [];
+
+  for (const property of properties) {
+    const propertyLocations =
+      getPropertyLocation(property);
+
+    for (const location of propertyLocations) {
+      if (
+        !locations.some(
+          (existing) =>
+            existing.toLowerCase() ===
+            location.toLowerCase()
+        )
+      ) {
+        locations.push(location);
+      }
+    }
+  }
+
+  return locations.slice(0, 10);
+}
+
+// ============================================================
+// GET PROJECT NAMES
+// ============================================================
+
+function getProjectNames(properties) {
+  return properties
+    .map((property) =>
+      cleanText(
+        property?.coreDetails?.title
+      )
+    )
+    .filter(Boolean);
+}
+
+// ============================================================
 // METADATA
 // ============================================================
 
@@ -81,8 +205,10 @@ export async function generateMetadata({ params }) {
   if (!data?.developer) {
     return {
       title: "Developer Not Found | Property Bouquet",
+
       description:
         "The requested real estate developer could not be found on Property Bouquet.",
+
       robots: {
         index: false,
         follow: true,
@@ -91,45 +217,69 @@ export async function generateMetadata({ params }) {
   }
 
   const developer = data.developer;
+  const properties = data.properties || [];
 
   const developerName =
-    developer?.name?.trim() ||
+    cleanText(developer?.name) ||
     "Real Estate Developer";
 
+  const developerDescription =
+    cleanText(developer?.description);
+
+  const projectNames =
+    getProjectNames(properties);
+
+  const locations =
+    getDeveloperLocations(properties);
+
   // ==========================================================
-  // DEVELOPER DESCRIPTION
+  // SEO DESCRIPTION
   // ==========================================================
 
-  const rawDescription =
-    developer?.description
-      ?.replace(/\s+/g, " ")
-      .trim();
+  let description;
 
-  // We use the developer's actual description when available,
-  // but make the metadata description search-intent focused.
-  const description =
-    rawDescription ||
-    `Explore ${developerName} properties and residential projects in Gurgaon. View project details, prices, floor plans, locations and investment opportunities on Property Bouquet.`;
+  if (developerDescription) {
+    description = `Explore ${developerName} properties and projects on Property Bouquet. ${developerDescription}`;
 
-  // Keep meta description within an SEO-friendly length.
+    if (locations.length > 0) {
+      description += ` Projects available in ${locations
+        .slice(0, 2)
+        .join(" and ")}.`;
+    }
+  } else {
+    description =
+      `Explore ${developerName} projects and properties on Property Bouquet. View prices, floor plans, locations, amenities and project details`;
+
+    if (locations.length > 0) {
+      description += ` in ${locations
+        .slice(0, 3)
+        .join(", ")}`;
+    } else {
+      description += " in Gurgaon";
+    }
+
+    description += ".";
+  }
+
   const metaDescription =
-    description.length > 160
-      ? `${description.substring(0, 157).trim()}...`
-      : description;
+    truncateDescription(
+      description,
+      160
+    );
 
   // ==========================================================
   // TITLE
   // ==========================================================
 
   const title =
-    `${developerName} Properties & Projects in Gurgaon | Property Bouquet`;
+    `${developerName} Projects in Gurgaon | Prices, Floor Plans & Locations | Property Bouquet`;
 
   // ==========================================================
   // CANONICAL
   // ==========================================================
 
   const canonicalUrl =
-    `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
+    buildDeveloperUrl(slug);
 
   // ==========================================================
   // OG IMAGE
@@ -141,40 +291,30 @@ export async function generateMetadata({ params }) {
     `${SITE_URL}/og-image.jpg`;
 
   // ==========================================================
-  // DEVELOPER-SPECIFIC KEYWORDS
+  // KEYWORDS
   // ==========================================================
 
   const keywords = [
-    // Primary
-    `${developerName} properties`,
     `${developerName} projects`,
+    `${developerName} properties`,
+    `${developerName} real estate`,
     `${developerName} Gurgaon`,
-
-    // Residential intent
+    `${developerName} projects in Gurgaon`,
+    `${developerName} properties in Gurgaon`,
+    `${developerName} projects in Gurugram`,
+    `${developerName} properties in Gurugram`,
     `${developerName} residential projects`,
-    `${developerName} residential properties`,
     `${developerName} apartments`,
     `${developerName} flats`,
-
-    // Commercial / broader project intent
-    `${developerName} new projects`,
-    `${developerName} upcoming projects`,
     `${developerName} luxury projects`,
-
-    // Buyer research intent
-    `${developerName} property price`,
-    `${developerName} project price`,
+    `${developerName} project prices`,
+    `${developerName} property prices`,
     `${developerName} floor plans`,
     `${developerName} project details`,
-
-    // Location intent
-    `${developerName} properties in Gurgaon`,
-    `${developerName} projects in Gurgaon`,
-    `${developerName} properties in Gurugram`,
-    `${developerName} projects in Gurugram`,
-
-    // Brand / platform
-    `${developerName} Property Bouquet`,
+    `${developerName} project locations`,
+    `${developerName} amenities`,
+    ...projectNames.slice(0, 10),
+    "Property Bouquet",
     "Property Bouquet developers",
   ];
 
@@ -191,6 +331,8 @@ export async function generateMetadata({ params }) {
 
     keywords,
 
+    applicationName: "Property Bouquet",
+
     alternates: {
       canonical: canonicalUrl,
     },
@@ -202,6 +344,7 @@ export async function generateMetadata({ params }) {
       googleBot: {
         index: true,
         follow: true,
+        noimageindex: false,
         "max-image-preview": "large",
         "max-snippet": -1,
         "max-video-preview": -1,
@@ -226,7 +369,7 @@ export async function generateMetadata({ params }) {
           url: developerImage,
           width: 1200,
           height: 630,
-          alt: `${developerName} Properties & Projects - Property Bouquet`,
+          alt: `${developerName} Projects and Properties - Property Bouquet`,
         },
       ],
     },
@@ -248,7 +391,10 @@ export async function generateMetadata({ params }) {
 // ============================================================
 
 function safeJsonLd(data) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
+  return JSON.stringify(data).replace(
+    /</g,
+    "\\u003c"
+  );
 }
 
 // ============================================================
@@ -275,7 +421,6 @@ export default async function DeveloperSlugPage({
   }
 
   const developer = data.developer;
-
   const properties = data.properties || [];
 
   // ----------------------------------------------------------
@@ -283,16 +428,14 @@ export default async function DeveloperSlugPage({
   // ----------------------------------------------------------
 
   const developerName =
-    developer?.name?.trim() ||
+    cleanText(developer?.name) ||
     "Luxury Real Estate Developer";
 
   const canonicalUrl =
-    `${SITE_URL}/developers/${encodeURIComponent(slug)}`;
+    buildDeveloperUrl(slug);
 
   const developerDescription =
-    developer?.description
-      ?.replace(/\s+/g, " ")
-      .trim() ||
+    cleanText(developer?.description) ||
     `Explore premium real estate projects and luxury properties by ${developerName} on Property Bouquet.`;
 
   const developerImage =
@@ -300,8 +443,11 @@ export default async function DeveloperSlugPage({
     developer?.logo ||
     `${SITE_URL}/og-image.jpg`;
 
+  const locations =
+    getDeveloperLocations(properties);
+
   // ==========================================================
-  // DEVELOPER SCHEMA
+  // DEVELOPER ORGANIZATION SCHEMA
   // ==========================================================
 
   const developerSchema = {
@@ -328,16 +474,52 @@ export default async function DeveloperSlugPage({
 
     ...(developer?.image
       ? {
-          image: developer.image,
+          image: {
+            "@type": "ImageObject",
+            url: developer.image,
+          },
         }
       : {}),
+  };
 
-    memberOf: {
-      "@type": "Organization",
+  // ==========================================================
+  // WEB PAGE SCHEMA
+  // ==========================================================
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+
+    "@type": "WebPage",
+
+    "@id": `${canonicalUrl}#webpage`,
+
+    url: canonicalUrl,
+
+    name: `${developerName} Projects in Gurgaon`,
+
+    headline:
+      `${developerName} Projects in Gurgaon`,
+
+    description: developerDescription,
+
+    inLanguage: "en-IN",
+
+    isPartOf: {
+      "@type": "WebSite",
+
+      "@id": `${SITE_URL}#website`,
 
       name: "Property Bouquet",
 
       url: SITE_URL,
+    },
+
+    about: {
+      "@id": `${canonicalUrl}#organization`,
+    },
+
+    mainEntity: {
+      "@id": `${canonicalUrl}#organization`,
     },
   };
 
@@ -384,6 +566,59 @@ export default async function DeveloperSlugPage({
   };
 
   // ==========================================================
+  // PROJECT ITEM LIST
+  // ==========================================================
+
+  const projectItems = properties
+    .slice(0, 50)
+    .map((property, index) => {
+      const propertySlug =
+        cleanText(property?.slug);
+
+      const propertyTitle =
+        cleanText(
+          property?.coreDetails?.title
+        ) || "Luxury Property";
+
+      if (!propertySlug) {
+        return null;
+      }
+
+      const propertyUrl =
+        buildPropertyUrl(propertySlug);
+
+      const heroImage =
+        property?.media?.heroImageUrl;
+
+      return {
+        "@type": "ListItem",
+
+        position: index + 1,
+
+        name: propertyTitle,
+
+        url: propertyUrl,
+
+        item: {
+          "@type": "RealEstateListing",
+
+          "@id": `${propertyUrl}#listing`,
+
+          name: propertyTitle,
+
+          url: propertyUrl,
+
+          ...(heroImage
+            ? {
+                image: heroImage,
+              }
+            : {}),
+        },
+      };
+    })
+    .filter(Boolean);
+
+  // ==========================================================
   // COLLECTION PAGE SCHEMA
   // ==========================================================
 
@@ -396,12 +631,21 @@ export default async function DeveloperSlugPage({
 
     url: canonicalUrl,
 
-    name: `${developerName} Properties`,
+    name:
+      `${developerName} Projects and Properties`,
 
-    description: developerDescription,
+    headline:
+      `${developerName} Projects in Gurgaon`,
+
+    description:
+      `Explore ${developerName} projects and properties on Property Bouquet.`,
+
+    inLanguage: "en-IN",
 
     isPartOf: {
       "@type": "WebSite",
+
+      "@id": `${SITE_URL}#website`,
 
       name: "Property Bouquet",
 
@@ -409,39 +653,29 @@ export default async function DeveloperSlugPage({
     },
 
     about: {
-      "@type": "Organization",
-
-      name: developerName,
-
-      url: canonicalUrl,
+      "@id": `${canonicalUrl}#organization`,
     },
 
     mainEntity: {
       "@type": "ItemList",
 
-      numberOfItems: properties.length,
+      "@id": `${canonicalUrl}#projects`,
 
-      itemListElement: properties
-        .slice(0, 50)
-        .map((property, index) => ({
-          "@type": "ListItem",
+      numberOfItems: projectItems.length,
 
-          position: index + 1,
-
-          url: `${SITE_URL}/${property.slug}`,
-
-          name:
-            property?.coreDetails?.title ||
-            "Luxury Property",
-
-          ...(property?.media?.heroImageUrl
-            ? {
-                image:
-                  property.media.heroImageUrl,
-              }
-            : {}),
-        })),
+      itemListElement: projectItems,
     },
+
+    ...(locations.length > 0
+      ? {
+          spatialCoverage: locations.map(
+            (location) => ({
+              "@type": "Place",
+              name: location,
+            })
+          ),
+        }
+      : {}),
   };
 
   // ==========================================================
@@ -451,7 +685,7 @@ export default async function DeveloperSlugPage({
   return (
     <>
       {/* ======================================================
-          DEVELOPER JSON-LD
+          DEVELOPER ORGANIZATION JSON-LD
       ====================================================== */}
 
       <script
@@ -459,6 +693,19 @@ export default async function DeveloperSlugPage({
         dangerouslySetInnerHTML={{
           __html: safeJsonLd(
             developerSchema
+          ),
+        }}
+      />
+
+      {/* ======================================================
+          WEB PAGE JSON-LD
+      ====================================================== */}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd(
+            webPageSchema
           ),
         }}
       />
@@ -477,7 +724,7 @@ export default async function DeveloperSlugPage({
       />
 
       {/* ======================================================
-          COLLECTION PAGE JSON-LD
+          COLLECTION / PROJECTS JSON-LD
       ====================================================== */}
 
       <script
