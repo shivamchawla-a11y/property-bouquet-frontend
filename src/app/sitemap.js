@@ -1,36 +1,66 @@
+// ============================================================
+// PROPERTY BOUQUET — PRODUCTION SEO SITEMAP
+// ============================================================
+//
+// File:
+// src/app/sitemap.js
+//
+// Canonical domain:
+// https://propertybouquet.com
+//
+// IMPORTANT:
+// - Only canonical public URLs are included.
+// - www URLs are intentionally NOT included.
+// - Query/filter URLs are intentionally NOT included.
+// - Draft/deleted/inactive content is excluded.
+// - API failures do not break sitemap generation.
+// - Duplicate URLs are automatically removed.
+// - Database dates are used for lastModified when valid.
+//
+// ============================================================
+
 const API = "https://propertybouquet.com/api";
 const BASE_URL = "https://propertybouquet.com";
 
 const REVALIDATE_TIME = 3600;
 
-/**
- * Common fetch configuration.
- *
- * The sitemap API data is cached and revalidated every hour.
- *
- * IMPORTANT:
- * We intentionally do NOT use:
- *
- * export const revalidate = REVALIDATE_TIME;
- *
- * because Next.js 16 can reject that segment configuration
- * on this metadata route.
- */
+// ============================================================
+// COMMON FETCH OPTIONS
+// ============================================================
+//
+// Sitemap data is cached for one hour.
+//
+// We intentionally use fetch-level revalidation instead of:
+//
+// export const revalidate = 3600;
+//
+// because this metadata route should remain compatible with
+// the current Next.js 16 setup.
+//
+
 const FETCH_OPTIONS = {
   next: {
     revalidate: REVALIDATE_TIME,
   },
 };
 
-/**
- * Safely fetch API data.
- *
- * If one API endpoint fails, sitemap generation continues
- * using the remaining available data.
- */
+// ============================================================
+// SAFE FETCH
+// ============================================================
+//
+// If one endpoint fails, the sitemap continues generating
+// from the remaining available data.
+//
+// This is important because one failed CMS/API endpoint
+// should never prevent the complete sitemap from rendering.
+//
+
 async function safeFetch(url) {
   try {
-    const response = await fetch(url, FETCH_OPTIONS);
+    const response = await fetch(
+      url,
+      FETCH_OPTIONS
+    );
 
     if (!response.ok) {
       console.warn(
@@ -42,20 +72,22 @@ async function safeFetch(url) {
 
     const json = await response.json();
 
-    /**
-     * Your API normally returns:
-     *
-     * {
-     *   data: [...]
-     * }
-     */
+    // ----------------------------------------------------------
+    // Standard API response:
+    //
+    // {
+    //   data: [...]
+    // }
+    // ----------------------------------------------------------
+
     if (Array.isArray(json?.data)) {
       return json.data;
     }
 
-    /**
-     * Fallback in case an endpoint directly returns an array.
-     */
+    // ----------------------------------------------------------
+    // Some endpoints may directly return an array.
+    // ----------------------------------------------------------
+
     if (Array.isArray(json)) {
       return json;
     }
@@ -75,12 +107,17 @@ async function safeFetch(url) {
   }
 }
 
-/**
- * Convert possible database date values into a valid Date.
- *
- * Returns undefined when none of the supplied values
- * contain a valid date.
- */
+// ============================================================
+// VALID DATE HELPER
+// ============================================================
+//
+// Converts MongoDB/API date values into valid Date objects.
+//
+// If no valid date exists, undefined is returned.
+//
+// We do NOT use the current date as a fake lastModified date.
+//
+
 function getValidDate(...values) {
   for (const value of values) {
     if (!value) {
@@ -97,19 +134,24 @@ function getValidDate(...values) {
   return undefined;
 }
 
-/**
- * Check whether a document is active and should be
- * considered for public indexing.
- */
+// ============================================================
+// ACTIVE DOCUMENT CHECK
+// ============================================================
+//
+// Used for developers and other CMS documents.
+//
+
 function isActive(item) {
   if (!item) {
     return false;
   }
 
+  // Deleted document
   if (item.isDeleted === true) {
     return false;
   }
 
+  // Explicitly inactive document
   if (item.isActive === false) {
     return false;
   }
@@ -117,20 +159,24 @@ function isActive(item) {
   return true;
 }
 
-/**
- * Check whether content should be publicly indexed.
- *
- * Used for Knowledge Centre articles and Insights.
- */
+// ============================================================
+// PUBLISHED CONTENT CHECK
+// ============================================================
+//
+// Used for Knowledge Centre and Insights/News.
+//
+// If the API has a status field, only "published" content
+// is allowed.
+//
+// If no status field exists, the content can still be included
+// as long as it is active.
+//
+
 function isPublishedContent(item) {
   if (!isActive(item)) {
     return false;
   }
 
-  /**
-   * If a status field exists, only published content
-   * should be included.
-   */
   if (
     item.status !== undefined &&
     item.status !== null &&
@@ -142,11 +188,62 @@ function isPublishedContent(item) {
   return true;
 }
 
-/**
- * Add a URL to the sitemap only once.
- *
- * A Map is used to prevent duplicate URLs.
- */
+// ============================================================
+// NORMALIZE PATH
+// ============================================================
+//
+// Ensures paths are converted into canonical non-www URLs.
+//
+// Examples:
+//
+// "/"                         → https://propertybouquet.com/
+// "/properties"              → https://propertybouquet.com/properties
+// "properties"               → https://propertybouquet.com/properties
+// "https://propertybouquet..." remains unchanged
+//
+
+function normalizeUrl(path) {
+  if (!path) {
+    return null;
+  }
+
+  const value = String(path).trim();
+
+  if (!value) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // Already an absolute URL
+  // ----------------------------------------------------------
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  // ----------------------------------------------------------
+  // Relative URL
+  // ----------------------------------------------------------
+
+  const normalizedPath = value.startsWith("/")
+    ? value
+    : `/${value}`;
+
+  return `${BASE_URL}${normalizedPath}`;
+}
+
+// ============================================================
+// ADD URL
+// ============================================================
+//
+// Uses a Map so duplicate URLs can never enter the sitemap.
+//
+// This is especially useful when:
+// - API data contains duplicates
+// - multiple sections reference the same URL
+// - static and dynamic URLs overlap
+//
+
 function addUrl(
   sitemap,
   path,
@@ -156,19 +253,16 @@ function addUrl(
     priority = 0.7,
   } = {}
 ) {
-  if (!path) {
+  const url = normalizeUrl(path);
+
+  if (!url) {
     return;
   }
 
-  const url = path.startsWith("http")
-    ? path
-    : `${BASE_URL}${
-        path.startsWith("/") ? path : `/${path}`
-      }`;
+  // ----------------------------------------------------------
+  // Prevent duplicate URLs
+  // ----------------------------------------------------------
 
-  /**
-   * Prevent duplicate URLs.
-   */
   if (sitemap.has(url)) {
     return;
   }
@@ -179,124 +273,171 @@ function addUrl(
     priority,
   };
 
-  /**
-   * Only include lastModified when we have a valid
-   * database date.
-   *
-   * This is better than falsely claiming that every
-   * page was modified today.
-   */
-  const validLastModified = getValidDate(lastModified);
+  // ----------------------------------------------------------
+  // Only include lastModified when a real valid date exists.
+  // ----------------------------------------------------------
+
+  const validLastModified =
+    getValidDate(lastModified);
 
   if (validLastModified) {
-    entry.lastModified = validLastModified;
+    entry.lastModified =
+      validLastModified;
   }
 
   sitemap.set(url, entry);
 }
 
-/**
- * Generate the complete Property Bouquet sitemap.
- */
+// ============================================================
+// SAFE SLUG
+// ============================================================
+//
+// Slugs normally contain URL-safe characters.
+//
+// encodeURIComponent prevents malformed URLs if a slug
+// unexpectedly contains spaces or special characters.
+//
+
+function safeSlug(slug) {
+  if (!slug) {
+    return null;
+  }
+
+  return encodeURIComponent(
+    String(slug).trim()
+  );
+}
+
+// ============================================================
+// MAIN SITEMAP
+// ============================================================
+
 export default async function sitemap() {
   const sitemap = new Map();
 
-  /* =========================================================
-     STATIC PUBLIC PAGES
-  ========================================================= */
+  // ==========================================================
+  // STATIC PUBLIC PAGES
+  // ==========================================================
 
-  /**
-   * Homepage
-   */
+  // ----------------------------------------------------------
+  // HOMEPAGE
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/", {
-    priority: 1,
+    priority: 1.0,
     changeFrequency: "daily",
   });
 
-  /**
-   * Main property listing page
-   */
+  // ----------------------------------------------------------
+  // PROPERTY DIRECTORY
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/properties", {
     priority: 0.95,
     changeFrequency: "daily",
   });
 
-  /**
-   * Developers directory
-   */
+  // ----------------------------------------------------------
+  // DEVELOPERS DIRECTORY
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/developers", {
-    priority: 0.88,
+    priority: 0.90,
     changeFrequency: "weekly",
   });
 
-  /**
-   * Knowledge Centre
-   */
+  // ----------------------------------------------------------
+  // KNOWLEDGE CENTRE
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/knowledge", {
     priority: 0.82,
     changeFrequency: "weekly",
   });
 
-  /**
-   * Property Insights
-   */
+  // ----------------------------------------------------------
+  // PROPERTY INSIGHTS
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/insights", {
     priority: 0.82,
     changeFrequency: "weekly",
   });
 
-  /**
-   * About page
-   */
+  // ----------------------------------------------------------
+  // ABOUT
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/about", {
     priority: 0.70,
     changeFrequency: "monthly",
   });
 
-  /**
-   * Contact page
-   */
+  // ----------------------------------------------------------
+  // CONTACT
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/contact", {
     priority: 0.70,
     changeFrequency: "monthly",
   });
 
-    /**
-   * Human-facing sitemap page
-   *
-   * https://propertybouquet.com/sitemap
-   */
+  // ----------------------------------------------------------
+  // HUMAN-FACING SITEMAP PAGE
+  //
+  // This is different from /sitemap.xml.
+  // ----------------------------------------------------------
+
   addUrl(sitemap, "/sitemap", {
-    priority: 0.65,
+    priority: 0.60,
     changeFrequency: "monthly",
   });
 
-  /* =========================================================
-     DYNAMIC WEBSITE DATA
-  ========================================================= */
+  // ==========================================================
+  // PROPERTY TOOLS
+  // ==========================================================
+  //
+  // These are public, useful SEO landing pages and should be
+  // discoverable by search engines.
+  //
+  // IMPORTANT:
+  // Keep ONLY tools that actually exist as public routes.
+  //
+  // Current known tools:
+  //
+  // /tools/roi-calculator
+  // /tools/area-converter
+  //
+  // ==========================================================
 
-  /**
-   * IMPORTANT:
-   *
-   * We intentionally DO NOT include:
-   *
-   * /locations
-   * /locations/[slug]
-   * /categories
-   * /categories/[slug]
-   *
-   * because these are not currently public website routes.
-   *
-   * We also do not include:
-   *
-   * /admin
-   * /auth
-   * /login
-   * /forgot-password
-   * /reset-password
-   *
-   * because these are private/system routes.
-   */
+  addUrl(
+    sitemap,
+    "/tools/roi-calculator",
+    {
+      priority: 0.85,
+      changeFrequency: "monthly",
+    }
+  );
+
+  addUrl(
+    sitemap,
+    "/tools/area-converter",
+    {
+      priority: 0.85,
+      changeFrequency: "monthly",
+    }
+  );
+
+  // ==========================================================
+  // DYNAMIC API DATA
+  // ==========================================================
+  //
+  // Fetch everything in parallel.
+  //
+  // If one API fails, safeFetch() returns [] and the remaining
+  // sitemap sections continue normally.
+  //
+  // ==========================================================
 
   const [
     properties,
@@ -304,215 +445,356 @@ export default async function sitemap() {
     knowledgeArticles,
     insights,
   ] = await Promise.all([
-    /**
-     * Fetch the complete property inventory.
-     *
-     * all=true is important so the sitemap does not
-     * accidentally receive only a paginated/default
-     * subset of properties.
-     */
-    safeFetch(`${API}/properties?all=true`),
+    // --------------------------------------------------------
+    // PROPERTIES
+    // --------------------------------------------------------
+    //
+    // all=true is important so the sitemap does not receive
+    // only a default/paginated subset of properties.
+    //
 
-    /**
-     * Fetch developers.
-     */
-    safeFetch(`${API}/developers`),
+    safeFetch(
+      `${API}/properties?all=true`
+    ),
 
-    /**
-     * Fetch Knowledge Centre articles.
-     */
-    safeFetch(`${API}/knowledge`),
+    // --------------------------------------------------------
+    // DEVELOPERS
+    // --------------------------------------------------------
 
-    /**
-     * Your Insights / News API uses /news.
-     */
-    safeFetch(`${API}/news`),
+    safeFetch(
+      `${API}/developers`
+    ),
+
+    // --------------------------------------------------------
+    // KNOWLEDGE CENTRE
+    // --------------------------------------------------------
+
+    safeFetch(
+      `${API}/knowledge`
+    ),
+
+    // --------------------------------------------------------
+    // INSIGHTS / NEWS
+    // --------------------------------------------------------
+
+    safeFetch(
+      `${API}/news`
+    ),
   ]);
 
-  /* =========================================================
-     PROPERTY DETAIL PAGES
-  ========================================================= */
+  // ==========================================================
+  // PROPERTY DETAIL PAGES
+  // ==========================================================
 
   properties.forEach((property) => {
-    /**
-     * Only publicly published properties should enter
-     * the sitemap.
-     */
+    // --------------------------------------------------------
+    // Must have a slug.
+    // --------------------------------------------------------
+
+    const slug =
+      safeSlug(property?.slug);
+
+    if (!slug) {
+      return;
+    }
+
+    // --------------------------------------------------------
+    // ONLY PUBLISHED PROPERTIES
+    // --------------------------------------------------------
+
     if (
-      !property?.slug ||
-      property.status !== "published" ||
-      property.isDeleted === true ||
-      property.isActive === false
+      property?.status !==
+      "published"
     ) {
       return;
     }
 
-    /**
-     * Property pages use:
-     *
-     * https://propertybouquet.com/{slug}
-     */
-    addUrl(sitemap, `/${property.slug}`, {
-      lastModified: getValidDate(
-        property.updatedAt,
-        property.createdAt
-      ),
-      priority: 0.95,
-      changeFrequency: "weekly",
-    });
-  });
+    // --------------------------------------------------------
+    // NEVER INDEX DELETED PROPERTIES
+    // --------------------------------------------------------
 
-  /* =========================================================
-     DEVELOPER DETAIL PAGES
-  ========================================================= */
-
-  developers.forEach((developer) => {
-    /**
-     * Skip developers without a slug.
-     */
-    if (!developer?.slug) {
-      return;
-    }
-
-    /**
-     * Skip deleted developers.
-     */
-    if (developer.isDeleted === true) {
-      return;
-    }
-
-    /**
-     * Skip inactive developers.
-     */
-    if (developer.isActive === false) {
-      return;
-    }
-
-    /**
-     * Developer pages use:
-     *
-     * https://propertybouquet.com/developers/{slug}
-     */
-    addUrl(
-      sitemap,
-      `/developers/${developer.slug}`,
-      {
-        lastModified: getValidDate(
-          developer.updatedAt,
-          developer.createdAt
-        ),
-        priority: 0.82,
-        changeFrequency: "monthly",
-      }
-    );
-  });
-
-  /* =========================================================
-     KNOWLEDGE CENTRE ARTICLES
-  ========================================================= */
-
-  knowledgeArticles.forEach((article) => {
-    /**
-     * Only valid published articles should be indexed.
-     */
     if (
-      !article?.slug ||
-      !isPublishedContent(article)
+      property?.isDeleted === true
     ) {
       return;
     }
 
-    /**
-     * Knowledge pages use:
-     *
-     * https://propertybouquet.com/knowledge/{slug}
-     */
-    addUrl(
-      sitemap,
-      `/knowledge/${article.slug}`,
-      {
-        lastModified: getValidDate(
-          article.updatedAt,
-          article.createdAt
-        ),
-        priority: 0.78,
-        changeFrequency: "monthly",
-      }
-    );
-  });
+    // --------------------------------------------------------
+    // NEVER INDEX INACTIVE PROPERTIES
+    // --------------------------------------------------------
 
-  /* =========================================================
-     PROPERTY INSIGHTS / NEWS ARTICLES
-  ========================================================= */
-
-  insights.forEach((article) => {
-    /**
-     * Only valid published insight articles should be indexed.
-     */
     if (
-      !article?.slug ||
-      !isPublishedContent(article)
+      property?.isActive === false
     ) {
       return;
     }
 
-    /**
-     * Insights pages use:
-     *
-     * https://propertybouquet.com/insights/{slug}
-     */
+    // --------------------------------------------------------
+    // PROPERTY URL
+    //
+    // Your current public property architecture uses:
+    //
+    // https://propertybouquet.com/{slug}
+    //
+    // --------------------------------------------------------
+
     addUrl(
       sitemap,
-      `/insights/${article.slug}`,
+      `/${slug}`,
       {
-        lastModified: getValidDate(
-          article.updatedAt,
-          article.createdAt
-        ),
-        priority: 0.78,
-        changeFrequency: "weekly",
+        lastModified:
+          getValidDate(
+            property?.updatedAt,
+            property?.createdAt
+          ),
+
+        priority: 0.95,
+
+        changeFrequency:
+          "weekly",
       }
     );
   });
 
-  /* =========================================================
-     FINAL URL SORTING
-  ========================================================= */
+  // ==========================================================
+  // DEVELOPER DETAIL PAGES
+  // ==========================================================
 
-  const sortedUrls = [...sitemap.values()].sort(
-    (a, b) => {
-      /**
-       * Keep homepage first.
-       */
-      if (a.url === BASE_URL) {
-        return -1;
+  developers.forEach(
+    (developer) => {
+      const slug =
+        safeSlug(
+          developer?.slug
+        );
+
+      // ------------------------------------------------------
+      // Developer must have a slug.
+      // ------------------------------------------------------
+
+      if (!slug) {
+        return;
       }
 
-      if (b.url === BASE_URL) {
-        return 1;
+      // ------------------------------------------------------
+      // Deleted developers are excluded.
+      // ------------------------------------------------------
+
+      if (
+        developer?.isDeleted === true
+      ) {
+        return;
       }
 
-      /**
-       * Higher priority first.
-       */
-      if (a.priority !== b.priority) {
-        return b.priority - a.priority;
+      // ------------------------------------------------------
+      // Inactive developers are excluded.
+      // ------------------------------------------------------
+
+      if (
+        developer?.isActive === false
+      ) {
+        return;
       }
 
-      /**
-       * Alphabetical ordering provides deterministic
-       * sitemap output.
-       */
-      return a.url.localeCompare(b.url);
+      // ------------------------------------------------------
+      // Developer detail URL
+      //
+      // /developers/{slug}
+      // ------------------------------------------------------
+
+      addUrl(
+        sitemap,
+        `/developers/${slug}`,
+        {
+          lastModified:
+            getValidDate(
+              developer?.updatedAt,
+              developer?.createdAt
+            ),
+
+          priority: 0.82,
+
+          changeFrequency:
+            "monthly",
+        }
+      );
     }
   );
 
-  /**
-   * Helpful production log.
-   */
+  // ==========================================================
+  // KNOWLEDGE CENTRE ARTICLES
+  // ==========================================================
+
+  knowledgeArticles.forEach(
+    (article) => {
+      const slug =
+        safeSlug(
+          article?.slug
+        );
+
+      if (!slug) {
+        return;
+      }
+
+      // ------------------------------------------------------
+      // Only published, active articles.
+      // ------------------------------------------------------
+
+      if (
+        !isPublishedContent(
+          article
+        )
+      ) {
+        return;
+      }
+
+      // ------------------------------------------------------
+      // Knowledge article URL
+      //
+      // /knowledge/{slug}
+      // ------------------------------------------------------
+
+      addUrl(
+        sitemap,
+        `/knowledge/${slug}`,
+        {
+          lastModified:
+            getValidDate(
+              article?.updatedAt,
+              article?.createdAt
+            ),
+
+          priority: 0.78,
+
+          changeFrequency:
+            "monthly",
+        }
+      );
+    }
+  );
+
+  // ==========================================================
+  // PROPERTY INSIGHTS / NEWS
+  // ==========================================================
+
+  insights.forEach(
+    (article) => {
+      const slug =
+        safeSlug(
+          article?.slug
+        );
+
+      if (!slug) {
+        return;
+      }
+
+      // ------------------------------------------------------
+      // Only published, active content.
+      // ------------------------------------------------------
+
+      if (
+        !isPublishedContent(
+          article
+        )
+      ) {
+        return;
+      }
+
+      // ------------------------------------------------------
+      // Insights article URL
+      //
+      // /insights/{slug}
+      // ------------------------------------------------------
+
+      addUrl(
+        sitemap,
+        `/insights/${slug}`,
+        {
+          lastModified:
+            getValidDate(
+              article?.updatedAt,
+              article?.createdAt
+            ),
+
+          priority: 0.78,
+
+          changeFrequency:
+            "weekly",
+        }
+      );
+    }
+  );
+
+  // ==========================================================
+  // FINAL SORTING
+  // ==========================================================
+  //
+  // Sitemap order does NOT affect rankings.
+  //
+  // We still use deterministic ordering because it makes:
+  // - debugging easier
+  // - deployments easier to inspect
+  // - sitemap output cleaner
+  //
+  // Homepage remains first.
+  // Then higher-priority URLs.
+  // Then alphabetical URL order.
+  //
+  // ==========================================================
+
+  const sortedUrls = [
+    ...sitemap.values(),
+  ].sort((a, b) => {
+    // --------------------------------------------------------
+    // Homepage first
+    // --------------------------------------------------------
+
+    if (a.url === BASE_URL) {
+      return -1;
+    }
+
+    if (b.url === BASE_URL) {
+      return 1;
+    }
+
+    // --------------------------------------------------------
+    // Higher priority first
+    // --------------------------------------------------------
+
+    if (
+      a.priority !==
+      b.priority
+    ) {
+      return (
+        b.priority -
+        a.priority
+      );
+    }
+
+    // --------------------------------------------------------
+    // Deterministic alphabetical order
+    // --------------------------------------------------------
+
+    return a.url.localeCompare(
+      b.url
+    );
+  });
+
+  // ==========================================================
+  // PRODUCTION LOG
+  // ==========================================================
+
   console.log(
-    `✅ Sitemap generated successfully: ${sortedUrls.length} URLs`
+    `✅ Property Bouquet sitemap generated successfully: ${sortedUrls.length} URLs`
   );
+
+  // Helpful diagnostics during deployment.
+  console.log(
+    `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
+  );
+
+  // ==========================================================
+  // RETURN NEXT.JS SITEMAP
+  // ==========================================================
 
   return sortedUrls;
 }

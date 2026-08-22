@@ -1,394 +1,1364 @@
 const SITE_URL = "https://propertybouquet.com";
 
-export function buildPropertySchema(property, slug) {
-  const core = property.coreDetails || {};
-  const overview = property.overview || {};
-  const location = property.locationData || {};
-  const media = property.media || {};
-  const metrics = property.keyMetrics || {};
-  const faqs = property.faqs || [];
+/**
+ * ============================================================
+ * PROPERTY SCHEMA
+ * ============================================================
+ *
+ * Generates structured data for individual Property Bouquet
+ * property pages.
+ *
+ * Schema graph includes:
+ *
+ * - WebPage
+ * - BreadcrumbList
+ * - RealEstateListing
+ * - Residence
+ * - Place
+ * - Organization / Developer
+ * - Offer
+ * - OfferCatalog / Floor Plans
+ * - ImageObject
+ *
+ * The graph is intentionally connected using @id values.
+ *
+ * IMPORTANT:
+ * Only information that actually exists in the property
+ * object should be emitted.
+ * ============================================================
+ */
 
-  const pageUrl = `${SITE_URL}/${slug}`;
+// ============================================================
+// HELPERS
+// ============================================================
 
-  // -------------------------
-  // Images
-  // -------------------------
+function cleanString(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function cleanUrl(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim();
+}
+
+function isValidUrl(value) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function toAbsoluteUrl(value) {
+  const cleaned = cleanUrl(value);
+
+  if (!cleaned) {
+    return "";
+  }
+
+  if (isValidUrl(cleaned)) {
+    return cleaned;
+  }
+
+  if (cleaned.startsWith("/")) {
+    return `${SITE_URL}${cleaned}`;
+  }
+
+  return `${SITE_URL}/${cleaned}`;
+}
+
+function cleanArray(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) =>
+      typeof item === "string"
+        ? cleanString(item)
+        : item
+    )
+    .filter(Boolean);
+}
+
+function addIfValue(object, key, value) {
+  if (
+    value !== undefined &&
+    value !== null &&
+    value !== ""
+  ) {
+    object[key] = value;
+  }
+
+  return object;
+}
+
+// ============================================================
+// MAIN FUNCTION
+// ============================================================
+
+export function buildPropertySchema(
+  property,
+  slug
+) {
+  if (!property || !slug) {
+    return {
+      "@context": "https://schema.org",
+      "@graph": [],
+    };
+  }
+
+  // ==========================================================
+  // DATA SOURCES
+  // ==========================================================
+
+  const core =
+    property?.coreDetails || {};
+
+  const overview =
+    property?.overview || {};
+
+  const location =
+    property?.locationData || {};
+
+  const media =
+    property?.media || {};
+
+  const metrics =
+    property?.keyMetrics || {};
+
+  const category =
+    property?.categoryData || {};
+
+  const seo =
+    property?.seoEngine || {};
+
+  const configuration =
+    property?.configurationSection || {};
+
+  const gatedContent =
+    property?.gatedContent || {};
+
+  const unitConfigurations =
+    Array.isArray(property?.unitConfigurations)
+      ? property.unitConfigurations
+      : [];
+
+  const floorPlans =
+    Array.isArray(gatedContent?.floorPlans)
+      ? gatedContent.floorPlans
+      : [];
+
+  const plotConfigurations =
+    Array.isArray(
+      gatedContent?.plotConfigurations
+    )
+      ? gatedContent.plotConfigurations
+      : [];
+
+  const faqs =
+    Array.isArray(property?.faqSection?.faqs)
+      ? property.faqSection.faqs
+      : Array.isArray(property?.faqs)
+      ? property.faqs
+      : [];
+
+  // ==========================================================
+  // BASIC VALUES
+  // ==========================================================
+
+  const propertyName =
+    cleanString(core.title) ||
+    "Luxury Property";
+
+  const developerName =
+    cleanString(
+      core.developerName ||
+        property?.developerName
+    );
+
+  const developerLogo =
+    toAbsoluteUrl(
+      core.developerLogo ||
+        property?.developerLogo
+    );
+
+  const locationName =
+    cleanString(
+      location.locationName ||
+        location.customLocation ||
+        location.locationRef?.name
+    ) || "Gurgaon";
+
+  const categoryName =
+    cleanString(
+      category.categoryName
+    );
+
+  const description =
+    cleanString(
+      seo.metaDescription ||
+        overview.description
+    ) ||
+    `Explore ${propertyName}${
+      developerName
+        ? ` by ${developerName}`
+        : ""
+    } in ${locationName}. View prices, floor plans, amenities, location details and project information on Property Bouquet.`;
+
+  // ==========================================================
+  // CANONICAL URL
+  // ==========================================================
+
+  const cleanSlug = String(slug)
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+
+  const pageUrl =
+    `${SITE_URL}/${cleanSlug}`;
+
+  // ==========================================================
+  // PROPERTY IDS
+  // ==========================================================
+
+  const webPageId =
+    `${pageUrl}#webpage`;
+
+  const listingId =
+    `${pageUrl}#listing`;
+
+  const residenceId =
+    `${pageUrl}#residence`;
+
+  const placeId =
+    `${pageUrl}#place`;
+
+  const developerId =
+    `${pageUrl}#developer`;
+
+  const offerId =
+    `${pageUrl}#offer`;
+
+  const imagesId =
+    `${pageUrl}#images`;
+
+  const floorPlansId =
+    `${pageUrl}#floorplans`;
+
+  // ==========================================================
+  // IMAGES
+  // ==========================================================
+
+  const rawImages = [
+    media.heroImageUrl,
+    ...(Array.isArray(media.gallery)
+      ? media.gallery
+      : []),
+  ];
 
   const images = [
-    media.heroImageUrl,
-    ...(media.gallery || []),
-  ].filter(Boolean);
+    ...new Set(
+      rawImages
+        .map(toAbsoluteUrl)
+        .filter(Boolean)
+    ),
+  ];
 
-  // -------------------------
-  // Amenities
-  // -------------------------
+  // ==========================================================
+  // AMENITIES
+  // ==========================================================
 
-  const amenities =
-    overview.amenities?.map((item) => item.heading) || [];
+  const amenities = cleanArray(
+    Array.isArray(
+      overview.amenities
+    )
+      ? overview.amenities
+          .map(
+            (item) =>
+              item?.heading ||
+              item?.name ||
+              item?.title
+          )
+      : []
+  );
 
-  // -------------------------
-  // Property Values
-  // -------------------------
+  // ==========================================================
+  // PROPERTY TYPE
+  // ==========================================================
+
+  const propertyType =
+    cleanString(
+      categoryName ||
+        configuration?.propertyType
+    );
+
+  // ==========================================================
+  // LOCATION HIERARCHY
+  // ==========================================================
+
+  const locationHierarchy = [];
+
+  let currentLocation =
+    location?.locationRef;
+
+  while (currentLocation) {
+    const name =
+      cleanString(
+        currentLocation?.name
+      );
+
+    if (
+      name &&
+      !locationHierarchy.includes(name)
+    ) {
+      locationHierarchy.push(name);
+    }
+
+    currentLocation =
+      currentLocation?.parent;
+  }
+
+  // ==========================================================
+  // ADDRESS
+  // ==========================================================
+
+  const address = {
+    "@type": "PostalAddress",
+
+    addressLocality:
+      locationName,
+
+    addressRegion:
+      "Haryana",
+
+    addressCountry:
+      "IN",
+  };
+
+  // ==========================================================
+  // PLACE
+  // ==========================================================
+
+  const place = {
+    "@type": "Place",
+
+    "@id": placeId,
+
+    name:
+      locationName,
+
+    address,
+
+    containedInPlace:
+      locationHierarchy.length > 1
+        ? {
+            "@type": "Place",
+            name:
+              locationHierarchy[
+                locationHierarchy.length - 1
+              ],
+          }
+        : undefined,
+  };
+
+  // ==========================================================
+  // PROPERTY ADDITIONAL PROPERTIES
+  // ==========================================================
 
   const additionalProperty = [];
 
-  if (metrics.landArea) {
+  const addPropertyValue = (
+    name,
+    value
+  ) => {
+    const cleaned =
+      cleanString(value);
+
+    if (!cleaned) {
+      return;
+    }
+
     additionalProperty.push({
       "@type": "PropertyValue",
-      name: "Land Area",
-      value: metrics.landArea,
+      name,
+      value: cleaned,
     });
+  };
+
+  addPropertyValue(
+    "Land Area",
+    metrics.landArea
+  );
+
+  addPropertyValue(
+    "Possession",
+    metrics.possession
+  );
+
+  addPropertyValue(
+    "Project Status",
+    metrics.status
+  );
+
+  addPropertyValue(
+    "RERA Number",
+    metrics.reraNumber
+  );
+
+  addPropertyValue(
+    "Property Type",
+    propertyType
+  );
+
+  addPropertyValue(
+    "Market Type",
+    property?.marketType
+  );
+
+  // ==========================================================
+  // BEDROOM INFORMATION
+  // ==========================================================
+
+  const bedroomValues = [];
+
+  unitConfigurations.forEach(
+    (unit) => {
+      const bedrooms =
+        cleanString(
+          unit?.bedrooms
+        );
+
+      if (
+        bedrooms &&
+        !bedroomValues.includes(
+          bedrooms
+        )
+      ) {
+        bedroomValues.push(
+          bedrooms
+        );
+      }
+    }
+  );
+
+  floorPlans.forEach(
+    (plan) => {
+      const bedrooms =
+        cleanString(
+          plan?.bedrooms
+        );
+
+      if (
+        bedrooms &&
+        !bedroomValues.includes(
+          bedrooms
+        )
+      ) {
+        bedroomValues.push(
+          bedrooms
+        );
+      }
+    }
+  );
+
+  if (bedroomValues.length) {
+    addPropertyValue(
+      "Bedrooms",
+      bedroomValues.join(", ")
+    );
   }
 
-  if (metrics.possession) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "Possession",
-      value: metrics.possession,
-    });
+  // ==========================================================
+  // BATHROOM INFORMATION
+  // ==========================================================
+
+  const bathroomValues = [];
+
+  unitConfigurations.forEach(
+    (unit) => {
+      const bathrooms =
+        cleanString(
+          unit?.bathrooms
+        );
+
+      if (
+        bathrooms &&
+        !bathroomValues.includes(
+          bathrooms
+        )
+      ) {
+        bathroomValues.push(
+          bathrooms
+        );
+      }
+    }
+  );
+
+  if (bathroomValues.length) {
+    addPropertyValue(
+      "Bathrooms",
+      bathroomValues.join(", ")
+    );
   }
 
-  if (metrics.status) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "Status",
-      value: metrics.status,
-    });
+  // ==========================================================
+  // PRICE
+  // ==========================================================
+
+  const startingPrice =
+    Number(
+      core.startingPrice
+    );
+
+  const maxPrice =
+    Number(
+      core.maxPrice
+    );
+
+  const hasStartingPrice =
+    Number.isFinite(
+      startingPrice
+    ) &&
+    startingPrice > 0;
+
+  const hasMaxPrice =
+    Number.isFinite(
+      maxPrice
+    ) &&
+    maxPrice > 0;
+
+  const hasPriceRange =
+    hasStartingPrice &&
+    hasMaxPrice &&
+    maxPrice >= startingPrice;
+
+  const priceOnRequest =
+    core.priceOnRequest === true;
+
+  // ==========================================================
+  // DEVELOPER
+  // ==========================================================
+
+  let developerEntity;
+
+  if (developerName) {
+    developerEntity = {
+      "@type": "Organization",
+
+      "@id":
+        developerId,
+
+      name:
+        developerName,
+
+      ...(developerLogo
+        ? {
+            logo: {
+              "@type":
+                "ImageObject",
+              url:
+                developerLogo,
+            },
+          }
+        : {}),
+    };
   }
 
-  if (metrics.reraNumber) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "RERA Number",
-      value: metrics.reraNumber,
-    });
+  // ==========================================================
+  // RESIDENCE
+  // ==========================================================
+
+  const residence = {
+    "@type": "Residence",
+
+    "@id":
+      residenceId,
+
+    url:
+      pageUrl,
+
+    name:
+      propertyName,
+
+    description:
+      description,
+
+    ...(images.length
+      ? {
+          image:
+            images,
+        }
+      : {}),
+
+    ...(developerName
+      ? {
+          brand: {
+            "@id":
+              developerId,
+          },
+        }
+      : {}),
+
+    address: {
+      "@id":
+        placeId,
+    },
+
+    ...(amenities.length
+      ? {
+          amenityFeature:
+            amenities.map(
+              (amenity) => ({
+                "@type":
+                  "LocationFeatureSpecification",
+
+                name:
+                  amenity,
+
+                value: true,
+              })
+            ),
+        }
+      : {}),
+
+    ...(additionalProperty.length
+      ? {
+          additionalProperty,
+        }
+      : {}),
+
+    ...(propertyType
+      ? {
+          additionalType:
+            propertyType,
+        }
+      : {}),
+
+    mainEntityOfPage: {
+      "@id":
+        webPageId,
+    },
+
+    ...(hasStartingPrice
+      ? {
+          offers: {
+            "@id":
+              offerId,
+          },
+        }
+      : {}),
+  };
+
+  // ==========================================================
+  // OFFER
+  // ==========================================================
+
+  let offer;
+
+  if (
+    !priceOnRequest &&
+    hasStartingPrice
+  ) {
+    offer = {
+      "@type": "Offer",
+
+      "@id":
+        offerId,
+
+      url:
+        pageUrl,
+
+      price:
+        startingPrice,
+
+      priceCurrency:
+        "INR",
+
+      itemOffered: {
+        "@id":
+          residenceId,
+      },
+
+      seller: {
+        "@type":
+          "Organization",
+
+        name:
+          "Property Bouquet",
+
+        url:
+          SITE_URL,
+      },
+
+      businessFunction:
+        "https://schema.org/Sell",
+
+      ...(hasMaxPrice &&
+      maxPrice > startingPrice
+        ? {
+            priceSpecification: {
+              "@type":
+                "PriceSpecification",
+
+              minPrice:
+                startingPrice,
+
+              maxPrice:
+                maxPrice,
+
+              priceCurrency:
+                "INR",
+            },
+          }
+        : {}),
+    };
   }
 
-  // -------------------------
-  // Graph
-  // -------------------------
+  // ==========================================================
+  // REAL ESTATE LISTING
+  // ==========================================================
 
-  const graph = [];
+  const realEstateListing = {
+    "@type":
+      "RealEstateListing",
 
-  // -------------------------
-  // Breadcrumb
-  // -------------------------
+    "@id":
+      listingId,
 
-  graph.push({
-    "@type": "BreadcrumbList",
+    url:
+      pageUrl,
+
+    name:
+      `${propertyName} ${
+        locationName
+          ? `in ${locationName}`
+          : ""
+      }`.trim(),
+
+    description:
+      description,
+
+    mainEntity: {
+      "@id":
+        residenceId,
+    },
+
+    about: {
+      "@id":
+        residenceId,
+    },
+
+    ...(developerName
+      ? {
+          seller: {
+            "@id":
+              developerId,
+          },
+        }
+      : {}),
+
+    ...(hasStartingPrice &&
+    offer
+      ? {
+          offers: {
+            "@id":
+              offerId,
+          },
+        }
+      : {}),
+  };
+
+  // ==========================================================
+  // WEBPAGE
+  // ==========================================================
+
+  const webPage = {
+    "@type":
+      "WebPage",
+
+    "@id":
+      webPageId,
+
+    url:
+      pageUrl,
+
+    name:
+      propertyName,
+
+    description:
+      description,
+
+    inLanguage:
+      "en-IN",
+
+    isPartOf: {
+      "@id":
+        `${SITE_URL}/#website`,
+    },
+
+    primaryImageOfPage:
+      images[0]
+        ? {
+            "@type":
+              "ImageObject",
+
+            "@id":
+              `${pageUrl}#primaryimage`,
+
+            url:
+              images[0],
+
+            contentUrl:
+              images[0],
+
+            caption:
+              propertyName,
+          }
+        : undefined,
+
+    mainEntity: {
+      "@id":
+        residenceId,
+    },
+
+    about: {
+      "@id":
+        residenceId,
+    },
+
+    breadcrumb: {
+      "@id":
+        `${pageUrl}#breadcrumb`,
+    },
+  };
+
+  // ==========================================================
+  // WEBSITE REFERENCE
+  // ==========================================================
+
+  const website = {
+    "@type":
+      "WebSite",
+
+    "@id":
+      `${SITE_URL}/#website`,
+
+    url:
+      SITE_URL,
+
+    name:
+      "Property Bouquet",
+
+    inLanguage:
+      "en-IN",
+
+    publisher: {
+      "@id":
+        `${SITE_URL}/#organization`,
+    },
+  };
+
+  // ==========================================================
+  // BREADCRUMB
+  // ==========================================================
+
+  const breadcrumb = {
+    "@type":
+      "BreadcrumbList",
+
+    "@id":
+      `${pageUrl}#breadcrumb`,
 
     itemListElement: [
       {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
+
         position: 1,
-        name: "Home",
-        item: SITE_URL,
+
+        name:
+          "Home",
+
+        item:
+          SITE_URL,
       },
+
       {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
+
         position: 2,
-        name: "Properties",
-        item: `${SITE_URL}/properties`,
+
+        name:
+          "Properties",
+
+        item:
+          `${SITE_URL}/properties`,
       },
+
       {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
+
         position: 3,
-        name: core.title,
-        item: pageUrl,
+
+        name:
+          propertyName,
+
+        item:
+          pageUrl,
       },
     ],
-  });
+  };
 
-  graph.push({
-  "@type": "WebPage",
+  // ==========================================================
+  // IMAGE LIST
+  // ==========================================================
 
-  "@id": pageUrl,
-
-  url: pageUrl,
-
-  name: core.title,
-
-  description:
-    overview.description ||
-    `Explore ${core.title} by ${core.developerName}.`,
-
-  isPartOf: {
-    "@id": `${SITE_URL}/#website`,
-  },
-
-  primaryImageOfPage: images[0]
-  ? {
-      "@type": "ImageObject",
-      url: images[0],
-    }
-  : undefined,
-
-  inLanguage: "en-IN",
-});
-
-graph.push({
-  "@type": "WebSite",
-
-  "@id": `${SITE_URL}/#website`,
-
-  url: SITE_URL,
-
-  name: "Property Bouquet",
-
-  publisher: {
-    "@id": `${SITE_URL}/#organization`,
-  },
-
-  inLanguage: "en-IN",
-});
-
-graph.push({
-  "@type": "Organization",
-
-  "@id": `${SITE_URL}/#organization`,
-
-  name: "Property Bouquet",
-
-  url: SITE_URL,
-
-  logo: {
-  "@type": "ImageObject",
-  url: `${SITE_URL}/logo.png`,
-},
-
-  sameAs: [
-    "https://www.instagram.com/.....",
-    "https://www.facebook.com/.....",
-    "https://www.linkedin.com/company/....."
-  ]
-});
-
-
-  // -------------------------
-  // Place
-  // -------------------------
-
-  graph.push({
-    "@type": "Place",
-
-    "@id": `${pageUrl}#place`,
-
-    name:
-      location.locationName ||
-      location.customLocation ||
-      "Gurgaon",
-
-    address: {
-      "@type": "PostalAddress",
-
-      addressLocality:
-        location.locationName ||
-        location.customLocation ||
-        "Gurgaon",
-
-      addressRegion: "Haryana",
-
-      addressCountry: "IN",
-    },
-  });
-
-  // -------------------------
-  // Residence
-  // -------------------------
-
- graph.push({
-  "@type": "Residence",
-
-  "@id": `${pageUrl}#residence`,
-
-  url: pageUrl,
-
-  name: core.title,
-
-  description:
-    overview.description ||
-    `Explore ${core.title}.`,
-
-  image: images,
-
-  brand: core.developerName
-  ? {
-      "@id": `${pageUrl}#developer`,
-    }
-  : undefined,
-
-  address: {
-    "@id": `${pageUrl}#place`,
-  },
-
-  amenityFeature: amenities.map((amenity) => ({
-    "@type": "LocationFeatureSpecification",
-    name: amenity,
-    value: true,
-  })),
-
-  additionalProperty,
-
-  offers:
-    !core.priceOnRequest && core.startingPrice
-      ? {
-          "@id": `${pageUrl}#offer`,
-        }
-      : undefined,
-});
-
-    // -------------------------
-  // Offer
-  // -------------------------
-
-  if (!core.priceOnRequest && core.startingPrice) {
-    graph.push({
-  "@type": "Offer",
-
-  "@id": `${pageUrl}#offer`,
-
-  url: pageUrl,
-
-  price: core.startingPrice,
-
-  priceCurrency: "INR",
-
-  availability: "https://schema.org/InStock",
-
-  itemCondition: "https://schema.org/NewCondition",
-
-  itemOffered: {
-    "@id": `${pageUrl}#residence`,
-  },
-
-  seller: {
-    "@type": "Organization",
-    name: "Property Bouquet",
-    url: SITE_URL,
-  },
-});
-  }
-
-  // -------------------------
-  // Image Gallery
-  // -------------------------
+  let imageList;
 
   if (images.length) {
-  graph.push({
-    "@type": "ItemList",
+    imageList = {
+      "@type":
+        "ItemList",
 
-    "@id": `${pageUrl}#images`,
+      "@id":
+        imagesId,
 
-    name: `${core.title} Images`,
+      name:
+        `${propertyName} Images`,
 
-    itemListElement: images.map((img, index) => ({
-      "@type": "ImageObject",
+      numberOfItems:
+        images.length,
 
-      position: index + 1,
+      itemListElement:
+        images.map(
+          (imageUrl, index) => ({
+            "@type":
+              "ListItem",
 
-      contentUrl: img,
-    })),
-  });
-}
+            position:
+              index + 1,
 
-  // -------------------------
-  // Developer
-  // -------------------------
+            item: {
+              "@type":
+                "ImageObject",
 
-  if (core.developerName) {
-    graph.push({
-  "@type": "Organization",
+              "@id":
+                `${pageUrl}#image-${index + 1}`,
 
-  "@id": `${pageUrl}#developer`,
+              url:
+                imageUrl,
 
-  name: core.developerName,
+              contentUrl:
+                imageUrl,
 
-  url: pageUrl,
-
-  logo: core.developerLogo
-    ? {
-        "@type": "ImageObject",
-        url: core.developerLogo,
-      }
-    : undefined,
-});
+              caption:
+                `${propertyName} - Image ${
+                  index + 1
+                }`,
+            },
+          })
+        ),
+    };
   }
 
-  // -------------------------
-  // Floor Plans
-  // -------------------------
+  // ==========================================================
+  // FLOOR PLANS
+  // ==========================================================
 
-  const floorPlans =
-    property.gatedContent?.floorPlans || [];
+  const floorPlanOffers = [];
 
-  if (floorPlans.length) {
-    graph.push({
-      "@type": "OfferCatalog",
+  floorPlans.forEach(
+    (plan, index) => {
+      const unitType =
+        cleanString(
+          plan?.unitType ||
+            plan?.name
+        );
 
-      "@id": `${pageUrl}#floorplans`,
+      const planImage =
+        toAbsoluteUrl(
+          plan?.image ||
+            plan?.imageUrl
+        );
 
-      name: "Available Floor Plans",
+      const area =
+        Number(plan?.area);
 
-      itemListElement: floorPlans.map((plan) => ({
-  "@type": "Offer",
+      const planPrice =
+        Number(plan?.price);
 
-  price: plan.price,
+      const itemOffered = {
+        "@type":
+          "Apartment",
 
-  priceCurrency: "INR",
+        ...(unitType
+          ? {
+              name:
+                unitType,
+            }
+          : {}),
 
-  itemOffered: {
-    "@type": "Apartment",
+        ...(planImage
+          ? {
+              image:
+                planImage,
+            }
+          : {}),
 
-    name: plan.unitType,
+        ...(plan?.bedrooms !==
+          undefined &&
+        plan?.bedrooms !== null
+          ? {
+              numberOfRooms:
+                Number(
+                  plan.bedrooms
+                ) ||
+                plan.bedrooms,
+            }
+          : {}),
 
-    image: plan.image,
+        ...(Number.isFinite(
+          area
+        ) &&
+        area > 0
+          ? {
+              floorSize: {
+                "@type":
+                  "QuantitativeValue",
 
-    numberOfRooms: plan.bedrooms,
+                value:
+                  area,
 
-    floorSize: plan.area
-      ? {
-          "@type": "QuantitativeValue",
-          value: plan.area,
-          unitText: "sq ft",
-        }
-      : undefined,
-  },
-})),
-    });
+                unitText:
+                  "sq ft",
+              },
+            }
+          : {}),
+      };
+
+      const planOffer = {
+        "@type":
+          "Offer",
+
+        ...(planPrice > 0
+          ? {
+              price:
+                planPrice,
+
+              priceCurrency:
+                "INR",
+            }
+          : {}),
+
+        itemOffered,
+      };
+
+      floorPlanOffers.push(
+        planOffer
+      );
+    }
+  );
+
+  let floorPlanCatalog;
+
+  if (floorPlanOffers.length) {
+    floorPlanCatalog = {
+      "@type":
+        "OfferCatalog",
+
+      "@id":
+        floorPlansId,
+
+      name:
+        `${propertyName} Floor Plans`,
+
+      numberOfItems:
+        floorPlanOffers.length,
+
+      itemListElement:
+        floorPlanOffers.map(
+          (offerItem, index) => ({
+            "@type":
+              "ListItem",
+
+            position:
+              index + 1,
+
+            item:
+              offerItem,
+          })
+        ),
+    };
   }
-    // -------------------------
-  // FAQ Schema
-  // -------------------------
 
-  if (faqs.length) {
-    graph.push({
-      "@type": "FAQPage",
+  // ==========================================================
+  // PLOT CONFIGURATIONS
+  // ==========================================================
 
-      "@id": `${pageUrl}#faq`,
+  let plotCatalog;
 
-      mainEntity: faqs
-        .filter((faq) => faq.question && faq.answer)
-        .map((faq) => ({
-          "@type": "Question",
+  if (
+    gatedContent?.configurationType ===
+      "Plots" &&
+    plotConfigurations.length
+  ) {
+    const plotItems =
+      plotConfigurations
+        .map(
+          (plot, index) => {
+            const name =
+              cleanString(
+                plot?.name ||
+                  plot?.title ||
+                  plot?.range ||
+                  plot?.plotSize
+              );
 
-          name: faq.question,
+            const sqYd =
+              Number(
+                plot?.sqYd ||
+                  plot?.squareYards ||
+                  plot?.sizeSqYd
+              );
 
-          acceptedAnswer: {
-            "@type": "Answer",
+            const sqFt =
+              Number(
+                plot?.sqFt ||
+                  plot?.squareFeet ||
+                  plot?.sizeSqFt
+              );
 
-            text: faq.answer,
-          },
-        })),
-    });
+            const price =
+              Number(
+                plot?.price
+              );
+
+            const image =
+              toAbsoluteUrl(
+                plot?.image ||
+                  plot?.imageUrl
+              );
+
+            const additional =
+              [];
+
+            if (
+              Number.isFinite(
+                sqYd
+              ) &&
+              sqYd > 0
+            ) {
+              additional.push({
+                "@type":
+                  "PropertyValue",
+
+                name:
+                  "Plot Size",
+
+                value:
+                  sqYd,
+
+                unitCode:
+                  "YRD",
+              });
+            }
+
+            if (
+              Number.isFinite(
+                sqFt
+              ) &&
+              sqFt > 0
+            ) {
+              additional.push({
+                "@type":
+                  "PropertyValue",
+
+                name:
+                  "Plot Area",
+
+                value:
+                  sqFt,
+
+                unitCode:
+                  "FTK",
+              });
+            }
+
+            const plotResidence = {
+              "@type":
+                "Residence",
+
+              name:
+                name ||
+                `Plot Configuration ${
+                  index + 1
+                }`,
+
+              ...(image
+                ? {
+                    image:
+                      image,
+                  }
+                : {}),
+
+              ...(additional.length
+                ? {
+                    additionalProperty:
+                      additional,
+                  }
+                : {}),
+            };
+
+            return {
+              "@type":
+                "ListItem",
+
+              position:
+                index + 1,
+
+              item: {
+                "@type":
+                  "Offer",
+
+                ...(price > 0
+                  ? {
+                      price:
+                        price,
+
+                      priceCurrency:
+                        "INR",
+                    }
+                  : {}),
+
+                itemOffered:
+                  plotResidence,
+              },
+            };
+          }
+        );
+
+    plotCatalog = {
+      "@type":
+        "OfferCatalog",
+
+      "@id":
+        `${pageUrl}#plot-configurations`,
+
+      name:
+        `${propertyName} Plot Configurations`,
+
+      numberOfItems:
+        plotItems.length,
+
+      itemListElement:
+        plotItems,
+    };
   }
 
-  // -------------------------
-  // Return Complete Graph
-  // -------------------------
+  // ==========================================================
+  // FAQ
+  // ==========================================================
+  //
+  // We intentionally do NOT output FAQPage markup here.
+  //
+  // Google currently limits FAQ rich results primarily to
+  // authoritative government and health websites.
+  //
+  // The FAQ content can still be indexed normally as visible
+  // page content.
+  // ==========================================================
+
+  // ==========================================================
+  // GRAPH
+  // ==========================================================
+
+  const graph = [
+    webPage,
+
+    website,
+
+    breadcrumb,
+
+    place,
+
+    residence,
+
+    realEstateListing,
+  ];
+
+  // ==========================================================
+  // DEVELOPER
+  // ==========================================================
+
+  if (developerEntity) {
+    graph.push(
+      developerEntity
+    );
+  }
+
+  // ==========================================================
+  // OFFER
+  // ==========================================================
+
+  if (offer) {
+    graph.push(
+      offer
+    );
+  }
+
+  // ==========================================================
+  // IMAGES
+  // ==========================================================
+
+  if (imageList) {
+    graph.push(
+      imageList
+    );
+  }
+
+  // ==========================================================
+  // FLOOR PLANS
+  // ==========================================================
+
+  if (floorPlanCatalog) {
+    graph.push(
+      floorPlanCatalog
+    );
+  }
+
+  // ==========================================================
+  // PLOT CONFIGURATIONS
+  // ==========================================================
+
+  if (plotCatalog) {
+    graph.push(
+      plotCatalog
+    );
+  }
+
+  // ==========================================================
+  // RETURN
+  // ==========================================================
 
   return {
-    "@context": "https://schema.org",
+    "@context":
+      "https://schema.org",
 
-    "@graph": graph,
+    "@graph":
+      graph.filter(Boolean),
   };
 }
