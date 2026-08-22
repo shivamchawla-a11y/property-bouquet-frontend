@@ -58,19 +58,11 @@ const handleNext = () => emblaApi?.scrollNext();
       property.isActive === true
   );
 
-  // ================= RANDOM SHUFFLE =================
-  const shuffled = [...published];
+  const shuffled = [...published].sort(
+  () => Math.random() - 0.5
+);
 
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [shuffled[i], shuffled[j]] = [
-      shuffled[j],
-      shuffled[i],
-    ];
-  }
-
-  setProperties(shuffled);
+setTrendingProperties(shuffled);
 }
       } catch (error) {
         console.error(error);

@@ -16,51 +16,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export default function FeaturedProjects() {
-  const [featuredProperties, setFeaturedProperties] =
-    useState([]);
+// ============================================================
+// RANDOM SHUFFLE
+// ============================================================
 
-  const [loading, setLoading] = useState(true);
-const autoplay = Autoplay({
-  delay: 3500,
-  stopOnInteraction: false,
-  stopOnMouseEnter: true,
-});
-
-const [emblaRef, emblaApi] = useEmblaCarousel(
-  {
-    loop: true,
-    align: "start",
-    slidesToScroll: 1,
-  },
-  [autoplay]
-);
-
-const handlePrev = () => emblaApi?.scrollPrev();
-const handleNext = () => emblaApi?.scrollNext();
-
-  useEffect(() => {
-  const fetchFeaturedProperties = async () => {
-    try {
-      const res = await fetch(
-        "/api/properties?propertyTag=Featured",
-        {
-          cache: "no-store",
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-  const published = (data.data || []).filter(
-    (property) =>
-      property.status === "published" &&
-      property.isDeleted === false &&
-      property.isActive === true
-  );
-
-  // ================= RANDOM SHUFFLE =================
-  const shuffled = [...published];
+function shuffleArray(array) {
+  const shuffled = [...array];
 
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -71,19 +32,98 @@ const handleNext = () => emblaApi?.scrollNext();
     ];
   }
 
-  setProperties(shuffled);
+  return shuffled;
 }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+
+// ============================================================
+// COMPONENT
+// ============================================================
+
+export default function FeaturedProjects() {
+  const [featuredProperties, setFeaturedProperties] =
+    useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  // ==========================================================
+  // AUTOPLAY
+  // ==========================================================
+
+  const autoplay = Autoplay({
+    delay: 3500,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  });
+
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      loop: true,
+      align: "start",
+      slidesToScroll: 1,
+    },
+    [autoplay]
+  );
+
+  // ==========================================================
+  // ARROWS
+  // ==========================================================
+
+  const handlePrev = () => {
+    emblaApi?.scrollPrev();
   };
 
-  fetchFeaturedProperties();
-}, []);
+  const handleNext = () => {
+    emblaApi?.scrollNext();
+  };
 
+  // ==========================================================
+  // FETCH FEATURED PROPERTIES
+  // ==========================================================
 
+  useEffect(() => {
+    const fetchFeaturedProperties = async () => {
+      try {
+        const res = await fetch(
+          "/api/properties?propertyTag=Featured",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+          const published = (data.data || []).filter(
+            (property) =>
+              property?.status === "published" &&
+              property?.isDeleted === false &&
+              property?.isActive === true
+          );
+
+          // ==================================================
+          // RANDOMIZE FEATURED PROPERTIES
+          // ==================================================
+
+          const randomizedProperties =
+            shuffleArray(published);
+
+          setFeaturedProperties(
+            randomizedProperties
+          );
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProperties();
+  }, []);
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <section className="bg-[#f6f3ee] py-16 overflow-hidden">
@@ -92,345 +132,582 @@ const handleNext = () => emblaApi?.scrollNext();
 
         <div className="grid lg:grid-cols-[320px_1fr] gap-10 items-start">
 
-          {/* LEFT */}
+          {/* ==================================================
+              LEFT
+          ================================================== */}
+
           <div className="pt-4">
 
-            <p className="text-[11px] uppercase tracking-[2.5px] text-black/55 font-semibold font-body mb-6">
+            <p
+              className="
+                text-[11px]
+                uppercase
+                tracking-[2.5px]
+                text-black/55
+                font-semibold
+                font-body
+                mb-6
+              "
+            >
               FEATURED PROPERTIES
             </p>
 
-            <h2 className="font-heading text-[44px] leading-[1.12] text-[#151515]">
+            <h2
+              className="
+                font-heading
+                text-[44px]
+                leading-[1.12]
+                text-[#151515]
+              "
+            >
               Exclusive Mandates.
               <br />
               Extraordinary Assets.
             </h2>
 
-            <button className="mt-10 flex items-center gap-3 text-[#bf8b37] text-[13px] tracking-[1px] font-semibold font-body group">
+            <button
+              className="
+                mt-10
+                flex
+                items-center
+                gap-3
+                text-[#bf8b37]
+                text-[13px]
+                tracking-[1px]
+                font-semibold
+                font-body
+                group
+              "
+            >
               VIEW ALL PROPERTIES
 
               <ArrowRight
                 size={15}
-                className="group-hover:translate-x-1 transition"
+                className="
+                  group-hover:translate-x-1
+                  transition
+                "
               />
             </button>
+
           </div>
 
-          {/* RIGHT */}
+          {/* ==================================================
+              RIGHT
+          ================================================== */}
+
           <div>
 
-            {/* ARROWS */}
+            {/* ==================================================
+                ARROWS
+            ================================================== */}
+
             <div className="flex justify-end gap-3 mb-5">
-  <button
-    onClick={handlePrev}
-    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
-  >
-    <ChevronLeft size={18} />
-  </button>
 
-  <button
-    onClick={handleNext}
-    className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#c89948] transition"
-  >
-    <ChevronRight size={18} />
-  </button>
-</div>
+              <button
+                onClick={handlePrev}
+                className="
+                  w-11
+                  h-11
+                  rounded-full
+                  bg-white
+                  text-black
+                  flex
+                  items-center
+                  justify-center
+                  hover:bg-[#c89948]
+                  transition
+                "
+              >
+                <ChevronLeft size={18} />
+              </button>
 
-            {/* CARDS */}
+              <button
+                onClick={handleNext}
+                className="
+                  w-11
+                  h-11
+                  rounded-full
+                  bg-white
+                  text-black
+                  flex
+                  items-center
+                  justify-center
+                  hover:bg-[#c89948]
+                  transition
+                "
+              >
+                <ChevronRight size={18} />
+              </button>
+
+            </div>
+
+            {/* ==================================================
+                CARDS
+            ================================================== */}
+
             <div
-  className="max-w-[900px] overflow-hidden pr-3"
-  ref={emblaRef}
->
-  <div className="flex -ml-2">
+              className="
+                max-w-[900px]
+                overflow-hidden
+                pr-3
+              "
+              ref={emblaRef}
+            >
 
-  {loading && (
-    <p className="col-span-3 text-center">
-      Loading featured properties...
-    </p>
-  )}
+              <div className="flex -ml-2">
 
-  {!loading &&
-    featuredProperties.length === 0 && (
-      <p className="col-span-3 text-center">
-        No featured properties found.
-      </p>
-    )}
+                {/* ==================================================
+                    LOADING
+                ================================================== */}
 
-              {featuredProperties.map((item, index) => (
-  <Link
-    key={item._id}
-    href={`/${item.slug}`}
-    className="
-min-w-0
-flex-[0_0_100%]
-md:flex-[0_0_50%]
-xl:flex-[0_0_33.3333%]
-pl-2
-block
-"
-  >
-    <motion.div
-      initial={{
-        opacity: 0,
-        y: 40,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        duration: 0.6,
-        delay: index * 0.1,
-      }}
-      viewport={{
-        once: true,
-      }}
-      whileHover={{
-        y: -10,
-        scale: 1.01,
-      }}
-      className="
-group
-bg-white
-rounded-[24px]
-overflow-hidden
-border
-border-[#ebe5da]
-shadow-[0_12px_40px_rgba(0,0,0,0.05)]
-flex
-flex-col
-h-full
-transition-all
-duration-500
-hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
-"
-    >
-      {/* IMAGE */}
-      <div className="relative h-[160px] overflow-hidden">
-        <img
-          src={
-            item?.media?.heroImageUrl }
-          alt={item?.coreDetails?.title}
-          className="
-w-full
-h-full
-object-cover
-scale-110
-transition-transform
-duration-700
-group-hover:scale-125
-"
-        />
+                {loading && (
+                  <p className="col-span-3 text-center">
+                    Loading featured properties...
+                  </p>
+                )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                {/* ==================================================
+                    EMPTY
+                ================================================== */}
 
-        <div
-          className="
-            absolute
-            top-4
-            left-4
-            bg-[#c89948]
-            text-white
-            text-[10px]
-            tracking-[1.5px]
-            px-4
-            py-2
-            rounded-full
-            font-semibold
-          "
-        >
-          FEATURED
-        </div>
-      </div>
+                {!loading &&
+                  featuredProperties.length === 0 && (
+                    <p className="col-span-3 text-center">
+                      No featured properties found.
+                    </p>
+                  )}
 
-      <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
+                {/* ==================================================
+                    FEATURED PROPERTIES
+                ================================================== */}
 
-      {/* CONTENT */}
-      <div className="p-5 flex flex-col flex-1">
+                {featuredProperties.map(
+                  (item, index) => (
+                    <Link
+                      key={item._id}
+                      href={`/${item.slug}`}
+                      className="
+                        min-w-0
+                        flex-[0_0_100%]
+                        md:flex-[0_0_50%]
+                        xl:flex-[0_0_33.3333%]
+                        pl-2
+                        block
+                      "
+                    >
 
-        {/* TITLE */}
-        <h3
-          className="
-            text-[22px]
-            xl:text-[24px]
-            text-[#171717]
-            font-heading
-            leading-tight
-            line-clamp-2
-          "
-        >
-          {item?.coreDetails?.title}
-        </h3>
+                      <motion.div
+                        initial={{
+                          opacity: 0,
+                          y: 40,
+                        }}
+                        whileInView={{
+                          opacity: 1,
+                          y: 0,
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          delay: index * 0.1,
+                        }}
+                        viewport={{
+                          once: true,
+                        }}
+                        whileHover={{
+                          y: -10,
+                          scale: 1.01,
+                        }}
+                        className="
+                          group
+                          bg-white
+                          rounded-[24px]
+                          overflow-hidden
+                          border
+                          border-[#ebe5da]
+                          shadow-[0_12px_40px_rgba(0,0,0,0.05)]
+                          flex
+                          flex-col
+                          h-full
+                          transition-all
+                          duration-500
+                          hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+                        "
+                      >
 
-        {/* LOCATION */}
-        <div className="flex items-start gap-2 text-black/60 mt-2">
-          <MapPin
-            size={15}
-            className="mt-[2px] shrink-0"
-          />
+                        {/* ==================================================
+                            IMAGE
+                        ================================================== */}
 
-          <span
-            className="
-              text-[13px]
-              leading-snug
-              line-clamp-2
-            "
-          >
-            {(() => {
-  const location = item?.locationData?.locationRef;
+                        <div className="relative h-[160px] overflow-hidden">
 
-  if (!location) {
-    return (
-      item?.locationData?.customLocation ||
-      item?.locationData?.locationName ||
-      "Prime Location"
-    );
-  }
+                          <img
+                            src={
+                              item?.media
+                                ?.heroImageUrl
+                            }
+                            alt={
+                              item?.coreDetails
+                                ?.title
+                            }
+                            className="
+                              w-full
+                              h-full
+                              object-cover
+                              scale-110
+                              transition-transform
+                              duration-700
+                              group-hover:scale-125
+                            "
+                          />
 
-  const parts = [];
+                          <div
+                            className="
+                              absolute
+                              inset-0
+                              bg-gradient-to-t
+                              from-black/40
+                              via-transparent
+                              to-transparent
+                            "
+                          />
 
-  // Child
-  if (location.name) parts.push(location.name);
+                          {/* BADGE */}
 
-  // Parent
-  if (location.parent?.name) parts.push(location.parent.name);
+                          <div
+                            className="
+                              absolute
+                              top-4
+                              left-4
+                              bg-[#c89948]
+                              text-white
+                              text-[10px]
+                              tracking-[1.5px]
+                              px-4
+                              py-2
+                              rounded-full
+                              font-semibold
+                            "
+                          >
+                            FEATURED
+                          </div>
 
-  // Grandparent (Topmost)
-  if (location.parent?.parent?.name) {
-    parts.push(location.parent.parent.name);
-  }
+                        </div>
 
-  return parts.join(", ");
-})()}
-          </span>
-        </div>
+                        {/* GOLD LINE */}
 
-        {/* DETAILS */}
-        <div
-          className="
-            flex
-            items-center
-            flex-wrap
-            gap-x-4
-            gap-y-2
-            mt-4
-            text-black/65
-          "
-        >
-          <div className="flex items-center gap-2">
-            <BedDouble size={15} />
+                        <div
+                          className="
+                            h-[2px]
+                            bg-gradient-to-r
+                            from-[#c9a64b]
+                            via-[#e3c97d]
+                            to-[#c9a64b]
+                          "
+                        />
 
-            <span className="text-[13px]">
-              {item?.unitConfigurations?.[0]?.bedrooms
-                ? `${item.unitConfigurations[0].bedrooms} Beds`
-                : "Luxury"}
-            </span>
-          </div>
+                        {/* ==================================================
+                            CONTENT
+                        ================================================== */}
 
-          <div className="flex items-center gap-2">
-            <Bath size={15} />
+                        <div className="p-5 flex flex-col flex-1">
 
-            <span className="text-[13px]">
-              {item?.unitConfigurations?.[0]?.bathrooms
-                ? `${item.unitConfigurations[0].bathrooms} Baths`
-                : "Residence"}
-            </span>
-          </div>
+                          {/* TITLE */}
 
-          <div className="text-[13px]">
-            {item?.unitConfigurations?.[0]?.area
-              ? `${item.unitConfigurations[0].area} Sq.Ft.`
-              : "Premium"}
-          </div>
-        </div>
+                          <h3
+                            className="
+                              text-[22px]
+                              xl:text-[24px]
+                              text-[#171717]
+                              font-heading
+                              leading-tight
+                              line-clamp-2
+                            "
+                          >
+                            {item?.coreDetails?.title}
+                          </h3>
 
-        {/* DIVIDER */}
-        <div className="mt-4 border-t border-[#ece7df]" />
+                          {/* ==================================================
+                              LOCATION
+                          ================================================== */}
 
-{/* PRICE */}
-<div className="mt-3">
-  <p
-    className="
-      text-[11px]
-      uppercase
-      tracking-[1px]
-      text-black/45
-      mb-2
-    "
-  >
-    {item?.coreDetails?.priceOnRequest
-      ? "Price"
-      : "Starting Price"}
-  </p>
+                          <div
+                            className="
+                              flex
+                              items-start
+                              gap-2
+                              text-black/60
+                              mt-2
+                            "
+                          >
 
-  <h4
-    className="
-      text-[24px]
-      font-bold
-      text-[#111]
-      leading-none
-    "
-  >
-    {item?.coreDetails?.priceOnRequest ? (
-      "On Request"
-    ) : item?.coreDetails?.startingPrice ? (
-      <>
-        ₹{formatPrice(item.coreDetails.startingPrice)}
-      </>
-    ) : item?.unitConfigurations?.[0]?.price ? (
-      <>
-        ₹{formatPrice(item.unitConfigurations[0].price)}
-      </>
-    ) : (
-      "Price Unavailable"
-    )}
-  </h4>
-</div>
+                            <MapPin
+                              size={15}
+                              className="mt-[2px] shrink-0"
+                            />
 
+                            <span
+                              className="
+                                text-[13px]
+                                leading-snug
+                                line-clamp-2
+                              "
+                            >
+                              {(() => {
+                                const location =
+                                  item
+                                    ?.locationData
+                                    ?.locationRef;
 
+                                if (!location) {
+                                  return (
+                                    item
+                                      ?.locationData
+                                      ?.customLocation ||
+                                    item
+                                      ?.locationData
+                                      ?.locationName ||
+                                    "Prime Location"
+                                  );
+                                }
 
-        {/* CTA */}
-        <div
-          className="
-            mt-4
-            pt-4
-            flex
-            items-center
-            justify-between
-            border-t
-            border-[#ece7df]
-          "
-        >
-          <span
-            className="
-              text-[12px]
-              tracking-[1.5px]
-              uppercase
-              text-[#bf8b37]
-              font-semibold
-            "
-          >
-            View Property
-          </span>
+                                const parts = [];
 
-          <ArrowRight
-            size={18}
-            className="
-              text-[#bf8b37]
-              transition-transform
-              duration-300
-              group-hover:translate-x-1
-            "
-          />
-        </div>
-      </div>
-    </motion.div>
-  </Link>
-))}
+                                // Child
+                                if (
+                                  location.name
+                                ) {
+                                  parts.push(
+                                    location.name
+                                  );
+                                }
+
+                                // Parent
+                                if (
+                                  location
+                                    .parent
+                                    ?.name
+                                ) {
+                                  parts.push(
+                                    location
+                                      .parent
+                                      .name
+                                  );
+                                }
+
+                                // Grandparent
+                                if (
+                                  location
+                                    .parent
+                                    ?.parent
+                                    ?.name
+                                ) {
+                                  parts.push(
+                                    location
+                                      .parent
+                                      .parent
+                                      .name
+                                  );
+                                }
+
+                                return parts.join(
+                                  ", "
+                                );
+                              })()}
+                            </span>
+
+                          </div>
+
+                          {/* ==================================================
+                              DETAILS
+                          ================================================== */}
+
+                          <div
+                            className="
+                              flex
+                              items-center
+                              flex-wrap
+                              gap-x-4
+                              gap-y-2
+                              mt-4
+                              text-black/65
+                            "
+                          >
+
+                            <div
+                              className="
+                                flex
+                                items-center
+                                gap-2
+                              "
+                            >
+
+                              <BedDouble size={15} />
+
+                              <span className="text-[13px]">
+                                {item
+                                  ?.unitConfigurations?.[0]
+                                  ?.bedrooms
+                                  ? `${item.unitConfigurations[0].bedrooms} Beds`
+                                  : "Luxury"}
+                              </span>
+
+                            </div>
+
+                            <div
+                              className="
+                                flex
+                                items-center
+                                gap-2
+                              "
+                            >
+
+                              <Bath size={15} />
+
+                              <span className="text-[13px]">
+                                {item
+                                  ?.unitConfigurations?.[0]
+                                  ?.bathrooms
+                                  ? `${item.unitConfigurations[0].bathrooms} Baths`
+                                  : "Residence"}
+                              </span>
+
+                            </div>
+
+                            <div className="text-[13px]">
+                              {item
+                                ?.unitConfigurations?.[0]
+                                ?.area
+                                ? `${item.unitConfigurations[0].area} Sq.Ft.`
+                                : "Premium"}
+                            </div>
+
+                          </div>
+
+                          {/* DIVIDER */}
+
+                          <div className="mt-4 border-t border-[#ece7df]" />
+
+                          {/* ==================================================
+                              PRICE
+                          ================================================== */}
+
+                          <div className="mt-3">
+
+                            <p
+                              className="
+                                text-[11px]
+                                uppercase
+                                tracking-[1px]
+                                text-black/45
+                                mb-2
+                              "
+                            >
+                              {item
+                                ?.coreDetails
+                                ?.priceOnRequest
+                                ? "Price"
+                                : "Starting Price"}
+                            </p>
+
+                            <h4
+                              className="
+                                text-[24px]
+                                font-bold
+                                text-[#111]
+                                leading-none
+                              "
+                            >
+                              {item
+                                ?.coreDetails
+                                ?.priceOnRequest ? (
+                                "On Request"
+                              ) : item
+                                  ?.coreDetails
+                                  ?.startingPrice ? (
+                                <>
+                                  ₹
+                                  {formatPrice(
+                                    item
+                                      .coreDetails
+                                      .startingPrice
+                                  )}
+                                </>
+                              ) : item
+                                  ?.unitConfigurations?.[0]
+                                  ?.price ? (
+                                <>
+                                  ₹
+                                  {formatPrice(
+                                    item
+                                      .unitConfigurations[0]
+                                      .price
+                                  )}
+                                </>
+                              ) : (
+                                "Price Unavailable"
+                              )}
+                            </h4>
+
+                          </div>
+
+                          {/* ==================================================
+                              CTA
+                          ================================================== */}
+
+                          <div
+                            className="
+                              mt-4
+                              pt-4
+                              flex
+                              items-center
+                              justify-between
+                              border-t
+                              border-[#ece7df]
+                            "
+                          >
+
+                            <span
+                              className="
+                                text-[12px]
+                                tracking-[1.5px]
+                                uppercase
+                                text-[#bf8b37]
+                                font-semibold
+                              "
+                            >
+                              View Property
+                            </span>
+
+                            <ArrowRight
+                              size={18}
+                              className="
+                                text-[#bf8b37]
+                                transition-transform
+                                duration-300
+                                group-hover:translate-x-1
+                              "
+                            />
+
+                          </div>
+
+                        </div>
+
+                      </motion.div>
+
+                    </Link>
+                  )
+                )}
+
               </div>
-</div>
+
+            </div>
+
           </div>
+
         </div>
+
       </div>
+
     </section>
   );
 }
