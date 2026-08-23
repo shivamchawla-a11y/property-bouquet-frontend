@@ -740,84 +740,84 @@ export default function Footer() {
 
         {/* ================= BOTTOM BAR ================= */}
 
-        <div className="mt-20 pt-8 border-t border-[#8e6b2e]/30">
+<div className="mt-20 pt-8 border-t border-[#8e6b2e]/30">
 
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+  <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
 
-            {/* LEFT */}
+    {/* LEFT */}
 
-            <p className="text-white/60 text-[13px] leading-[1.9]">
-              © 2026 Property Bouquet. All Rights Reserved.
-            </p>
+    <p className="text-white/60 text-[13px] leading-[1.9]">
+      © 2026 Property Bouquet. All Rights Reserved.
+    </p>
 
-            {/* CENTER */}
+    {/* CENTER */}
 
-            <div className="flex flex-wrap justify-center items-center">
+    <div className="flex flex-wrap justify-center items-center">
 
-              {[
-                "Privacy Policy",
-                "Terms of Use",
-                "Disclaimer",
-                "Sitemap",
-              ].map((item, index) => (
+      {[
+        {
+          label: "Privacy Policy",
+          href: "/privacy",
+        },
+        {
+          label: "Terms of Use",
+          href: "/terms-of-use",
+        },
+        {
+          label: "Disclaimer",
+          href: "/disclaimer",
+        },
+        {
+          label: "Sitemap",
+          href: "/sitemap",
+        },
+      ].map((item, index, array) => (
 
-                <div
-                  key={item}
-                  className="flex items-center"
-                >
+        <div
+          key={item.label}
+          className="flex items-center"
+        >
 
-                  {item === "Sitemap" ? (
-                    <Link
-                      href="/sitemap"
-                      className="
-                        px-6
-                        text-white/65
-                        hover:text-[#C89B4F]
-                        transition-all
-                        duration-300
-                      "
-                    >
-                      {item}
-                    </Link>
-                  ) : (
-                    <span
-                      className="
-                        px-6
-                        text-white/65
-                        cursor-default
-                      "
-                    >
-                      {item}
-                    </span>
-                  )}
+          <Link
+            href={item.href}
+            className="
+              px-6
+              text-white/65
+              hover:text-[#C89B4F]
+              transition-all
+              duration-300
+            "
+          >
+            {item.label}
+          </Link>
 
-                  {index !== 3 && (
-                    <span className="text-[#8e6b2e]/50">
-                      |
-                    </span>
-                  )}
-
-                </div>
-
-              ))}
-
-            </div>
-
-            {/* RIGHT */}
-
-            <div className="flex items-center gap-3 text-white/65">
-
-              <FaLock className="text-[#C89B4F]" />
-
-              <span className="text-[15px]">
-                Your data is 100% safe and secure
-              </span>
-
-            </div>
-
-          </div>
+          {index !== array.length - 1 && (
+            <span className="text-[#8e6b2e]/50">
+              |
+            </span>
+          )}
 
         </div>
+
+      ))}
+
+    </div>
+
+    {/* RIGHT */}
+
+    <div className="flex items-center gap-3 text-white/65">
+
+      <FaLock className="text-[#C89B4F]" />
+
+      <span className="text-[15px]">
+        Your data is 100% safe and secure
+      </span>
+
+    </div>
+
+  </div>
+
+</div>
 
       </div>
 

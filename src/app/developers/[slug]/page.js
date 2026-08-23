@@ -193,18 +193,25 @@ function getProjectNames(properties) {
 // METADATA
 // ============================================================
 
+// ============================================================
+// METADATA
+// ============================================================
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   const data = await getDeveloper(slug);
 
   // ==========================================================
-  // REAL 404 METADATA
+  // 404 METADATA
   // ==========================================================
 
   if (!data?.developer) {
     return {
-      title: "Developer Not Found | Property Bouquet",
+      metadataBase: new URL(SITE_URL),
+
+      title:
+        "Developer Not Found | Property Bouquet",
 
       description:
         "The requested real estate developer could not be found on Property Bouquet.",
@@ -216,6 +223,10 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  // ==========================================================
+  // DEVELOPER DATA
+  // ==========================================================
+
   const developer = data.developer;
   const properties = data.properties || [];
 
@@ -223,8 +234,9 @@ export async function generateMetadata({ params }) {
     cleanText(developer?.name) ||
     "Real Estate Developer";
 
-  const developerDescription =
-    cleanText(developer?.description);
+  // ==========================================================
+  // PROJECT DATA
+  // ==========================================================
 
   const projectNames =
     getProjectNames(properties);
@@ -232,44 +244,65 @@ export async function generateMetadata({ params }) {
   const locations =
     getDeveloperLocations(properties);
 
+  const projectCount =
+    properties.length;
+
   // ==========================================================
-  // DYNAMIC LOCATION PHRASE
+  // PROJECT COUNT TEXT
+  // ==========================================================
+
+  const projectCountText =
+    projectCount === 1
+      ? "1 project"
+      : `${projectCount} projects`;
+
+  // ==========================================================
+  // LOCATION PHRASE
   // ==========================================================
 
   let locationPhrase = "";
 
   if (locations.length === 1) {
-    locationPhrase = ` in ${locations[0]}`;
+    locationPhrase =
+      ` in ${locations[0]}`;
   } else if (locations.length === 2) {
-    locationPhrase = ` in ${locations[0]} and ${locations[1]}`;
+    locationPhrase =
+      ` in ${locations[0]} and ${locations[1]}`;
   } else if (locations.length > 2) {
-    locationPhrase = ` in ${locations
-      .slice(0, 3)
-      .join(", ")}`;
+    locationPhrase =
+      ` across ${locations
+        .slice(0, 3)
+        .join(", ")}`;
   }
+
+  // ==========================================================
+  // PRIMARY SEO TITLE
+  // ==========================================================
+
+  /*
+   * Example:
+   *
+   * Tulip Developer: All Projects | Residential & Commercial
+   *
+   * DLF Developer:
+   * DLF Developer: All Projects | Residential & Commercial
+   */
+
+  const title =
+    `${developerName} Developer: All Projects | Residential & Commercial`;
 
   // ==========================================================
   // SEO DESCRIPTION
   // ==========================================================
 
-  let description;
+  let description =
+    `Explore ${developerName} developer projects on Property Bouquet. Browse all ${projectCountText} with residential and commercial properties, prices, floor plans, amenities, locations and detailed project information`;
 
-  if (developerDescription) {
-    description = `Explore ${developerName} properties and projects on Property Bouquet. ${developerDescription}`;
-
-    if (locationPhrase) {
-      description += ` Discover projects${locationPhrase}.`;
-    }
-  } else {
-    description =
-      `Explore ${developerName} projects and properties on Property Bouquet. View prices, floor plans, locations, amenities and project details`;
-
-    if (locationPhrase) {
-      description += locationPhrase;
-    }
-
-    description += ".";
+  if (locationPhrase) {
+    description += locationPhrase;
   }
+
+  description += ".";
 
   const metaDescription =
     truncateDescription(
@@ -278,21 +311,14 @@ export async function generateMetadata({ params }) {
     );
 
   // ==========================================================
-  // TITLE
-  // ==========================================================
-
-  const title =
-    `${developerName} Projects & Properties | Prices, Floor Plans & Locations | Property Bouquet`;
-
-  // ==========================================================
-  // CANONICAL
+  // CANONICAL URL
   // ==========================================================
 
   const canonicalUrl =
     buildDeveloperUrl(slug);
 
   // ==========================================================
-  // OG IMAGE
+  // DEVELOPER IMAGE
   // ==========================================================
 
   const developerImage =
@@ -305,26 +331,54 @@ export async function generateMetadata({ params }) {
   // ==========================================================
 
   const keywords = [
+    // Developer
+    `${developerName} developer`,
     `${developerName} projects`,
     `${developerName} properties`,
     `${developerName} real estate`,
+
+    // Residential
     `${developerName} residential projects`,
+    `${developerName} residential properties`,
     `${developerName} apartments`,
     `${developerName} flats`,
-    `${developerName} luxury projects`,
+    `${developerName} villas`,
+    `${developerName} plots`,
+
+    // Commercial
+    `${developerName} commercial projects`,
+    `${developerName} commercial properties`,
+    `${developerName} commercial real estate`,
+
+    // Project information
     `${developerName} project prices`,
     `${developerName} property prices`,
     `${developerName} floor plans`,
     `${developerName} project details`,
     `${developerName} project locations`,
     `${developerName} amenities`,
+
+    // Location variations
     ...locations
       .slice(0, 10)
       .map(
         (location) =>
           `${developerName} projects in ${location}`
       ),
-    ...projectNames.slice(0, 10),
+
+    // Actual project names
+    ...projectNames
+      .slice(0, 15),
+
+    // Generic high-intent terms
+    "developer projects",
+    "real estate developer projects",
+    "residential and commercial projects",
+    "luxury real estate developers",
+    "property developers",
+    "real estate projects",
+
+    // Brand
     "Property Bouquet",
     "Property Bouquet developers",
   ];
@@ -334,19 +388,35 @@ export async function generateMetadata({ params }) {
   // ==========================================================
 
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase:
+      new URL(SITE_URL),
+
+    // ========================================================
+    // BASIC SEO
+    // ========================================================
 
     title,
 
-    description: metaDescription,
+    description:
+      metaDescription,
 
     keywords,
 
-    applicationName: "Property Bouquet",
+    applicationName:
+      "Property Bouquet",
+
+    // ========================================================
+    // CANONICAL
+    // ========================================================
 
     alternates: {
-      canonical: canonicalUrl,
+      canonical:
+        canonicalUrl,
     },
+
+    // ========================================================
+    // ROBOTS
+    // ========================================================
 
     robots: {
       index: true,
@@ -355,48 +425,78 @@ export async function generateMetadata({ params }) {
       googleBot: {
         index: true,
         follow: true,
+
         noimageindex: false,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
+
+        "max-image-preview":
+          "large",
+
+        "max-snippet":
+          -1,
+
+        "max-video-preview":
+          -1,
       },
     },
 
+    // ========================================================
+    // OPEN GRAPH
+    // ========================================================
+
     openGraph: {
-      type: "website",
+      type:
+        "website",
 
-      locale: "en_IN",
+      locale:
+        "en_IN",
 
-      url: canonicalUrl,
+      url:
+        canonicalUrl,
 
-      siteName: "Property Bouquet",
+      siteName:
+        "Property Bouquet",
 
       title,
 
-      description: metaDescription,
+      description:
+        metaDescription,
 
       images: [
         {
-          url: developerImage,
-          width: 1200,
-          height: 630,
-          alt: `${developerName} Projects and Properties - Property Bouquet`,
+          url:
+            developerImage,
+
+          width:
+            1200,
+
+          height:
+            630,
+
+          alt:
+            `${developerName} Developer: All Projects | Residential & Commercial`,
         },
       ],
     },
 
+    // ========================================================
+    // TWITTER / X
+    // ========================================================
+
     twitter: {
-      card: "summary_large_image",
+      card:
+        "summary_large_image",
 
       title,
 
-      description: metaDescription,
+      description:
+        metaDescription,
 
-      images: [developerImage],
+      images: [
+        developerImage,
+      ],
     },
   };
 }
-
 // ============================================================
 // JSON-LD SAFE STRINGIFY
 // ============================================================
