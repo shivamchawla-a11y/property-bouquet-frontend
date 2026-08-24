@@ -92,6 +92,14 @@ export default function Footer() {
   const [collections, setCollections] = useState([]);
   const [showCollections, setShowCollections] = useState(false);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] =
+  useState("");
+
+const [newsletterLoading, setNewsletterLoading] =
+  useState(false);
+
+const [newsletterMessage, setNewsletterMessage] =
+  useState("");
 
   // =====================================================
   // FETCH QUALIFYING COLLECTION PAGES
@@ -153,6 +161,8 @@ export default function Footer() {
 
     fetchCollections();
   }, []);
+
+  
 
   return (
     <footer className="bg-[#07140F] text-white border-t border-[#8e6b2e]/40">
@@ -402,52 +412,180 @@ export default function Footer() {
 
           </div>
 
-          {/* NEWSLETTER */}
+          {/* ==================================================
+    NEWSLETTER
+================================================== */}
 
-          <div className="border-r border-[#8e6b2e]/30 pr-10">
+<div className="border-r border-[#8e6b2e]/30 pr-10">
 
-            <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
-              Stay Updated
-            </h3>
+  <h3 className="uppercase tracking-[3px] text-[#C89B4F] text-[11px] font-medium">
+    Stay Updated
+  </h3>
 
-            <p className="text-white/70 mt-6 text-[13px] leading-[1.8]">
-              Insights on luxury real estate, market trends, and exclusive opportunities.
-            </p>
+  <p className="text-white/70 mt-6 text-[13px] leading-[1.8]">
+    Insights on luxury real estate, market trends,
+    and exclusive opportunities.
+  </p>
 
-            <div className="flex mt-10 h-[52px]">
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
 
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="
-                  flex-1
-                  bg-transparent
-                  border border-[#8e6b2e]/50
-                  px-5
-                  outline-none
-                  text-white
-                  placeholder:text-white/40
-                  text-[13px]
-                "
-              />
+      if (newsletterLoading) return;
 
-              <button
-                type="button"
-                className="
-                  w-16
-                  bg-[#C89B4F]
-                  text-black
-                  hover:bg-[#d7ae63]
-                  duration-300
-                  flex items-center justify-center
-                "
-              >
-                <FaArrowRight />
-              </button>
+      const email =
+        newsletterEmail.trim().toLowerCase();
 
-            </div>
+      if (!email) {
+        setNewsletterMessage(
+          "Please enter your email address."
+        );
+        return;
+      }
 
-          </div>
+      const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(email)) {
+        setNewsletterMessage(
+          "Please enter a valid email address."
+        );
+        return;
+      }
+
+      try {
+        setNewsletterLoading(true);
+        setNewsletterMessage("");
+
+        const response = await fetch(
+          `/api/newsletter/subscribe`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              email,
+              source: "Website Footer",
+            }),
+          }
+        );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+              "Subscription failed"
+          );
+        }
+
+        setNewsletterMessage(
+          result.duplicate
+            ? "You're already subscribed."
+            : "You're subscribed. Thank you!"
+        );
+
+        setNewsletterEmail("");
+      } catch (error) {
+        console.error(
+          "Newsletter subscription error:",
+          error
+        );
+
+        setNewsletterMessage(
+          error.message ||
+            "Something went wrong. Please try again."
+        );
+      } finally {
+        setNewsletterLoading(false);
+      }
+    }}
+    className="mt-10"
+  >
+
+    <div className="flex h-[52px]">
+
+      <input
+        type="email"
+        value={newsletterEmail}
+        onChange={(e) =>
+          setNewsletterEmail(e.target.value)
+        }
+        placeholder="Enter your email address"
+        disabled={newsletterLoading}
+        className="
+          flex-1
+          min-w-0
+          bg-transparent
+          border
+          border-[#8e6b2e]/50
+          px-5
+          outline-none
+          text-white
+          placeholder:text-white/40
+          text-[13px]
+          disabled:opacity-50
+        "
+      />
+
+      <button
+        type="submit"
+        disabled={newsletterLoading}
+        aria-label="Subscribe to newsletter"
+        className="
+          w-16
+          shrink-0
+          bg-[#C89B4F]
+          text-black
+          hover:bg-[#d7ae63]
+          duration-300
+          flex
+          items-center
+          justify-center
+          disabled:opacity-50
+          disabled:cursor-not-allowed
+        "
+      >
+        {newsletterLoading ? (
+          <span
+            className="
+              h-4
+              w-4
+              rounded-full
+              border-2
+              border-black/30
+              border-t-black
+              animate-spin
+            "
+          />
+        ) : (
+          <FaArrowRight />
+        )}
+      </button>
+
+    </div>
+
+    {newsletterMessage && (
+      <p
+        className="
+          mt-3
+          text-[12px]
+          leading-5
+          text-[#C89B4F]
+        "
+      >
+        {newsletterMessage}
+      </p>
+    )}
+
+  </form>
+
+</div>
 
           {/* CONTACT */}
 
