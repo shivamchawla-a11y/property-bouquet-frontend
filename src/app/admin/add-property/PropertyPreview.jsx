@@ -305,6 +305,8 @@ const [phone, setPhone] = useState("");
 const [loading, setLoading] = useState(false);
 
 const [locations, setLocations] = useState([]);
+const [showSuccessModal, setShowSuccessModal] =
+  useState(false);
 
 useEffect(() => {
   const fetchLocations = async () => {
@@ -513,7 +515,7 @@ useEffect(() => {
     );
 }, []);
 
-  const handleLeadSubmit = async () => {
+const handleLeadSubmit = async () => {
   if (!leadName.trim() || !leadPhone.trim()) {
     alert("Please fill all fields");
     return;
@@ -522,41 +524,52 @@ useEffect(() => {
   try {
     setSubmitting(true);
 
-    const res = await fetch(
-      "/api/leads",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: leadName,
-          phone: leadPhone,
-          property: coreDetails?.title || "",
-        }),
-      }
-    );
+    const res = await fetch("/api/leads", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        name: leadName.trim(),
+        phone: leadPhone.trim(),
+        property: coreDetails?.title || "",
+        source: "Property Preview",
+        leadType: "Property Enquiry",
+      }),
+    });
 
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.message || "Failed ❌");
+      alert(data.message || "Failed to submit enquiry ❌");
       return;
     }
 
-    // ✅ CLOSE MODAL
+    /* =====================================================
+       CLOSE LEAD MODAL
+    ===================================================== */
+
     setShowModal(false);
 
-    // ✅ DOWNLOAD PDF
-    window.open(gatedContent.brochurePdfUrl, "_blank");
+    /* =====================================================
+       RESET FORM
+    ===================================================== */
 
-    // RESET
     setLeadName("");
     setLeadPhone("");
 
+    /* =====================================================
+       SHOW SUCCESS DIALOG
+    ===================================================== */
+
+    setShowSuccessModal(true);
+
   } catch (err) {
-    console.error(err);
-    alert("Server error ❌");
+    console.error("Lead submission error:", err);
+
+    alert("Something went wrong. Please try again ❌");
   } finally {
     setSubmitting(false);
   }
@@ -7605,6 +7618,214 @@ else {
         </p>
       </div>
     </motion.div>
+  </div>
+)}
+
+{showSuccessModal && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[9999]
+      flex
+      items-center
+      justify-center
+      bg-black/60
+      backdrop-blur-sm
+      px-4
+    "
+  >
+    <div
+      className="
+        relative
+        w-full
+        max-w-md
+        rounded-3xl
+        bg-white
+        px-6
+        py-8
+        text-center
+        shadow-2xl
+        sm:px-8
+        sm:py-10
+      "
+    >
+
+      {/* CLOSE BUTTON */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setShowSuccessModal(false)
+        }
+        className="
+          absolute
+          right-4
+          top-4
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-full
+          text-gray-400
+          transition
+          hover:bg-gray-100
+          hover:text-gray-700
+        "
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+
+      {/* SUCCESS ICON */}
+
+      <div
+        className="
+          mx-auto
+          flex
+          h-16
+          w-16
+          items-center
+          justify-center
+          rounded-full
+          bg-[#f8f1df]
+        "
+      >
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12.5L9.5 17L19 7"
+            stroke="#C89B4F"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+
+      {/* HEADING */}
+
+      <h2
+        className="
+          mt-6
+          font-[var(--font-playfair)]
+          text-2xl
+          font-semibold
+          text-[#111111]
+          sm:text-3xl
+        "
+      >
+        Thank You!
+      </h2>
+
+
+      {/* MESSAGE */}
+
+      <p
+        className="
+          mx-auto
+          mt-4
+          max-w-sm
+          text-sm
+          leading-6
+          text-gray-600
+          sm:text-base
+        "
+      >
+        Your enquiry has been received
+        successfully.
+      </p>
+
+      <p
+        className="
+          mx-auto
+          mt-2
+          max-w-sm
+          text-sm
+          leading-6
+          text-gray-500
+        "
+      >
+        One of our property executives will
+        contact you shortly to assist you with
+        the property and answer any questions
+        you may have.
+      </p>
+
+
+      {/* PROPERTY NAME */}
+
+      {coreDetails?.title && (
+        <div
+          className="
+            mt-5
+            rounded-2xl
+            border
+            border-[#eadfca]
+            bg-[#faf8f3]
+            px-4
+            py-3
+          "
+        >
+          <p
+            className="
+              text-xs
+              uppercase
+              tracking-wider
+              text-gray-400
+            "
+          >
+            Enquiry For
+          </p>
+
+          <p
+            className="
+              mt-1
+              text-sm
+              font-semibold
+              text-[#222222]
+            "
+          >
+            {coreDetails.title}
+          </p>
+        </div>
+      )}
+
+
+      {/* CLOSE */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setShowSuccessModal(false)
+        }
+        className="
+          mt-7
+          w-full
+          rounded-xl
+          bg-[#C89B4F]
+          px-6
+          py-3.5
+          text-sm
+          font-semibold
+          text-[#111111]
+          transition
+          hover:bg-[#b88b40]
+          active:scale-[0.98]
+        "
+      >
+        Continue Exploring
+      </button>
+
+    </div>
   </div>
 )}
 
