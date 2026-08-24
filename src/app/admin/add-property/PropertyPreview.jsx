@@ -1551,7 +1551,7 @@ lg:px-6
   </motion.nav>
 
   {/* LABEL */}
-  <motion.div 
+  {/* <motion.div 
           variants={fadeUp}
           className="inline-flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6 flex-wrap"
         >
@@ -1575,7 +1575,7 @@ lg:px-6
             {heroSection?.propertyStatus ||
               "PRIVATE DIGITAL MANDATE"}
           </p>
-        </motion.div>
+        </motion.div> */}
 
         {/* TITLE */}
         <motion.h1
