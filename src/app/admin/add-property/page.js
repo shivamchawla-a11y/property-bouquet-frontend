@@ -1809,7 +1809,7 @@ const formatIndianPrice = (value) => {
       </h3>
 
       <div className="grid grid-cols-1 gap-4">
-        <input
+        {/* <input
           className="input"
           placeholder="propertyStatus Text"
           value={
@@ -1823,7 +1823,7 @@ const formatIndianPrice = (value) => {
               e.target.value
             )
           }
-        />
+        /> */}
 
         <textarea
   className={`input min-h-[120px] ${
