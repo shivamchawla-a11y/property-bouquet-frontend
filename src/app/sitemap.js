@@ -8,14 +8,43 @@
 // Canonical domain:
 // https://propertybouquet.com
 //
+// INCLUDED:
+// - Homepage
+// - Properties directory
+// - Developers directory
+// - Knowledge Centre
+// - Property Insights
+// - About
+// - Contact
+// - Human-facing Sitemap
+// - Privacy Policy
+// - Disclaimer
+// - Terms of Use
+// - Public property pages
+// - Public developer pages
+// - Published knowledge articles
+// - Published insight/news articles
+// - Public SEO tools
+//
+// EXCLUDED:
+// - Admin pages
+// - Authentication pages
+// - API routes
+// - Draft properties
+// - Deleted properties
+// - Inactive properties
+// - Inactive/deleted developers
+// - Draft knowledge content
+// - Draft insight/news content
+// - Query/filter URLs
+// - Duplicate URLs
+//
 // IMPORTANT:
-// - Only canonical public URLs are included.
-// - www URLs are intentionally NOT included.
-// - Query/filter URLs are intentionally NOT included.
-// - Draft/deleted/inactive content is excluded.
-// - API failures do not break sitemap generation.
+// - Canonical domain is NON-WWW.
+// - No query parameters are added.
+// - No fake lastModified dates are generated.
+// - API failure does not break the sitemap.
 // - Duplicate URLs are automatically removed.
-// - Database dates are used for lastModified when valid.
 //
 // ============================================================
 
@@ -25,17 +54,14 @@ const BASE_URL = "https://propertybouquet.com";
 const REVALIDATE_TIME = 3600;
 
 // ============================================================
-// COMMON FETCH OPTIONS
+// FETCH OPTIONS
 // ============================================================
 //
-// Sitemap data is cached for one hour.
+// Cache API responses for one hour.
 //
-// We intentionally use fetch-level revalidation instead of:
-//
-// export const revalidate = 3600;
-//
-// because this metadata route should remain compatible with
-// the current Next.js 16 setup.
+// We use fetch-level revalidation rather than a route-level
+// revalidate export so this remains compatible with the current
+// Next.js setup.
 //
 
 const FETCH_OPTIONS = {
@@ -48,11 +74,10 @@ const FETCH_OPTIONS = {
 // SAFE FETCH
 // ============================================================
 //
-// If one endpoint fails, the sitemap continues generating
-// from the remaining available data.
+// If an API endpoint fails, sitemap generation continues.
 //
-// This is important because one failed CMS/API endpoint
-// should never prevent the complete sitemap from rendering.
+// This prevents one unavailable CMS endpoint from taking down
+// the complete sitemap.
 //
 
 async function safeFetch(url) {
@@ -85,15 +110,44 @@ async function safeFetch(url) {
     }
 
     // ----------------------------------------------------------
-    // Some endpoints may directly return an array.
+    // Direct array response.
     // ----------------------------------------------------------
 
     if (Array.isArray(json)) {
       return json;
     }
 
+    // ----------------------------------------------------------
+    // Some APIs may return:
+    //
+    // {
+    //   properties: [...]
+    // }
+    //
+    // or similar structures.
+    //
+    // These fallbacks make the sitemap more tolerant without
+    // changing the canonical URL architecture.
+    // ----------------------------------------------------------
+
+    if (Array.isArray(json?.properties)) {
+      return json.properties;
+    }
+
+    if (Array.isArray(json?.developers)) {
+      return json.developers;
+    }
+
+    if (Array.isArray(json?.articles)) {
+      return json.articles;
+    }
+
+    if (Array.isArray(json?.news)) {
+      return json.news;
+    }
+
     console.warn(
-      `⚠️ Sitemap API returned unexpected data format: ${url}`
+      `⚠️ Sitemap API returned an unexpected data format: ${url}`
     );
 
     return [];
@@ -111,11 +165,10 @@ async function safeFetch(url) {
 // VALID DATE HELPER
 // ============================================================
 //
-// Converts MongoDB/API date values into valid Date objects.
+// Returns the first valid date from the supplied values.
 //
-// If no valid date exists, undefined is returned.
-//
-// We do NOT use the current date as a fake lastModified date.
+// We NEVER use the current date as a fallback because doing so
+// would falsely indicate that every URL was recently modified.
 //
 
 function getValidDate(...values) {
@@ -137,21 +190,18 @@ function getValidDate(...values) {
 // ============================================================
 // ACTIVE DOCUMENT CHECK
 // ============================================================
-//
-// Used for developers and other CMS documents.
-//
 
 function isActive(item) {
   if (!item) {
     return false;
   }
 
-  // Deleted document
+  // Explicitly deleted
   if (item.isDeleted === true) {
     return false;
   }
 
-  // Explicitly inactive document
+  // Explicitly inactive
   if (item.isActive === false) {
     return false;
   }
@@ -163,13 +213,14 @@ function isActive(item) {
 // PUBLISHED CONTENT CHECK
 // ============================================================
 //
-// Used for Knowledge Centre and Insights/News.
+// Used for:
+// - Knowledge Centre
+// - Insights
+// - News
 //
-// If the API has a status field, only "published" content
-// is allowed.
+// If status exists, only "published" is allowed.
 //
-// If no status field exists, the content can still be included
-// as long as it is active.
+// If status does not exist, active content may still be included.
 //
 
 function isPublishedContent(item) {
@@ -189,17 +240,19 @@ function isPublishedContent(item) {
 }
 
 // ============================================================
-// NORMALIZE PATH
+// NORMALIZE URL
 // ============================================================
 //
-// Ensures paths are converted into canonical non-www URLs.
+// Converts relative paths to the canonical Property Bouquet
+// domain.
 //
 // Examples:
 //
-// "/"                         → https://propertybouquet.com/
-// "/properties"              → https://propertybouquet.com/properties
-// "properties"               → https://propertybouquet.com/properties
-// "https://propertybouquet..." remains unchanged
+// "/"                  → https://propertybouquet.com/
+// "/properties"       → https://propertybouquet.com/properties
+// "properties"        → https://propertybouquet.com/properties
+//
+// Absolute URLs are preserved.
 //
 
 function normalizeUrl(path) {
@@ -214,7 +267,7 @@ function normalizeUrl(path) {
   }
 
   // ----------------------------------------------------------
-  // Already an absolute URL
+  // Already absolute
   // ----------------------------------------------------------
 
   if (/^https?:\/\//i.test(value)) {
@@ -222,7 +275,7 @@ function normalizeUrl(path) {
   }
 
   // ----------------------------------------------------------
-  // Relative URL
+  // Relative path
   // ----------------------------------------------------------
 
   const normalizedPath = value.startsWith("/")
@@ -236,12 +289,8 @@ function normalizeUrl(path) {
 // ADD URL
 // ============================================================
 //
-// Uses a Map so duplicate URLs can never enter the sitemap.
-//
-// This is especially useful when:
-// - API data contains duplicates
-// - multiple sections reference the same URL
-// - static and dynamic URLs overlap
+// Map-based storage guarantees that the final sitemap never
+// contains duplicate URLs.
 //
 
 function addUrl(
@@ -260,7 +309,7 @@ function addUrl(
   }
 
   // ----------------------------------------------------------
-  // Prevent duplicate URLs
+  // Never add duplicates.
   // ----------------------------------------------------------
 
   if (sitemap.has(url)) {
@@ -274,7 +323,7 @@ function addUrl(
   };
 
   // ----------------------------------------------------------
-  // Only include lastModified when a real valid date exists.
+  // Add lastModified only when a genuine date exists.
   // ----------------------------------------------------------
 
   const validLastModified =
@@ -292,10 +341,8 @@ function addUrl(
 // SAFE SLUG
 // ============================================================
 //
-// Slugs normally contain URL-safe characters.
-//
-// encodeURIComponent prevents malformed URLs if a slug
-// unexpectedly contains spaces or special characters.
+// Prevent malformed URLs if a slug unexpectedly contains
+// spaces or special characters.
 //
 
 function safeSlug(slug) {
@@ -303,9 +350,13 @@ function safeSlug(slug) {
     return null;
   }
 
-  return encodeURIComponent(
-    String(slug).trim()
-  );
+  const value = String(slug).trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return encodeURIComponent(value);
 }
 
 // ============================================================
@@ -383,7 +434,7 @@ export default async function sitemap() {
   });
 
   // ----------------------------------------------------------
-  // HUMAN-FACING SITEMAP PAGE
+  // HUMAN-FACING SITEMAP
   //
   // This is different from /sitemap.xml.
   // ----------------------------------------------------------
@@ -393,17 +444,41 @@ export default async function sitemap() {
     changeFrequency: "monthly",
   });
 
+  // ----------------------------------------------------------
+  // PRIVACY POLICY
+  // ----------------------------------------------------------
+
+  addUrl(sitemap, "/privacy", {
+    priority: 0.50,
+    changeFrequency: "yearly",
+  });
+
+  // ----------------------------------------------------------
+  // DISCLAIMER
+  // ----------------------------------------------------------
+
+  addUrl(sitemap, "/disclaimer", {
+    priority: 0.50,
+    changeFrequency: "yearly",
+  });
+
+  // ----------------------------------------------------------
+  // TERMS OF USE
+  // ----------------------------------------------------------
+
+  addUrl(sitemap, "/terms-of-use", {
+    priority: 0.50,
+    changeFrequency: "yearly",
+  });
+
   // ==========================================================
-  // PROPERTY TOOLS
+  // PUBLIC PROPERTY TOOLS
   // ==========================================================
-  //
-  // These are public, useful SEO landing pages and should be
-  // discoverable by search engines.
   //
   // IMPORTANT:
-  // Keep ONLY tools that actually exist as public routes.
+  // Only include routes that actually exist publicly.
   //
-  // Current known tools:
+  // Current known public tools:
   //
   // /tools/roi-calculator
   // /tools/area-converter
@@ -429,13 +504,13 @@ export default async function sitemap() {
   );
 
   // ==========================================================
-  // DYNAMIC API DATA
+  // FETCH DYNAMIC DATA
   // ==========================================================
   //
-  // Fetch everything in parallel.
+  // All API requests run in parallel.
   //
-  // If one API fails, safeFetch() returns [] and the remaining
-  // sitemap sections continue normally.
+  // If one fails, safeFetch() returns [] and the rest of the
+  // sitemap continues normally.
   //
   // ==========================================================
 
@@ -449,8 +524,8 @@ export default async function sitemap() {
     // PROPERTIES
     // --------------------------------------------------------
     //
-    // all=true is important so the sitemap does not receive
-    // only a default/paginated subset of properties.
+    // all=true ensures we don't accidentally sitemap only
+    // the default paginated API response.
     //
 
     safeFetch(
@@ -487,12 +562,13 @@ export default async function sitemap() {
   // ==========================================================
 
   properties.forEach((property) => {
-    // --------------------------------------------------------
-    // Must have a slug.
-    // --------------------------------------------------------
+    const slug = safeSlug(
+      property?.slug
+    );
 
-    const slug =
-      safeSlug(property?.slug);
+    // --------------------------------------------------------
+    // Slug required.
+    // --------------------------------------------------------
 
     if (!slug) {
       return;
@@ -510,7 +586,7 @@ export default async function sitemap() {
     }
 
     // --------------------------------------------------------
-    // NEVER INDEX DELETED PROPERTIES
+    // EXCLUDE DELETED PROPERTIES
     // --------------------------------------------------------
 
     if (
@@ -520,7 +596,7 @@ export default async function sitemap() {
     }
 
     // --------------------------------------------------------
-    // NEVER INDEX INACTIVE PROPERTIES
+    // EXCLUDE INACTIVE PROPERTIES
     // --------------------------------------------------------
 
     if (
@@ -530,12 +606,9 @@ export default async function sitemap() {
     }
 
     // --------------------------------------------------------
-    // PROPERTY URL
-    //
-    // Your current public property architecture uses:
+    // PUBLIC PROPERTY ARCHITECTURE:
     //
     // https://propertybouquet.com/{slug}
-    //
     // --------------------------------------------------------
 
     addUrl(
@@ -568,7 +641,7 @@ export default async function sitemap() {
         );
 
       // ------------------------------------------------------
-      // Developer must have a slug.
+      // Slug required.
       // ------------------------------------------------------
 
       if (!slug) {
@@ -576,7 +649,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Deleted developers are excluded.
+      // Exclude deleted developers.
       // ------------------------------------------------------
 
       if (
@@ -586,7 +659,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Inactive developers are excluded.
+      // Exclude inactive developers.
       // ------------------------------------------------------
 
       if (
@@ -596,7 +669,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Developer detail URL
+      // Developer URL:
       //
       // /developers/{slug}
       // ------------------------------------------------------
@@ -636,7 +709,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Only published, active articles.
+      // Only published and active content.
       // ------------------------------------------------------
 
       if (
@@ -648,7 +721,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Knowledge article URL
+      // Knowledge URL:
       //
       // /knowledge/{slug}
       // ------------------------------------------------------
@@ -688,7 +761,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Only published, active content.
+      // Only published and active content.
       // ------------------------------------------------------
 
       if (
@@ -700,7 +773,7 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Insights article URL
+      // Insights URL:
       //
       // /insights/{slug}
       // ------------------------------------------------------
@@ -725,19 +798,15 @@ export default async function sitemap() {
   );
 
   // ==========================================================
-  // FINAL SORTING
+  // FINAL SORT
   // ==========================================================
   //
-  // Sitemap order does NOT affect rankings.
+  // Sitemap ordering does not affect Google rankings.
   //
-  // We still use deterministic ordering because it makes:
-  // - debugging easier
-  // - deployments easier to inspect
-  // - sitemap output cleaner
+  // We use deterministic ordering for cleaner output and
+  // easier debugging.
   //
-  // Homepage remains first.
-  // Then higher-priority URLs.
-  // Then alphabetical URL order.
+  // Homepage → priority → URL.
   //
   // ==========================================================
 
@@ -745,19 +814,23 @@ export default async function sitemap() {
     ...sitemap.values(),
   ].sort((a, b) => {
     // --------------------------------------------------------
-    // Homepage first
+    // Homepage first.
     // --------------------------------------------------------
 
-    if (a.url === BASE_URL) {
+    if (
+      a.url === `${BASE_URL}/`
+    ) {
       return -1;
     }
 
-    if (b.url === BASE_URL) {
+    if (
+      b.url === `${BASE_URL}/`
+    ) {
       return 1;
     }
 
     // --------------------------------------------------------
-    // Higher priority first
+    // Higher priority first.
     // --------------------------------------------------------
 
     if (
@@ -771,7 +844,7 @@ export default async function sitemap() {
     }
 
     // --------------------------------------------------------
-    // Deterministic alphabetical order
+    // Alphabetical URL ordering.
     // --------------------------------------------------------
 
     return a.url.localeCompare(
@@ -780,14 +853,13 @@ export default async function sitemap() {
   });
 
   // ==========================================================
-  // PRODUCTION LOG
+  // PRODUCTION DIAGNOSTICS
   // ==========================================================
 
   console.log(
     `✅ Property Bouquet sitemap generated successfully: ${sortedUrls.length} URLs`
   );
 
-  // Helpful diagnostics during deployment.
   console.log(
     `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
   );
