@@ -18,22 +18,25 @@ export default function AboutPage() {
   const [showConsultation, setShowConsultation] = useState(false);
 
   return (
-    <main className="bg-white overflow-hidden">
-
+    <main className="min-h-screen overflow-hidden bg-white">
       <Navbar
-        onConsultationClick={() =>
-          setShowConsultation(true)
-        }
+        onConsultationClick={() => {
+          setShowConsultation(true);
+        }}
       />
 
       <ConsultationModal
         open={showConsultation}
-        onClose={() =>
-          setShowConsultation(false)
-        }
+        onClose={() => {
+          setShowConsultation(false);
+        }}
       />
 
       <HeroSection />
+
+      {/* =====================================================
+          WHO WE ARE
+      ====================================================== */}
 
       {/* Desktop */}
       <div className="hidden md:block">
@@ -45,24 +48,35 @@ export default function AboutPage() {
         <WhoWeAreMobile />
       </div>
 
+      {/* =====================================================
+          MISSION & VISION
+      ====================================================== */}
+
+      {/* Desktop */}
       <div className="hidden lg:block">
-  <MissionVision />
-</div>
+        <MissionVision />
+      </div>
 
-<div className="block lg:hidden">
-  <MissionVisionMobile />
-</div>
+      {/* Mobile / Tablet */}
+      <div className="block lg:hidden">
+        <MissionVisionMobile />
+      </div>
 
+      {/* =====================================================
+          VALUES
+      ====================================================== */}
+
+      {/* Desktop */}
       <div className="hidden lg:block">
-  <Values />
-</div>
+        <Values />
+      </div>
 
-<div className="block lg:hidden">
-  <ValuesMobile />
-</div>
+      {/* Mobile / Tablet */}
+      <div className="block lg:hidden">
+        <ValuesMobile />
+      </div>
 
       <Footer />
-
     </main>
   );
 }

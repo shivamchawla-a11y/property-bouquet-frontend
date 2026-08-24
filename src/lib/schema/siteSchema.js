@@ -3,6 +3,7 @@ const SITE_URL = "https://propertybouquet.com";
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const BRAND_ID = `${SITE_URL}/#brand`;
+const LOGO_ID = `${SITE_URL}/#logo`;
 const HOMEPAGE_ID = `${SITE_URL}/#homepage`;
 
 const LOGO_URL = `${SITE_URL}/logo.webp`;
@@ -29,20 +30,26 @@ export const siteSchema = {
 
       logo: {
         "@type": "ImageObject",
-        "@id": `${SITE_URL}/#logo`,
+
+        "@id": LOGO_ID,
+
         url: LOGO_URL,
+
         contentUrl: LOGO_URL,
+
         width: 512,
+
         height: 512,
+
         caption: "Property Bouquet",
       },
 
       image: {
-        "@id": `${SITE_URL}/#logo`,
+        "@id": LOGO_ID,
       },
 
       description:
-        "Property Bouquet is a premium real estate platform helping buyers discover luxury apartments, villas, builder floors, penthouses, residential projects, commercial properties, and real estate investment opportunities across Gurgaon, Delhi NCR, and India.",
+        "Property Bouquet is a premium real estate platform helping buyers discover luxury apartments, villas, builder floors, penthouses, residential projects, commercial properties and real estate investment opportunities across Gurgaon, Delhi NCR and India.",
 
       slogan:
         "Luxury Real Estate. Curated for Every Lifestyle.",
@@ -68,28 +75,10 @@ export const siteSchema = {
         "Delhi NCR Real Estate",
       ],
 
-      areaServed: [
-        {
-          "@type": "Country",
-          name: "India",
-        },
-        {
-          "@type": "City",
-          name: "Gurgaon",
-        },
-        {
-          "@type": "City",
-          name: "Delhi",
-        },
-        {
-          "@type": "City",
-          name: "Noida",
-        },
-        {
-          "@type": "City",
-          name: "Mumbai",
-        },
-      ],
+      areaServed: {
+        "@type": "Country",
+        name: "India",
+      },
 
       contactPoint: [
         {
@@ -148,6 +137,9 @@ export const siteSchema = {
 
         caption: "Property Bouquet",
       },
+
+      slogan:
+        "Luxury Real Estate. Curated for Every Lifestyle.",
     },
 
     // =========================================================
@@ -166,7 +158,7 @@ export const siteSchema = {
       alternateName: "Property Bouquet Real Estate",
 
       description:
-        "Property Bouquet is a premium real estate platform for discovering luxury properties, residential projects, investment opportunities, developers, and real estate resources across India.",
+        "Property Bouquet is a premium real estate platform for discovering luxury properties, residential projects, investment opportunities, developers and real estate resources across India.",
 
       inLanguage: "en-IN",
 
@@ -185,6 +177,18 @@ export const siteSchema = {
       brand: {
         "@id": BRAND_ID,
       },
+
+      // -------------------------------------------------------
+      // SITE SEARCH
+      // -------------------------------------------------------
+      //
+      // Keep this ONLY if your actual public search URL uses:
+      //
+      // /properties?search=QUERY
+      //
+      // If your SearchPanel uses another parameter such as
+      // propertyName, change the urlTemplate accordingly.
+      //
 
       potentialAction: {
         "@type": "SearchAction",
@@ -216,7 +220,7 @@ export const siteSchema = {
         "Property Bouquet | Luxury Real Estate & Premium Properties in India",
 
       description:
-        "Discover luxury apartments, villas, builder floors, penthouses, new launch projects, and real estate investment opportunities across Gurgaon, Delhi NCR, and India with Property Bouquet.",
+        "Discover luxury apartments, villas, builder floors, penthouses, new launch projects and real estate investment opportunities across Gurgaon, Delhi NCR and India with Property Bouquet.",
 
       isPartOf: {
         "@id": WEBSITE_ID,
