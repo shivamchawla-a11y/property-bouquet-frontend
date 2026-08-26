@@ -9,21 +9,38 @@ const API = "https://propertybouquet.com";
 // ============================================================
 
 /*
-  PUBLIC URL:
-
-  /developer/m3m-developer-projects
-
-  BACKEND DEVELOPER SLUG:
+  DATABASE / BACKEND SLUG
+  ↓
+  PUBLIC SEO URL
 
   m3m
+  → /developer/m3m-developer-projects
 
-  Therefore:
+  spiti-developer
+  → /developer/spiti-developer-projects
 
-  public slug     -> m3m-developer-projects
-  developer slug  -> m3m
+  ats-infrastructure-ltd
+  → /developer/ats-infrastructure-ltd-developer-projects
+
+
+  PUBLIC SEO URL
+  ↓
+  DATABASE / BACKEND SLUG
+
+  m3m-developer-projects
+  → m3m
+
+  spiti-developer-projects
+  → spiti-developer
+
+  ats-infrastructure-ltd-developer-projects
+  → ats-infrastructure-ltd
 */
 
-// Convert backend developer slug into the public SEO slug
+// ============================================================
+// BACKEND SLUG → PUBLIC SEO SLUG
+// ============================================================
+
 function buildPublicDeveloperSlug(developerSlug) {
   if (!developerSlug) return "";
 
@@ -31,29 +48,36 @@ function buildPublicDeveloperSlug(developerSlug) {
     .trim()
     .toLowerCase();
 
+  // Prevent duplicate suffix
   if (cleanSlug.endsWith("-developer-projects")) {
     return cleanSlug;
   }
 
-  if (cleanSlug.endsWith("-developer")) {
-    return `${cleanSlug}-projects`;
-  }
-
+  // ONLY changes the public URL
   return `${cleanSlug}-developer-projects`;
 }
 
-// Convert public SEO slug back into the backend developer slug
+// ============================================================
+// PUBLIC SEO SLUG → BACKEND SLUG
+// ============================================================
+
 function getBackendDeveloperSlug(publicSlug) {
   if (!publicSlug) return "";
 
-  let cleanSlug = String(publicSlug)
+  const cleanSlug = String(publicSlug)
     .trim()
     .toLowerCase();
 
   /*
-    m3m-developer-projects
-    ->
-    m3m
+    Remove ONLY the public SEO suffix.
+
+    ats-infrastructure-ltd-developer-projects
+    ↓
+    ats-infrastructure-ltd
+
+    spiti-developer-projects
+    ↓
+    spiti-developer
   */
 
   if (cleanSlug.endsWith("-developer-projects")) {
@@ -64,24 +88,15 @@ function getBackendDeveloperSlug(publicSlug) {
   }
 
   /*
-    godrej-developer
-    ->
-    godrej
+    Keep plain/backend slug unchanged.
 
-    This also supports the old format temporarily.
-  */
-
-  if (cleanSlug.endsWith("-developer")) {
-    return cleanSlug.replace(
-      /-developer$/,
-      ""
-    );
-  }
-
-  /*
-    Fallback for a plain slug.
     Example:
-    m3m -> m3m
+
+    m3m
+    → m3m
+
+    spiti-developer
+    → spiti-developer
   */
 
   return cleanSlug;
@@ -95,6 +110,10 @@ async function getDeveloper(slug) {
   if (!slug) return null;
 
   try {
+    // ----------------------------------------------------------
+    // PUBLIC SLUG → BACKEND SLUG
+    // ----------------------------------------------------------
+
     const backendSlug =
       getBackendDeveloperSlug(slug);
 
@@ -102,16 +121,53 @@ async function getDeveloper(slug) {
       return null;
     }
 
+    console.log(
+      "============================================"
+    );
+
+    console.log(
+      "PUBLIC DEVELOPER SLUG:",
+      slug
+    );
+
+    console.log(
+      "BACKEND DEVELOPER SLUG:",
+      backendSlug
+    );
+
+    // ----------------------------------------------------------
+    // INTERNAL BACKEND REQUEST
+    //
+    // IMPORTANT:
+    //
+    // /api is ONLY used internally to fetch developer data.
+    //
+    // It is NOT the public browser URL.
+    //
+    // PUBLIC:
+    // /developer/ats-infrastructure-ltd-developer-projects
+    //
+    // INTERNAL:
+    // /api/developers/ats-infrastructure-ltd
+    // ----------------------------------------------------------
+
     const res = await fetch(
       `${API}/api/developers/${encodeURIComponent(
         backendSlug
       )}`,
       {
-        next: {
-          revalidate: 300,
-        },
+        cache: "no-store",
       }
     );
+
+    console.log(
+      "DEVELOPER API STATUS:",
+      res.status
+    );
+
+    // ----------------------------------------------------------
+    // API ERROR
+    // ----------------------------------------------------------
 
     if (!res.ok) {
       console.error(
@@ -122,7 +178,20 @@ async function getDeveloper(slug) {
       return null;
     }
 
+    // ----------------------------------------------------------
+    // API RESPONSE
+    // ----------------------------------------------------------
+
     const data = await res.json();
+
+    console.log(
+      "DEVELOPER FOUND:",
+      data?.developer?.name
+    );
+
+    // ----------------------------------------------------------
+    // DEVELOPER NOT FOUND
+    // ----------------------------------------------------------
 
     if (!data?.developer) {
       return null;
@@ -142,15 +211,33 @@ async function getDeveloper(slug) {
           )
         : [];
 
+    console.log(
+      "PUBLISHED PROPERTIES:",
+      publishedProperties.length
+    );
+
+    console.log(
+      "============================================"
+    );
+
+    // ----------------------------------------------------------
+    // RETURN DATA
+    // ----------------------------------------------------------
+
     return {
       developer: data.developer,
-      properties: publishedProperties,
 
-      // Keep both slugs available
+      properties:
+        publishedProperties,
+
+      // Original database/backend slug
       backendSlug,
-      publicSlug: buildPublicDeveloperSlug(
-        backendSlug
-      ),
+
+      // New public SEO slug
+      publicSlug:
+        buildPublicDeveloperSlug(
+          backendSlug
+        ),
     };
   } catch (error) {
     console.error(
@@ -365,9 +452,6 @@ export async function generateMetadata({
   const backendSlug =
     data.backendSlug;
 
-  const publicSlug =
-    data.publicSlug;
-
   const developerName =
     cleanText(
       developer?.name
@@ -473,13 +557,11 @@ export async function generateMetadata({
   // ==========================================================
 
   const keywords = [
-    // Developer
     `${developerName} developer`,
     `${developerName} projects`,
     `${developerName} properties`,
     `${developerName} real estate`,
 
-    // Residential
     `${developerName} residential projects`,
     `${developerName} residential properties`,
     `${developerName} apartments`,
@@ -487,12 +569,10 @@ export async function generateMetadata({
     `${developerName} villas`,
     `${developerName} plots`,
 
-    // Commercial
     `${developerName} commercial projects`,
     `${developerName} commercial properties`,
     `${developerName} commercial real estate`,
 
-    // Project information
     `${developerName} project prices`,
     `${developerName} property prices`,
     `${developerName} floor plans`,
@@ -500,7 +580,6 @@ export async function generateMetadata({
     `${developerName} project locations`,
     `${developerName} amenities`,
 
-    // Location variations
     ...locations
       .slice(0, 10)
       .map(
@@ -508,13 +587,11 @@ export async function generateMetadata({
           `${developerName} projects in ${location}`
       ),
 
-    // Actual project names
     ...projectNames.slice(
       0,
       15
     ),
 
-    // Generic high-intent terms
     "developer projects",
     "real estate developer projects",
     "residential and commercial projects",
@@ -522,7 +599,6 @@ export async function generateMetadata({
     "property developers",
     "real estate projects",
 
-    // Brand
     "Property Bouquet",
     "Property Bouquet developers",
   ];
@@ -534,10 +610,6 @@ export async function generateMetadata({
   return {
     metadataBase:
       new URL(SITE_URL),
-
-    // ========================================================
-    // BASIC SEO
-    // ========================================================
 
     title,
 
@@ -682,9 +754,6 @@ export default async function DeveloperSlugPage({
   const backendSlug =
     data.backendSlug;
 
-  const publicSlug =
-    data.publicSlug;
-
   // ----------------------------------------------------------
   // BASIC DATA
   // ----------------------------------------------------------
@@ -695,8 +764,10 @@ export default async function DeveloperSlugPage({
     ) ||
     "Luxury Real Estate Developer";
 
-  // IMPORTANT:
-  // This is now the PUBLIC SEO URL.
+  // ----------------------------------------------------------
+  // PUBLIC SEO URL
+  // ----------------------------------------------------------
+
   const canonicalUrl =
     buildDeveloperUrl(
       backendSlug
