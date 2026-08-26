@@ -3,16 +3,72 @@
 import Link from "next/link";
 import { ArrowRight, Bookmark } from "lucide-react";
 
+// ============================================================
+// PUBLIC DEVELOPER URL HELPER
+// ============================================================
+
+function buildDeveloperPublicSlug(slug) {
+  if (!slug) return "";
+
+  const cleanSlug = String(slug)
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!cleanSlug) {
+    return "";
+  }
+
+  // Already complete public URL slug
+  if (cleanSlug.endsWith("-developer-projects")) {
+    return cleanSlug;
+  }
+
+  // Backend slug already contains "-developer"
+  //
+  // Example:
+  // signature-global-developer
+  // ->
+  // signature-global-developer-projects
+  if (cleanSlug.includes("-developer")) {
+    return `${cleanSlug}-projects`;
+  }
+
+  // Normal backend slug
+  //
+  // Example:
+  // m3m
+  // ->
+  // m3m-developer-projects
+  return `${cleanSlug}-developer-projects`;
+}
+
+// ============================================================
+// COMPONENT
+// ============================================================
+
 export default function DeveloperCard({ developer }) {
+  // ----------------------------------------------------------
+  // BUILD PUBLIC SEO URL
+  // ----------------------------------------------------------
+
+  const publicSlug =
+    buildDeveloperPublicSlug(
+      developer?.slug
+    );
+
+  const developerUrl =
+    publicSlug
+      ? `/developers/${encodeURIComponent(
+          publicSlug
+        )}`
+      : "/developers";
+
   return (
     <Link
-  href={`/developer/${
-    developer.slug.endsWith("-developer")
-      ? `${developer.slug}-projects`
-      : `${developer.slug}-developer-projects`
-  }`}
-  className="group block h-full"
->
+      href={developerUrl}
+      className="group block h-full"
+    >
       <article
         className="
           relative
@@ -30,7 +86,9 @@ export default function DeveloperCard({ developer }) {
           hover:shadow-[0_25px_60px_rgba(0,0,0,0.12)]
         "
       >
-        {/* Gold Ribbon */}
+        {/* ==================================================
+            GOLD RIBBON
+        ================================================== */}
 
         <div
           className="
@@ -56,13 +114,27 @@ export default function DeveloperCard({ developer }) {
           />
         </div>
 
-        {/* Cover */}
+        {/* ==================================================
+            COVER
+        ================================================== */}
 
-        <div className="relative h-[155px] overflow-hidden bg-[#f6f3ed]">
-
+        <div
+          className="
+            relative
+            h-[155px]
+            overflow-hidden
+            bg-[#f6f3ed]
+          "
+        >
           <img
-            src={developer.image || "/developers/default-cover.jpg"}
-            alt={developer.name}
+            src={
+              developer?.image ||
+              "/developers/default-cover.jpg"
+            }
+            alt={
+              developer?.name ||
+              "Real Estate Developer"
+            }
             className="
               h-full
               w-full
@@ -78,109 +150,163 @@ export default function DeveloperCard({ developer }) {
 
           {/* Premium White Fade */}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent" />
+          <div
+            className="
+              absolute
+              inset-0
+              bg-gradient-to-t
+              from-white
+              via-white/15
+              to-transparent
+            "
+          />
 
-<div className="absolute inset-0 bg-black/[0.02]" />
-
+          <div
+            className="
+              absolute
+              inset-0
+              bg-black/[0.02]
+            "
+          />
         </div>
 
-        {/* Logo */}
+        {/* ==================================================
+            LOGO
+        ================================================== */}
 
-        {/* Logo */}
+        <div
+          className="
+            relative
+            z-20
+            flex
+            justify-center
+            -mt-12
+          "
+        >
+          {/* Gold Glow */}
 
-<div className="relative z-20 flex justify-center -mt-12">
+          <div
+            className="
+              absolute
+              inset-0
+              flex
+              justify-center
+              items-center
+              pointer-events-none
+            "
+          >
+            <div
+              className="
+                h-[110px]
+                w-[110px]
+                rounded-[30px]
+                bg-[#D4AF37]/18
+                blur-2xl
+                opacity-70
+                group-hover:opacity-100
+                transition-all
+                duration-500
+              "
+            />
+          </div>
 
-  {/* Gold Glow */}
-  <div
-    className="
-      absolute
-      inset-0
-      flex
-      justify-center
-      items-center
-      pointer-events-none
-    "
-  >
-    <div
-      className="
-        h-[110px]
-        w-[110px]
-        rounded-[30px]
-        bg-[#D4AF37]/18
-        blur-2xl
-        opacity-70
-        group-hover:opacity-100
-        transition-all
-        duration-500
-      "
-    />
-  </div>
+          {/* Logo Container */}
 
-  <div
-    className="
-      relative
-      flex
-      h-[98px]
-      w-[98px]
-      items-center
-      justify-center
-      overflow-hidden
-      rounded-[24px]
-      border
-      border-[#E6DCC5]
-      bg-[linear-gradient(180deg,#ffffff_0%,#FCFAF5_100%)]
-      p-4
-      shadow-[0_18px_40px_rgba(0,0,0,0.10)]
-      ring-1
-      ring-[#D4AF37]/25
-      transition-all
-      duration-500
-      group-hover:scale-[1.06]
-      group-hover:shadow-[0_22px_45px_rgba(212,175,55,0.25)]
-    "
-  >
+          <div
+            className="
+              relative
+              flex
+              h-[98px]
+              w-[98px]
+              items-center
+              justify-center
+              overflow-hidden
+              rounded-[24px]
+              border
+              border-[#E6DCC5]
+              bg-[linear-gradient(180deg,#ffffff_0%,#FCFAF5_100%)]
+              p-4
+              shadow-[0_18px_40px_rgba(0,0,0,0.10)]
+              ring-1
+              ring-[#D4AF37]/25
+              transition-all
+              duration-500
+              group-hover:scale-[1.06]
+              group-hover:shadow-[0_22px_45px_rgba(212,175,55,0.25)]
+            "
+          >
+            {/* Inner Background */}
 
-    {/* Inner Background */}
-    <div
-      className="
-        absolute
-        inset-[6px]
-        rounded-[18px]
-        bg-[#FAF8F2]
-      "
-    />
+            <div
+              className="
+                absolute
+                inset-[6px]
+                rounded-[18px]
+                bg-[#FAF8F2]
+              "
+            />
 
-    <img
-      src={developer.logo}
-      alt={developer.name}
-      className="
-        relative
-        z-10
-        max-h-[74px]
-        max-w-[74px]
-        object-contain
-        drop-shadow-[0_3px_5px_rgba(0,0,0,0.28)]
-        contrast-125
-        brightness-105
-        saturate-125
-        transition-all
-        duration-500
-        group-hover:scale-110
-      "
-      style={{
-        filter:
-          "drop-shadow(0 2px 3px rgba(0,0,0,.22)) contrast(1.22) saturate(1.18) brightness(1.06)",
-          mixBlendMode: "multiply",
-      }}
-    />
+            {/* Developer Logo */}
 
-  </div>
+            {developer?.logo ? (
+              <img
+                src={developer.logo}
+                alt={
+                  developer?.name ||
+                  "Developer logo"
+                }
+                className="
+                  relative
+                  z-10
+                  max-h-[74px]
+                  max-w-[74px]
+                  object-contain
+                  drop-shadow-[0_3px_5px_rgba(0,0,0,0.28)]
+                  contrast-125
+                  brightness-105
+                  saturate-125
+                  transition-all
+                  duration-500
+                  group-hover:scale-110
+                "
+                style={{
+                  filter:
+                    "drop-shadow(0 2px 3px rgba(0,0,0,.22)) contrast(1.22) saturate(1.18) brightness(1.06)",
+                  mixBlendMode:
+                    "multiply",
+                }}
+              />
+            ) : (
+              <span
+                className="
+                  relative
+                  z-10
+                  text-center
+                  font-playfair
+                  text-[13px]
+                  font-semibold
+                  text-[#8d7740]
+                "
+              >
+                {developer?.name ||
+                  "Developer"}
+              </span>
+            )}
+          </div>
+        </div>
 
-</div>
+        {/* ==================================================
+            CONTENT
+        ================================================== */}
 
-        {/* Content */}
-
-        <div className="px-6 pt-5 pb-6">
+        <div
+          className="
+            px-6
+            pt-5
+            pb-6
+          "
+        >
+          {/* Developer Name */}
 
           <h3
             className="
@@ -191,16 +317,29 @@ export default function DeveloperCard({ developer }) {
               text-[#1b1b1b]
             "
           >
-            {developer.name}
+            {developer?.name ||
+              "Real Estate Developer"}
           </h3>
 
           {/* Divider */}
 
-          <div className="flex justify-center my-4">
-
-            <div className="h-px w-10 bg-[#D4AF37]" />
-
+          <div
+            className="
+              flex
+              justify-center
+              my-4
+            "
+          >
+            <div
+              className="
+                h-px
+                w-10
+                bg-[#D4AF37]
+              "
+            />
           </div>
+
+          {/* Description */}
 
           <p
             className="
@@ -212,14 +351,15 @@ export default function DeveloperCard({ developer }) {
               line-clamp-3
             "
           >
-            {developer.description ||
+            {developer?.description ||
               "Creating exceptional residential communities through timeless architecture, superior craftsmanship and uncompromising quality."}
           </p>
 
-          {/* Button */}
+          {/* ==================================================
+              BUTTON
+          ================================================== */}
 
           <div className="mt-6">
-
             <div
               className="
                 flex
@@ -251,13 +391,9 @@ export default function DeveloperCard({ developer }) {
                   group-hover:translate-x-1
                 "
               />
-
             </div>
-
           </div>
-
         </div>
-
       </article>
     </Link>
   );

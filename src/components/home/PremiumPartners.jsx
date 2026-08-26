@@ -9,17 +9,48 @@ import { useEffect, useState } from "react";
 // ============================================================
 
 function getDeveloperProjectUrl(slug) {
-  const cleanSlug = slug?.trim().toLowerCase();
-
-  if (!cleanSlug) {
-    return "/developer";
+  if (!slug) {
+    return "/developers";
   }
 
-  const baseSlug = cleanSlug.endsWith("-developer")
-    ? cleanSlug
-    : `${cleanSlug}-developer`;
+  const cleanSlug = String(slug)
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
 
-  return `/developer/${baseSlug}-projects`;
+  if (!cleanSlug) {
+    return "/developers";
+  }
+
+  // Already complete public SEO slug
+  //
+  // Example:
+  // signature-global-developer-projects
+  //
+  // Keep it unchanged.
+  if (cleanSlug.endsWith("-developer-projects")) {
+    return `/developers/${cleanSlug}`;
+  }
+
+  // Backend slug already contains "-developer"
+  //
+  // Example:
+  // signature-global-developer
+  //
+  // becomes:
+  // signature-global-developer-projects
+  if (cleanSlug.includes("-developer")) {
+    return `/developers/${cleanSlug}-projects`;
+  }
+
+  // Normal backend slug
+  //
+  // Example:
+  // m3m
+  //
+  // becomes:
+  // m3m-developer-projects
+  return `/developers/${cleanSlug}-developer-projects`;
 }
 
 // ============================================================
@@ -39,9 +70,12 @@ export default function PremiumPartners() {
   useEffect(() => {
     const fetchDevelopers = async () => {
       try {
-        const res = await fetch("/api/developers");
+        const res = await fetch(
+          "/api/developers"
+        );
 
-        const data = await res.json();
+        const data =
+          await res.json();
 
         console.log(
           "Developers API Response:",
@@ -49,7 +83,9 @@ export default function PremiumPartners() {
         );
 
         if (data.success) {
-          setDevelopers(data.data || []);
+          setDevelopers(
+            data.data || []
+          );
         } else {
           setDevelopers([]);
         }
@@ -149,17 +185,23 @@ export default function PremiumPartners() {
 
               <div className="flex gap-5 w-max mb-5 marquee-left">
 
-                {[...developers, ...developers].map(
-                  (developer, index) => {
+                {[
+                  ...developers,
+                  ...developers,
+                ].map(
+                  (
+                    developer,
+                    index
+                  ) => {
 
                     const developerUrl =
                       getDeveloperProjectUrl(
-                        developer.slug
+                        developer?.slug
                       );
 
                     return (
                       <Link
-                        key={`top-${developer._id}-${index}`}
+                        key={`top-${developer?._id}-${index}`}
                         href={developerUrl}
                       >
 
@@ -224,8 +266,13 @@ export default function PremiumPartners() {
                           <div className="h-full w-full flex items-center justify-center p-2">
 
                             <img
-                              src={developer.logo}
-                              alt={developer.name}
+                              src={
+                                developer?.logo
+                              }
+                              alt={
+                                developer?.name ||
+                                "Developer"
+                              }
                               className="
                                 max-h-[90px]
                                 max-w-[90%]
@@ -266,17 +313,23 @@ export default function PremiumPartners() {
 
               <div className="flex gap-5 w-max marquee-right">
 
-                {[...developers, ...developers].map(
-                  (developer, index) => {
+                {[
+                  ...developers,
+                  ...developers,
+                ].map(
+                  (
+                    developer,
+                    index
+                  ) => {
 
                     const developerUrl =
                       getDeveloperProjectUrl(
-                        developer.slug
+                        developer?.slug
                       );
 
                     return (
                       <Link
-                        key={`bottom-${developer._id}-${index}`}
+                        key={`bottom-${developer?._id}-${index}`}
                         href={developerUrl}
                       >
 
@@ -341,8 +394,13 @@ export default function PremiumPartners() {
                           <div className="h-full w-full flex items-center justify-center p-2">
 
                             <img
-                              src={developer.logo}
-                              alt={developer.name}
+                              src={
+                                developer?.logo
+                              }
+                              alt={
+                                developer?.name ||
+                                "Developer"
+                              }
                               className="
                                 max-h-[90px]
                                 max-w-[90%]
