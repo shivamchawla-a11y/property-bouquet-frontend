@@ -895,7 +895,7 @@ const [newsletterMessage, setNewsletterMessage] =
       {[
         {
           label: "Privacy Policy",
-          href: "/privacy",
+          href: "/privacy-policy",
         },
         {
           label: "Terms of Use",

@@ -6,7 +6,11 @@ import { ArrowRight, Bookmark } from "lucide-react";
 export default function DeveloperCard({ developer }) {
   return (
     <Link
-  href={`/developers/${developer.slug}`}
+  href={`/developer/${
+    developer.slug.endsWith("-developer")
+      ? `${developer.slug}-projects`
+      : `${developer.slug}-developer-projects`
+  }`}
   className="group block h-full"
 >
       <article
