@@ -22,6 +22,7 @@ import KnowledgeSection from "../home/luxury/KnowledgeSection";
 import NewsInsightSection from "../home/luxury/NewsInsightSection";
 import ROICalculator from "../home/luxury/ROICalculator";
 import AdvisorySection from "../home/luxury/AdvisorySection";
+import ToolsSection from "./luxury/ToolsSection";
 
 
 const advisoryPoints = [
@@ -164,9 +165,11 @@ const formatDate = (date) => {
     </div>
 
     {/* ROI */}
-    <div className="bg-[#031511] py-28">
+    {/* <div className="bg-[#031511] py-28">
       <ROICalculator />
-    </div>
+    </div> */}
+
+    <ToolsSection/>
 
     {/* Advisory */}
     <div className="bg-[#f7f4ee] py-28 pb-36">
