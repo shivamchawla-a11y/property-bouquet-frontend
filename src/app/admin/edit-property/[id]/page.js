@@ -79,7 +79,7 @@ export default function EditProperty() {
   const router = useRouter();
   const { id } = useParams();
 
-  const [form, setForm] = useState({
+    const [form, setForm] = useState({
     // ================= BASIC =================
     slug: "",
     marketType: "Primary",
@@ -173,7 +173,7 @@ export default function EditProperty() {
       // AMENITIES SECTION
       amenitiesSectionNumber: "04",
   
-      amenitiesSectionLabel: "Project Amenities",
+      amenitiesSectionLabel: "Amenities & Lifestyle",
   
       amenitiesHeadingLine1: "Every Detail.",
   
@@ -200,7 +200,7 @@ export default function EditProperty() {
     configurationSection: {
       sectionNumber: "05",
   
-      sectionLabel: "Residence Configurations",
+      sectionLabel: "Configurations & Pricing",
   
       titleLine1: "Residences Tailored",
   
@@ -247,7 +247,7 @@ export default function EditProperty() {
       // SECTION HEADER
       sectionNumber: "07",
   
-      topLabel: "PRIME LOCATION",
+      topLabel: "Location & Connectivity",
   
       headingLine1: "A Location That",
   
@@ -434,7 +434,7 @@ export default function EditProperty() {
     faqSection: {
       sectionNumber: "09",
   
-      topLabel: "FAQ",
+      topLabel: "Frequently Asked Questions",
   
       headingLine1: "Frequently Asked Questions",
   

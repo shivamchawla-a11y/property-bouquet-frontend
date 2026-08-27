@@ -4,6 +4,7 @@ import Navbar from "@/components/home/Navbar";
 import HeroSection from "@/components/roi-calculator/HeroSection";
 import ROICalculator from "@/components/roi-calculator/ROICalculator";
 import Footer from "@/components/home/Footer";
+import ROIExplainerSection from "@/components/roi-calculator/ROIExplainerSection";
 
 export default function ROICalculatorPage() {
   return (
@@ -13,6 +14,8 @@ export default function ROICalculatorPage() {
       <HeroSection />
 
       <ROICalculator />
+
+      <ROIExplainerSection/>
 
       <Footer />
     </main>
