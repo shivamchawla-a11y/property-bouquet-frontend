@@ -249,10 +249,9 @@ const formatDate = (date) => {
           <div className="relative min-h-[540px] overflow-hidden bg-black">
 
             <Image
-              src="/market1.webp"
+              src="/market11.png"
               alt="Luxury Interior"
               fill
-              sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
               className="absolute inset-0 object-cover object-center"
             />
 

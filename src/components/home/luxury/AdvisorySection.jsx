@@ -258,7 +258,7 @@ const formatDate = (date) => {
 <div className="relative min-h-[420px] md:min-h-[520px] overflow-hidden bg-black">
 
   <Image
-    src="/market2.webp"
+    src="/market2.png"
     alt="Luxury Advisory"
     fill
     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
