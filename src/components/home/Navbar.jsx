@@ -72,6 +72,32 @@ const navItems = [
   },
 ];
 
+// =========================================================
+// PUBLIC DEVELOPER URL
+// =========================================================
+
+const getDeveloperProjectUrl = (slug) => {
+  if (!slug) return "/developers";
+
+  const cleanSlug = String(slug)
+    .toLowerCase()
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+
+  // Already complete
+  if (cleanSlug.endsWith("-developer-projects")) {
+    return `/developers/${cleanSlug}`;
+  }
+
+  // Backend slug already contains "-developer"
+  if (cleanSlug.endsWith("-developer")) {
+    return `/developers/${cleanSlug}-projects`;
+  }
+
+  // Normal backend slug
+  return `/developers/${cleanSlug}-developer-projects`;
+};
+
 export default function Navbar({
   onConsultationClick,
   forceSolid = false,
@@ -385,9 +411,7 @@ setDevelopers(uniqueDevelopers);
 
   if (developer?.slug) {
     router.push(
-      `/developers/${encodeURIComponent(
-        developer.slug
-      )}`
+      getDeveloperProjectUrl(developer.slug)
     );
   }
 
@@ -567,9 +591,7 @@ setDevelopers(uniqueDevelopers);
 
   if (developer?.slug) {
     router.push(
-      `/developers/${encodeURIComponent(
-        developer.slug
-      )}`
+      getDeveloperProjectUrl(developer.slug)
     );
   }
 
@@ -1677,11 +1699,9 @@ setDevelopers(uniqueDevelopers);
                           false
                         );
 
-                        if (developer?.slug) {
+                       if (developer?.slug) {
   router.push(
-    `/developers/${encodeURIComponent(
-      developer.slug
-    )}`
+    getDeveloperProjectUrl(developer.slug)
   );
 }
                       }}
