@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { Range, getTrackBackground } from "react-range";
 
 export default function LuxuryDropdown({
@@ -13,6 +13,8 @@ export default function LuxuryDropdown({
   value,
   onChange,
   budgetSlider = false,
+  locationAction = false,
+  locationLoading = false,
 }) {
 const [open, setOpen] = useState(false);
 const [budgetValues, setBudgetValues] =
@@ -350,32 +352,124 @@ shadow-[0_25px_80px_rgba(0,0,0,0.7)]
 </div>
 ) : (
   <>
-  {options.map((item) => (
-  <button
-    key={item}
-    type="button"
-    onClick={() => {
-      onChange(item);
-      setOpen(false);
-    }}
-    className="
-      w-full
-      px-5
-      py-4
-      text-left
-      text-white/80
-      hover:text-white
-      hover:bg-white/[0.05]
-      transition-all
-      duration-200
-      border-b
-      border-white/[0.04]
-      last:border-none
-    "
-  >
-    {item}
-  </button>
-))}
+    {/* =====================================================
+        USE MY LOCATION
+    ===================================================== */}
+
+    {locationAction && (
+      <button
+        type="button"
+        onClick={() => {
+          onChange("__USE_MY_LOCATION__");
+        }}
+        disabled={locationLoading}
+        className="
+          w-full
+          px-5
+          py-4
+          text-left
+          border-b
+          border-white/[0.08]
+          bg-[#c89d58]/[0.06]
+          hover:bg-[#c89d58]/[0.10]
+          transition-all
+          duration-200
+          group
+        "
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              border
+              border-[#c89d58]/30
+              bg-[#c89d58]/10
+            "
+          >
+            {locationLoading ? (
+              <span
+                className="
+                  h-4
+                  w-4
+                  animate-spin
+                  rounded-full
+                  border-2
+                  border-[#c89d58]/30
+                  border-t-[#c89d58]
+                "
+              />
+            ) : (
+              <MapPin
+                size={17}
+                className="text-[#d4ae67]"
+                strokeWidth={1.7}
+              />
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <p
+              className="
+                text-[12px]
+                font-medium
+                text-[#d4ae67]
+              "
+            >
+              {locationLoading
+                ? "Detecting your location..."
+                : "Use My Current Location"}
+            </p>
+
+            <p
+              className="
+                mt-0.5
+                text-[10px]
+                text-white/35
+              "
+            >
+              Find properties near you
+            </p>
+          </div>
+        </div>
+      </button>
+    )}
+
+    {/* =====================================================
+        NORMAL OPTIONS
+    ===================================================== */}
+
+    {options.map((item) => (
+      <button
+        key={item}
+        type="button"
+        onClick={() => {
+          onChange(item);
+          setOpen(false);
+        }}
+        className="
+          w-full
+          px-5
+          py-4
+          text-left
+          text-white/80
+          hover:text-white
+          hover:bg-white/[0.05]
+          transition-all
+          duration-200
+          border-b
+          border-white/[0.04]
+          last:border-none
+        "
+      >
+        {item}
+      </button>
+    ))}
   </>
 )}
 </motion.div>
