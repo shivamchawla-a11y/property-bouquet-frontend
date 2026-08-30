@@ -52,7 +52,7 @@ const navItems = [
   {
     title: "Tools",
     key: "tools",
-    href: "/",
+    href: "/#tools",
     items: [
       "EMI Calculator",
       "ROI Calculator",
@@ -477,6 +477,12 @@ setDevelopers(uniqueDevelopers);
   // =========================================================
 
   const handleMobileItemClick = (item) => {
+
+    if (item.key === "tools") {
+  closeMobileMenu();
+  router.push("/#tools");
+  return;
+}
     // DIRECT LINKS — NO DROPDOWN
     if (
       item.key === "about" ||
