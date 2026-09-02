@@ -77,7 +77,6 @@ export default function AdminLayout({ children }) {
       name: "Developer",
       path: "/admin/developers",
       icon: Building2,
-      roles: ["SuperAdmin"],
     },
 
     {
