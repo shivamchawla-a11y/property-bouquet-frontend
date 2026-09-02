@@ -673,27 +673,54 @@ useEffect(() => {
 
 // ============================================================
 // MARK FORM AS DIRTY WHEN USER CHANGES IT
+// Do not mark the initial empty form as dirty.
 // ============================================================
 
+const initialFormRef = useRef(true);
+
 useEffect(() => {
+  if (initialFormRef.current) {
+    initialFormRef.current = false;
+    return;
+  }
+
   setIsDirty(true);
 }, [form]);
 
 
 // ============================================================
 // LOCAL EMERGENCY BACKUP
-// Saves the current form inside the browser
+// Only save when the user has actually entered something.
+// This prevents an empty Add Property form from becoming
+// a "previously saved draft".
 // ============================================================
 
 useEffect(() => {
-  if (!form) return;
+  if (!isDirty) return;
+
+  const currentForm = latestFormRef.current;
+
+  if (!currentForm) return;
+
+  const slug = String(
+    currentForm?.slug || ""
+  ).trim();
+
+  const title = String(
+    currentForm?.coreDetails?.title || ""
+  ).trim();
+
+  // Do not create a local draft from a completely empty form.
+  if (!slug && !title) {
+    return;
+  }
 
   try {
     localStorage.setItem(
       "propertyBouquet_add_property_draft",
       JSON.stringify({
-        form,
-        draftId,
+        form: currentForm,
+        draftId: latestDraftIdRef.current,
         savedAt: Date.now(),
       })
     );
@@ -703,11 +730,13 @@ useEffect(() => {
       err
     );
   }
-}, [form, draftId]);
+}, [form, isDirty]);
 
 
 // ============================================================
 // RESTORE LOCAL EMERGENCY BACKUP
+// Only restore a real user-created draft.
+// Never show the restore popup for an empty form.
 // ============================================================
 
 useEffect(() => {
@@ -724,7 +753,38 @@ useEffect(() => {
 
     const parsed = JSON.parse(saved);
 
-    if (!parsed?.form) return;
+    if (!parsed?.form) {
+      localStorage.removeItem(
+        "propertyBouquet_add_property_draft"
+      );
+
+      return;
+    }
+
+    const savedSlug = String(
+      parsed?.form?.slug || ""
+    ).trim();
+
+    const savedTitle = String(
+      parsed?.form?.coreDetails?.title || ""
+    ).trim();
+
+    // ========================================================
+    // IMPORTANT:
+    // Do NOT show restore popup for an empty saved form.
+    // ========================================================
+
+    if (!savedSlug && !savedTitle) {
+      localStorage.removeItem(
+        "propertyBouquet_add_property_draft"
+      );
+
+      return;
+    }
+
+    // ========================================================
+    // ASK ONLY WHEN A REAL DRAFT EXISTS
+    // ========================================================
 
     const shouldRestore = window.confirm(
       "A previously saved property draft was found. Do you want to restore it?"
@@ -738,13 +798,19 @@ useEffect(() => {
       return;
     }
 
+    // ========================================================
+    // RESTORE FORM
+    // ========================================================
+
     setForm(parsed.form);
 
     latestFormRef.current = parsed.form;
 
     if (parsed.draftId) {
       setDraftId(parsed.draftId);
-      latestDraftIdRef.current = parsed.draftId;
+
+      latestDraftIdRef.current =
+        parsed.draftId;
     }
 
     setIsDirty(false);
@@ -752,10 +818,16 @@ useEffect(() => {
     toast.success(
       "Previous property draft restored ✅"
     );
+
   } catch (err) {
     console.error(
       "Local draft restore failed:",
       err
+    );
+
+    // Remove corrupted local draft
+    localStorage.removeItem(
+      "propertyBouquet_add_property_draft"
     );
   }
 }, []);
@@ -1668,26 +1740,38 @@ useEffect(() => {
 // CHECK SLUG + TITLE DUPLICATES
 // ============================================================
 
+// ============================================================
+// CHECK SLUG + TITLE DUPLICATES / SIMILAR PROPERTIES
+// ============================================================
+
 const checkPropertyDuplicates = useCallback(() => {
   if (duplicateCheckTimer.current) {
     clearTimeout(duplicateCheckTimer.current);
   }
 
-  const slug = String(form.slug || "").trim();
-
-  const title = String(
-    form.coreDetails?.title || ""
+  const slug = String(
+    form?.slug || ""
   ).trim();
 
-  // Nothing meaningful to check
-  if (slug.length < 2 && title.length < 2) {
+  const title = String(
+    form?.coreDetails?.title || ""
+  ).trim();
+
+  // ========================================================
+  // NOTHING TO CHECK
+  // ========================================================
+
+  if (
+    slug.length < 2 &&
+    title.length < 2
+  ) {
     setDuplicateCheck({
-  loading: false,
-  slugExists: false,
-  slugProperty: null,
-  similarSlugs: [],
-  similarTitles: [],
-});
+      loading: false,
+      slugExists: false,
+      slugProperty: null,
+      similarSlugs: [],
+      similarTitles: [],
+    });
 
     return;
   }
@@ -1697,36 +1781,71 @@ const checkPropertyDuplicates = useCallback(() => {
     loading: true,
   }));
 
-  duplicateCheckTimer.current = setTimeout(
-    async () => {
+  duplicateCheckTimer.current =
+    setTimeout(async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token");
 
-        const params = new URLSearchParams();
+        if (!token) {
+          setDuplicateCheck({
+            loading: false,
+            slugExists: false,
+            slugProperty: null,
+            similarSlugs: [],
+            similarTitles: [],
+          });
+
+          return;
+        }
+
+        const params =
+          new URLSearchParams();
+
+        // ====================================================
+        // SLUG
+        // Check from the moment 2 characters are typed.
+        // ====================================================
 
         if (slug.length >= 2) {
           params.set("slug", slug);
         }
 
+        // ====================================================
+        // TITLE
+        // ====================================================
+
         if (title.length >= 2) {
           params.set("title", title);
         }
 
+        // ====================================================
+        // CURRENT DRAFT
+        // Don't show the property itself when editing.
+        // ====================================================
+
         if (draftId) {
-          params.set("draftId", draftId);
+          params.set(
+            "draftId",
+            draftId
+          );
         }
 
-        const response = await fetch(
-          `/api/properties/check-duplicate?${params.toString()}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response =
+          await fetch(
+            `/api/properties/check-duplicate?${params.toString()}`,
+            {
+              method: "GET",
 
-        const data = await response.json();
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        const data =
+          await response.json();
 
         if (!response.ok) {
           throw new Error(
@@ -1735,39 +1854,77 @@ const checkPropertyDuplicates = useCallback(() => {
           );
         }
 
+        // ====================================================
+        // UPDATE RESULTS
+        // ====================================================
+
         setDuplicateCheck({
-  loading: false,
-  slugExists: Boolean(data.slugExists),
-  slugProperty: data.slugProperty || null,
+          loading: false,
 
-  similarSlugs: Array.isArray(data.similarSlugs)
-    ? data.similarSlugs
-    : [],
+          slugExists:
+            Boolean(
+              data?.slugExists
+            ),
 
-  similarTitles: Array.isArray(data.similarTitles)
-    ? data.similarTitles
-    : [],
-});
+          slugProperty:
+            data?.slugProperty ||
+            null,
+
+          similarSlugs:
+            Array.isArray(
+              data?.similarSlugs
+            )
+              ? data.similarSlugs
+              : [],
+
+          similarTitles:
+            Array.isArray(
+              data?.similarTitles
+            )
+              ? data.similarTitles
+              : [],
+        });
+
       } catch (error) {
+
         console.error(
           "Duplicate check error:",
           error
         );
 
-        setDuplicateCheck((prev) => ({
-          ...prev,
-          loading: false,
-        }));
+        setDuplicateCheck(
+          (prev) => ({
+            ...prev,
+            loading: false,
+          })
+        );
       }
-    },
-    450
-  );
+    }, 350);
+
 }, [
-  form.slug,
-  form.coreDetails?.title,
+  form?.slug,
+  form?.coreDetails?.title,
   draftId,
 ]);
 
+
+// ============================================================
+// RUN CHECK WHEN SLUG / TITLE CHANGES
+// ============================================================
+
+useEffect(() => {
+  checkPropertyDuplicates();
+
+  return () => {
+    if (duplicateCheckTimer.current) {
+      clearTimeout(
+        duplicateCheckTimer.current
+      );
+    }
+  };
+}, [
+  checkPropertyDuplicates,
+]);
 // ============================================================
 // RUN DUPLICATE CHECK WHEN SLUG / TITLE CHANGES
 // ============================================================
