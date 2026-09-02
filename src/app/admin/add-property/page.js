@@ -956,12 +956,18 @@ return;
 
    // ================= SUCCESS =================
 if (res.ok) {
-  toast.success("Property Added Successfully ✅");
+  toast.success(
+    "Property Added Successfully ✅"
+  );
 
   setErrors({});
   setErrorList([]);
 
   setIsDirty(false);
+
+  // Clear draft identity after final publishing
+  latestDraftIdRef.current = null;
+  setDraftId(null);
 
   router.push("/admin/properties");
 
@@ -1045,210 +1051,440 @@ window.scrollTo({ top: 0, behavior: "smooth" });
 }
 };
 
-const saveDraftSilently = () => {
+// ============================================================
+// DRAFT AUTO-SAVE STATE / REFS
+// ============================================================
+
+const [isSavingDraft, setIsSavingDraft] = useState(false);
+
+const draftSaveRef = React.useRef(null);
+const latestFormRef = React.useRef(form);
+const latestDraftIdRef = React.useRef(draftId);
+
+
+// ============================================================
+// KEEP LATEST FORM + DRAFT ID AVAILABLE
+// ============================================================
+
+useEffect(() => {
+  latestFormRef.current = form;
+}, [form]);
+
+useEffect(() => {
+  latestDraftIdRef.current = draftId;
+}, [draftId]);
+
+
+// ============================================================
+// MARK FORM AS DIRTY WHENEVER FORM CHANGES
+// ============================================================
+
+useEffect(() => {
+  setIsDirty(true);
+}, [form]);
+
+
+// ============================================================
+// BUILD CLEAN DRAFT PAYLOAD
+// ============================================================
+
+const buildDraftPayload = () => {
+  const currentForm = latestFormRef.current;
+  const currentDraftId = latestDraftIdRef.current;
 
   const seoKeywords =
-  typeof form.seoEngine.keywords === "string"
-    ? form.seoEngine.keywords
-        .split(",")
-        .map((k) => k.trim())
-        .filter(Boolean)
-    : form.seoEngine.keywords || [];
+    typeof currentForm.seoEngine.keywords === "string"
+      ? currentForm.seoEngine.keywords
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean)
+      : currentForm.seoEngine.keywords || [];
 
-const hasCustomSEO =
-  !!(
-    form.seoEngine.metaTitle?.trim() &&
-    form.seoEngine.metaDescription?.trim() &&
+  const hasCustomSEO = !!(
+    currentForm.seoEngine.metaTitle?.trim() &&
+    currentForm.seoEngine.metaDescription?.trim() &&
     seoKeywords.length
   );
 
+  return {
+    ...currentForm,
+
+    // IMPORTANT:
+    // Existing draft gets updated using this ID.
+    draftId: currentDraftId,
+
+    keyMetrics: {
+      ...currentForm.keyMetrics,
+
+      customMetrics:
+        currentForm.keyMetrics.customMetrics || [],
+
+      totalUnits:
+        Number(currentForm.keyMetrics.totalUnits) || 0,
+
+      totalTowers:
+        Number(currentForm.keyMetrics.totalTowers) || 0,
+    },
+
+    coreDetails: {
+      ...currentForm.coreDetails,
+
+      developerRef:
+        currentForm.coreDetails.developerRef || null,
+    },
+
+    categoryData: {
+      ...currentForm.categoryData,
+
+      categoryRef:
+        currentForm.categoryData.categoryRef || null,
+    },
+
+    locationData: {
+      ...currentForm.locationData,
+
+      locationRef:
+        currentForm.locationData.locationRef || null,
+    },
+
+    seoEngine: {
+      hasCustomSEO,
+
+      metaTitle:
+        currentForm.seoEngine.metaTitle?.trim() || "",
+
+      metaDescription:
+        currentForm.seoEngine.metaDescription?.trim() || "",
+
+      keywords: seoKeywords,
+    },
+  };
+};
+
+
+// ============================================================
+// SILENT AUTO-SAVE
+//
+// Used by:
+// - debounce
+// - 15 second interval
+// - browser reload
+// - browser back
+// - tab close
+// - page hide
+//
+// IMPORTANT:
+// The returned draft ID is saved back into state + ref.
+// This prevents duplicate drafts.
+// ============================================================
+
+const saveDraftSilently = async () => {
+  // Prevent multiple simultaneous draft requests
+  if (draftSaveRef.current) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    console.warn(
+      "⚠️ No authentication token available for auto-save."
+    );
+
+    return;
+  }
+
   try {
-    const payload = {
-      ...form,
-      draftId,
+    draftSaveRef.current = true;
+    setIsSavingDraft(true);
 
-      keyMetrics: {
-        ...form.keyMetrics,
-        customMetrics:
-          form.keyMetrics.customMetrics || [],
-      },
+    const payload = buildDraftPayload();
 
-      coreDetails: {
-        ...form.coreDetails,
-        developerRef:
-          form.coreDetails.developerRef || null,
-      },
-
-      categoryData: {
-        ...form.categoryData,
-        categoryRef:
-          form.categoryData.categoryRef || null,
-      },
-
-      locationData: {
-        ...form.locationData,
-        locationRef:
-          form.locationData.locationRef || null,
-      },
-
-      seoEngine: {
-  hasCustomSEO,
-  metaTitle: form.seoEngine.metaTitle?.trim() || "",
-  metaDescription:
-    form.seoEngine.metaDescription?.trim() || "",
-  keywords: seoKeywords,
-},
-    };
-
-    const blob = new Blob(
-      [JSON.stringify(payload)],
+    const res = await fetch(
+      "/api/properties/draft",
       {
-        type: "application/json",
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify(payload),
+
+        // Allows request to continue during
+        // page navigation/unload where supported.
+        keepalive: true,
       }
     );
 
-    navigator.sendBeacon(
-      "/api/properties/draft",
-      blob
+    if (!res.ok) {
+      let errorData = {};
+
+      try {
+        errorData = await res.json();
+      } catch {
+        // Ignore invalid JSON response
+      }
+
+      console.error(
+        "❌ Auto draft save failed:",
+        res.status,
+        errorData?.message || ""
+      );
+
+      return;
+    }
+
+    const data = await res.json();
+
+    // Backend should return the created/updated property.
+    const savedDraftId =
+      data?.data?._id ||
+      data?.data?.id ||
+      data?.draftId ||
+      null;
+
+    // --------------------------------------------------------
+    // VERY IMPORTANT
+    // Save returned ID so all future autosaves update
+    // the SAME draft.
+    // --------------------------------------------------------
+
+    if (savedDraftId) {
+      latestDraftIdRef.current = savedDraftId;
+
+      setDraftId(savedDraftId);
+    }
+
+    console.log(
+      "✅ Auto draft saved:",
+      savedDraftId || "existing draft"
     );
+
   } catch (err) {
-    console.error(err);
+    console.error(
+      "❌ Silent draft save failed:",
+      err
+    );
+
+  } finally {
+    draftSaveRef.current = null;
+
+    setIsSavingDraft(false);
   }
 };
 
+
+// ============================================================
+// DEBOUNCED AUTO-SAVE
+//
+// Saves approximately 1.5 seconds after the user stops
+// editing the form.
+// ============================================================
+
 useEffect(() => {
-  const handleBeforeUnload = (e) => {
-    if (!isDirty) return;
+  if (!isDirty) {
+    return;
+  }
+
+  const timer = setTimeout(() => {
+    saveDraftSilently();
+  }, 1500);
+
+  return () => {
+    clearTimeout(timer);
+  };
+}, [form, isDirty]);
+
+
+// ============================================================
+// PERIODIC AUTO-SAVE
+//
+// Safety backup every 15 seconds while the user is editing.
+// ============================================================
+
+useEffect(() => {
+  if (!isDirty) {
+    return;
+  }
+
+  const interval = setInterval(() => {
+    saveDraftSilently();
+  }, 15000);
+
+  return () => {
+    clearInterval(interval);
+  };
+}, [isDirty]);
+
+
+// ============================================================
+// PAGE HIDE / RELOAD / CLOSE / BROWSER BACK
+//
+// pagehide fires when the document is being unloaded or
+// moved away from the active page.
+//
+// This covers:
+// - Browser Back
+// - Browser Forward
+// - Reload
+// - Closing tab
+// - Navigating away
+// ============================================================
+
+useEffect(() => {
+  const handlePageHide = () => {
+    if (!isDirty) {
+      return;
+    }
 
     saveDraftSilently();
-
-    e.preventDefault();
-
-    e.returnValue =
-      "You have unsaved changes. Save draft before leaving.";
-
-    return e.returnValue;
   };
 
   window.addEventListener(
-    "beforeunload",
-    handleBeforeUnload
+    "pagehide",
+    handlePageHide
   );
 
   return () => {
     window.removeEventListener(
-      "beforeunload",
-      handleBeforeUnload
+      "pagehide",
+      handlePageHide
     );
   };
-}, [isDirty, form, draftId]);
+}, [isDirty]);
+
+
+// ============================================================
+// MANUAL SAVE DRAFT
+//
+// Used when user explicitly presses "Save Draft".
+// ============================================================
 
 const handleSaveDraft = async () => {
+  if (draftSaveRef.current) {
+    return;
+  }
+
   try {
     const token = localStorage.getItem("token");
 
-    const seoKeywords =
-  typeof form.seoEngine.keywords === "string"
-    ? form.seoEngine.keywords
-        .split(",")
-        .map((k) => k.trim())
-        .filter(Boolean)
-    : form.seoEngine.keywords || [];
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again."
+      );
 
-const hasCustomSEO =
-  !!(
-    form.seoEngine.metaTitle?.trim() &&
-    form.seoEngine.metaDescription?.trim() &&
-    seoKeywords.length
-  );
+      return;
+    }
 
-    const payload = {
-  ...form,
-  draftId,
+    draftSaveRef.current = true;
 
-  keyMetrics: {
-  ...form.keyMetrics,
-  customMetrics:
-    form.keyMetrics.customMetrics || [],
-},
+    setIsSavingDraft(true);
 
-  coreDetails: {
-    ...form.coreDetails,
-    developerRef:
-      form.coreDetails.developerRef || null,
-  },
+    const payload = buildDraftPayload();
 
-  categoryData: {
-    ...form.categoryData,
-    categoryRef:
-      form.categoryData.categoryRef || null,
-  },
-
-  locationData: {
-    ...form.locationData,
-    locationRef:
-      form.locationData.locationRef || null,
-  },
-
-  seoEngine: {
-  hasCustomSEO,
-  metaTitle: form.seoEngine.metaTitle?.trim() || "",
-  metaDescription:
-    form.seoEngine.metaDescription?.trim() || "",
-  keywords: seoKeywords,
-},
-};
+    console.log(
+      "💾 MANUAL DRAFT PAYLOAD:",
+      payload
+    );
 
     const res = await fetch(
-  "/api/properties/draft",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  }
-);
+      "/api/properties/draft",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify(payload),
+      }
+    );
 
     const responseText = await res.text();
 
-console.log("Status:", res.status);
-console.log("Response:", responseText);
+    console.log(
+      "Draft Status:",
+      res.status
+    );
 
-let data = {};
+    console.log(
+      "Draft Response:",
+      responseText
+    );
 
-try {
-  data = JSON.parse(responseText);
-} catch (e) {
-  toast.error("Backend returned HTML instead of JSON");
-  return;
-}
+    let data = {};
 
-    if (res.ok) {
-  setDraftId(data.data._id);
+    try {
+      data = JSON.parse(responseText);
+    } catch (err) {
+      toast.error(
+        "Backend returned HTML instead of JSON."
+      );
 
-  setIsDirty(false);
-
-  toast.success("Draft saved ✅");
-} else {
-      toast.error(data.message);
+      return;
     }
+
+    if (!res.ok) {
+      toast.error(
+        data?.message ||
+          "Failed to save draft."
+      );
+
+      return;
+    }
+
+    // --------------------------------------------------------
+    // GET SAVED DRAFT ID
+    // --------------------------------------------------------
+
+    const savedDraftId =
+      data?.data?._id ||
+      data?.data?.id ||
+      data?.draftId ||
+      null;
+
+    // --------------------------------------------------------
+    // STORE ID IN BOTH STATE AND REF
+    // --------------------------------------------------------
+
+    if (savedDraftId) {
+      latestDraftIdRef.current =
+        savedDraftId;
+
+      setDraftId(savedDraftId);
+    }
+
+    // --------------------------------------------------------
+    // MARK AS SAVED
+    // --------------------------------------------------------
+
+    setIsDirty(false);
+
+    toast.success(
+      "Draft saved ✅"
+    );
+
   } catch (err) {
-    console.error(err);
-    toast.error("Failed to save draft");
+    console.error(
+      "Manual draft save error:",
+      err
+    );
+
+    toast.error(
+      "Failed to save draft."
+    );
+
+  } finally {
+    draftSaveRef.current = null;
+
+    setIsSavingDraft(false);
   }
 };
 
-// useEffect(() => {
-//   const interval = setInterval(() => {
-//     if (!isDirty) return;
-
-//     handleSaveDraft();
-//   }, 60000); // 1 minute
-
-//   return () => clearInterval(interval);
-// }, [isDirty, form, draftId]);
 
 
 const handleCreateLocation = async () => {
