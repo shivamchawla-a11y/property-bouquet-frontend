@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react";
 import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
@@ -499,11 +500,20 @@ const [previewDevice, setPreviewDevice] =
   const [iconSearch, setIconSearch] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [isDraftSaving, setIsDraftSaving] = useState(false);
+const [isDraftSaving, setIsDraftSaving] = useState(false);
+
+// ============================================================
+// DRAFT / AUTOSAVE REFS
+// ============================================================
 
 const draftSaveInProgress = useRef(false);
+
 const latestFormRef = useRef(form);
+
 const latestDraftIdRef = useRef(draftId);
+
+// Prevent localStorage restore from running more than once
+const hasRestoredLocalDraft = useRef(false);
 
 const [newLocationName, setNewLocationName] = useState("");
 
@@ -542,6 +552,19 @@ const [activeMetricIndex, setActiveMetricIndex] = useState(null);
 const [activeMetric, setActiveMetric] = useState(null);
 const [expandedMetric, setExpandedMetric] = useState(null);
 const [isSubmitting, setIsSubmitting] = useState(false);
+
+// ============================================================
+// DUPLICATE PROPERTY CHECK
+// ============================================================
+
+const [duplicateCheck, setDuplicateCheck] = useState({
+  loading: false,
+  slugExists: false,
+  slugProperty: null,
+  similarTitles: [],
+});
+
+const duplicateCheckTimer = useRef(null);
 
 
 // Massive icon library
@@ -1235,23 +1258,77 @@ const buildDraftPayload = () => {
 
 
 // ============================================================
+// CHECK IF DRAFT IS READY TO SAVE
+// ============================================================
+
+const canSaveDraft = () => {
+  const currentForm = latestFormRef.current;
+
+  const slug = String(
+    currentForm?.slug || ""
+  ).trim();
+
+  const title = String(
+    currentForm?.coreDetails?.title || ""
+  ).trim();
+
+  // Backend Property schema requires these fields
+  if (!slug || !title) {
+    return false;
+  }
+
+  return true;
+};
+// ============================================================
 // SILENT AUTO SAVE
 // ============================================================
 
 const saveDraftSilently = async () => {
   if (!isDirty) return;
 
-  // Prevent multiple draft requests at the same time
-  if (draftSaveInProgress.current) return;
+  // ==========================================================
+  // DO NOT CREATE EMPTY DATABASE DRAFTS
+  // ==========================================================
+
+  if (!canSaveDraft()) {
+    console.log(
+      "⏳ Auto draft skipped: Slug and Title are required."
+    );
+
+    return;
+  }
+
+  // ==========================================================
+  // PREVENT MULTIPLE REQUESTS AT THE SAME TIME
+  // ==========================================================
+
+  if (draftSaveInProgress.current) {
+    return;
+  }
 
   draftSaveInProgress.current = true;
 
   try {
     const token = localStorage.getItem("token");
 
-    if (!token) return;
+    if (!token) {
+      console.log(
+        "⏳ Auto draft skipped: no authentication token."
+      );
+
+      return;
+    }
 
     const payload = buildDraftPayload();
+
+    console.log(
+      "💾 Auto saving draft...",
+      {
+        slug: payload.slug,
+        title: payload?.coreDetails?.title,
+        draftId: payload.draftId,
+      }
+    );
 
     const res = await fetch(
       "/api/properties/draft",
@@ -1267,16 +1344,39 @@ const saveDraftSilently = async () => {
       }
     );
 
+    // ========================================================
+    // READ RESPONSE EVEN WHEN BACKEND RETURNS 500
+    // ========================================================
+
+    const responseText = await res.text();
+
+    let data = {};
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      data = {
+        message: responseText,
+      };
+    }
+
+    // ========================================================
+    // ERROR
+    // ========================================================
+
     if (!res.ok) {
       console.error(
         "Auto draft save failed:",
-        res.status
+        res.status,
+        data
       );
 
       return;
     }
 
-    const data = await res.json();
+    // ========================================================
+    // SUCCESS
+    // ========================================================
 
     if (data?.data?._id) {
       setDraftId(data.data._id);
@@ -1287,7 +1387,10 @@ const saveDraftSilently = async () => {
 
     setIsDirty(false);
 
-    console.log("💾 Auto draft saved");
+    console.log(
+      "💾 Auto draft saved successfully:",
+      data?.data?._id
+    );
   } catch (err) {
     console.error(
       "Auto draft save error:",
@@ -1305,6 +1408,34 @@ const saveDraftSilently = async () => {
 
 const handleSaveDraft = async () => {
   if (isDraftSaving) return;
+
+  // ==========================================================
+  // REQUIRED DRAFT FIELDS
+  // ==========================================================
+
+  const slug = String(
+    latestFormRef.current?.slug || ""
+  ).trim();
+
+  const title = String(
+    latestFormRef.current?.coreDetails?.title || ""
+  ).trim();
+
+  if (!slug) {
+    toast.error(
+      "Please enter a property Slug before saving the draft."
+    );
+
+    return;
+  }
+
+  if (!title) {
+    toast.error(
+      "Please enter a Project Title before saving the draft."
+    );
+
+    return;
+  }
 
   try {
     setIsDraftSaving(true);
@@ -1394,8 +1525,28 @@ const handleSaveDraft = async () => {
 // AUTO SAVE AFTER 1.5 SECONDS OF INACTIVITY
 // ============================================================
 
+// ============================================================
+// AUTO SAVE AFTER 1.5 SECONDS OF INACTIVITY
+// ============================================================
+
 useEffect(() => {
   if (!isDirty) return;
+
+  // ==========================================================
+  // DON'T AUTO SAVE UNTIL MINIMUM REQUIRED DATA EXISTS
+  // ==========================================================
+
+  const slug = String(
+    form?.slug || ""
+  ).trim();
+
+  const title = String(
+    form?.coreDetails?.title || ""
+  ).trim();
+
+  if (!slug || !title) {
+    return;
+  }
 
   const timer = setTimeout(() => {
     saveDraftSilently();
@@ -1404,7 +1555,10 @@ useEffect(() => {
   return () => {
     clearTimeout(timer);
   };
-}, [form, isDirty]);
+}, [
+  form,
+  isDirty,
+]);
 
 // ============================================================
 // BEFORE UNLOAD
@@ -1465,6 +1619,8 @@ useEffect(() => {
   };
 }, [isDirty]);
 
+
+
 // ============================================================
 // BROWSER BACK / FORWARD
 // ============================================================
@@ -1506,6 +1662,120 @@ useEffect(() => {
     );
   };
 }, [isDirty]);
+
+// ============================================================
+// CHECK SLUG + TITLE DUPLICATES
+// ============================================================
+
+const checkPropertyDuplicates = useCallback(() => {
+  if (duplicateCheckTimer.current) {
+    clearTimeout(duplicateCheckTimer.current);
+  }
+
+  const slug = String(form.slug || "").trim();
+
+  const title = String(
+    form.coreDetails?.title || ""
+  ).trim();
+
+  // Nothing meaningful to check
+  if (slug.length < 2 && title.length < 2) {
+    setDuplicateCheck({
+      loading: false,
+      slugExists: false,
+      slugProperty: null,
+      similarTitles: [],
+    });
+
+    return;
+  }
+
+  setDuplicateCheck((prev) => ({
+    ...prev,
+    loading: true,
+  }));
+
+  duplicateCheckTimer.current = setTimeout(
+    async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const params = new URLSearchParams();
+
+        if (slug.length >= 2) {
+          params.set("slug", slug);
+        }
+
+        if (title.length >= 2) {
+          params.set("title", title);
+        }
+
+        if (draftId) {
+          params.set("draftId", draftId);
+        }
+
+        const response = await fetch(
+          `/api/properties/check-duplicate?${params.toString()}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data?.message ||
+              "Duplicate check failed"
+          );
+        }
+
+        setDuplicateCheck({
+          loading: false,
+          slugExists: Boolean(data.slugExists),
+          slugProperty:
+            data.slugProperty || null,
+          similarTitles:
+            Array.isArray(data.similarTitles)
+              ? data.similarTitles
+              : [],
+        });
+      } catch (error) {
+        console.error(
+          "Duplicate check error:",
+          error
+        );
+
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          loading: false,
+        }));
+      }
+    },
+    450
+  );
+}, [
+  form.slug,
+  form.coreDetails?.title,
+  draftId,
+]);
+
+// ============================================================
+// RUN DUPLICATE CHECK WHEN SLUG / TITLE CHANGES
+// ============================================================
+
+useEffect(() => {
+  checkPropertyDuplicates();
+
+  return () => {
+    if (duplicateCheckTimer.current) {
+      clearTimeout(duplicateCheckTimer.current);
+    }
+  };
+}, [checkPropertyDuplicates]);
 
 const handleCreateLocation = async () => {
   try {
@@ -2019,13 +2289,20 @@ const formatIndianPrice = (value) => {
   <div className="section">
     <h2 className="section-title">Core Details</h2>
 
+    {/* ==========================================================
+    SLUG
+========================================================== */}
+
+<div>
+  <div className="relative">
     <input
       className={`input transition-all duration-200 ${
-  hasError("slug")
-    ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-    : ""
-}`}
-  placeholder="Slug *"
+        hasError("slug") ||
+        duplicateCheck.slugExists
+          ? "border-red-500 ring-2 border-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+          : ""
+      }`}
+      placeholder="Slug *"
       value={form.slug}
       onChange={(e) =>
         setForm((prev) => ({
@@ -2035,29 +2312,172 @@ const formatIndianPrice = (value) => {
       }
     />
 
-    {hasError("slug") && (
-  <p className="text-red-400 text-sm mt-1 animate-pulse">
-    Slug is required
-  </p>
-)}
+    {duplicateCheck.loading &&
+      form.slug?.trim().length >= 2 && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+  </div>
 
+  {/* REQUIRED ERROR */}
+
+  {hasError("slug") && (
+    <p className="text-red-400 text-sm mt-1 animate-pulse">
+      Slug is required
+    </p>
+  )}
+
+  {/* DUPLICATE SLUG ERROR */}
+
+  {!hasError("slug") &&
+    duplicateCheck.slugExists &&
+    duplicateCheck.slugProperty && (
+      <div className="mt-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2">
+        <p className="text-red-400 text-sm font-semibold">
+          ⚠ This slug is already in use.
+        </p>
+
+        <p className="text-red-300/80 text-xs mt-1">
+          Existing property:{" "}
+          <span className="font-medium">
+            {
+              duplicateCheck.slugProperty
+                ?.coreDetails?.title
+            }
+          </span>
+        </p>
+
+        <p className="text-red-300/70 text-xs mt-1">
+          Slug:{" "}
+          {
+            duplicateCheck.slugProperty?.slug
+          }
+        </p>
+
+        {duplicateCheck.slugProperty
+          ?.isDeleted ? (
+          <p className="text-red-400 text-xs mt-1 font-medium">
+            This slug belongs to a property in Trash.
+            It is still reserved and cannot be reused.
+          </p>
+        ) : (
+          <p className="text-red-400 text-xs mt-1">
+            Please use a different slug.
+          </p>
+        )}
+      </div>
+    )}
+</div>
+
+{/* ==========================================================
+    TITLE
+========================================================== */}
+
+<div>
+  <div className="relative">
     <input
-  className={`input transition-all duration-200 ${
-    hasError("coreDetails.title")
-      ? "border-red-500 ring-2 ring-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
-      : ""
-  }`}
-  placeholder="Title *"
-  value={form.coreDetails.title}
-  onChange={(e) =>
-    handleChange("coreDetails", "title", e.target.value)
-  }
-/>
+      className={`input transition-all duration-200 ${
+        hasError("coreDetails.title")
+          ? "border-red-500 ring-2 border-red-500 shadow-[0_0_10px_rgba(255,0,0,0.25)]"
+          : ""
+      }`}
+      placeholder="Title *"
+      value={form.coreDetails.title}
+      onChange={(e) =>
+        handleChange(
+          "coreDetails",
+          "title",
+          e.target.value
+        )
+      }
+    />
 
-    {hasError("coreDetails.title") && (
-  <p className="text-red-400 text-sm">Title is required</p>
-)}
+    {duplicateCheck.loading &&
+      form.coreDetails?.title?.trim().length >=
+        2 && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+  </div>
 
+  {hasError("coreDetails.title") && (
+    <p className="text-red-400 text-sm mt-1">
+      Title is required
+    </p>
+  )}
+
+  {/* ========================================================
+      SIMILAR EXISTING PROPERTIES
+  ======================================================== */}
+
+  {!hasError("coreDetails.title") &&
+    duplicateCheck.similarTitles.length > 0 && (
+      <div className="mt-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 overflow-hidden">
+        <div className="px-4 py-3 border-b border-yellow-500/20">
+          <p className="text-yellow-400 text-sm font-semibold">
+            ⚠ Similar properties already exist
+          </p>
+
+          <p className="text-gray-400 text-xs mt-1">
+            Check these existing properties before
+            creating a new one.
+          </p>
+        </div>
+
+        <div className="divide-y divide-white/5">
+          {duplicateCheck.similarTitles.map(
+            (property) => (
+              <div
+                key={property._id}
+                className="px-4 py-3 hover:bg-white/[0.03] transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">
+                      {property?.coreDetails
+                        ?.title || "Untitled Property"}
+                    </p>
+
+                    {property?.slug && (
+                      <p className="text-gray-500 text-xs mt-1 truncate">
+                        /{property.slug}
+                      </p>
+                    )}
+
+                    {property?.coreDetails
+                      ?.developerName && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        {
+                          property.coreDetails
+                            .developerName
+                        }
+                      </p>
+                    )}
+                  </div>
+
+                  <span
+                    className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${
+                      property.status ===
+                      "published"
+                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                        : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                    }`}
+                  >
+                    {property.status ===
+                    "published"
+                      ? "Published"
+                      : "Draft"}
+                  </span>
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    )}
+</div>
 {/* ================= HERO SECTION ================= */}
     <div className="mt-8">
       <h3 className="font-semibold mb-4 text-white">
