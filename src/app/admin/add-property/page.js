@@ -561,6 +561,7 @@ const [duplicateCheck, setDuplicateCheck] = useState({
   loading: false,
   slugExists: false,
   slugProperty: null,
+  similarSlugs: [],
   similarTitles: [],
 });
 
@@ -1681,11 +1682,12 @@ const checkPropertyDuplicates = useCallback(() => {
   // Nothing meaningful to check
   if (slug.length < 2 && title.length < 2) {
     setDuplicateCheck({
-      loading: false,
-      slugExists: false,
-      slugProperty: null,
-      similarTitles: [],
-    });
+  loading: false,
+  slugExists: false,
+  slugProperty: null,
+  similarSlugs: [],
+  similarTitles: [],
+});
 
     return;
   }
@@ -1734,15 +1736,18 @@ const checkPropertyDuplicates = useCallback(() => {
         }
 
         setDuplicateCheck({
-          loading: false,
-          slugExists: Boolean(data.slugExists),
-          slugProperty:
-            data.slugProperty || null,
-          similarTitles:
-            Array.isArray(data.similarTitles)
-              ? data.similarTitles
-              : [],
-        });
+  loading: false,
+  slugExists: Boolean(data.slugExists),
+  slugProperty: data.slugProperty || null,
+
+  similarSlugs: Array.isArray(data.similarSlugs)
+    ? data.similarSlugs
+    : [],
+
+  similarTitles: Array.isArray(data.similarTitles)
+    ? data.similarTitles
+    : [],
+});
       } catch (error) {
         console.error(
           "Duplicate check error:",
