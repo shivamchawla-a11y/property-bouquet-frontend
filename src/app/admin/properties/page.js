@@ -1303,14 +1303,17 @@ export default function PropertiesPage() {
 
                     {/* TITLE */}
 
-                    <td className="p-3 font-semibold text-sm text-gray-900 max-w-[180px] truncate">
-                      {
-                        property
-                          .coreDetails
-                          ?.title ||
-                        "N/A"
-                      }
-                    </td>
+                    <td className="p-3 font-semibold text-sm text-gray-900 max-w-[220px]">
+  <div
+    className="max-w-[220px] truncate cursor-pointer"
+    title={
+      property?.coreDetails?.title ||
+      "N/A"
+    }
+  >
+    {property?.coreDetails?.title || "N/A"}
+  </div>
+</td>
 
                     {/* PRICE */}
 
@@ -1490,20 +1493,29 @@ export default function PropertiesPage() {
 
                     {/* CREATED */}
 
-                    <td className="p-3 text-xs text-gray-700 font-medium whitespace-nowrap">
-                      {property.createdAt
-                        ? new Date(
-                            property.createdAt
-                          ).toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            }
-                          )
-                        : "N/A"}
-                    </td>
+                    <td className="p-3 text-xs text-gray-700 font-medium">
+  <div className="flex flex-col gap-0.5">
+    <span className="whitespace-nowrap">
+      {property.createdAt
+        ? new Date(
+            property.createdAt
+          ).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "N/A"}
+    </span>
+
+    <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
+      By{" "}
+      {property?.createdBy?.name ||
+        property?.createdBy?.fullName ||
+        property?.createdBy?.username ||
+        "Unknown"}
+    </span>
+  </div>
+</td>
 
                     {/* ACTIONS */}
 

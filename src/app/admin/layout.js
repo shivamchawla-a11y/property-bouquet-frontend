@@ -233,8 +233,10 @@ export default function AdminLayout({ children }) {
               const Icon = item.icon;
 
               const active =
-                pathname === item.path ||
-                pathname.startsWith(item.path + "/");
+  item.path === "/admin"
+    ? pathname === "/admin"
+    : pathname === item.path ||
+      pathname.startsWith(item.path + "/");
 
               return (
                 <Link
