@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import StepMedia from "./StepMedia";
 import { useRouter } from "next/navigation";
 import PropertyPreview from "./PropertyPreview";
@@ -495,6 +499,11 @@ const [previewDevice, setPreviewDevice] =
   const [iconSearch, setIconSearch] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+
+const draftSaveInProgress = useRef(false);
+const latestFormRef = useRef(form);
+const latestDraftIdRef = useRef(draftId);
 
 const [newLocationName, setNewLocationName] = useState("");
 
@@ -533,6 +542,7 @@ const [activeMetricIndex, setActiveMetricIndex] = useState(null);
 const [activeMetric, setActiveMetric] = useState(null);
 const [expandedMetric, setExpandedMetric] = useState(null);
 const [isSubmitting, setIsSubmitting] = useState(false);
+
 
 // Massive icon library
 const ICONS = {
@@ -610,7 +620,11 @@ useEffect(() => {
   fetchDevelopers();
 }, []);
 
-  useEffect(() => {
+// ============================================================
+// FORM / PREVIEW SYNC
+// ============================================================
+
+useEffect(() => {
   const t = setTimeout(() => {
     setPreviewData(form);
   }, 200);
@@ -618,9 +632,109 @@ useEffect(() => {
   return () => clearTimeout(t);
 }, [form]);
 
+
+// ============================================================
+// KEEP LATEST FORM + DRAFT ID IN REFS
+// Used by autosave / beforeunload / browser navigation
+// ============================================================
+
+useEffect(() => {
+  latestFormRef.current = form;
+}, [form]);
+
+useEffect(() => {
+  latestDraftIdRef.current = draftId;
+}, [draftId]);
+
+
+// ============================================================
+// MARK FORM AS DIRTY WHEN USER CHANGES IT
+// ============================================================
+
 useEffect(() => {
   setIsDirty(true);
 }, [form]);
+
+
+// ============================================================
+// LOCAL EMERGENCY BACKUP
+// Saves the current form inside the browser
+// ============================================================
+
+useEffect(() => {
+  if (!form) return;
+
+  try {
+    localStorage.setItem(
+      "propertyBouquet_add_property_draft",
+      JSON.stringify({
+        form,
+        draftId,
+        savedAt: Date.now(),
+      })
+    );
+  } catch (err) {
+    console.error(
+      "Local draft backup failed:",
+      err
+    );
+  }
+}, [form, draftId]);
+
+
+// ============================================================
+// RESTORE LOCAL EMERGENCY BACKUP
+// ============================================================
+
+useEffect(() => {
+  if (hasRestoredLocalDraft.current) return;
+
+  hasRestoredLocalDraft.current = true;
+
+  try {
+    const saved = localStorage.getItem(
+      "propertyBouquet_add_property_draft"
+    );
+
+    if (!saved) return;
+
+    const parsed = JSON.parse(saved);
+
+    if (!parsed?.form) return;
+
+    const shouldRestore = window.confirm(
+      "A previously saved property draft was found. Do you want to restore it?"
+    );
+
+    if (!shouldRestore) {
+      localStorage.removeItem(
+        "propertyBouquet_add_property_draft"
+      );
+
+      return;
+    }
+
+    setForm(parsed.form);
+
+    latestFormRef.current = parsed.form;
+
+    if (parsed.draftId) {
+      setDraftId(parsed.draftId);
+      latestDraftIdRef.current = parsed.draftId;
+    }
+
+    setIsDirty(false);
+
+    toast.success(
+      "Previous property draft restored ✅"
+    );
+  } catch (err) {
+    console.error(
+      "Local draft restore failed:",
+      err
+    );
+  }
+}, []);
 
 const getNestedValue = (obj, path) => {
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
@@ -956,20 +1070,22 @@ return;
 
    // ================= SUCCESS =================
 if (res.ok) {
-  toast.success(
-    "Property Added Successfully ✅"
-  );
+  toast.success("Property Added Successfully ✅");
 
-  setErrors({});
-  setErrorList([]);
+setErrors({});
+setErrorList([]);
+setIsDirty(false);
 
-  setIsDirty(false);
+// Remove emergency browser copy because
+// the property has now been successfully submitted.
+localStorage.removeItem(
+  "propertyBouquet_add_property_draft"
+);
 
-  // Clear draft identity after final publishing
-  latestDraftIdRef.current = null;
-  setDraftId(null);
+setDraftId(null);
+latestDraftIdRef.current = null;
 
-  router.push("/admin/properties");
+router.push("/admin/properties");
 
   return;
 }
@@ -1052,40 +1168,7 @@ window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 // ============================================================
-// DRAFT AUTO-SAVE STATE / REFS
-// ============================================================
-
-const [isSavingDraft, setIsSavingDraft] = useState(false);
-
-const draftSaveRef = React.useRef(null);
-const latestFormRef = React.useRef(form);
-const latestDraftIdRef = React.useRef(draftId);
-
-
-// ============================================================
-// KEEP LATEST FORM + DRAFT ID AVAILABLE
-// ============================================================
-
-useEffect(() => {
-  latestFormRef.current = form;
-}, [form]);
-
-useEffect(() => {
-  latestDraftIdRef.current = draftId;
-}, [draftId]);
-
-
-// ============================================================
-// MARK FORM AS DIRTY WHENEVER FORM CHANGES
-// ============================================================
-
-useEffect(() => {
-  setIsDirty(true);
-}, [form]);
-
-
-// ============================================================
-// BUILD CLEAN DRAFT PAYLOAD
+// BUILD DRAFT PAYLOAD
 // ============================================================
 
 const buildDraftPayload = () => {
@@ -1100,49 +1183,38 @@ const buildDraftPayload = () => {
           .filter(Boolean)
       : currentForm.seoEngine.keywords || [];
 
-  const hasCustomSEO = !!(
-    currentForm.seoEngine.metaTitle?.trim() &&
-    currentForm.seoEngine.metaDescription?.trim() &&
-    seoKeywords.length
-  );
+  const hasCustomSEO =
+    !!(
+      currentForm.seoEngine.metaTitle?.trim() &&
+      currentForm.seoEngine.metaDescription?.trim() &&
+      seoKeywords.length
+    );
 
   return {
     ...currentForm,
 
-    // IMPORTANT:
-    // Existing draft gets updated using this ID.
     draftId: currentDraftId,
 
     keyMetrics: {
       ...currentForm.keyMetrics,
-
       customMetrics:
         currentForm.keyMetrics.customMetrics || [],
-
-      totalUnits:
-        Number(currentForm.keyMetrics.totalUnits) || 0,
-
-      totalTowers:
-        Number(currentForm.keyMetrics.totalTowers) || 0,
     },
 
     coreDetails: {
       ...currentForm.coreDetails,
-
       developerRef:
         currentForm.coreDetails.developerRef || null,
     },
 
     categoryData: {
       ...currentForm.categoryData,
-
       categoryRef:
         currentForm.categoryData.categoryRef || null,
     },
 
     locationData: {
       ...currentForm.locationData,
-
       locationRef:
         currentForm.locationData.locationRef || null,
     },
@@ -1163,40 +1235,21 @@ const buildDraftPayload = () => {
 
 
 // ============================================================
-// SILENT AUTO-SAVE
-//
-// Used by:
-// - debounce
-// - 15 second interval
-// - browser reload
-// - browser back
-// - tab close
-// - page hide
-//
-// IMPORTANT:
-// The returned draft ID is saved back into state + ref.
-// This prevents duplicate drafts.
+// SILENT AUTO SAVE
 // ============================================================
 
 const saveDraftSilently = async () => {
-  // Prevent multiple simultaneous draft requests
-  if (draftSaveRef.current) {
-    return;
-  }
+  if (!isDirty) return;
 
-  const token = localStorage.getItem("token");
+  // Prevent multiple draft requests at the same time
+  if (draftSaveInProgress.current) return;
 
-  if (!token) {
-    console.warn(
-      "⚠️ No authentication token available for auto-save."
-    );
-
-    return;
-  }
+  draftSaveInProgress.current = true;
 
   try {
-    draftSaveRef.current = true;
-    setIsSavingDraft(true);
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
 
     const payload = buildDraftPayload();
 
@@ -1211,26 +1264,13 @@ const saveDraftSilently = async () => {
         },
 
         body: JSON.stringify(payload),
-
-        // Allows request to continue during
-        // page navigation/unload where supported.
-        keepalive: true,
       }
     );
 
     if (!res.ok) {
-      let errorData = {};
-
-      try {
-        errorData = await res.json();
-      } catch {
-        // Ignore invalid JSON response
-      }
-
       console.error(
-        "❌ Auto draft save failed:",
-        res.status,
-        errorData?.message || ""
+        "Auto draft save failed:",
+        res.status
       );
 
       return;
@@ -1238,55 +1278,124 @@ const saveDraftSilently = async () => {
 
     const data = await res.json();
 
-    // Backend should return the created/updated property.
-    const savedDraftId =
-      data?.data?._id ||
-      data?.data?.id ||
-      data?.draftId ||
-      null;
+    if (data?.data?._id) {
+      setDraftId(data.data._id);
 
-    // --------------------------------------------------------
-    // VERY IMPORTANT
-    // Save returned ID so all future autosaves update
-    // the SAME draft.
-    // --------------------------------------------------------
-
-    if (savedDraftId) {
-      latestDraftIdRef.current = savedDraftId;
-
-      setDraftId(savedDraftId);
+      latestDraftIdRef.current =
+        data.data._id;
     }
 
-    console.log(
-      "✅ Auto draft saved:",
-      savedDraftId || "existing draft"
-    );
+    setIsDirty(false);
 
+    console.log("💾 Auto draft saved");
   } catch (err) {
     console.error(
-      "❌ Silent draft save failed:",
+      "Auto draft save error:",
       err
     );
-
   } finally {
-    draftSaveRef.current = null;
-
-    setIsSavingDraft(false);
+    draftSaveInProgress.current = false;
   }
 };
 
 
 // ============================================================
-// DEBOUNCED AUTO-SAVE
-//
-// Saves approximately 1.5 seconds after the user stops
-// editing the form.
+// MANUAL SAVE DRAFT
+// ============================================================
+
+const handleSaveDraft = async () => {
+  if (isDraftSaving) return;
+
+  try {
+    setIsDraftSaving(true);
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again."
+      );
+
+      window.location.href = "/login";
+
+      return;
+    }
+
+    const payload = buildDraftPayload();
+
+    const res = await fetch(
+      "/api/properties/draft",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const responseText = await res.text();
+
+    let data = {};
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error(
+        "Backend returned:",
+        responseText
+      );
+
+      toast.error(
+        "Backend returned an invalid response."
+      );
+
+      return;
+    }
+
+    if (!res.ok) {
+      toast.error(
+        data.message ||
+          "Failed to save draft ❌"
+      );
+
+      return;
+    }
+
+    if (data?.data?._id) {
+      setDraftId(data.data._id);
+
+      latestDraftIdRef.current =
+        data.data._id;
+    }
+
+    setIsDirty(false);
+
+    toast.success(
+      "Draft saved successfully ✅"
+    );
+  } catch (err) {
+    console.error(
+      "Manual draft save error:",
+      err
+    );
+
+    toast.error(
+      "Failed to save draft ❌"
+    );
+  } finally {
+    setIsDraftSaving(false);
+  }
+};
+// ============================================================
+// AUTO SAVE AFTER 1.5 SECONDS OF INACTIVITY
 // ============================================================
 
 useEffect(() => {
-  if (!isDirty) {
-    return;
-  }
+  if (!isDirty) return;
 
   const timer = setTimeout(() => {
     saveDraftSilently();
@@ -1297,195 +1406,106 @@ useEffect(() => {
   };
 }, [form, isDirty]);
 
-
 // ============================================================
-// PERIODIC AUTO-SAVE
-//
-// Safety backup every 15 seconds while the user is editing.
-// ============================================================
-
-useEffect(() => {
-  if (!isDirty) {
-    return;
-  }
-
-  const interval = setInterval(() => {
-    saveDraftSilently();
-  }, 15000);
-
-  return () => {
-    clearInterval(interval);
-  };
-}, [isDirty]);
-
-
-// ============================================================
-// PAGE HIDE / RELOAD / CLOSE / BROWSER BACK
-//
-// pagehide fires when the document is being unloaded or
-// moved away from the active page.
-//
-// This covers:
-// - Browser Back
-// - Browser Forward
-// - Reload
+// BEFORE UNLOAD
+// Protect against:
+// - Browser refresh
+// - F5
+// - Ctrl + R
 // - Closing tab
-// - Navigating away
+// - Closing browser
 // ============================================================
 
 useEffect(() => {
-  const handlePageHide = () => {
-    if (!isDirty) {
-      return;
-    }
+  const handleBeforeUnload = (event) => {
+    if (!isDirty) return;
 
-    saveDraftSilently();
+    try {
+      const currentForm = latestFormRef.current;
+      const currentDraftId =
+        latestDraftIdRef.current;
+
+      // --------------------------------------------------------
+      // ALWAYS keep an emergency local copy
+      // --------------------------------------------------------
+
+      localStorage.setItem(
+        "propertyBouquet_add_property_draft",
+        JSON.stringify({
+          form: currentForm,
+          draftId: currentDraftId,
+          savedAt: Date.now(),
+        })
+      );
+
+      // --------------------------------------------------------
+      // Browser warning
+      // --------------------------------------------------------
+
+      event.preventDefault();
+      event.returnValue = "";
+    } catch (err) {
+      console.error(
+        "Before unload protection failed:",
+        err
+      );
+    }
   };
 
   window.addEventListener(
-    "pagehide",
-    handlePageHide
+    "beforeunload",
+    handleBeforeUnload
   );
 
   return () => {
     window.removeEventListener(
-      "pagehide",
-      handlePageHide
+      "beforeunload",
+      handleBeforeUnload
     );
   };
 }, [isDirty]);
 
-
 // ============================================================
-// MANUAL SAVE DRAFT
-//
-// Used when user explicitly presses "Save Draft".
+// BROWSER BACK / FORWARD
 // ============================================================
 
-const handleSaveDraft = async () => {
-  if (draftSaveRef.current) {
-    return;
-  }
+useEffect(() => {
+  const handlePopState = () => {
+    if (!isDirty) return;
 
-  try {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.error(
-        "Session expired. Please login again."
-      );
-
-      return;
-    }
-
-    draftSaveRef.current = true;
-
-    setIsSavingDraft(true);
-
-    const payload = buildDraftPayload();
-
-    console.log(
-      "💾 MANUAL DRAFT PAYLOAD:",
-      payload
-    );
-
-    const res = await fetch(
-      "/api/properties/draft",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify(payload),
-      }
-    );
-
-    const responseText = await res.text();
-
-    console.log(
-      "Draft Status:",
-      res.status
-    );
-
-    console.log(
-      "Draft Response:",
-      responseText
-    );
-
-    let data = {};
-
+    // Save emergency local copy immediately
     try {
-      data = JSON.parse(responseText);
+      localStorage.setItem(
+        "propertyBouquet_add_property_draft",
+        JSON.stringify({
+          form: latestFormRef.current,
+          draftId: latestDraftIdRef.current,
+          savedAt: Date.now(),
+        })
+      );
     } catch (err) {
-      toast.error(
-        "Backend returned HTML instead of JSON."
+      console.error(
+        "Back navigation backup failed:",
+        err
       );
-
-      return;
     }
 
-    if (!res.ok) {
-      toast.error(
-        data?.message ||
-          "Failed to save draft."
-      );
+    // Also try to save to backend
+    saveDraftSilently();
+  };
 
-      return;
-    }
+  window.addEventListener(
+    "popstate",
+    handlePopState
+  );
 
-    // --------------------------------------------------------
-    // GET SAVED DRAFT ID
-    // --------------------------------------------------------
-
-    const savedDraftId =
-      data?.data?._id ||
-      data?.data?.id ||
-      data?.draftId ||
-      null;
-
-    // --------------------------------------------------------
-    // STORE ID IN BOTH STATE AND REF
-    // --------------------------------------------------------
-
-    if (savedDraftId) {
-      latestDraftIdRef.current =
-        savedDraftId;
-
-      setDraftId(savedDraftId);
-    }
-
-    // --------------------------------------------------------
-    // MARK AS SAVED
-    // --------------------------------------------------------
-
-    setIsDirty(false);
-
-    toast.success(
-      "Draft saved ✅"
+  return () => {
+    window.removeEventListener(
+      "popstate",
+      handlePopState
     );
-
-  } catch (err) {
-    console.error(
-      "Manual draft save error:",
-      err
-    );
-
-    toast.error(
-      "Failed to save draft."
-    );
-
-  } finally {
-    draftSaveRef.current = null;
-
-    setIsSavingDraft(false);
-  }
-};
-
-
+  };
+}, [isDirty]);
 
 const handleCreateLocation = async () => {
   try {
@@ -6577,20 +6597,26 @@ const formatIndianPrice = (value) => {
 
           {/* SAVE DRAFT */}
           <button
-            onClick={handleSaveDraft}
-            className="
-              px-6 py-3
-              rounded-2xl
-              border border-white/10
-              bg-white/5
-              text-white
-              font-semibold
-              hover:bg-white/10
-              transition-all duration-300
-            "
-          >
-            💾 Save Draft
-          </button>
+  type="button"
+  onClick={handleSaveDraft}
+  disabled={isDraftSaving}
+  className="
+    px-6 py-3
+    rounded-2xl
+    border border-white/10
+    bg-white/5
+    text-white
+    font-semibold
+    hover:bg-white/10
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+    transition-all duration-300
+  "
+>
+  {isDraftSaving
+    ? "💾 Saving..."
+    : "💾 Save Draft"}
+</button>
 
           {/* BACK */}
           {step > 1 && (
