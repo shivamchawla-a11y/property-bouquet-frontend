@@ -33,73 +33,88 @@ export default function AdminLayout({ children }) {
 
   // ================= MENU =================
   const menu = [
+    // ================= ALL ADMINS =================
     {
       name: "Dashboard",
       path: "/admin",
       icon: LayoutDashboard,
     },
-    {
-      name: "Location",
-      path: "/admin/location",
-      icon: MapPin,
-    },
-    {
-      name: "Developer",
-      path: "/admin/developers",
-      icon: Building2,
-    },
-    {
-      name: "Categories",
-      path: "/admin/categories",
-      icon: Tag,
-    },
+
     {
       name: "Property Inventory",
       path: "/admin/properties",
       icon: Home,
     },
+
     {
       name: "Add Property",
       path: "/admin/add-property",
       icon: PlusCircle,
     },
-    {
-  name: "Pages",
-  path: "/admin/pages",
-  icon: FileText,
-},
-
-{
-  name: "Collection Engine",
-  path: "/admin/collections",
-  icon: Layers3,
-},
-
-{
-  name: "Redirections",
-  path: "/admin/redirections",
-  icon: Route,
-},
-
-{
-  name: "Market Insights",
-  path: "/admin/insights",
-  icon: Newspaper,
-},
 
     {
-  name: "Knowledge Centre",
-  path: "/admin/knowledge",
-  icon: BookOpen,
-},
+      name: "Market Insights",
+      path: "/admin/insights",
+      icon: Newspaper,
+    },
 
-    // 🔒 SUPER ADMIN ONLY
+    {
+      name: "Knowledge Centre",
+      path: "/admin/knowledge",
+      icon: BookOpen,
+    },
+
+    // ================= SUPER ADMIN ONLY =================
+
+    {
+      name: "Location",
+      path: "/admin/location",
+      icon: MapPin,
+      roles: ["SuperAdmin"],
+    },
+
+    {
+      name: "Developer",
+      path: "/admin/developers",
+      icon: Building2,
+      roles: ["SuperAdmin"],
+    },
+
+    {
+      name: "Categories",
+      path: "/admin/categories",
+      icon: Tag,
+      roles: ["SuperAdmin"],
+    },
+
+    {
+      name: "Pages",
+      path: "/admin/pages",
+      icon: FileText,
+      roles: ["SuperAdmin"],
+    },
+
+    {
+      name: "Collection Engine",
+      path: "/admin/collections",
+      icon: Layers3,
+      roles: ["SuperAdmin"],
+    },
+
+    {
+      name: "Redirections",
+      path: "/admin/redirections",
+      icon: Route,
+      roles: ["SuperAdmin"],
+    },
+
     {
       name: "Lead CRM",
       path: "/admin/leads",
       icon: Users,
       roles: ["SuperAdmin"],
     },
+
     {
       name: "Site Settings",
       path: "/admin/site-settings/team",
@@ -108,41 +123,38 @@ export default function AdminLayout({ children }) {
     },
   ];
 
-// ================= AUTH CHECK =================
-useEffect(() => {
-  // Skip auth check on preview pages
-  if (isPreview) {
-    setLoading(false);
-    return;
-  }
-
-  const checkAuth = async () => {
-    try {
-      const res = await fetch(
-        "/api/auth/me",
-        {
-          credentials: "include",
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        router.push("/login");
-      } else {
-        setRole(data.user.role);
-        setLoading(false);
-      }
-    } catch (err) {
-      router.push("/login");
+  // ================= AUTH CHECK =================
+  useEffect(() => {
+    // Skip auth check on preview pages
+    if (isPreview) {
+      setLoading(false);
+      return;
     }
-  };
 
-  checkAuth();
-}, [router, isPreview]);
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          router.push("/login");
+        } else {
+          setRole(data.user.role);
+          setLoading(false);
+        }
+      } catch (err) {
+        router.push("/login");
+      }
+    };
+
+    checkAuth();
+  }, [router, isPreview]);
 
   // ================= LOADING =================
-if (!isPreview && (loading || !role)) {
+  if (!isPreview && (loading || !role)) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#f7f9f8]">
         <p className="text-gray-500 text-lg">
@@ -153,9 +165,9 @@ if (!isPreview && (loading || !role)) {
   }
 
   // ================= PREVIEW PAGE =================
-if (isPreview) {
-  return children;
-}
+  if (isPreview) {
+    return children;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f7f9f8]">
@@ -166,11 +178,14 @@ if (isPreview) {
           collapsed ? "w-20" : "w-72"
         } bg-[#0f3b2e] text-white flex flex-col transition-all duration-300 h-screen overflow-y-auto border-r border-white/10`}
       >
+
         {/* ================= TOP ================= */}
         <div className="sticky top-0 z-20 bg-[#0f3b2e] px-4 py-5 border-b border-white/10">
           <div className="flex items-center justify-between">
+
             {!collapsed && (
               <div className="flex items-center gap-3">
+
                 <div className="bg-white rounded-2xl p-2 shadow-lg">
                   <Image
                     src="/logo.webp"
@@ -189,6 +204,7 @@ if (isPreview) {
                     Admin Dashboard
                   </p>
                 </div>
+
               </div>
             )}
 
@@ -198,17 +214,23 @@ if (isPreview) {
             >
               <Menu size={20} />
             </button>
+
           </div>
         </div>
 
         {/* ================= MENU ================= */}
         <nav className="flex-1 px-3 py-5 space-y-2">
+
           {menu
             .filter((item) => {
+              // No roles = available to every authenticated admin
               if (!item.roles) return true;
+
+              // Roles = SuperAdmin only
               return item.roles.includes(role);
             })
             .map((item) => {
+
               const Icon = item.icon;
 
               const active =
@@ -225,6 +247,7 @@ if (isPreview) {
                       : "hover:bg-white/10 text-white/90"
                   }`}
                 >
+
                   <div
                     className={`flex items-center justify-center ${
                       active
@@ -240,22 +263,22 @@ if (isPreview) {
                       {item.name}
                     </span>
                   )}
+
                 </Link>
               );
             })}
+
         </nav>
 
         {/* ================= FOOTER ================= */}
         <div className="p-4 border-t border-white/10 sticky bottom-0 bg-[#0f3b2e]">
+
           <button
             onClick={async () => {
-              await fetch(
-                "/api/auth/logout",
-                {
-                  method: "POST",
-                  credentials: "include",
-                }
-              );
+              await fetch("/api/auth/logout", {
+                method: "POST",
+                credentials: "include",
+              });
 
               window.location.href = "/login";
             }}
@@ -263,7 +286,9 @@ if (isPreview) {
           >
             {!collapsed ? "Logout" : "↩"}
           </button>
+
         </div>
+
       </aside>
 
       {/* ================= MAIN ================= */}
@@ -273,7 +298,9 @@ if (isPreview) {
         <main className="flex-1 overflow-auto p-6 bg-[#f7f9f8]">
           {children}
         </main>
+
       </div>
+
     </div>
   );
 }
