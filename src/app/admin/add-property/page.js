@@ -1744,26 +1744,26 @@ useEffect(() => {
 // CHECK SLUG + TITLE DUPLICATES / SIMILAR PROPERTIES
 // ============================================================
 
+// ============================================================
+// DUPLICATE / SIMILAR PROPERTY CHECK
+// ============================================================
+
+const duplicateRequestIdRef = useRef(0);
+
 const checkPropertyDuplicates = useCallback(() => {
   if (duplicateCheckTimer.current) {
     clearTimeout(duplicateCheckTimer.current);
   }
 
-  const slug = String(
-    form?.slug || ""
-  ).trim();
-
-  const title = String(
+  const currentSlug = String(form?.slug || "").trim();
+  const currentTitle = String(
     form?.coreDetails?.title || ""
   ).trim();
 
-  // ========================================================
-  // NOTHING TO CHECK
-  // ========================================================
-
+  // Nothing to search
   if (
-    slug.length < 2 &&
-    title.length < 2
+    currentSlug.length < 2 &&
+    currentTitle.length < 2
   ) {
     setDuplicateCheck({
       loading: false,
@@ -1776,73 +1776,65 @@ const checkPropertyDuplicates = useCallback(() => {
     return;
   }
 
+  const requestId =
+    ++duplicateRequestIdRef.current;
+
   setDuplicateCheck((prev) => ({
     ...prev,
     loading: true,
   }));
 
-  duplicateCheckTimer.current =
-    setTimeout(async () => {
+  duplicateCheckTimer.current = setTimeout(
+    async () => {
       try {
         const token =
           localStorage.getItem("token");
 
-        if (!token) {
-          setDuplicateCheck({
-            loading: false,
-            slugExists: false,
-            slugProperty: null,
-            similarSlugs: [],
-            similarTitles: [],
-          });
-
-          return;
-        }
-
-        const params =
-          new URLSearchParams();
+        const params = new URLSearchParams();
 
         // ====================================================
         // SLUG
-        // Check from the moment 2 characters are typed.
         // ====================================================
 
-        if (slug.length >= 2) {
-          params.set("slug", slug);
+        if (currentSlug.length >= 2) {
+          params.set(
+            "slug",
+            currentSlug
+          );
         }
 
         // ====================================================
         // TITLE
         // ====================================================
 
-        if (title.length >= 2) {
-          params.set("title", title);
+        if (currentTitle.length >= 2) {
+          params.set(
+            "title",
+            currentTitle
+          );
         }
 
         // ====================================================
         // CURRENT DRAFT
-        // Don't show the property itself when editing.
         // ====================================================
 
         if (draftId) {
           params.set(
             "draftId",
-            draftId
+            String(draftId)
           );
         }
 
-        const response =
-          await fetch(
-            `/api/properties/check-duplicate?${params.toString()}`,
-            {
-              method: "GET",
-
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
+        const response = await fetch(
+          `/api/properties/check-duplicate?${params.toString()}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            cache: "no-store",
+          }
+        );
 
         const data =
           await response.json();
@@ -1855,62 +1847,93 @@ const checkPropertyDuplicates = useCallback(() => {
         }
 
         // ====================================================
-        // UPDATE RESULTS
+        // IGNORE OLD RESPONSE
+        // ====================================================
+
+        if (
+          requestId !==
+          duplicateRequestIdRef.current
+        ) {
+          return;
+        }
+
+        const returnedSimilarSlugs =
+          Array.isArray(
+            data?.similarSlugs
+          )
+            ? data.similarSlugs
+            : [];
+
+        const returnedSimilarTitles =
+          Array.isArray(
+            data?.similarTitles
+          )
+            ? data.similarTitles
+            : [];
+
+        // ====================================================
+        // DEBUG
+        // ====================================================
+
+        console.log(
+          "DUPLICATE CHECK:",
+          {
+            slug: currentSlug,
+            title: currentTitle,
+            slugExists:
+              data?.slugExists,
+            similarSlugs:
+              returnedSimilarSlugs,
+            similarTitles:
+              returnedSimilarTitles,
+          }
+        );
+
+        // ====================================================
+        // SET RESULT
         // ====================================================
 
         setDuplicateCheck({
           loading: false,
 
           slugExists:
-            Boolean(
-              data?.slugExists
-            ),
+            Boolean(data?.slugExists),
 
           slugProperty:
-            data?.slugProperty ||
-            null,
+            data?.slugProperty || null,
 
           similarSlugs:
-            Array.isArray(
-              data?.similarSlugs
-            )
-              ? data.similarSlugs
-              : [],
+            returnedSimilarSlugs,
 
           similarTitles:
-            Array.isArray(
-              data?.similarTitles
-            )
-              ? data.similarTitles
-              : [],
+            returnedSimilarTitles,
         });
-
       } catch (error) {
-
         console.error(
           "Duplicate check error:",
           error
         );
 
-        setDuplicateCheck(
-          (prev) => ({
-            ...prev,
-            loading: false,
-          })
-        );
-      }
-    }, 350);
+        if (
+          requestId !==
+          duplicateRequestIdRef.current
+        ) {
+          return;
+        }
 
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          loading: false,
+        }));
+      }
+    },
+    300
+  );
 }, [
   form?.slug,
   form?.coreDetails?.title,
   draftId,
 ]);
-
-
-// ============================================================
-// RUN CHECK WHEN SLUG / TITLE CHANGES
-// ============================================================
 
 useEffect(() => {
   checkPropertyDuplicates();
@@ -2489,6 +2512,185 @@ const formatIndianPrice = (value) => {
       Slug is required
     </p>
   )}
+
+  {/* ============================================================
+    SLUG DUPLICATE / SIMILAR PROPERTY RESULTS
+============================================================ */}
+
+{form.slug.trim().length >= 2 && (
+  <div className="mt-2">
+
+    {/* ========================================================
+        CHECKING
+    ======================================================== */}
+
+    {duplicateCheck.loading && (
+      <div className="rounded-xl border border-white/10 bg-black/10 px-4 py-3">
+        <p className="text-xs text-gray-400">
+          Checking existing slugs...
+        </p>
+      </div>
+    )}
+
+    {/* ========================================================
+        EXACT DUPLICATE
+    ======================================================== */}
+
+    {!duplicateCheck.loading &&
+      duplicateCheck.slugExists &&
+      duplicateCheck.slugProperty && (
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 overflow-hidden">
+
+          <div className="px-4 py-3">
+            <p className="text-sm font-semibold text-red-400">
+              ⚠ This slug is already in use.
+            </p>
+
+            <p className="text-xs text-gray-300 mt-2">
+              Existing property:{" "}
+              <span className="font-medium text-white">
+                {
+                  duplicateCheck
+                    .slugProperty
+                    ?.coreDetails
+                    ?.title ||
+                  "Existing property"
+                }
+              </span>
+            </p>
+
+            <p className="text-xs text-gray-400 mt-1">
+              Slug:{" "}
+              {
+                duplicateCheck
+                  .slugProperty
+                  ?.slug
+              }
+            </p>
+
+            <p className="text-xs text-red-300 mt-2">
+              Please use a different slug.
+            </p>
+          </div>
+
+        </div>
+      )}
+
+    {/* ========================================================
+        SIMILAR SLUGS
+    ======================================================== */}
+
+    {!duplicateCheck.loading &&
+      duplicateCheck.similarSlugs?.length > 0 && (
+        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 overflow-hidden">
+
+          {/* Header */}
+
+          <div className="px-4 py-3 border-b border-white/10">
+
+            <p className="text-sm font-semibold text-yellow-400">
+              ⚠ Similar properties already exist
+            </p>
+
+            <p className="text-xs text-gray-400 mt-1">
+              Check these existing properties before
+              creating a new one.
+            </p>
+
+          </div>
+
+          {/* Results */}
+
+          <div>
+            {duplicateCheck.similarSlugs
+              .filter((property) => {
+                const typedSlug =
+                  form.slug
+                    .trim()
+                    .toLowerCase();
+
+                const existingSlug =
+                  String(
+                    property?.slug || ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                // Don't show exact duplicate
+                // in the similar list.
+                return (
+                  existingSlug !==
+                  typedSlug
+                );
+              })
+              .map((property) => (
+                <div
+                  key={property._id}
+                  className="
+                    px-4
+                    py-3
+                    border-b
+                    border-white/10
+                    last:border-b-0
+                  "
+                >
+                  <div className="flex items-center justify-between gap-3">
+
+                    <div className="min-w-0">
+
+                      <p className="text-sm font-medium text-white truncate">
+                        {
+                          property
+                            ?.coreDetails
+                            ?.title ||
+                          "Existing property"
+                        }
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-1 truncate">
+                        /
+                        {
+                          property?.slug
+                        }
+                      </p>
+
+                    </div>
+
+                    <span
+                      className={`
+                        shrink-0
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-wider
+                        px-2.5
+                        py-1
+                        rounded-full
+                        border
+                        ${
+                          property?.status ===
+                          "published"
+                            ? "text-green-400 border-green-500/20 bg-green-500/10"
+                            : "text-yellow-400 border-yellow-500/20 bg-yellow-500/10"
+                        }
+                      `}
+                    >
+                      {
+                        property?.status ||
+                        "DRAFT"
+                      }
+                    </span>
+
+                  </div>
+                </div>
+              ))}
+          </div>
+
+        </div>
+      )}
+
+  </div>
+)}
 
   {/* DUPLICATE SLUG ERROR */}
 
