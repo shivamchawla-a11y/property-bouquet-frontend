@@ -2577,161 +2577,102 @@ const formatIndianPrice = (value) => {
       )}
 
     {/* ========================================================
-        SIMILAR SLUGS
-    ======================================================== */}
+    SIMILAR SLUGS — SLUG ONLY
+======================================================== */}
 
-    {!duplicateCheck.loading &&
-      duplicateCheck.similarSlugs?.length > 0 && (
-        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 overflow-hidden">
+{!duplicateCheck.loading &&
+  duplicateCheck.similarSlugs?.filter((property) => {
+    const typedSlug = form.slug.trim().toLowerCase();
 
-          {/* Header */}
+    const existingSlug = String(property?.slug || "")
+      .trim()
+      .toLowerCase();
 
-          <div className="px-4 py-3 border-b border-white/10">
+    return existingSlug !== typedSlug;
+  }).length > 0 && (
+    <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 overflow-hidden">
 
-            <p className="text-sm font-semibold text-yellow-400">
-              ⚠ Similar properties already exist
-            </p>
+      {/* Header */}
 
-            <p className="text-xs text-gray-400 mt-1">
-              Check these existing properties before
-              creating a new one.
-            </p>
+      <div className="px-4 py-3 border-b border-white/10">
 
-          </div>
+        <p className="text-sm font-semibold text-yellow-400">
+          ⚠ Similar slugs already exist
+        </p>
 
-          {/* Results */}
+        <p className="text-xs text-gray-400 mt-1">
+          Check these existing slugs before creating a new one.
+        </p>
 
-          <div>
-            {duplicateCheck.similarSlugs
-              .filter((property) => {
-                const typedSlug =
-                  form.slug
-                    .trim()
-                    .toLowerCase();
+      </div>
 
-                const existingSlug =
-                  String(
-                    property?.slug || ""
-                  )
-                    .trim()
-                    .toLowerCase();
+      {/* Slug Results */}
 
-                // Don't show exact duplicate
-                // in the similar list.
-                return (
-                  existingSlug !==
-                  typedSlug
-                );
-              })
-              .map((property) => (
-                <div
-                  key={property._id}
-                  className="
-                    px-4
-                    py-3
-                    border-b
-                    border-white/10
-                    last:border-b-0
-                  "
+      <div>
+        {duplicateCheck.similarSlugs
+          .filter((property) => {
+            const typedSlug = form.slug.trim().toLowerCase();
+
+            const existingSlug = String(property?.slug || "")
+              .trim()
+              .toLowerCase();
+
+            return existingSlug !== typedSlug;
+          })
+          .map((property) => (
+            <div
+              key={property._id}
+              className="
+                px-4
+                py-3
+                border-b
+                border-white/10
+                last:border-b-0
+                hover:bg-white/[0.04]
+                transition-colors
+              "
+            >
+              <div className="flex items-center justify-between gap-3">
+
+                {/* ONLY SLUG */}
+
+                <p className="text-sm font-medium text-[#D8B46B] truncate">
+                  /{property?.slug}
+                </p>
+
+                {/* STATUS */}
+
+                <span
+                  className={`
+                    shrink-0
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-wider
+                    px-2.5
+                    py-1
+                    rounded-full
+                    border
+                    ${
+                      property?.status === "published"
+                        ? "text-green-400 border-green-500/20 bg-green-500/10"
+                        : "text-yellow-400 border-yellow-500/20 bg-yellow-500/10"
+                    }
+                  `}
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  {property?.status || "draft"}
+                </span>
 
-                    <div className="min-w-0">
+              </div>
+            </div>
+          ))}
+      </div>
 
-                      <p className="text-sm font-medium text-white truncate">
-                        {
-                          property
-                            ?.coreDetails
-                            ?.title ||
-                          "Existing property"
-                        }
-                      </p>
-
-                      <p className="text-xs text-gray-500 mt-1 truncate">
-                        /
-                        {
-                          property?.slug
-                        }
-                      </p>
-
-                    </div>
-
-                    <span
-                      className={`
-                        shrink-0
-                        text-[10px]
-                        font-semibold
-                        uppercase
-                        tracking-wider
-                        px-2.5
-                        py-1
-                        rounded-full
-                        border
-                        ${
-                          property?.status ===
-                          "published"
-                            ? "text-green-400 border-green-500/20 bg-green-500/10"
-                            : "text-yellow-400 border-yellow-500/20 bg-yellow-500/10"
-                        }
-                      `}
-                    >
-                      {
-                        property?.status ||
-                        "DRAFT"
-                      }
-                    </span>
-
-                  </div>
-                </div>
-              ))}
-          </div>
-
-        </div>
-      )}
+    </div>
+  )}
 
   </div>
 )}
-
-  {/* DUPLICATE SLUG ERROR */}
-
-  {!hasError("slug") &&
-    duplicateCheck.slugExists &&
-    duplicateCheck.slugProperty && (
-      <div className="mt-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2">
-        <p className="text-red-400 text-sm font-semibold">
-          ⚠ This slug is already in use.
-        </p>
-
-        <p className="text-red-300/80 text-xs mt-1">
-          Existing property:{" "}
-          <span className="font-medium">
-            {
-              duplicateCheck.slugProperty
-                ?.coreDetails?.title
-            }
-          </span>
-        </p>
-
-        <p className="text-red-300/70 text-xs mt-1">
-          Slug:{" "}
-          {
-            duplicateCheck.slugProperty?.slug
-          }
-        </p>
-
-        {duplicateCheck.slugProperty
-          ?.isDeleted ? (
-          <p className="text-red-400 text-xs mt-1 font-medium">
-            This slug belongs to a property in Trash.
-            It is still reserved and cannot be reused.
-          </p>
-        ) : (
-          <p className="text-red-400 text-xs mt-1">
-            Please use a different slug.
-          </p>
-        )}
-      </div>
-    )}
 </div>
 
 {/* ==========================================================
@@ -2773,74 +2714,75 @@ const formatIndianPrice = (value) => {
   )}
 
   {/* ========================================================
-      SIMILAR EXISTING PROPERTIES
-  ======================================================== */}
+    SIMILAR TITLES — TITLE ONLY
+======================================================== */}
 
-  {!hasError("coreDetails.title") &&
-    duplicateCheck.similarTitles.length > 0 && (
-      <div className="mt-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 overflow-hidden">
-        <div className="px-4 py-3 border-b border-yellow-500/20">
-          <p className="text-yellow-400 text-sm font-semibold">
-            ⚠ Similar properties already exist
-          </p>
+{!hasError("coreDetails.title") &&
+  duplicateCheck.similarTitles?.length > 0 && (
+    <div className="mt-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 overflow-hidden">
 
-          <p className="text-gray-400 text-xs mt-1">
-            Check these existing properties before
-            creating a new one.
-          </p>
-        </div>
+      {/* Header */}
 
-        <div className="divide-y divide-white/5">
-          {duplicateCheck.similarTitles.map(
-            (property) => (
-              <div
-                key={property._id}
-                className="px-4 py-3 hover:bg-white/[0.03] transition-colors"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">
-                      {property?.coreDetails
-                        ?.title || "Untitled Property"}
-                    </p>
+      <div className="px-4 py-3 border-b border-yellow-500/20">
 
-                    {property?.slug && (
-                      <p className="text-gray-500 text-xs mt-1 truncate">
-                        /{property.slug}
-                      </p>
-                    )}
+        <p className="text-yellow-400 text-sm font-semibold">
+          ⚠ Similar property titles already exist
+        </p>
 
-                    {property?.coreDetails
-                      ?.developerName && (
-                      <p className="text-gray-500 text-xs mt-1">
-                        {
-                          property.coreDetails
-                            .developerName
-                        }
-                      </p>
-                    )}
-                  </div>
+        <p className="text-gray-400 text-xs mt-1">
+          Check these existing property titles before creating a new one.
+        </p>
 
-                  <span
-                    className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${
-                      property.status ===
-                      "published"
-                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                        : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-                    }`}
-                  >
-                    {property.status ===
-                    "published"
-                      ? "Published"
-                      : "Draft"}
-                  </span>
-                </div>
-              </div>
-            )
-          )}
-        </div>
       </div>
-    )}
+
+      {/* TITLE RESULTS */}
+
+      <div className="divide-y divide-white/5">
+
+        {duplicateCheck.similarTitles.map((property) => (
+          <div
+            key={property._id}
+            className="
+              px-4
+              py-3
+              hover:bg-white/[0.03]
+              transition-colors
+            "
+          >
+
+            <div className="flex items-center justify-between gap-3">
+
+              {/* ONLY TITLE */}
+
+              <p className="text-white text-sm font-medium truncate">
+                {property?.coreDetails?.title ||
+                  "Untitled Property"}
+              </p>
+
+              {/* STATUS */}
+
+              <span
+                className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${
+                  property.status === "published"
+                    ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                    : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                }`}
+              >
+                {property.status === "published"
+                  ? "Published"
+                  : "Draft"}
+              </span>
+
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+  )}
+
 </div>
 {/* ================= HERO SECTION ================= */}
     <div className="mt-8">
