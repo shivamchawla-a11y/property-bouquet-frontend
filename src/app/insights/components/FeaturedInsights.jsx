@@ -34,9 +34,12 @@ export default function FeaturedInsights() {
 
   async function fetchFeatured() {
     try {
-      const res = await fetch(`${API}/news?status=published`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `${API}/news?status=published`,
+        {
+          cache: "no-store",
+        }
+      );
 
       if (!res.ok) {
         throw new Error(
@@ -70,9 +73,14 @@ export default function FeaturedInsights() {
 
       setArticle(featuredArticle);
     } catch (err) {
-      console.error("News Fetch Error:", err);
+      console.error(
+        "News Fetch Error:",
+        err
+      );
 
-      setError("Unable to load insights.");
+      setError(
+        "Unable to load insights."
+      );
     } finally {
       setLoading(false);
     }
@@ -93,11 +101,14 @@ export default function FeaturedInsights() {
       return "";
     }
 
-    return parsed.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+    return parsed.toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
   }
 
   // ==========================================================
@@ -278,8 +289,20 @@ export default function FeaturedInsights() {
 
   if (error) {
     return (
-      <section className="bg-[#f7f5ef] py-20">
-        <div className="mx-auto max-w-4xl px-6 text-center">
+      <section
+        className="
+          bg-[#f7f5ef]
+          py-20
+        "
+      >
+        <div
+          className="
+            mx-auto
+            max-w-4xl
+            px-6
+            text-center
+          "
+        >
           <h2
             className="
               text-2xl
@@ -303,8 +326,20 @@ export default function FeaturedInsights() {
 
   if (!article) {
     return (
-      <section className="bg-[#f7f5ef] py-24">
-        <div className="mx-auto max-w-4xl px-6 text-center">
+      <section
+        className="
+          bg-[#f7f5ef]
+          py-24
+        "
+      >
+        <div
+          className="
+            mx-auto
+            max-w-4xl
+            px-6
+            text-center
+          "
+        >
           <div
             className="
               mx-auto
@@ -335,7 +370,13 @@ export default function FeaturedInsights() {
             No Insights Available
           </h2>
 
-          <p className="mt-3 text-sm text-[#777]">
+          <p
+            className="
+              mt-3
+              text-sm
+              text-[#777]
+            "
+          >
             Publish a news article to display it here.
           </p>
         </div>
@@ -351,7 +392,8 @@ export default function FeaturedInsights() {
     article.featuredImage
   );
 
-  const articleHref = `/insights/${article.slug}`;
+  const articleHref =
+    `/insights/${article.slug}`;
 
   // ==========================================================
   // MAIN
@@ -503,36 +545,54 @@ export default function FeaturedInsights() {
             </p>
           </div>
 
-          {/* VIEW ALL */}
+          {/* ==================================================
+              VIEW ALL INSIGHTS BUTTON
+              WORKING LINK
+          ================================================== */}
 
           <Link
             href="/insights"
+            aria-label="View all Property Bouquet insights"
             className="
+              group
               hidden
               shrink-0
               items-center
-              gap-2
+              gap-2.5
               rounded-full
               border
-              border-[#d9d1c3]
+              border-[#d8d1c4]
               bg-white
               px-5
               py-2.5
               text-[11px]
-              font-medium
+              font-semibold
+              uppercase
+              tracking-[1px]
               text-[#163629]
-              shadow-sm
+              shadow-[0_8px_25px_rgba(22,54,41,.05)]
               transition-all
               duration-300
+              hover:-translate-y-0.5
               hover:border-[#163629]
               hover:bg-[#163629]
               hover:text-white
+              hover:shadow-[0_12px_30px_rgba(22,54,41,.14)]
               sm:inline-flex
             "
           >
-            View All Insights
+            <span>
+              View All Insights
+            </span>
 
-            <ArrowRight size={14} />
+            <ArrowRight
+              size={14}
+              className="
+                transition-transform
+                duration-300
+                group-hover:translate-x-1
+              "
+            />
           </Link>
         </div>
 
@@ -573,173 +633,140 @@ export default function FeaturedInsights() {
               "
             >
               {/* ==================================================
-                  TOP BRAND BAR
-              ================================================== */}
-
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  bg-gradient-to-r
-                  from-[#0d2a20]
-                  via-[#163629]
-                  to-[#214b3a]
-                  px-5
-                  py-3
-                  sm:px-7
-                "
-              >
-                {/* LEFT */}
-
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="
-                      flex
-                      h-6
-                      w-6
-                      items-center
-                      justify-center
-                      rounded-full
-                      border
-                      border-[#d8b46b]/20
-                      bg-[#b88638]/10
-                      text-[#d8b46b]
-                    "
-                  >
-                    <Sparkles size={11} />
-                  </span>
-
-                  <span
-                    className="
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[2.5px]
-                      text-white/90
-                    "
-                  >
-                    Editor's Pick
-                  </span>
-                </div>
-
-                {/* RIGHT */}
-
-                <span
-                  className="
-                    text-[9px]
-                    uppercase
-                    tracking-[2px]
-                    text-white/40
-                  "
-                >
-                  Property Insights
-                </span>
-              </div>
-
-              {/* ==================================================
                   IMAGE
               ================================================== */}
 
-              <div
+              <Link
+                href={articleHref}
                 className="
-                  relative
-                  aspect-[16/9]
+                  block
                   w-full
-                  overflow-hidden
-                  bg-[#eeeae1]
                 "
               >
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={
-                      article.title ||
-                      "Property Insights"
-                    }
-                    fill
-                    priority
-                    sizes="
-                      (max-width: 1024px) 100vw,
-                      66vw
-                    "
+                <div
+                  className="
+                    relative
+                    aspect-[16/9]
+                    w-full
+                    overflow-hidden
+                    bg-[#eeeae1]
+                  "
+                >
+                  {imageUrl ? (
+                    <Image
+                      src={imageUrl}
+                      alt={
+                        article.title ||
+                        "Property Insights"
+                      }
+                      fill
+                      priority
+                      sizes="
+                        (max-width: 1024px) 100vw,
+                        66vw
+                      "
+                      className="
+                        object-cover
+                        object-center
+                        transition-transform
+                        duration-700
+                        ease-out
+                        group-hover:scale-[1.035]
+                      "
+                    />
+                  ) : (
+                    <div
+                      className="
+                        absolute
+                        inset-0
+                        flex
+                        items-center
+                        justify-center
+                        bg-gradient-to-br
+                        from-[#102d22]
+                        via-[#163629]
+                        to-[#0c2119]
+                      "
+                    >
+                      <div className="text-center">
+                        <Sparkles
+                          size={25}
+                          className="
+                            mx-auto
+                            text-[#d8b46b]
+                          "
+                        />
+
+                        <p
+                          className="
+                            mt-4
+                            text-xl
+                            text-white
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, serif",
+                          }}
+                        >
+                          Property Bouquet
+                        </p>
+
+                        <p
+                          className="
+                            mt-1
+                            text-[10px]
+                            uppercase
+                            tracking-[2px]
+                            text-white/45
+                          "
+                        >
+                          Property Insights
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* IMAGE GRADIENT */}
+
+                  <div
                     className="
-                      object-cover
-                      object-center
-                      transition-transform
-                      duration-700
-                      ease-out
-                      group-hover:scale-[1.035]
+                      pointer-events-none
+                      absolute
+                      inset-0
+                      bg-gradient-to-t
+                      from-black/25
+                      via-transparent
+                      to-transparent
                     "
                   />
-                ) : (
+
+                  {/* CATEGORY */}
+
                   <div
                     className="
                       absolute
-                      inset-0
-                      flex
-                      items-center
-                      justify-center
-                      bg-gradient-to-br
-                      from-[#102d22]
-                      via-[#163629]
-                      to-[#0c2119]
+                      left-5
+                      top-5
+                      rounded-full
+                      border
+                      border-white/20
+                      bg-[#111]/80
+                      px-3
+                      py-1.5
+                      text-[8px]
+                      font-semibold
+                      uppercase
+                      tracking-[1.7px]
+                      text-white
+                      shadow-lg
+                      backdrop-blur-md
                     "
                   >
-                    <div className="text-center">
-                      <Sparkles
-                        size={25}
-                        className="
-                          mx-auto
-                          text-[#d8b46b]
-                        "
-                      />
-
-                      <p
-                        className="
-                          mt-4
-                          text-xl
-                          text-white
-                        "
-                        style={{
-                          fontFamily:
-                            "Georgia, serif",
-                        }}
-                      >
-                        Property Bouquet
-                      </p>
-
-                      <p
-                        className="
-                          mt-1
-                          text-[10px]
-                          uppercase
-                          tracking-[2px]
-                          text-white/45
-                        "
-                      >
-                        Property Insights
-                      </p>
-                    </div>
+                    {article?.category ||
+                      "Real Estate"}
                   </div>
-                )}
-
-                {/* IMAGE GRADIENT */}
-
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    inset-0
-                    bg-gradient-to-t
-                    from-black/20
-                    via-transparent
-                    to-transparent
-                  "
-                />
-
-            
-              </div>
+                </div>
+              </Link>
 
               {/* ==================================================
                   CONTENT BELOW IMAGE
@@ -879,14 +906,14 @@ export default function FeaturedInsights() {
                       gap-5
                     "
                   >
-                    {/* ARTICLE META */}
+                    {/* META */}
 
                     <div
                       className="
                         flex
                         items-center
                         gap-4
-                        text-[10px]
+                        text-[9px]
                         uppercase
                         tracking-[1.5px]
                         text-white/40
@@ -915,6 +942,7 @@ export default function FeaturedInsights() {
                     <Link
                       href={articleHref}
                       className="
+                        group/read
                         inline-flex
                         items-center
                         gap-2.5
@@ -932,6 +960,7 @@ export default function FeaturedInsights() {
                         shadow-[0_8px_25px_rgba(184,134,56,.14)]
                         transition-all
                         duration-300
+                        hover:-translate-y-0.5
                         hover:bg-[#d8b46b]
                         hover:shadow-[0_10px_30px_rgba(184,134,56,.24)]
                       "
@@ -943,7 +972,7 @@ export default function FeaturedInsights() {
                         className="
                           transition-transform
                           duration-300
-                          group-hover:translate-x-1
+                          group-hover/read:translate-x-1
                         "
                       />
                     </Link>
@@ -952,76 +981,8 @@ export default function FeaturedInsights() {
               </div>
             </motion.article>
 
-            {/* ==================================================
-                LATEST ARTICLES
-            ================================================== */}
-
-            <div
-              className="
-                mt-12
-                sm:mt-14
-              "
-            >
-              <div
-                className="
-                  mb-6
-                  flex
-                  items-end
-                  justify-between
-                  gap-5
-                "
-              >
-                <div>
-                  <p
-                    className="
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[2.5px]
-                      text-[#b88638]
-                    "
-                  >
-                    Continue Reading
-                  </p>
-
-                  <h3
-                    className="
-                      mt-1
-                      text-[24px]
-                      text-[#163629]
-                      sm:text-[27px]
-                    "
-                    style={{
-                      fontFamily:
-                        "Georgia, serif",
-                    }}
-                  >
-                    Latest Insights
-                  </h3>
-                </div>
-
-                <Link
-                  href="/insights"
-                  className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    text-[10px]
-                    font-medium
-                    text-[#163629]
-                    transition-colors
-                    hover:text-[#b88638]
-                  "
-                >
-                  View all
-
-                  <ArrowRight size={13} />
-                </Link>
-              </div>
-
-              <LatestInsights
-                articles={articles}
-              />
+            <div className="mt-12 sm:mt-14">
+              <LatestInsights articles={articles} />
             </div>
           </div>
 
@@ -1044,6 +1005,59 @@ export default function FeaturedInsights() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ====================================================
+            MOBILE VIEW ALL INSIGHTS
+        ==================================================== */}
+
+        <div
+          className="
+            mt-8
+            flex
+            justify-center
+            sm:hidden
+          "
+        >
+          <Link
+            href="/insights"
+            className="
+              group
+              inline-flex
+              items-center
+              gap-2.5
+              rounded-full
+              border
+              border-[#163629]/20
+              bg-white
+              px-6
+              py-3
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[1.2px]
+              text-[#163629]
+              shadow-[0_8px_25px_rgba(22,54,41,.06)]
+              transition-all
+              duration-300
+              hover:border-[#163629]
+              hover:bg-[#163629]
+              hover:text-white
+            "
+          >
+            <span>
+              View All Insights
+            </span>
+
+            <ArrowRight
+              size={14}
+              className="
+                transition-transform
+                duration-300
+                group-hover:translate-x-1
+              "
+            />
+          </Link>
         </div>
       </div>
     </section>
