@@ -37,9 +37,78 @@ function getSafeImageUrl(image) {
     }
   }
 
-  // IMPORTANT:
-  // No placeholder image because user does not currently
-  // have one. Return null so <Image> is not rendered.
+  // No placeholder.
+  // Return null so image markup is not generated.
+  return null;
+}
+
+// ============================================================
+// SAFE DATE
+// ============================================================
+
+function getSafeIsoDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString();
+}
+
+// ============================================================
+// SAFE KEYWORDS
+// ============================================================
+
+function getArticleKeywords(article) {
+  if (!article) {
+    return null;
+  }
+
+  // Tags array
+  if (Array.isArray(article.tags)) {
+    const tags = article.tags
+      .filter(Boolean)
+      .map((tag) => String(tag).trim())
+      .filter(Boolean);
+
+    if (tags.length > 0) {
+      return tags.join(", ");
+    }
+  }
+
+  // Tags string
+  if (
+    typeof article.tags === "string" &&
+    article.tags.trim()
+  ) {
+    return article.tags.trim();
+  }
+
+  // Keywords array
+  if (Array.isArray(article.keywords)) {
+    const keywords = article.keywords
+      .filter(Boolean)
+      .map((keyword) => String(keyword).trim())
+      .filter(Boolean);
+
+    if (keywords.length > 0) {
+      return keywords.join(", ");
+    }
+  }
+
+  // Keywords string
+  if (
+    typeof article.keywords === "string" &&
+    article.keywords.trim()
+  ) {
+    return article.keywords.trim();
+  }
+
   return null;
 }
 
@@ -111,6 +180,10 @@ export async function generateMetadata({ params }) {
 
   const slug = resolvedParams?.slug;
 
+  // ==========================================================
+  // INVALID SLUG
+  // ==========================================================
+
   if (!slug) {
     return {
       title:
@@ -123,7 +196,15 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  // ==========================================================
+  // FETCH ARTICLE
+  // ==========================================================
+
   const { article } = await getArticle(slug);
+
+  // ==========================================================
+  // ARTICLE NOT FOUND
+  // ==========================================================
 
   if (!article) {
     return {
@@ -173,6 +254,31 @@ export async function generateMetadata({ params }) {
   );
 
   // ==========================================================
+  // PUBLISHED DATE
+  // ==========================================================
+
+  const publishedTime =
+    getSafeIsoDate(
+      article.publishDate
+    );
+
+  // ==========================================================
+  // MODIFIED DATE
+  // ==========================================================
+
+  const modifiedTime =
+    getSafeIsoDate(
+      article.updatedAt
+    );
+
+  // ==========================================================
+  // KEYWORDS
+  // ==========================================================
+
+  const keywords =
+    getArticleKeywords(article);
+
+  // ==========================================================
   // METADATA
   // ==========================================================
 
@@ -181,10 +287,11 @@ export async function generateMetadata({ params }) {
 
     description,
 
-    keywords:
-      article.keywords ||
-      article.tags ||
-      undefined,
+    ...(keywords
+      ? {
+          keywords,
+        }
+      : {}),
 
     alternates: {
       canonical,
@@ -211,31 +318,28 @@ export async function generateMetadata({ params }) {
             images: [
               {
                 url: image,
+
                 width: 1600,
+
                 height: 900,
+
                 alt:
                   article.title ||
-                  "Property Bouquet",
+                  "Property Bouquet Insights",
               },
             ],
           }
         : {}),
 
-      ...(article.publishDate
+      ...(publishedTime
         ? {
-            publishedTime:
-              new Date(
-                article.publishDate
-              ).toISOString(),
+            publishedTime,
           }
         : {}),
 
-      ...(article.updatedAt
+      ...(modifiedTime
         ? {
-            modifiedTime:
-              new Date(
-                article.updatedAt
-              ).toISOString(),
+            modifiedTime,
           }
         : {}),
 
@@ -264,20 +368,31 @@ export async function generateMetadata({ params }) {
 }
 
 // ============================================================
-// ARTICLE JSON-LD
+// ARTICLE STRUCTURED DATA
 // ============================================================
 
-function ArticleSchema({ article }) {
+function ArticleSchema({
+  article,
+}) {
   if (!article) {
     return null;
   }
 
+  // ==========================================================
+  // BASIC DATA
+  // ==========================================================
+
   const canonical =
     `${SITE_URL}/insights/${article.slug}`;
 
-  const image = getSafeImageUrl(
-    article.featuredImage
-  );
+  const image =
+    getSafeImageUrl(
+      article.featuredImage
+    );
+
+  const title =
+    article.title ||
+    "Property Insights | Property Bouquet";
 
   const description =
     article.seoDescription ||
@@ -285,9 +400,72 @@ function ArticleSchema({ article }) {
     article.shortDescription ||
     "";
 
-  const schema = {
-    "@context": "https://schema.org",
+  const publishedDate =
+    getSafeIsoDate(
+      article.publishDate
+    );
 
+  const updatedDate =
+    getSafeIsoDate(
+      article.updatedAt
+    );
+
+  const dateModified =
+    updatedDate ||
+    publishedDate ||
+    null;
+
+  const keywords =
+    getArticleKeywords(article);
+
+  const authorName =
+    typeof article.author === "string" &&
+    article.author.trim()
+      ? article.author.trim()
+      : "Property Bouquet Research Team";
+
+  // ==========================================================
+  // AUTHOR TYPE
+  //
+  // If an actual author is supplied, treat it as a Person.
+  // Otherwise use the Property Bouquet research team as an
+  // Organization.
+  // ==========================================================
+
+  const hasRealAuthor =
+    typeof article.author === "string" &&
+    article.author.trim();
+
+  const author = hasRealAuthor
+    ? {
+        "@type": "Person",
+        name: authorName,
+      }
+    : {
+        "@type": "Organization",
+        name: "Property Bouquet Research Team",
+        url: SITE_URL,
+      };
+
+  // ==========================================================
+  // ARTICLE
+  //
+  // "Article" is intentionally used here instead of
+  // "NewsArticle" because Property Insights can contain:
+  //
+  // - Market analysis
+  // - Property guides
+  // - Investment guides
+  // - Market trends
+  // - Reports
+  // - Real estate news
+  //
+  // If your CMS later adds contentType === "News",
+  // this can safely be changed to NewsArticle only for
+  // genuine news content.
+  // ==========================================================
+
+  const articleSchema = {
     "@type": "Article",
 
     "@id": `${canonical}#article`,
@@ -298,55 +476,55 @@ function ArticleSchema({ article }) {
       "@id": canonical,
     },
 
-    headline:
-      article.title ||
-      "Property Insights",
+    url: canonical,
+
+    headline: title,
 
     description,
 
-    url: canonical,
+    // ========================================================
+    // IMAGE
+    // ========================================================
 
     ...(image
       ? {
-          image: [image],
+          image: [
+            image,
+          ],
         }
       : {}),
 
-    ...(article.publishDate
+    // ========================================================
+    // DATES
+    // ========================================================
+
+    ...(publishedDate
       ? {
           datePublished:
-            new Date(
-              article.publishDate
-            ).toISOString(),
+            publishedDate,
         }
       : {}),
 
-    ...(article.updatedAt
+    ...(dateModified
       ? {
-          dateModified:
-            new Date(
-              article.updatedAt
-            ).toISOString(),
+          dateModified,
         }
-      : article.publishDate
-        ? {
-            dateModified:
-              new Date(
-                article.publishDate
-              ).toISOString(),
-          }
-        : {}),
+      : {}),
 
-    author: {
-      "@type": "Person",
+    // ========================================================
+    // AUTHOR
+    // ========================================================
 
-      name:
-        article.author ||
-        "Property Bouquet Research Team",
-    },
+    author,
+
+    // ========================================================
+    // PUBLISHER
+    // ========================================================
 
     publisher: {
       "@type": "Organization",
+
+      "@id": `${SITE_URL}#organization`,
 
       name: "Property Bouquet",
 
@@ -355,32 +533,218 @@ function ArticleSchema({ article }) {
       logo: {
         "@type": "ImageObject",
 
+        "@id": `${SITE_URL}#logo`,
+
         url:
           `${SITE_URL}/logo.webp`,
       },
     },
 
+    // ========================================================
+    // ARTICLE SECTION
+    // ========================================================
+
     articleSection:
       article.category ||
       "Property Insights",
 
-    ...(Array.isArray(article.tags)
+    // ========================================================
+    // KEYWORDS
+    // ========================================================
+
+    ...(keywords
       ? {
-          keywords:
-            article.tags.join(", "),
+          keywords,
         }
-      : typeof article.tags === "string"
-        ? {
-            keywords: article.tags,
-          }
-        : {}),
+      : {}),
+
+    // ========================================================
+    // LANGUAGE
+    // ========================================================
+
+    inLanguage: "en-IN",
+
+    // ========================================================
+    // COPYRIGHT
+    // ========================================================
+
+    copyrightHolder: {
+      "@type": "Organization",
+
+      name: "Property Bouquet",
+
+      url: SITE_URL,
+    },
+
+    ...(publishedDate
+      ? {
+          copyrightYear:
+            new Date(
+              publishedDate
+            ).getFullYear(),
+        }
+      : {}),
+  };
+
+  // ==========================================================
+  // BREADCRUMB STRUCTURED DATA
+  // ==========================================================
+
+  const breadcrumbSchema = {
+    "@type": "BreadcrumbList",
+
+    "@id": `${canonical}#breadcrumb`,
+
+    itemListElement: [
+      {
+        "@type": "ListItem",
+
+        position: 1,
+
+        name: "Home",
+
+        item: SITE_URL,
+      },
+
+      {
+        "@type": "ListItem",
+
+        position: 2,
+
+        name: "Property Insights",
+
+        item:
+          `${SITE_URL}/insights`,
+      },
+
+      {
+        "@type": "ListItem",
+
+        position: 3,
+
+        name: title,
+
+        item: canonical,
+      },
+    ],
+  };
+
+  // ==========================================================
+  // WEBPAGE STRUCTURED DATA
+  // ==========================================================
+
+  const webPageSchema = {
+    "@type": "WebPage",
+
+    "@id": canonical,
+
+    url: canonical,
+
+    name: title,
+
+    description,
+
+    isPartOf: {
+      "@type": "WebSite",
+
+      "@id": `${SITE_URL}#website`,
+
+      name: "Property Bouquet",
+
+      url: SITE_URL,
+    },
+
+    about: {
+      "@type": "Thing",
+
+      name:
+        article.category ||
+        "Real Estate Insights",
+    },
+
+    inLanguage: "en-IN",
+
+    breadcrumb: {
+      "@id":
+        `${canonical}#breadcrumb`,
+    },
+
+    mainEntity: {
+      "@id":
+        `${canonical}#article`,
+    },
+  };
+
+  // ==========================================================
+  // ORGANIZATION STRUCTURED DATA
+  // ==========================================================
+
+  const organizationSchema = {
+    "@type": "Organization",
+
+    "@id": `${SITE_URL}#organization`,
+
+    name: "Property Bouquet",
+
+    url: SITE_URL,
+
+    logo: {
+      "@type": "ImageObject",
+
+      "@id": `${SITE_URL}#logo`,
+
+      url:
+        `${SITE_URL}/logo.webp`,
+    },
+  };
+
+  // ==========================================================
+  // WEBSITE STRUCTURED DATA
+  // ==========================================================
+
+  const websiteSchema = {
+    "@type": "WebSite",
+
+    "@id": `${SITE_URL}#website`,
+
+    name: "Property Bouquet",
+
+    url: SITE_URL,
+
+    publisher: {
+      "@id":
+        `${SITE_URL}#organization`,
+    },
+
+    inLanguage: "en-IN",
+  };
+
+  // ==========================================================
+  // COMPLETE JSON-LD GRAPH
+  // ==========================================================
+
+  const schema = {
+    "@context": "https://schema.org",
+
+    "@graph": [
+      organizationSchema,
+
+      websiteSchema,
+
+      webPageSchema,
+
+      breadcrumbSchema,
+
+      articleSchema,
+    ],
   };
 
   return (
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schema),
+        __html:
+          JSON.stringify(schema),
       }}
     />
   );
@@ -400,7 +764,10 @@ function cleanArticleHtml(html) {
 
   let cleaned = html;
 
-  // Convert non-breaking spaces
+  // ==========================================================
+  // CONVERT NON-BREAKING SPACES
+  // ==========================================================
+
   cleaned = cleaned.replace(
     /&nbsp;/g,
     " "
@@ -411,26 +778,26 @@ function cleanArticleHtml(html) {
     " "
   );
 
-  // ----------------------------------------------------------
-  // Remove images with empty src
+  // ==========================================================
+  // REMOVE IMAGES WITH EMPTY SRC
   //
   // Removes:
   // <img src="">
   // <img src=''>
   // <img src="   ">
-  // ----------------------------------------------------------
+  // ==========================================================
 
   cleaned = cleaned.replace(
     /<img\b([^>]*?)\bsrc\s*=\s*["']\s*["']([^>]*)>/gi,
     ""
   );
 
-  // ----------------------------------------------------------
-  // Remove images where src is missing
+  // ==========================================================
+  // REMOVE IMAGES WHERE SRC IS MISSING
   //
   // Example:
   // <img alt="something">
-  // ----------------------------------------------------------
+  // ==========================================================
 
   cleaned = cleaned.replace(
     /<img\b(?![^>]*\bsrc\s*=)[^>]*>/gi,
@@ -449,7 +816,12 @@ export default async function InsightDetailPage({
 }) {
   const resolvedParams = await params;
 
-  const slug = resolvedParams?.slug;
+  const slug =
+    resolvedParams?.slug;
+
+  // ==========================================================
+  // INVALID SLUG
+  // ==========================================================
 
   if (!slug) {
     notFound();
@@ -508,7 +880,7 @@ export default async function InsightDetailPage({
   return (
     <>
       {/* ======================================================
-          ARTICLE STRUCTURED DATA
+          ARTICLE / SEO STRUCTURED DATA
       ====================================================== */}
 
       <ArticleSchema
