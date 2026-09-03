@@ -4604,25 +4604,27 @@ const formatIndianPrice = (value) => {
 )}
 
             {/* DESCRIPTION */}
-            <div className="mb-4">
+<div className="mb-4">
   <RichTextEditor
-    value={item.subheading || ""}
+    value={item.desc || ""}
     onChange={(value) => {
       const updated = [
-        ...form.overview.highlights,
+        ...(form.overview.featureBar || []),
       ];
 
-      updated[index].subheading = value;
+      updated[index] = {
+        ...updated[index],
+        desc: value,
+      };
 
       handleChange(
         "overview",
-        "highlights",
+        "featureBar",
         updated
       );
     }}
   />
 </div>
-
             {/* ICON */}
             <input
               className="input"
