@@ -64,21 +64,24 @@ export default function PropertiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [createdByFilter, setCreatedByFilter] = useState("All");
+
   // ============================================================
   // RESET PAGE WHEN FILTERS CHANGE
   // ============================================================
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    search,
-    filter,
-    tagFilter,
-    developerFilter,
-    seoFilter,
-    itemsPerPage,
-    sortBy,
-  ]);
+  setCurrentPage(1);
+}, [
+  search,
+  filter,
+  tagFilter,
+  developerFilter,
+  seoFilter,
+  createdByFilter,
+  itemsPerPage,
+  sortBy,
+]);
 
   // ============================================================
   // FETCH USER + PROPERTIES
@@ -612,13 +615,29 @@ export default function PropertiesPage() {
           ? hasCustomSEO(p)
           : !hasCustomSEO(p);
 
+
+      // ========================================================
+// CREATED BY FILTER
+// ========================================================
+
+const propertyCreatedById =
+  typeof p?.createdBy === "object"
+    ? p?.createdBy?._id
+    : p?.createdBy;
+
+const createdByMatch =
+  createdByFilter === "All" ||
+  String(propertyCreatedById) ===
+    String(createdByFilter);
+
       return (
-        titleMatch &&
-        tagMatch &&
-        statusMatch &&
-        developerMatch &&
-        seoMatch
-      );
+  titleMatch &&
+  tagMatch &&
+  statusMatch &&
+  developerMatch &&
+  seoMatch &&
+  createdByMatch
+);
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -783,6 +802,56 @@ export default function PropertiesPage() {
       ).values()
     ),
   ];
+
+  // ============================================================
+// CREATED BY OPTIONS
+// ============================================================
+
+const createdByOptions = [
+  {
+    label: "All Users",
+    value: "All",
+    role: "All",
+  },
+
+  ...Array.from(
+    new Map(
+      properties
+        .filter((p) => p?.createdBy)
+        .map((p) => {
+          const createdBy =
+            typeof p.createdBy === "object"
+              ? p.createdBy
+              : {
+                  _id: p.createdBy,
+                  name: "Unknown User",
+                  role: "Agent",
+                };
+
+          const userId = createdBy?._id;
+
+          const userName =
+            createdBy?.name ||
+            createdBy?.fullName ||
+            createdBy?.username ||
+            "Unknown User";
+
+          const userRole =
+            createdBy?.role ||
+            "Agent";
+
+          return [
+            String(userId),
+            {
+              label: userName,
+              value: String(userId),
+              role: userRole,
+            },
+          ];
+        })
+    ).values()
+  ),
+];
 
   // ============================================================
   // RENDER
@@ -1006,220 +1075,280 @@ export default function PropertiesPage() {
 
         </div>
 
-        {/* ====================================================
-            SEARCH / FILTERS
-        ==================================================== */}
+        {/* ======================================================
+    SEARCH / FILTERS — SINGLE LINE
+====================================================== */}
 
-        <div className="flex flex-col xl:flex-row gap-3">
+<div className="mb-4 w-full">
 
-          {/* SEARCH */}
+  <div className="flex items-center gap-2 w-full">
 
-          <input
-            placeholder="Search properties..."
-            value={search}
-            onChange={(e) =>
-              setSearch(
-                e.target.value
-              )
-            }
-            className="
-              flex-1
-              px-4
-              py-3
-              rounded-xl
-              border
-              border-gray-200
-              bg-white
-              text-gray-900
-              placeholder:text-gray-400
-              text-sm
-              font-medium
-              outline-none
-              focus:ring-2
-              focus:ring-[#0f3b2e]/20
-              focus:border-[#0f3b2e]
-            "
-          />
+    {/* SEARCH */}
 
-          {/* SORT */}
+    <input
+      type="text"
+      placeholder="Search properties..."
+      value={search}
+      onChange={(e) =>
+        setSearch(e.target.value)
+      }
+      className="
+        flex-[1.4]
+        min-w-0
+        px-4
+        py-3
+        rounded-xl
+        border
+        border-gray-200
+        bg-white
+        text-gray-900
+        placeholder:text-gray-400
+        text-sm
+        font-medium
+        outline-none
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        shadow-sm
+      "
+    />
 
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 min-w-[230px]">
+    {/* CREATED BY */}
 
-            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
-              Sort By
-            </span>
+    <select
+      value={createdByFilter}
+      onChange={(e) =>
+        setCreatedByFilter(e.target.value)
+      }
+      className="
+        flex-1
+        min-w-0
+        bg-white
+        border
+        border-gray-200
+        text-sm
+        text-gray-800
+        px-3
+        py-3
+        rounded-xl
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        outline-none
+        shadow-sm
+        font-medium
+        cursor-pointer
+      "
+    >
+      {createdByOptions.map((userOption) => (
+        <option
+          key={userOption.value}
+          value={userOption.value}
+        >
+          {userOption.label}
+          {userOption.role !== "All"
+            ? ` — ${userOption.role}`
+            : ""}
+        </option>
+      ))}
+    </select>
 
-            <select
-              value={sortBy}
-              onChange={(e) =>
-                setSortBy(
-                  e.target.value
-                )
-              }
-              className="
-                bg-white
-                border
-                border-gray-200
-                rounded-xl
-                px-4
-                py-3
-                text-sm
-                font-medium
-                text-gray-700
-                min-w-[220px]
-                shadow-sm
-                outline-none
-              "
-            >
-              <option value="newest">
-                Sort: Newest First
-              </option>
+    {/* SORT */}
 
-              <option value="oldest">
-                Sort: Oldest First
-              </option>
+    <select
+      value={sortBy}
+      onChange={(e) =>
+        setSortBy(e.target.value)
+      }
+      className="
+        flex-1
+        min-w-0
+        bg-white
+        border
+        border-gray-200
+        text-sm
+        text-gray-700
+        px-3
+        py-3
+        rounded-xl
+        shadow-sm
+        outline-none
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        font-medium
+        cursor-pointer
+      "
+    >
+      <option value="newest">
+        Sort: Newest First
+      </option>
 
-              <option value="name_asc">
-                Sort: Name A → Z
-              </option>
+      <option value="oldest">
+        Sort: Oldest First
+      </option>
 
-              <option value="name_desc">
-                Sort: Name Z → A
-              </option>
+      <option value="name_asc">
+        Sort: Name A → Z
+      </option>
 
-              <option value="published">
-                Sort: Published First
-              </option>
+      <option value="name_desc">
+        Sort: Name Z → A
+      </option>
 
-              <option value="draft">
-                Sort: Draft First
-              </option>
+      <option value="published">
+        Sort: Published First
+      </option>
 
-              <option value="featured">
-                Sort: Featured First
-              </option>
-            </select>
+      <option value="draft">
+        Sort: Draft First
+      </option>
 
-          </div>
+      <option value="featured">
+        Sort: Featured First
+      </option>
+    </select>
 
-          {/* TAG FILTER */}
+    {/* TAG */}
 
-          <select
-            value={tagFilter}
-            onChange={(e) =>
-              setTagFilter(
-                e.target.value
-              )
-            }
-            className="bg-white border border-gray-300 text-sm text-gray-800 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#0f3b2e] outline-none transition shadow-sm"
+    <select
+      value={tagFilter}
+      onChange={(e) =>
+        setTagFilter(e.target.value)
+      }
+      className="
+        flex-1
+        min-w-0
+        bg-white
+        border
+        border-gray-200
+        text-sm
+        text-gray-800
+        px-3
+        py-3
+        rounded-xl
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        outline-none
+        shadow-sm
+        font-medium
+        cursor-pointer
+      "
+    >
+      <option value="All">
+        All Tags
+      </option>
+
+      <option value="Featured">
+        Featured
+      </option>
+
+      <option value="Recommended">
+        Recommended
+      </option>
+
+      <option value="Trending">
+        Trending
+      </option>
+
+      <option value="New">
+        New
+      </option>
+
+      <option value="Normal">
+        Normal
+      </option>
+    </select>
+
+    {/* DEVELOPER */}
+
+    <select
+      value={developerFilter}
+      onChange={(e) =>
+        setDeveloperFilter(e.target.value)
+      }
+      className="
+        flex-1
+        min-w-0
+        bg-white
+        border
+        border-gray-200
+        text-sm
+        text-gray-800
+        px-3
+        py-3
+        rounded-xl
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        outline-none
+        shadow-sm
+        font-medium
+        cursor-pointer
+      "
+    >
+      <option value="All">
+        All Developers
+      </option>
+
+      {developerOptions
+        .filter(
+          (dev) => dev.value !== "All"
+        )
+        .map((dev) => (
+          <option
+            key={dev.value}
+            value={dev.value}
           >
-            <option value="All">
-              All Tags
-            </option>
+            {dev.label}
+          </option>
+        ))}
+    </select>
 
-            <option value="Featured">
-              Featured
-            </option>
+    {/* SEO */}
 
-            <option value="Recommended">
-              Recommended
-            </option>
+    <select
+      value={seoFilter}
+      onChange={(e) =>
+        setSeoFilter(e.target.value)
+      }
+      className="
+        flex-1
+        min-w-0
+        bg-white
+        border
+        border-gray-200
+        text-sm
+        text-gray-800
+        px-3
+        py-3
+        rounded-xl
+        focus:ring-2
+        focus:ring-[#0f3b2e]/20
+        focus:border-[#0f3b2e]
+        outline-none
+        shadow-sm
+        font-medium
+        cursor-pointer
+      "
+    >
+      <option value="All">
+        All SEO
+      </option>
 
-            <option value="Trending">
-              Trending
-            </option>
+      <option value="Custom">
+        Custom SEO
+      </option>
 
-            <option value="New">
-              New
-            </option>
+      <option value="Auto">
+        Auto SEO
+      </option>
+    </select>
 
-            <option value="Normal">
-              Normal
-            </option>
-          </select>
+  </div>
 
-          {/* DEVELOPER FILTER */}
-
-          <select
-            value={developerFilter}
-            onChange={(e) =>
-              setDeveloperFilter(
-                e.target.value
-              )
-            }
-            className="
-              bg-white
-              border
-              border-gray-300
-              text-sm
-              text-gray-800
-              px-4
-              py-2.5
-              rounded-xl
-              focus:ring-2
-              focus:ring-[#0f3b2e]
-              outline-none
-              transition
-              shadow-sm
-              min-w-[220px]
-            "
-          >
-            <option value="All">
-              All Developers
-            </option>
-
-            {developerOptions.map(
-              (dev) => (
-                <option
-                  key={dev.value}
-                  value={dev.value}
-                >
-                  {dev.label}
-                </option>
-              )
-            )}
-          </select>
-
-          {/* SEO FILTER */}
-
-          <select
-            value={seoFilter}
-            onChange={(e) =>
-              setSeoFilter(
-                e.target.value
-              )
-            }
-            className="
-              bg-white
-              border
-              border-gray-300
-              text-sm
-              text-gray-800
-              px-4
-              py-2.5
-              rounded-xl
-              focus:ring-2
-              focus:ring-[#0f3b2e]
-              outline-none
-              transition
-              shadow-sm
-              min-w-[170px]
-            "
-          >
-            <option value="All">
-              All SEO
-            </option>
-
-            <option value="Custom">
-              Custom SEO
-            </option>
-
-            <option value="Auto">
-              Auto SEO
-            </option>
-          </select>
-
-        </div>
+</div>
       </div>
 
       {/* ======================================================

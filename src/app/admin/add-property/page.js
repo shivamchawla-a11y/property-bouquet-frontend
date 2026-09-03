@@ -4279,7 +4279,7 @@ const formatIndianPrice = (value) => {
 )}
 
       {/* SECOND PARAGRAPH */}
-      <textarea
+      {/* <textarea
         className="input min-h-[120px] mb-4"
         placeholder="Second Paragraph"
         value={form.overview.aboutParagraph2 || ""}
@@ -4290,7 +4290,7 @@ const formatIndianPrice = (value) => {
             e.target.value
           )
         }
-      />
+      /> */}
 
       {/* ================= ABOUT IMAGE ================= */}
 <div className="mt-6">
