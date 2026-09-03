@@ -683,7 +683,13 @@ const safeForm = {
       property.overview?.aboutImageUrl || "",
 
     featureBar:
-      property.overview?.featureBar || [],
+  Array.isArray(property.overview?.featureBar)
+    ? property.overview.featureBar.map((f) => ({
+        title: f?.title || "",
+        desc: f?.desc || "",
+        icon: f?.icon || "✦",
+      }))
+    : [],
 
     highlightsHeading:
       property.overview?.highlightsHeading ||
@@ -3713,24 +3719,24 @@ if (loading) {
       />
 
       {/* ABOUT DESCRIPTION */}
-      <div className="mb-4">
-        <RichTextEditor
-          value={form.overview.description || ""}
-          onChange={(value) =>
-            handleChange(
-              "overview",
-              "description",
-              value
-            )
-          }
-        />
-      </div>
-      
-      {hasError("overview.description") && (
-        <p className="text-red-400 text-sm">
-          About Description is required
-        </p>
-      )}
+<div className="mb-4">
+  <RichTextEditor
+    value={form.overview.description || ""}
+    onChange={(value) =>
+      handleChange(
+        "overview",
+        "description",
+        value
+      )
+    }
+  />
+</div>
+
+{hasError("overview.description") && (
+  <p className="text-red-400 text-sm">
+    About Description is required
+  </p>
+)}
 
       {/* SECOND PARAGRAPH */}
       <textarea
@@ -4058,27 +4064,27 @@ if (loading) {
 )}
 
             {/* DESCRIPTION */}
-            <textarea
-              className="input min-h-[100px] mb-4"
-              placeholder="Feature Description"
-              value={item.desc || ""}
-              onChange={(e) => {
+<div className="mb-4">
+  <RichTextEditor
+    value={item.desc || ""}
+    onChange={(value) => {
+      const updated = [
+        ...(form.overview.featureBar || []),
+      ];
 
-                const updated = [
-                  ...form.overview.featureBar,
-                ];
+      updated[index] = {
+        ...updated[index],
+        desc: value,
+      };
 
-                updated[index].desc =
-                  e.target.value;
-
-                handleChange(
-                  "overview",
-                  "featureBar",
-                  updated
-                );
-              }}
-            />
-
+      handleChange(
+        "overview",
+        "featureBar",
+        updated
+      );
+    }}
+  />
+</div>
             {/* ICON */}
             <input
               className="input"
@@ -4283,24 +4289,26 @@ if (loading) {
         />
 
         {/* DESCRIPTION */}
-       <div className="mb-4">
-  <RichTextEditor
-    value={item.subheading || ""}
-    onChange={(value) => {
-      const updated = [
-        ...form.overview.highlights,
-      ];
+        <textarea
+          className="input min-h-[120px] mb-4"
+          placeholder="Card Description"
+          value={item.subheading || ""}
+          onChange={(e) => {
 
-      updated[index].subheading = value;
+            const updated = [
+              ...form.overview.highlights,
+            ];
 
-      handleChange(
-        "overview",
-        "highlights",
-        updated
-      );
-    }}
-  />
-</div>
+            updated[index].subheading =
+              e.target.value;
+
+            handleChange(
+              "overview",
+              "highlights",
+              updated
+            );
+          }}
+        />
 
         {/* ICON */}
         <input
