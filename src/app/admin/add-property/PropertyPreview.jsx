@@ -1988,7 +1988,18 @@ flex-wrap
   <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-5 lg:px-6">
 
     {/* ================= MAIN GRID ================= */}
-    <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 xl:gap-10 items-start">
+    <div
+  className="
+    grid
+    grid-cols-1
+    lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]
+    gap-8
+    xl:gap-10
+    items-start
+    w-full
+    min-w-0
+  "
+>
 
       {/* ================= LEFT IMAGE ================= */}
       <div className="relative">
@@ -2028,7 +2039,7 @@ flex-wrap
       </div>
 
       {/* ================= RIGHT CONTENT ================= */}
-      <div className="pt-2 lg:pt-6">
+      <div className="pt-2 lg:pt-6 min-w-0 w-full max-w-full overflow-hidden">
 
         {/* ================= HEADING ================= */}
 <div className="text-center md:text-left">
@@ -2099,325 +2110,394 @@ flex-wrap
           <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
         </div>
 
-        {/* ================= DESCRIPTION ================= */}
-<div
-  className="
-    prose-luxury
-    max-w-[700px]
-    text-[#505050]
-  "
-  style={{
-    fontFamily: "Inter, sans-serif",
-  }}
->
-  {(() => {
-  const paragraph1 =
-    overview?.description ||
-    "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
+{/* ================= DESCRIPTION ================= */}
+<div className="w-full min-w-0">
+  <div
+    className="
+      about-text-box
+      w-full
+      max-w-[700px]
+      min-w-0
+      overflow-hidden
+      text-[#505050]
+    "
+  >
+    {(() => {
+      const paragraph1 =
+        overview?.description ||
+        "Eldeco Camelot is envisioned for those who value space, privacy and refined living. Every element of this address reflects thoughtful planning, timeless design and an uncompromising commitment to quality.";
 
-  const paragraph2 =
-    aboutParagraph2 ||
-    "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
+      const paragraph2 =
+        aboutParagraph2 ||
+        "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
 
-  const isHtml = (text = "") => /<\/?[a-z][\s\S]*>/i.test(text);
+      const isHtml = (text = "") =>
+        /<\/?[a-z][\s\S]*>/i.test(text);
 
-  const plainText = `${paragraph1} ${paragraph2}`.replace(/<[^>]*>/g, "");
+      const plainText =
+        `${paragraph1} ${paragraph2}`.replace(/<[^>]*>/g, "");
 
-  const shouldTruncate = plainText.length > 700;
+      const shouldTruncate = plainText.length > 700;
 
-  return (
-    <>
-      <div
-        className={`relative overflow-hidden transition-all duration-500 ${
-          showAboutMore || !shouldTruncate
-            ? "max-h-[5000px]"
-            : "max-h-[340px]"
-        }`}
-      >
-        {/* FIRST PARAGRAPH */}
-        {isHtml(paragraph1) ? (
+      return (
+        <>
+          {/* ================= TEXT CONTENT BOX ================= */}
           <div
-  className="prose-luxury whitespace-normal break-words"
-  dangerouslySetInnerHTML={{
-    __html: paragraph1,
-  }}
-/>
-        ) : (
-          <p className="whitespace-pre-line break-words">
-  {paragraph1}
-</p>
-        )}
-
-        {/* SECOND PARAGRAPH */}
-        {paragraph2 &&
-          (isHtml(paragraph2) ? (
-            <div
-  className="prose-luxury mt-5 whitespace-normal break-words"
-  dangerouslySetInnerHTML={{
-    __html: paragraph2,
-  }}
-/>
-          ) : (
-            <p className="mt-5 whitespace-pre-line break-words">
-  {paragraph2}
-</p>
-          ))}
-
-        {/* Fade Overlay */}
-        {!showAboutMore && shouldTruncate && (
-          <div
-            className="
-              absolute
-              bottom-0
-              left-0
-              right-0
-              h-24
-              pointer-events-none
-              bg-gradient-to-t
-              from-[#f7f4ef]
-              via-[#f7f4ef]/85
-              to-transparent
-            "
-          />
-        )}
-      </div>
-
-      {/* BUTTONS */}
-      <div
-        className="
-          flex
-          flex-row
-          gap-3
-          mt-8
-          w-full
-          md:w-auto
-        "
-      >
-        {shouldTruncate && (
-          <button
-            type="button"
-            onClick={() => setShowAboutMore(!showAboutMore)}
-            className="
-              group
-              flex-1
-              md:flex-none
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              h-[50px]
-              md:h-[52px]
-              px-4
-              md:px-7
-              rounded-xl
-              border
-              border-[#17342d]
-              bg-transparent
-              text-[#17342d]
+            className={`
+              about-description-content
+              relative
+              w-full
+              max-w-full
+              min-w-0
+              overflow-hidden
               transition-all
-              duration-300
-              hover:bg-[#17342d]
-              hover:text-white
-              hover:-translate-y-[2px]
+              duration-500
+              ${
+                showAboutMore || !shouldTruncate
+                  ? "max-h-[5000px]"
+                  : "max-h-[340px]"
+              }
+            `}
+          >
+
+            {/* ================= FIRST PARAGRAPH ================= */}
+            {isHtml(paragraph1) ? (
+              <div
+                className="
+                  about-rich-text
+                  w-full
+                  max-w-full
+                  min-w-0
+                "
+                dangerouslySetInnerHTML={{
+                  __html: paragraph1,
+                }}
+              />
+            ) : (
+              <p className="about-paragraph">
+                {paragraph1}
+              </p>
+            )}
+
+            {/* ================= SECOND PARAGRAPH ================= */}
+            {paragraph2 &&
+              (isHtml(paragraph2) ? (
+                <div
+                  className="
+                    about-rich-text
+                    w-full
+                    max-w-full
+                    min-w-0
+                    mt-5
+                  "
+                  dangerouslySetInnerHTML={{
+                    __html: paragraph2,
+                  }}
+                />
+              ) : (
+                <p className="about-paragraph mt-5">
+                  {paragraph2}
+                </p>
+              ))}
+
+            {/* ================= FADE ================= */}
+            {!showAboutMore && shouldTruncate && (
+              <div
+                className="
+                  absolute
+                  bottom-0
+                  left-0
+                  right-0
+                  h-24
+                  pointer-events-none
+                  bg-gradient-to-t
+                  from-[#f7f3ec]
+                  via-[#f7f3ec]/85
+                  to-transparent
+                "
+              />
+            )}
+          </div>
+
+          {/* ================= BUTTONS ================= */}
+          <div
+            className="
+              flex
+              flex-row
+              gap-3
+              mt-8
+              w-full
+              md:w-auto
             "
           >
-            <span className="text-[12px] md:text-[13px] font-semibold uppercase tracking-[1.2px] md:tracking-[2px] whitespace-nowrap">
-              {showAboutMore ? "Read Less" : "Read More"}
-            </span>
+            {shouldTruncate && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowAboutMore(!showAboutMore)
+                }
+                className="
+                  group
+                  flex-1
+                  md:flex-none
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
+                  h-[50px]
+                  md:h-[52px]
+                  px-4
+                  md:px-7
+                  rounded-xl
+                  border
+                  border-[#17342d]
+                  bg-transparent
+                  text-[#17342d]
+                  transition-all
+                  duration-300
+                  hover:bg-[#17342d]
+                  hover:text-white
+                  hover:-translate-y-[2px]
+                "
+              >
+                <span
+                  className="
+                    text-[12px]
+                    md:text-[13px]
+                    font-semibold
+                    uppercase
+                    tracking-[1.2px]
+                    md:tracking-[2px]
+                    whitespace-nowrap
+                  "
+                >
+                  {showAboutMore
+                    ? "Read Less"
+                    : "Read More"}
+                </span>
 
-            <span
+                <span
+                  className="
+                    text-base
+                    md:text-lg
+                    transition-transform
+                    duration-300
+                    group-hover:translate-x-1
+                  "
+                >
+                  →
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
               className="
-                text-base
-                md:text-lg
-                transition-transform
+                group
+                flex-1
+                md:flex-none
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                h-[50px]
+                md:h-[52px]
+                px-4
+                md:px-8
+                rounded-xl
+                bg-[#17342d]
+                text-white
+                border
+                border-[#17342d]
+                shadow-[0_14px_35px_rgba(23,52,45,.18)]
+                transition-all
                 duration-300
-                group-hover:translate-x-1
+                hover:bg-[#c9a64b]
+                hover:border-[#c9a64b]
+                hover:text-[#17342d]
+                hover:-translate-y-[2px]
               "
             >
-              →
-            </span>
-          </button>
-        )}
+              <Download
+                size={16}
+                strokeWidth={2.2}
+                className="
+                  transition-transform
+                  duration-300
+                  group-hover:-translate-y-[2px]
+                  shrink-0
+                "
+              />
 
-                <button
-          type="button"
-          onClick={() => setShowModal(true)}
-          className="
-            group
-            flex-1
-            md:flex-none
-            inline-flex
-            items-center
-            justify-center
-            gap-2
-            h-[50px]
-            md:h-[52px]
-            px-4
-            md:px-8
-            rounded-xl
-            bg-[#17342d]
-            text-white
-            border
-            border-[#17342d]
-            shadow-[0_14px_35px_rgba(23,52,45,.18)]
-            transition-all
-            duration-300
-            hover:bg-[#c9a64b]
-            hover:border-[#c9a64b]
-            hover:text-[#17342d]
-            hover:-translate-y-[2px]
-          "
-        >
-          <Download
-            size={16}
-            strokeWidth={2.2}
-            className="
-              transition-transform
-              duration-300
-              group-hover:-translate-y-[2px]
-              shrink-0
-            "
-          />
-
-          <span
-            className="
-              text-[11px]
-              md:text-[12px]
-              uppercase
-              tracking-[1px]
-              md:tracking-[2px]
-              font-semibold
-              whitespace-nowrap
-            "
-          >
-            Download Brochure
-          </span>
-        </button>
-      </div>
-    </>
-  );
-})()}
+              <span
+                className="
+                  text-[11px]
+                  md:text-[12px]
+                  uppercase
+                  tracking-[1px]
+                  md:tracking-[2px]
+                  font-semibold
+                  whitespace-nowrap
+                "
+              >
+                Download Brochure
+              </span>
+            </button>
+          </div>
+        </>
+      );
+    })()}
+  </div>
 </div>
       </div>
     </div>
 
-    {/* ================= FULL WIDTH FEATURE BAR ================= */}
-    <div
-      className="
-        relative
-        mt-10
-        rounded-[12px]
-        overflow-hidden
-        border
-        border-[#123126]
-        shadow-[0_25px_45px_rgba(0,0,0,0.10)]
-      "
-      style={{
-        background:
-          "linear-gradient(90deg,#03261d 0%,#073328 50%,#05251d 100%)",
-      }}
-    >
+{/* ================= FULL WIDTH FEATURE BAR ================= */}
+<div
+  className="
+    relative
+    mt-10
+    rounded-[12px]
+    overflow-hidden
+    border
+    border-[#123126]
+    shadow-[0_25px_45px_rgba(0,0,0,0.10)]
+  "
+  style={{
+    background:
+      "linear-gradient(90deg,#03261d 0%,#073328 50%,#05251d 100%)",
+  }}
+>
+  {/* SUBTLE GLOW */}
+  <div
+    className="absolute inset-0 opacity-40"
+    style={{
+      background:
+        "radial-gradient(circle at left, rgba(201,166,75,0.10), transparent 25%), radial-gradient(circle at right, rgba(201,166,75,0.08), transparent 25%)",
+    }}
+  />
 
-      {/* SUBTLE GLOW */}
+  <div className="relative z-10 grid grid-cols-2 md:grid-cols-4">
+    {featureBar.slice(0, 4).map((item, index) => (
       <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          background:
-            "radial-gradient(circle at left, rgba(201,166,75,0.10), transparent 25%), radial-gradient(circle at right, rgba(201,166,75,0.08), transparent 25%)",
-        }}
-      />
+        key={index}
+        className="
+          relative
+          px-3
+          sm:px-5
+          py-5
+          sm:py-7
+          md:py-8
+          text-center
+          border-r
+          border-b
+          md:border-b-0
+          last:border-r-0
+          border-white/10
+          min-w-0
+        "
+      >
+        {/* ICON */}
+        <div className="flex justify-center mb-3 sm:mb-4">
+          <div
+            className="
+              w-9
+              h-9
+              sm:w-11
+              sm:h-11
+              rounded-full
+              border
+              border-[#c9a64b]/35
+              flex
+              items-center
+              justify-center
+              text-[#d8b46b]
+              text-[15px]
+              sm:text-[18px]
+              shrink-0
+            "
+          >
+            {item?.icon || "✦"}
+          </div>
+        </div>
 
-      <div className="relative z-10 grid grid-cols-2 md:grid-cols-4">
+        {/* TITLE */}
+        <h3
+          className="
+            text-[#d7b367]
+            text-[9px]
+            sm:text-[10px]
+            md:text-[11px]
+            leading-[1.6]
+            sm:leading-[1.7]
+            tracking-[1px]
+            sm:tracking-[1.4px]
+            uppercase
+            mb-2
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 600,
+          }}
+        >
+          {item?.title}
+        </h3>
 
-        {featureBar
-          .slice(0, 4)
-          .map((item, index) => (
-            <div
-              key={index}
-              className="
-                relative
-                px-3
-                sm:px-5
-                py-5
-                sm:py-7
-                md:py-8
-                text-center
-                border-r
-                border-b
-                md:border-b-0
-                last:border-r-0
-                border-white/10
-              "
-            >
+        {/* DESC — HTML CONTENT */}
+        <div
+          className="
+            text-white/60
+            text-[9px]
+            sm:text-[10px]
+            md:text-[11px]
+            leading-[1.7]
+            sm:leading-[1.8]
+            max-w-[220px]
+            mx-auto
+            break-words
+            whitespace-normal
+            overflow-hidden
 
-              {/* ICON */}
-              <div className="flex justify-center mb-3 sm:mb-4">
+            [&_p]:m-0
+            [&_p]:p-0
+            [&_p]:mb-2
+            [&_p:last-child]:mb-0
 
-                <div
-                  className="
-                    w-9
-                    h-9
-                    sm:w-11
-                    sm:h-11
-                    rounded-full
-                    border
-                    border-[#c9a64b]/35
-                    flex
-                    items-center
-                    justify-center
-                    text-[#d8b46b]
-                    text-[15px]
-                    sm:text-[18px]
-                  "
-                >
-                  {item?.icon || "✦"}
-                </div>
-              </div>
+            [&_strong]:text-white/80
+            [&_strong]:font-semibold
 
-              {/* TITLE */}
-              <h3
-                className="
-                  text-[#d7b367]
-                  text-[9px]
-                  sm:text-[10px]
-                  md:text-[11px]
-                  leading-[1.6]
-                  sm:leading-[1.7]
-                  tracking-[1px]
-                  sm:tracking-[1.4px]
-                  uppercase
-                  mb-2
-                "
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                {item?.title}
-              </h3>
+            [&_b]:text-white/80
+            [&_b]:font-semibold
 
-              {/* DESC */}
-              <p
-                className="
-                  text-white/60
-                  text-[9px]
-                  sm:text-[10px]
-                  md:text-[11px]
-                  leading-[1.7]
-                  sm:leading-[1.8]
-                  max-w-[180px]
-                  mx-auto
-                "
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                {item?.desc}
-              </p>
-            </div>
-          ))}
+            [&_em]:italic
+
+            [&_h1]:text-[12px]
+            [&_h2]:text-[12px]
+            [&_h3]:text-[11px]
+            [&_h4]:text-[11px]
+
+            [&_h1]:font-semibold
+            [&_h2]:font-semibold
+            [&_h3]:font-semibold
+            [&_h4]:font-semibold
+
+            [&_ul]:list-disc
+            [&_ul]:pl-4
+            [&_ol]:list-decimal
+            [&_ol]:pl-4
+          "
+          style={{
+            fontFamily: "Inter, sans-serif",
+          }}
+          dangerouslySetInnerHTML={{
+            __html: item?.desc || "",
+          }}
+        />
       </div>
-    </div>
+    ))}
+  </div>
+</div>
   </div>
 </motion.section>
 
@@ -2442,7 +2522,19 @@ flex-wrap
   {/* AMBIENT GLOW */}
   <div className="absolute right-[-120px] top-[120px] w-[320px] h-[320px] bg-[#c9a64b]/10 blur-[120px] rounded-full" />
 
-  <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-5 lg:px-6">
+  <div
+  className="
+    relative
+    z-10
+    w-full
+    min-w-0
+    max-w-[1320px]
+    mx-auto
+    px-4
+    sm:px-5
+    lg:px-6
+  "
+>
 
     {/* ================= HEADING ================= */}
 <div className="text-center mb-12 md:mb-16">
@@ -6566,7 +6658,7 @@ else {
 
             <div className="relative z-10 p-7 md:p-14 lg:p-16">
 
-              <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-8 xl:gap-10 items-start min-w-0">
 
                 {/* ================= LEFT ================= */}
                 <div>
