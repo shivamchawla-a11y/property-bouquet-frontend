@@ -333,12 +333,43 @@ export function buildPropertySchema(property, slug) {
   // ==========================================================
   // ADDRESS
   // ==========================================================
+  //
+  // IMPORTANT:
+  //
+  // locationName can contain a hierarchy such as:
+  //
+  // Gurgaon > Dwarka Expressway > Sector 99A
+  //
+  // That complete hierarchy must NOT be placed inside
+  // PostalAddress.addressLocality.
+  //
+  // We keep the original locationName untouched for the
+  // property's normal data and extract only the most specific
+  // location component for structured data.
+  //
+  // ==========================================================
+
+  const locationParts = String(
+    locationName || ""
+  )
+    .split(">")
+    .map((item) =>
+      cleanString(item)
+    )
+    .filter(Boolean);
+
+  const schemaLocality =
+    locationParts.length
+      ? locationParts[
+          locationParts.length - 1
+        ]
+      : "Gurgaon";
 
   const address = {
     "@type": "PostalAddress",
 
     addressLocality:
-      locationName,
+      schemaLocality,
 
     addressRegion:
       "Haryana",

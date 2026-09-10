@@ -1384,7 +1384,7 @@ xl:rounded-full
   id="overview"
   initial={{
     scale: 1.05,
-    opacity: 0,
+    opacity: 1,
   }}
   animate={{
     scale: 1,
@@ -1444,7 +1444,7 @@ xl:rounded-full
   {/* ================= CONTENT ================= */}
   <motion.div
     variants={staggerContainer}
-    initial="hidden"
+    initial="visible"
     animate="visible"
     className="
       relative
@@ -1486,7 +1486,8 @@ lg:px-6
 
   {/* ================= VISIBLE BREADCRUMB ================= */}
   <motion.nav
-    variants={fadeUp}
+    initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
     aria-label="Breadcrumb"
     className="
       mb-6
@@ -1590,38 +1591,36 @@ lg:px-6
           </p>
         </motion.div> */}
 
-        {/* TITLE */}
-        <motion.h1
-          variants={fadeUp}
-          className="
-  text-white
-  font-light
-  leading-[1.03]
-  tracking-[-0.5px]
-  sm:tracking-[-1px]
-  md:tracking-[-1.5px]
-  text-[38px]
-  sm:text-5xl
-  md:text-6xl
-  lg:text-[68px]
-  xl:text-[78px]
-  max-w-[900px]
-  break-words
-"
-          style={{
-  fontFamily: "Cormorant Garamond, serif",
-}}
-        >
-          {coreDetails?.title}
-<span className="sr-only">
-  {" "}
-  Luxury {categoryName} by {developerName} in {locationName}
-</span>
-        </motion.h1>
+{/* TITLE */}
+<motion.h1
+  initial={{ opacity: 1, y: 0 }}
+animate={{ opacity: 1, y: 0 }}
+  className="
+    text-white
+    font-light
+    leading-[1.03]
+    tracking-[-0.5px]
+    sm:tracking-[-1px]
+    md:tracking-[-1.5px]
+    text-[38px]
+    sm:text-5xl
+    md:text-6xl
+    lg:text-[68px]
+    xl:text-[78px]
+    max-w-[900px]
+    break-words
+  "
+  style={{
+    fontFamily: "Cormorant Garamond, serif",
+  }}
+>
+  {coreDetails?.title}
+</motion.h1>
 
         {/* LOCATION */}
 <motion.div
-  variants={fadeUp}
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
   className="
 flex
 items-center
@@ -1679,13 +1678,15 @@ flex-wrap
 
         {/* DIVIDER */}
         <motion.div
-          variants={fadeUp}
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
           className="w-[70px] sm:w-[90px] h-[1px] bg-gradient-to-r from-[#c9a64b] to-transparent mt-7 sm:mt-8"
         />
 
         {/* DESCRIPTION */}
 <motion.p
-  variants={fadeUp}
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
   className="
     mt-6
     sm:mt-7
@@ -1709,8 +1710,9 @@ flex-wrap
 </motion.p>
 
         {/* BUTTONS */}
-        <motion.div
-          variants={fadeUp}
+<motion.div
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
           className="
             flex
             flex-col
@@ -1769,9 +1771,10 @@ flex-wrap
 
       {/* ================= PREMIUM METRICS ================= */}
       <motion.div
-        variants={fadeUp}
-        className="mt-12 sm:mt-14"
-      >
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="mt-12 sm:mt-14"
+>
 
         <div
           className="
@@ -1914,8 +1917,9 @@ flex-wrap
 
       {/* ================= TAGLINE ================= */}
       <motion.div
-        variants={fadeUp}
-        className="
+  initial={{ opacity: 1, y: 0 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="
           flex
           flex-wrap
           items-center
