@@ -606,90 +606,81 @@ export function buildPropertySchema(property, slug) {
     };
   }
 
-  // ==========================================================
-  // RESIDENCE
-  // ==========================================================
+// ==========================================================
+// RESIDENCE
+// ==========================================================
 
-  const residence = {
-    "@type": "Residence",
+const residence = {
+  "@type": "Residence",
 
+  "@id":
+    residenceId,
+
+  url:
+    pageUrl,
+
+  name:
+    propertyName,
+
+  description:
+    description,
+
+  ...(images.length
+    ? {
+        image:
+          images,
+      }
+    : {}),
+
+  address: {
     "@id":
-      residenceId,
+      placeId,
+  },
 
-    url:
-      pageUrl,
+  ...(amenities.length
+    ? {
+        amenityFeature:
+          amenities.map(
+            (amenity) => ({
+              "@type":
+                "LocationFeatureSpecification",
 
-    name:
-      propertyName,
+              name:
+                amenity,
 
-    description:
-      description,
+              value: true,
+            })
+          ),
+      }
+    : {}),
 
-    ...(images.length
-      ? {
-          image:
-            images,
-        }
-      : {}),
+  ...(additionalProperty.length
+    ? {
+        additionalProperty,
+      }
+    : {}),
 
-    ...(developerName
-      ? {
-          brand: {
-            "@id":
-              developerId,
-          },
-        }
-      : {}),
+  ...(propertyType
+    ? {
+        additionalType:
+          propertyType,
+      }
+    : {}),
 
-    address: {
-      "@id":
-        placeId,
-    },
+  mainEntityOfPage: {
+    "@id":
+      webPageId,
+  },
 
-    ...(amenities.length
-      ? {
-          amenityFeature:
-            amenities.map(
-              (amenity) => ({
-                "@type":
-                  "LocationFeatureSpecification",
-
-                name:
-                  amenity,
-
-                value: true,
-              })
-            ),
-        }
-      : {}),
-
-    ...(additionalProperty.length
-      ? {
-          additionalProperty,
-        }
-      : {}),
-
-    ...(propertyType
-      ? {
-          additionalType:
-            propertyType,
-        }
-      : {}),
-
-    mainEntityOfPage: {
-      "@id":
-        webPageId,
-    },
-
-    ...(hasStartingPrice
-      ? {
-          offers: {
-            "@id":
-              offerId,
-          },
-        }
-      : {}),
-  };
+  ...(hasStartingPrice
+    ? {
+        offers: {
+          "@id":
+            offerId,
+        },
+      }
+    : {}),
+};
 
   // ==========================================================
   // OFFER
