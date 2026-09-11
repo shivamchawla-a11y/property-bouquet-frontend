@@ -1971,12 +1971,8 @@ flex-wrap
 </motion.div>
 
 {/* ================= REFINED ULTRA PREMIUM ABOUT SECTION ================= */}
-<motion.section
+<section
   id="about"
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.15 }}
-  variants={fadeUp}
   className="
     relative
     bg-[#f7f3ec]
@@ -2503,16 +2499,12 @@ flex-wrap
   </div>
 </div>
   </div>
-</motion.section>
+</section>
 
 
 {/* ================= PROPERTY HIGHLIGHTS SECTION ================= */}
-<motion.section
+<section
   id="highlights"
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.15 }}
-  variants={fadeUp}
   className="
     relative
     bg-[#f7f3ec]
@@ -2876,15 +2868,11 @@ flex-wrap
       <div className="w-20 md:w-24 h-[1px] bg-[#c9a64b] mx-auto mt-5 md:mt-6" />
     </div>
   </div>
-</motion.section>
+</section>
 
 {/* ================= ULTRA PREMIUM AMENETIES SECTION ================= */}
-<motion.section
-id="amenities"
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.15 }}
-  variants={staggerContainer}
+<section
+  id="amenities"
   className="
     relative
     overflow-hidden
@@ -2925,10 +2913,7 @@ id="amenities"
   <div className="relative z-10 max-w-[1380px] mx-auto px-5 lg:px-8">
 
     {/* ================= HEADING ================= */}
-<motion.div
-  variants={fadeUp}
-  className="text-center mb-12 md:mb-16"
->
+<div className="text-center mb-12 md:mb-16">
   {/* SECTION LABEL */}
   <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
     <p
@@ -2974,23 +2959,22 @@ id="amenities"
     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
   </div>
 
-</motion.div>
+</div>
 
     {/* ================= PREMIUM GRID ================= */}
 {Array.isArray(overview?.amenities) &&
   overview.amenities.filter(Boolean).length > 0 && (
 
-    <motion.div
-      variants={fadeUp}
-      className="
-        grid
-        grid-cols-1
-        sm:grid-cols-2
-        lg:grid-cols-4
-        gap-5
-        mt-14
-      "
-    >
+    <div
+  className="
+    grid
+    grid-cols-1
+    sm:grid-cols-2
+    lg:grid-cols-4
+    gap-5
+    mt-14
+  "
+>
       {overview.amenities
         .filter((h) => h)
         .slice(0, 8)
@@ -3108,13 +3092,12 @@ else {
             </motion.div>
           );
         })}
-    </motion.div>
+    </div>
 )}
 
     {/* ================= BOTTOM STRIP ================= */}
-    <motion.div
-      variants={fadeUp}
-      className="
+    <div
+  className="
         mt-10
         rounded-[14px]
         overflow-hidden
@@ -3227,9 +3210,9 @@ else {
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   </div>
-</motion.section>
+</section>
 
 {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
 
@@ -3261,13 +3244,9 @@ else {
     activeConfiguration.image.trim() !== "";
 
   return (
-    <motion.section
-      id="configuration"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
-      variants={staggerContainer}
-      className="
+    <section
+  id="configuration"
+  className="
         relative
         py-14
         md:py-24
@@ -3298,10 +3277,7 @@ else {
         {/* ================= HEADING =============================== */}
         {/* ========================================================= */}
 
-        <motion.div
-          variants={fadeUp}
-          className="text-center mb-12 md:mb-16"
-        >
+        <div className="text-center mb-12 md:mb-16">
 
           {/* ================= SECTION LABEL ================= */}
 
@@ -3428,17 +3404,16 @@ else {
               "Thoughtfully designed layouts that redefine space, privacy, and luxury."}
           </motion.p>
 
-        </motion.div>
+        </div>
 
 
         {/* ========================================================= */}
         {/* ================= MAIN CARD ============================= */}
         {/* ========================================================= */}
 
-        <motion.div
-          variants={fadeUp}
-          className="
-            mt-10
+        <div
+  className="
+    mt-10
             md:mt-14
             bg-[#f9f7f3]
             border
@@ -4315,7 +4290,7 @@ else {
 
           </div>
 
-                </motion.div>
+                </div>
 
 
         {/* ========================================================= */}
@@ -4323,11 +4298,10 @@ else {
         {/* ========================================================= */}
 
         {isPlots && (
-          <motion.div
-            variants={fadeUp}
-            className="
-              mt-8
-              md:mt-10
+          <div
+  className="
+    mt-8
+    md:mt-10
               bg-[#f9f8f4]
               border
               border-[#e4dfd5]
@@ -4920,12 +4894,12 @@ else {
 
             </div>
 
-          </motion.div>
+          </div>
         )}
 
       </div>
 
-    </motion.section>
+    </section>
   );
 })()}
 
