@@ -68,33 +68,33 @@ export default function HeroSectionMobile() {
       </span>
     </motion.div>
 
-    {/* HEADING */}
-    <motion.h1
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="
-        mt-8
-        text-white
-        text-[42px]
-        leading-[1.02]
-        tracking-[-2px]
-        font-medium
-      "
-      style={{
-        fontFamily: "Georgia, Times New Roman, serif",
-      }}
-    >
-      Curating India's Most
+{/* HEADING */}
+<motion.h2
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8 }}
+  className="
+    mt-8
+    text-white
+    text-[42px]
+    leading-[1.02]
+    tracking-[-2px]
+    font-medium
+  "
+  style={{
+    fontFamily: "Georgia, Times New Roman, serif",
+  }}
+>
+  Curating India's Most
 
-      <span className="block text-[#c89d58] mt-2">
-        Intelligent
-      </span>
+  <span className="block text-[#c89d58] mt-2">
+    Intelligent
+  </span>
 
-      <span className="block">
-        Luxury Assets
-      </span>
-    </motion.h1>
+  <span className="block">
+    Luxury Assets
+  </span>
+</motion.h2>
 
     {/* DESCRIPTION */}
     <motion.p
