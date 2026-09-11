@@ -115,7 +115,7 @@ export default function HeroSectionMobile() {
       investments across India.
     </motion.p>
 
-    {/* CTA */}
+    {/* CTA
     <motion.button
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -165,7 +165,7 @@ export default function HeroSectionMobile() {
       >
         DISCOVER OUR APPROACH
       </span>
-    </motion.button>
+    </motion.button> */}
   </div>
 
   {/* SEARCH PANEL */}
