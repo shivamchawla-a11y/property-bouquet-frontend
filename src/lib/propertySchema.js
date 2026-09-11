@@ -8,10 +8,9 @@ const SITE_URL = "https://propertybouquet.com";
  * Generates structured data for individual Property Bouquet
  * property pages.
  *
- * Schema graph includes:
+ * Property-page schema includes:
  *
  * - WebPage
- * - WebSite
  * - BreadcrumbList
  * - RealEstateListing
  * - Residence
@@ -23,11 +22,17 @@ const SITE_URL = "https://propertybouquet.com";
  * - ImageObject
  * - FAQPage
  *
- * The graph is intentionally connected using @id values.
- *
  * IMPORTANT:
- * Only information that actually exists in the property
- * object should be emitted.
+ *
+ * The global WebSite / Organization / Brand schema is NOT
+ * generated here.
+ *
+ * Those site-level entities are generated on the homepage
+ * through siteSchema.js.
+ *
+ * This prevents duplicate WebSite entities across property
+ * pages.
+ *
  * ============================================================
  */
 
@@ -96,16 +101,30 @@ function cleanArray(value) {
     .filter(Boolean);
 }
 
-function addIfValue(object, key, value) {
-  if (
-    value !== undefined &&
-    value !== null &&
-    value !== ""
-  ) {
-    object[key] = value;
+/**
+ * Converts trusted HTML content into plain text for schema.
+ *
+ * FAQ Answer.text should contain text rather than raw HTML.
+ */
+function stripHtml(value) {
+  if (typeof value !== "string") {
+    return "";
   }
 
-  return object;
+  return cleanString(
+    value
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<\/p>/gi, " ")
+      .replace(/<\/div>/gi, " ")
+      .replace(/<\/li>/gi, " ")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+  );
 }
 
 // ============================================================
@@ -124,56 +143,41 @@ export function buildPropertySchema(property, slug) {
   // DATA SOURCES
   // ==========================================================
 
-  const core =
-    property?.coreDetails || {};
+  const core = property?.coreDetails || {};
+  const overview = property?.overview || {};
+  const location = property?.locationData || {};
+  const media = property?.media || {};
+  const metrics = property?.keyMetrics || {};
+  const category = property?.categoryData || {};
+  const seo = property?.seoEngine || {};
+  const configuration = property?.configurationSection || {};
+  const gatedContent = property?.gatedContent || {};
 
-  const overview =
-    property?.overview || {};
+  const unitConfigurations = Array.isArray(
+    property?.unitConfigurations
+  )
+    ? property.unitConfigurations
+    : [];
 
-  const location =
-    property?.locationData || {};
+  const floorPlans = Array.isArray(
+    gatedContent?.floorPlans
+  )
+    ? gatedContent.floorPlans
+    : [];
 
-  const media =
-    property?.media || {};
+  const plotConfigurations = Array.isArray(
+    gatedContent?.plotConfigurations
+  )
+    ? gatedContent.plotConfigurations
+    : [];
 
-  const metrics =
-    property?.keyMetrics || {};
-
-  const category =
-    property?.categoryData || {};
-
-  const seo =
-    property?.seoEngine || {};
-
-  const configuration =
-    property?.configurationSection || {};
-
-  const gatedContent =
-    property?.gatedContent || {};
-
-  const unitConfigurations =
-    Array.isArray(property?.unitConfigurations)
-      ? property.unitConfigurations
-      : [];
-
-  const floorPlans =
-    Array.isArray(gatedContent?.floorPlans)
-      ? gatedContent.floorPlans
-      : [];
-
-  const plotConfigurations =
-    Array.isArray(
-      gatedContent?.plotConfigurations
-    )
-      ? gatedContent.plotConfigurations
-      : [];
-
-  const faqs =
-    Array.isArray(property?.faqSection?.faqs)
-      ? property.faqSection.faqs
-      : Array.isArray(property?.faqs)
-      ? property.faqs
-      : [];
+  const faqs = Array.isArray(
+    property?.faqSection?.faqs
+  )
+    ? property.faqSection.faqs
+    : Array.isArray(property?.faqs)
+    ? property.faqs
+    : [];
 
   // ==========================================================
   // BASIC VALUES
@@ -183,17 +187,15 @@ export function buildPropertySchema(property, slug) {
     cleanString(core.title) ||
     "Luxury Property";
 
-  const developerName =
-    cleanString(
-      core.developerName ||
-        property?.developerName
-    );
+  const developerName = cleanString(
+    core.developerName ||
+      property?.developerName
+  );
 
-  const developerLogo =
-    toAbsoluteUrl(
-      core.developerLogo ||
-        property?.developerLogo
-    );
+  const developerLogo = toAbsoluteUrl(
+    core.developerLogo ||
+      property?.developerLogo
+  );
 
   const locationName =
     cleanString(
@@ -202,10 +204,9 @@ export function buildPropertySchema(property, slug) {
         location.locationRef?.name
     ) || "Gurgaon";
 
-  const categoryName =
-    cleanString(
-      category.categoryName
-    );
+  const categoryName = cleanString(
+    category.categoryName
+  );
 
   const description =
     cleanString(
@@ -223,6 +224,7 @@ export function buildPropertySchema(property, slug) {
   // ==========================================================
 
   const cleanSlug = String(slug)
+    .trim()
     .replace(/^\/+/, "")
     .replace(/\/+$/, "");
 
@@ -298,11 +300,10 @@ export function buildPropertySchema(property, slug) {
   // PROPERTY TYPE
   // ==========================================================
 
-  const propertyType =
-    cleanString(
-      categoryName ||
-        configuration?.propertyType
-    );
+  const propertyType = cleanString(
+    categoryName ||
+      configuration?.propertyType
+  );
 
   // ==========================================================
   // LOCATION HIERARCHY
@@ -314,10 +315,9 @@ export function buildPropertySchema(property, slug) {
     location?.locationRef;
 
   while (currentLocation) {
-    const name =
-      cleanString(
-        currentLocation?.name
-      );
+    const name = cleanString(
+      currentLocation?.name
+    );
 
     if (
       name &&
@@ -334,18 +334,10 @@ export function buildPropertySchema(property, slug) {
   // ADDRESS
   // ==========================================================
   //
-  // IMPORTANT:
+  // PostalAddress is kept separate from Place.
   //
-  // locationName can contain a hierarchy such as:
-  //
-  // Gurgaon > Dwarka Expressway > Sector 99A
-  //
-  // That complete hierarchy must NOT be placed inside
-  // PostalAddress.addressLocality.
-  //
-  // We keep the original locationName untouched for the
-  // property's normal data and extract only the most specific
-  // location component for structured data.
+  // This is important because Residence.address expects
+  // an address, not a Place entity.
   //
   // ==========================================================
 
@@ -353,9 +345,7 @@ export function buildPropertySchema(property, slug) {
     locationName || ""
   )
     .split(">")
-    .map((item) =>
-      cleanString(item)
-    )
+    .map((item) => cleanString(item))
     .filter(Boolean);
 
   const schemaLocality =
@@ -382,26 +372,27 @@ export function buildPropertySchema(property, slug) {
   // PLACE
   // ==========================================================
 
+  const parentLocation =
+    locationHierarchy.length > 1
+      ? locationHierarchy[
+          locationHierarchy.length - 2
+        ]
+      : "";
+
   const place = {
     "@type": "Place",
 
-    "@id":
-      placeId,
+    "@id": placeId,
 
-    name:
-      locationName,
+    name: locationName,
 
     address,
 
-    ...(locationHierarchy.length > 1
+    ...(parentLocation
       ? {
           containedInPlace: {
             "@type": "Place",
-
-            name:
-              locationHierarchy[
-                locationHierarchy.length - 1
-              ],
+            name: parentLocation,
           },
         }
       : {}),
@@ -552,14 +543,10 @@ export function buildPropertySchema(property, slug) {
   // ==========================================================
 
   const startingPrice =
-    Number(
-      core.startingPrice
-    );
+    Number(core.startingPrice);
 
   const maxPrice =
-    Number(
-      core.maxPrice
-    );
+    Number(core.maxPrice);
 
   const hasStartingPrice =
     Number.isFinite(
@@ -586,101 +573,20 @@ export function buildPropertySchema(property, slug) {
     developerEntity = {
       "@type": "Organization",
 
-      "@id":
-        developerId,
+      "@id": developerId,
 
-      name:
-        developerName,
+      name: developerName,
 
       ...(developerLogo
         ? {
             logo: {
-              "@type":
-                "ImageObject",
-
-              url:
-                developerLogo,
+              "@type": "ImageObject",
+              url: developerLogo,
             },
           }
         : {}),
     };
   }
-
-// ==========================================================
-// RESIDENCE
-// ==========================================================
-
-const residence = {
-  "@type": "Residence",
-
-  "@id":
-    residenceId,
-
-  url:
-    pageUrl,
-
-  name:
-    propertyName,
-
-  description:
-    description,
-
-  ...(images.length
-    ? {
-        image:
-          images,
-      }
-    : {}),
-
-  address: {
-    "@id":
-      placeId,
-  },
-
-  ...(amenities.length
-    ? {
-        amenityFeature:
-          amenities.map(
-            (amenity) => ({
-              "@type":
-                "LocationFeatureSpecification",
-
-              name:
-                amenity,
-
-              value: true,
-            })
-          ),
-      }
-    : {}),
-
-  ...(additionalProperty.length
-    ? {
-        additionalProperty,
-      }
-    : {}),
-
-  ...(propertyType
-    ? {
-        additionalType:
-          propertyType,
-      }
-    : {}),
-
-  mainEntityOfPage: {
-    "@id":
-      webPageId,
-  },
-
-  ...(hasStartingPrice
-    ? {
-        offers: {
-          "@id":
-            offerId,
-        },
-      }
-    : {}),
-};
 
   // ==========================================================
   // OFFER
@@ -695,32 +601,24 @@ const residence = {
     offer = {
       "@type": "Offer",
 
-      "@id":
-        offerId,
+      "@id": offerId,
 
-      url:
-        pageUrl,
+      url: pageUrl,
 
-      price:
-        startingPrice,
+      price: startingPrice,
 
-      priceCurrency:
-        "INR",
+      priceCurrency: "INR",
 
       itemOffered: {
-        "@id":
-          residenceId,
+        "@id": residenceId,
       },
 
       seller: {
-        "@type":
-          "Organization",
+        "@type": "Organization",
 
-        name:
-          "Property Bouquet",
+        name: "Property Bouquet",
 
-        url:
-          SITE_URL,
+        url: SITE_URL,
       },
 
       businessFunction:
@@ -746,6 +644,67 @@ const residence = {
         : {}),
     };
   }
+
+  // ==========================================================
+  // RESIDENCE
+  // ==========================================================
+
+  const residence = {
+    "@type": "Residence",
+
+    "@id": residenceId,
+
+    url: pageUrl,
+
+    name: propertyName,
+
+    description: description,
+
+    ...(images.length
+      ? {
+          image: images,
+        }
+      : {}),
+
+    // IMPORTANT:
+    // address is a PostalAddress.
+    // It must not point to the Place entity.
+    address,
+
+    ...(amenities.length
+      ? {
+          amenityFeature:
+            amenities.map(
+              (amenity) => ({
+                "@type":
+                  "LocationFeatureSpecification",
+
+                name: amenity,
+
+                value: true,
+              })
+            ),
+        }
+      : {}),
+
+    ...(additionalProperty.length
+      ? {
+          additionalProperty,
+        }
+      : {}),
+
+    mainEntityOfPage: {
+      "@id": webPageId,
+    },
+
+    ...(offer
+      ? {
+          offers: {
+            "@id": offerId,
+          },
+        }
+      : {}),
+  };
 
   // ==========================================================
   // REAL ESTATE LISTING
@@ -790,8 +749,7 @@ const residence = {
         }
       : {}),
 
-    ...(hasStartingPrice &&
-    offer
+    ...(offer
       ? {
           offers: {
             "@id":
@@ -824,6 +782,8 @@ const residence = {
     inLanguage:
       "en-IN",
 
+    // Reference the single site-level WebSite that exists
+    // on the homepage.
     isPartOf: {
       "@id":
         `${SITE_URL}/#website`,
@@ -873,32 +833,6 @@ const residence = {
           },
         }
       : {}),
-  };
-
-  // ==========================================================
-  // WEBSITE REFERENCE
-  // ==========================================================
-
-  const website = {
-    "@type":
-      "WebSite",
-
-    "@id":
-      `${SITE_URL}/#website`,
-
-    url:
-      SITE_URL,
-
-    name:
-      "Property Bouquet",
-
-    inLanguage:
-      "en-IN",
-
-    publisher: {
-      "@id":
-        `${SITE_URL}/#organization`,
-    },
   };
 
   // ==========================================================
@@ -1054,11 +988,18 @@ const residence = {
           undefined &&
         plan?.bedrooms !== null
           ? {
-              numberOfRooms:
+              ...(Number.isFinite(
                 Number(
                   plan.bedrooms
-                ) ||
-                plan.bedrooms,
+                )
+              )
+                ? {
+                    numberOfRooms:
+                      Number(
+                        plan.bedrooms
+                      ),
+                  }
+                : {}),
             }
           : {}),
 
@@ -1083,7 +1024,10 @@ const residence = {
         "@type":
           "Offer",
 
-        ...(planPrice > 0
+        ...(Number.isFinite(
+          planPrice
+        ) &&
+        planPrice > 0
           ? {
               price:
                 planPrice,
@@ -1120,7 +1064,10 @@ const residence = {
 
       itemListElement:
         floorPlanOffers.map(
-          (offerItem, index) => ({
+          (
+            offerItem,
+            index
+          ) => ({
             "@type":
               "ListItem",
 
@@ -1184,7 +1131,9 @@ const residence = {
           const additional = [];
 
           if (
-            Number.isFinite(sqYd) &&
+            Number.isFinite(
+              sqYd
+            ) &&
             sqYd > 0
           ) {
             additional.push({
@@ -1203,7 +1152,9 @@ const residence = {
           }
 
           if (
-            Number.isFinite(sqFt) &&
+            Number.isFinite(
+              sqFt
+            ) &&
             sqFt > 0
           ) {
             additional.push({
@@ -1257,7 +1208,10 @@ const residence = {
               "@type":
                 "Offer",
 
-              ...(price > 0
+              ...(Number.isFinite(
+                price
+              ) &&
+              price > 0
                 ? {
                     price:
                       price,
@@ -1295,19 +1249,6 @@ const residence = {
   // ==========================================================
   // FAQ SCHEMA
   // ==========================================================
-  //
-  // Uses only FAQ questions and answers that actually exist.
-  //
-  // FAQPage is included in the structured-data graph.
-  //
-  // IMPORTANT:
-  // Google currently restricts FAQ rich results primarily to
-  // authoritative government and health websites. Therefore,
-  // this markup should not be added with the expectation that
-  // Google will necessarily show FAQ rich-result snippets.
-  //
-  // The FAQ content should also be visibly present on the page.
-  // ==========================================================
 
   let faqPage;
 
@@ -1320,12 +1261,13 @@ const residence = {
             faq?.heading
         );
 
+      const rawAnswer =
+        faq?.answer ||
+        faq?.content ||
+        faq?.description;
+
       const answer =
-        cleanString(
-          faq?.answer ||
-            faq?.content ||
-            faq?.description
-        );
+        stripHtml(rawAnswer);
 
       if (!question || !answer) {
         return null;
@@ -1387,10 +1329,13 @@ const residence = {
 
   const graph = [
     webPage,
-    website,
+
     breadcrumb,
+
     place,
+
     residence,
+
     realEstateListing,
   ];
 

@@ -2,7 +2,6 @@ import "./globals.css";
 
 import Script from "next/script";
 import { Toaster } from "react-hot-toast";
-import { siteSchema } from "@/lib/schema/siteSchema";
 
 import {
   Playfair_Display,
@@ -22,6 +21,10 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   weight: ["300", "400", "500", "600", "700"],
 });
+
+// ============================================================
+// SITE METADATA
+// ============================================================
 
 export const metadata = {
   metadataBase: new URL("https://propertybouquet.com"),
@@ -87,10 +90,17 @@ export const metadata = {
     },
   },
 
+  // ==========================================================
+  // OPEN GRAPH
+  // ==========================================================
+
   openGraph: {
     type: "website",
+
     locale: "en_IN",
+
     url: "https://propertybouquet.com",
+
     siteName: "Property Bouquet",
 
     title:
@@ -101,16 +111,23 @@ export const metadata = {
 
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
+        url: "/logo.webp",
+
+        width: 512,
+
+        height: 512,
+
         alt: "Property Bouquet Luxury Real Estate",
       },
     ],
   },
 
+  // ==========================================================
+  // TWITTER / X
+  // ==========================================================
+
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
 
     title:
       "Property Bouquet | Luxury Real Estate in India",
@@ -118,11 +135,15 @@ export const metadata = {
     description:
       "Property Bouquet is India's luxury real estate platform helping buyers discover premium apartments, villas, penthouses, new launches and investment opportunities across Gurgaon, Noida, Delhi NCR and other leading cities.",
 
-    images: ["/og-image.jpg"],
+    images: ["/logo.webp"],
 
     imageAlt: "Property Bouquet Luxury Real Estate",
   },
 };
+
+// ============================================================
+// ROOT LAYOUT
+// ============================================================
 
 export default function RootLayout({ children }) {
   return (
@@ -131,7 +152,10 @@ export default function RootLayout({ children }) {
       className={`${playfair.variable} ${montserrat.variable}`}
     >
       <body>
-        {/* Google Analytics 4 */}
+        {/* ==================================================
+            GOOGLE ANALYTICS 4
+        ================================================== */}
+
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-YQQKE9JP9L"
           strategy="afterInteractive"
@@ -143,24 +167,32 @@ export default function RootLayout({ children }) {
         >
           {`
             window.dataLayer = window.dataLayer || [];
-            function gtag(){window.dataLayer.push(arguments);}
+
+            function gtag() {
+              window.dataLayer.push(arguments);
+            }
+
             gtag('js', new Date());
+
             gtag('config', 'G-YQQKE9JP9L');
           `}
         </Script>
 
-        {/* Website Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteSchema),
-          }}
-        />
+        {/* ==================================================
+            PAGE CONTENT
+        ================================================== */}
 
         {children}
 
-        {/* Floating WhatsApp & Call Buttons */}
+        {/* ==================================================
+            FLOATING WHATSAPP + CALL BUTTONS
+        ================================================== */}
+
         <FloatingContact />
+
+        {/* ==================================================
+            GLOBAL TOASTER
+        ================================================== */}
 
         <Toaster
           position="top-right"
@@ -169,6 +201,7 @@ export default function RootLayout({ children }) {
           }}
           toastOptions={{
             duration: 4000,
+
             style: {
               background: "#1f1f1f",
               color: "#fff",

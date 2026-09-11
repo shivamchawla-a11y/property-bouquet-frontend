@@ -7,7 +7,6 @@ const LOGO_ID = `${SITE_URL}/#logo`;
 const HOMEPAGE_ID = `${SITE_URL}/#homepage`;
 
 const LOGO_URL = `${SITE_URL}/logo.webp`;
-const OG_IMAGE_URL = `${SITE_URL}/og-image.jpg`;
 
 export const siteSchema = {
   "@context": "https://schema.org",
@@ -145,6 +144,16 @@ export const siteSchema = {
     // =========================================================
     // WEBSITE
     // =========================================================
+    //
+    // IMPORTANT:
+    //
+    // This is the ONLY WebSite entity for the site.
+    //
+    // SearchAction / Sitelinks Search Box markup has been
+    // intentionally removed because Google retired the
+    // Sitelinks Search Box feature.
+    //
+    // =========================================================
 
     {
       "@type": "WebSite",
@@ -155,7 +164,8 @@ export const siteSchema = {
 
       name: "Property Bouquet",
 
-      alternateName: "Property Bouquet Real Estate",
+      alternateName:
+        "Property Bouquet Real Estate",
 
       description:
         "Property Bouquet is a premium real estate platform for discovering luxury properties, residential projects, investment opportunities, developers and real estate resources across India.",
@@ -176,32 +186,6 @@ export const siteSchema = {
 
       brand: {
         "@id": BRAND_ID,
-      },
-
-      // -------------------------------------------------------
-      // SITE SEARCH
-      // -------------------------------------------------------
-      //
-      // Keep this ONLY if your actual public search URL uses:
-      //
-      // /properties?search=QUERY
-      //
-      // If your SearchPanel uses another parameter such as
-      // propertyName, change the urlTemplate accordingly.
-      //
-
-      potentialAction: {
-        "@type": "SearchAction",
-
-        target: {
-          "@type": "EntryPoint",
-
-          urlTemplate:
-            `${SITE_URL}/properties?search={search_term_string}`,
-        },
-
-        "query-input":
-          "required name=search_term_string",
       },
     },
 
@@ -232,23 +216,6 @@ export const siteSchema = {
 
       publisher: {
         "@id": ORGANIZATION_ID,
-      },
-
-      primaryImageOfPage: {
-        "@type": "ImageObject",
-
-        "@id": `${SITE_URL}/#homepage-image`,
-
-        url: OG_IMAGE_URL,
-
-        contentUrl: OG_IMAGE_URL,
-
-        width: 1200,
-
-        height: 630,
-
-        caption:
-          "Property Bouquet - Luxury Real Estate",
       },
 
       inLanguage: "en-IN",
