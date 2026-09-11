@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
 import { AnimatePresence, motion } from "framer-motion";
+
 import {
   ArrowRight,
   Mail,
@@ -14,6 +17,8 @@ import {
 export default function TimedLeadPopup() {
   const API = "/api";
 
+  const pathname = usePathname();
+
   const [open, setOpen] = useState(false);
 
   const [leadName, setLeadName] = useState("");
@@ -25,10 +30,38 @@ export default function TimedLeadPopup() {
   const [errorMessage, setErrorMessage] = useState("");
 
   // ============================================================
-  // OPEN AFTER 20 SECONDS
+  // EXCLUDED ROUTES
+  // Popup will NEVER appear on these pages.
+  // ============================================================
+
+  const isExcludedPage =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/login" ||
+    pathname.startsWith("/auth/") ||
+    pathname === "/forgot-password" ||
+    pathname === "/forget-password" ||
+    pathname === "/reset-password";
+
+  // ============================================================
+  // OPEN AFTER 4 SECONDS
+  // ONCE PER BROWSER SESSION
   // ============================================================
 
   useEffect(() => {
+    // ----------------------------------------------------------
+    // NEVER RUN TIMER ON ADMIN / AUTH PAGES
+    // ----------------------------------------------------------
+
+    if (isExcludedPage) {
+      setOpen(false);
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // CHECK WHETHER POPUP HAS ALREADY APPEARED THIS SESSION
+    // ----------------------------------------------------------
+
     try {
       const alreadyShown = sessionStorage.getItem(
         "propertyBouquetTimedLeadPopupShown"
@@ -44,8 +77,18 @@ export default function TimedLeadPopup() {
       );
     }
 
+    // ----------------------------------------------------------
+    // START 4 SECOND TIMER
+    // ----------------------------------------------------------
+
     const timer = window.setTimeout(() => {
       setOpen(true);
+
+      // --------------------------------------------------------
+      // MARK AS SHOWN IMMEDIATELY
+      // This means closing it will NOT make it appear again
+      // during the same browser session.
+      // --------------------------------------------------------
 
       try {
         sessionStorage.setItem(
@@ -60,10 +103,14 @@ export default function TimedLeadPopup() {
       }
     }, 4000);
 
+    // ----------------------------------------------------------
+    // CLEANUP
+    // ----------------------------------------------------------
+
     return () => {
       window.clearTimeout(timer);
     };
-  }, []);
+  }, [isExcludedPage]);
 
   // ============================================================
   // CLOSE
@@ -78,6 +125,7 @@ export default function TimedLeadPopup() {
     setLeadName("");
     setLeadPhone("");
     setLeadEmail("");
+
     setSubmitted(false);
   };
 
@@ -93,7 +141,7 @@ export default function TimedLeadPopup() {
     setErrorMessage("");
 
     // ----------------------------------------------------------
-    // NAME
+    // NAME VALIDATION
     // ----------------------------------------------------------
 
     if (!name) {
@@ -102,7 +150,7 @@ export default function TimedLeadPopup() {
     }
 
     // ----------------------------------------------------------
-    // PHONE
+    // PHONE VALIDATION
     // ----------------------------------------------------------
 
     if (!phone) {
@@ -120,7 +168,7 @@ export default function TimedLeadPopup() {
     }
 
     // ----------------------------------------------------------
-    // EMAIL
+    // EMAIL VALIDATION
     // ----------------------------------------------------------
 
     if (email) {
@@ -134,11 +182,15 @@ export default function TimedLeadPopup() {
       }
     }
 
+    // ==========================================================
+    // API SUBMISSION
+    // ==========================================================
+
     try {
       setSubmitting(true);
 
       // --------------------------------------------------------
-      // CURRENT PAGE CONTEXT
+      // CURRENT PAGE URL
       // --------------------------------------------------------
 
       const currentPage =
@@ -146,10 +198,18 @@ export default function TimedLeadPopup() {
           ? window.location.href
           : "";
 
+      // --------------------------------------------------------
+      // CURRENT PAGE PATH
+      // --------------------------------------------------------
+
       const currentPagePath =
         typeof window !== "undefined"
           ? window.location.pathname
           : "";
+
+      // --------------------------------------------------------
+      // CURRENT PAGE TITLE
+      // --------------------------------------------------------
 
       const currentPageTitle =
         typeof document !== "undefined"
@@ -174,7 +234,7 @@ export default function TimedLeadPopup() {
 
           property: "Website Enquiry",
 
-          source: "Website - 20 Second Popup",
+          source: "Website - 4 Second Popup",
 
           leadType: "Website Enquiry",
 
@@ -184,7 +244,21 @@ export default function TimedLeadPopup() {
         }),
       });
 
-      const data = await res.json();
+      // --------------------------------------------------------
+      // SAFELY READ RESPONSE
+      // --------------------------------------------------------
+
+      let data = {};
+
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
+      // --------------------------------------------------------
+      // API ERROR
+      // --------------------------------------------------------
 
       if (!res.ok) {
         throw new Error(
@@ -192,14 +266,21 @@ export default function TimedLeadPopup() {
         );
       }
 
-      // --------------------------------------------------------
+      // ========================================================
       // SUCCESS
-      // --------------------------------------------------------
+      // ========================================================
 
       setSubmitted(true);
 
       window.setTimeout(() => {
-        handleClose();
+        setOpen(false);
+
+        setLeadName("");
+        setLeadPhone("");
+        setLeadEmail("");
+
+        setErrorMessage("");
+        setSubmitted(false);
       }, 2200);
     } catch (error) {
       console.error(
@@ -215,6 +296,18 @@ export default function TimedLeadPopup() {
       setSubmitting(false);
     }
   };
+
+  // ============================================================
+  // NEVER RENDER ON EXCLUDED ROUTES
+  // ============================================================
+
+  if (isExcludedPage) {
+    return null;
+  }
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <AnimatePresence>
@@ -298,7 +391,7 @@ export default function TimedLeadPopup() {
                 inset-0
               "
             >
-              {/* Small gold glow */}
+              {/* Gold glow */}
 
               <div
                 className="
@@ -313,7 +406,7 @@ export default function TimedLeadPopup() {
                 "
               />
 
-              {/* Small green glow */}
+              {/* Green glow */}
 
               <div
                 className="
@@ -328,7 +421,7 @@ export default function TimedLeadPopup() {
                 "
               />
 
-              {/* Very subtle radial light */}
+              {/* Radial light */}
 
               <div
                 className="
@@ -338,7 +431,7 @@ export default function TimedLeadPopup() {
                 "
               />
 
-              {/* Very subtle grid */}
+              {/* Subtle grid */}
 
               <div
                 className="
@@ -689,7 +782,7 @@ export default function TimedLeadPopup() {
                       onChange={(e) =>
                         setLeadEmail(e.target.value)
                       }
-                      placeholder="Email Address (Optional)"
+                      placeholder="Email Address"
                       type="email"
                       autoComplete="email"
                       disabled={submitting}
