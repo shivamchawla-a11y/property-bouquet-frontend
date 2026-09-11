@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import {
   Building2,
@@ -1471,22 +1472,36 @@ const PropertyActivitySection = ({
 
               </div>
 
-              {/* LOGOUT */}
+              {/* ==================================================
+    ACCOUNT ACTIONS
+================================================== */}
 
-              <button
-                onClick={() => {
-                  localStorage.removeItem(
-                    "token"
-                  );
+<div className="flex items-center gap-2 ml-1">
 
-                  router.push(
-                    "/login"
-                  );
-                }}
-                className="ml-1 px-3 py-2 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition"
-              >
-                Logout
-              </button>
+  {/* CHANGE PASSWORD */}
+
+  <Link
+    href="/forgot-password"
+    className="px-3 py-2 rounded-xl text-xs font-bold text-[#0f3b2e] border border-[#0f3b2e]/15 bg-[#0f3b2e]/5 hover:bg-[#0f3b2e]/10 transition whitespace-nowrap"
+  >
+    Change Password
+  </Link>
+
+
+  {/* LOGOUT */}
+
+  <button
+    onClick={() => {
+      localStorage.removeItem("token");
+
+      router.push("/login");
+    }}
+    className="px-3 py-2 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition whitespace-nowrap"
+  >
+    Logout
+  </button>
+
+</div>
 
             </div>
 
