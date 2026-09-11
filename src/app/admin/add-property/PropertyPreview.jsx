@@ -6795,7 +6795,140 @@ else {
       )}
 
 
-      {/* ================= OTHER PROJECTS HEADING ================= */}
+{/* ============================================================
+    OTHER PROJECTS BY DEVELOPER
+    ============================================================ */}
+
+{(() => {
+  /* ==========================================================
+     FILTER ONLY VALID OTHER PUBLISHED PROJECTS
+     ========================================================== */
+
+  const currentSlug =
+    form?.slug?.trim()?.toLowerCase() || "";
+
+  const otherDeveloperProjects =
+    Array.isArray(developerProjects)
+      ? developerProjects
+          .filter((project) => {
+            if (
+              project?.status !== "published" ||
+              project?.isDeleted === true ||
+              project?.deletedFromStatus === "trash"
+            ) {
+              return false;
+            }
+
+            const projectSlug =
+              project?.slug
+                ?.trim()
+                ?.toLowerCase() || "";
+
+            if (!projectSlug) {
+              return false;
+            }
+
+            /* Never show the current property */
+            if (projectSlug === currentSlug) {
+              return false;
+            }
+
+            return true;
+          })
+          .slice(0, 4)
+      : [];
+
+  /* ==========================================================
+     DO NOT RENDER THE ENTIRE SECTION IF THERE ARE
+     NO OTHER PROJECTS
+     ========================================================== */
+
+  if (!otherDeveloperProjects.length) {
+    return null;
+  }
+
+  /* ==========================================================
+     BUILD THE CORRECT PUBLIC DEVELOPER URL
+
+     Rules:
+     m3m
+       → m3m-developer-projects
+
+     signature-global
+       → signature-global-developer-projects
+
+     spiti-developer
+       → spiti-developer-projects
+
+     ats-infrastructure-ltd
+       → ats-infrastructure-ltd-developer-projects
+     ========================================================== */
+
+  const buildPublicDeveloperSlug = (developerSlug) => {
+    if (!developerSlug) {
+      return "";
+    }
+
+    const cleanSlug = String(developerSlug)
+      .trim()
+      .toLowerCase()
+      .replace(/^\/+|\/+$/g, "");
+
+    if (!cleanSlug) {
+      return "";
+    }
+
+    if (
+      cleanSlug.endsWith(
+        "-developer-projects"
+      )
+    ) {
+      return cleanSlug;
+    }
+
+    if (
+      cleanSlug.endsWith("-developer")
+    ) {
+      return `${cleanSlug}-projects`;
+    }
+
+    return `${cleanSlug}-developer-projects`;
+  };
+
+  /* ==========================================================
+     IMPORTANT:
+     Use the BACKEND DEVELOPER SLUG if available.
+
+     developerData.slug is preferred.
+     slug is also supported because your developer
+     page passes the backend slug into the client.
+     ========================================================== */
+
+  const backendDeveloperSlug =
+    developerData?.slug ||
+    developerData?.data?.slug ||
+    slug ||
+    "";
+
+  const publicDeveloperSlug =
+    buildPublicDeveloperSlug(
+      backendDeveloperSlug
+    );
+
+  const developerPortfolioUrl =
+    publicDeveloperSlug
+      ? `/developers/${encodeURIComponent(
+          publicDeveloperSlug
+        )}`
+      : null;
+
+  return (
+    <section className="mt-28">
+
+      {/* ======================================================
+          OTHER PROJECTS HEADING
+          ====================================================== */}
+
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -6805,9 +6938,17 @@ else {
       >
 
         <h2
-          className="text-4xl md:text-6xl leading-[1.1] font-light text-[#17342d]"
+          className="
+            text-4xl
+            md:text-6xl
+            leading-[1.1]
+            font-light
+            text-[#17342d]
+            px-4
+          "
           style={{
-            fontFamily: "Cormorant Garamond, serif",
+            fontFamily:
+              "Cormorant Garamond, serif",
           }}
         >
           Other Landmark Projects By
@@ -6818,98 +6959,229 @@ else {
 
         </h2>
 
-        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-6 relative">
+        <div
+          className="
+            w-24
+            h-[1px]
+            bg-[#c8a66a]
+            mx-auto
+            mt-6
+            relative
+          "
+        >
 
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+          <div
+            className="
+              absolute
+              left-1/2
+              top-1/2
+              -translate-x-1/2
+              -translate-y-1/2
+              w-2
+              h-2
+              rotate-45
+              bg-[#c8a66a]
+            "
+          />
 
         </div>
 
       </motion.div>
 
 
-      {/* ================= PROJECT GRID ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
+      {/* ======================================================
+          PROJECT GRID
+          ====================================================== */}
 
-        {developerProjects
-  ?.filter((project) => {
-    if (
-      project?.status !== "published" ||
-      project?.isDeleted === true ||
-      project?.deletedFromStatus === "trash"
-    ) {
-      return false;
-    }
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          xl:grid-cols-4
+          gap-8
+        "
+      >
 
-    const currentSlug = form?.slug?.trim()?.toLowerCase();
-    const projectSlug = project?.slug?.trim()?.toLowerCase();
+        {otherDeveloperProjects.map(
+          (project, i) => {
 
-    return projectSlug && projectSlug !== currentSlug;
-  })
-  .slice(0, 4)
-  .map((project, i) => {
-
-            const projectUrl = project?.slug
-              ? `/${project.slug}`
-              : null;
+            const projectUrl =
+              project?.slug
+                ? `/${String(
+                    project.slug
+                  ).replace(
+                    /^\/+|\/+$/g,
+                    ""
+                  )}`
+                : null;
 
             const projectTitle =
-              project?.coreDetails?.title || "Property";
+              project?.coreDetails?.title ||
+              "Property";
+
+            const heroImage =
+              project?.media?.heroImageUrl
+                ?.trim() || "";
 
             return (
               <motion.div
-                key={project?._id || i}
+                key={
+                  project?._id ||
+                  project?.slug ||
+                  i
+                }
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true }}
+                viewport={{
+                  once: true,
+                }}
                 variants={fadeUp}
                 whileHover={{
                   y: -10,
                 }}
-                className="group relative rounded-[34px] overflow-hidden border border-[#ddd2c4] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)] transition-all duration-700"
+                className="
+                  group
+                  relative
+                  rounded-[34px]
+                  overflow-hidden
+                  border
+                  border-[#ddd2c4]
+                  bg-white
+                  shadow-[0_20px_50px_rgba(0,0,0,0.08)]
+                  hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+                  transition-all
+                  duration-700
+                "
               >
 
-                {/* ================= PROJECT IMAGE ================= */}
-                <div className="relative h-[460px] overflow-hidden">
+                {/* ==================================================
+                    PROJECT IMAGE
+                    ================================================== */}
 
-                  {project?.media?.heroImageUrl?.trim() ? (
+                <div
+                  className="
+                    relative
+                    h-[460px]
+                    overflow-hidden
+                  "
+                >
+
+                  {heroImage ? (
                     projectUrl ? (
                       <Link
                         href={projectUrl}
                         aria-label={`View ${projectTitle}`}
-                        className="absolute inset-0 block"
+                        className="
+                          absolute
+                          inset-0
+                          block
+                        "
                       >
 
                         <img
-                          src={project.media.heroImageUrl}
+                          src={heroImage}
                           alt={projectTitle}
-                          className="w-full h-full object-cover transition duration-[2500ms] group-hover:scale-110"
+                          loading="lazy"
+                          className="
+                            w-full
+                            h-full
+                            object-cover
+                            transition
+                            duration-[2500ms]
+                            group-hover:scale-110
+                          "
                         />
 
                       </Link>
                     ) : (
                       <img
-                        src={project.media.heroImageUrl}
+                        src={heroImage}
                         alt={projectTitle}
-                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        className="
+                          w-full
+                          h-full
+                          object-cover
+                        "
                       />
                     )
                   ) : (
-                    <div className="w-full h-full bg-[#0f0f0f]" />
+                    <div
+                      className="
+                        w-full
+                        h-full
+                        bg-[#0f0f0f]
+                      "
+                    />
                   )}
 
 
-                  {/* OVERLAY */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#081b18] via-[#081b18]/35 to-transparent pointer-events-none" />
+                  {/* ==================================================
+                      OVERLAY
+                      ================================================== */}
+
+                  <div
+                    className="
+                      absolute
+                      inset-0
+                      bg-gradient-to-t
+                      from-[#081b18]
+                      via-[#081b18]/35
+                      to-transparent
+                      pointer-events-none
+                    "
+                  />
 
 
-                  {/* BADGE */}
-                  <div className="absolute top-6 left-6 z-20 pointer-events-none">
+                  {/* ==================================================
+                      BADGE
+                      ================================================== */}
 
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
+                  <div
+                    className="
+                      absolute
+                      top-6
+                      left-6
+                      z-20
+                      pointer-events-none
+                    "
+                  >
 
-                      <div className="w-2 h-2 rounded-full bg-[#d4b071] animate-pulse" />
+                    <div
+                      className="
+                        bg-white/10
+                        backdrop-blur-md
+                        border
+                        border-white/20
+                        rounded-full
+                        px-4
+                        py-2
+                        flex
+                        items-center
+                        gap-2
+                      "
+                    >
 
-                      <span className="uppercase tracking-[2px] text-white text-[10px] font-medium">
+                      <div
+                        className="
+                          w-2
+                          h-2
+                          rounded-full
+                          bg-[#d4b071]
+                          animate-pulse
+                        "
+                      />
+
+                      <span
+                        className="
+                          uppercase
+                          tracking-[2px]
+                          text-white
+                          text-[10px]
+                          font-medium
+                        "
+                      >
                         Premium Development
                       </span>
 
@@ -6918,19 +7190,64 @@ else {
                   </div>
 
 
-                  {/* CONTENT */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-8 z-20 pointer-events-none">
+                  {/* ==================================================
+                      CONTENT
+                      ================================================== */}
 
-                    {/* LOCATION */}
+                  <div
+                    className="
+                      absolute
+                      inset-0
+                      flex
+                      flex-col
+                      justify-end
+                      p-8
+                      z-20
+                      pointer-events-none
+                    "
+                  >
+
+                    {/* =================================================
+                        LOCATION
+                        ================================================= */}
+
                     <div className="mb-6">
 
-                      <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full">
+                      <div
+                        className="
+                          inline-flex
+                          items-center
+                          gap-2
+                          bg-white/10
+                          backdrop-blur-xl
+                          border
+                          border-white/10
+                          px-4
+                          py-2
+                          rounded-full
+                        "
+                      >
 
-                        <MapPin className="w-3.5 h-3.5 text-[#e0bd7d]" />
+                        <MapPin
+                          className="
+                            w-3.5
+                            h-3.5
+                            text-[#e0bd7d]
+                          "
+                        />
 
-                        <span className="text-white text-[11px] uppercase tracking-[2px] font-medium">
+                        <span
+                          className="
+                            text-white
+                            text-[11px]
+                            uppercase
+                            tracking-[2px]
+                            font-medium
+                          "
+                        >
                           {getShortLocation(
-                            project?.locationData?.locationName
+                            project?.locationData
+                              ?.locationName
                           )}
                         </span>
 
@@ -6939,21 +7256,37 @@ else {
                     </div>
 
 
-                    {/* TITLE */}
+                    {/* =================================================
+                        TITLE
+                        ================================================= */}
+
                     <div>
 
                       {projectUrl ? (
                         <h3
-                          className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+                          className="
+                            text-white
+                            text-[32px]
+                            md:text-[36px]
+                            leading-[1.08]
+                            font-light
+                            tracking-wide
+                          "
                           style={{
-                            fontFamily: "Cormorant Garamond, serif",
+                            fontFamily:
+                              "Cormorant Garamond, serif",
                           }}
                         >
 
                           <Link
                             href={projectUrl}
                             aria-label={`View ${projectTitle}`}
-                            className="pointer-events-auto hover:text-[#e0bd7d] transition-colors duration-300"
+                            className="
+                              pointer-events-auto
+                              hover:text-[#e0bd7d]
+                              transition-colors
+                              duration-300
+                            "
                           >
                             {projectTitle}
                           </Link>
@@ -6961,9 +7294,17 @@ else {
                         </h3>
                       ) : (
                         <h3
-                          className="text-white text-[32px] md:text-[36px] leading-[1.08] font-light tracking-wide"
+                          className="
+                            text-white
+                            text-[32px]
+                            md:text-[36px]
+                            leading-[1.08]
+                            font-light
+                            tracking-wide
+                          "
                           style={{
-                            fontFamily: "Cormorant Garamond, serif",
+                            fontFamily:
+                              "Cormorant Garamond, serif",
                           }}
                         >
                           {projectTitle}
@@ -6971,53 +7312,158 @@ else {
                       )}
 
 
-                      <div className="w-16 h-[1px] bg-[#d4b071] mt-5 mb-7 relative">
+                      {/* TITLE DIVIDER */}
 
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#d4b071]" />
+                      <div
+                        className="
+                          w-16
+                          h-[1px]
+                          bg-[#d4b071]
+                          mt-5
+                          mb-7
+                          relative
+                        "
+                      >
+
+                        <div
+                          className="
+                            absolute
+                            right-0
+                            top-1/2
+                            -translate-y-1/2
+                            w-2
+                            h-2
+                            rotate-45
+                            bg-[#d4b071]
+                          "
+                        />
 
                       </div>
 
                     </div>
 
 
-                    {/* BOTTOM */}
-                    <div className="flex items-end justify-between gap-4">
+                    {/* =================================================
+                        BOTTOM
+                        ================================================= */}
 
-                      {/* PRICE */}
+                    <div
+                      className="
+                        flex
+                        items-end
+                        justify-between
+                        gap-4
+                      "
+                    >
+
+                      {/* ===============================================
+                          PRICE
+                          =============================================== */}
+
                       <div>
 
-                        <p className="text-white/40 text-[10px] uppercase tracking-[3px] mb-2">
+                        <p
+                          className="
+                            text-white/40
+                            text-[10px]
+                            uppercase
+                            tracking-[3px]
+                            mb-2
+                          "
+                        >
                           Starting Price
                         </p>
 
-                        {project?.coreDetails?.priceOnRequest ? (
-                          <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+                        {project?.coreDetails
+                          ?.priceOnRequest ? (
+
+                          <h4
+                            className="
+                              text-[#f0cf92]
+                              text-[26px]
+                              font-semibold
+                              tracking-wide
+                            "
+                          >
                             Price On Request
                           </h4>
-                        ) : project?.coreDetails?.startingPrice ? (
-                          <h4 className="text-[#f0cf92] text-[28px] font-semibold tracking-wide">
-                            ₹ {formatPrice(project.coreDetails.startingPrice)}
+
+                        ) : project?.coreDetails
+                            ?.startingPrice ? (
+
+                          <h4
+                            className="
+                              text-[#f0cf92]
+                              text-[28px]
+                              font-semibold
+                              tracking-wide
+                            "
+                          >
+                            ₹{" "}
+                            {formatPrice(
+                              project
+                                .coreDetails
+                                .startingPrice
+                            )}
                           </h4>
+
                         ) : (
-                          <h4 className="text-[#f0cf92] text-[26px] font-semibold tracking-wide">
+
+                          <h4
+                            className="
+                              text-[#f0cf92]
+                              text-[26px]
+                              font-semibold
+                              tracking-wide
+                            "
+                          >
                             Price On Request
                           </h4>
+
                         )}
 
                       </div>
 
 
-                      {/* ARROW LINK */}
+                      {/* ===============================================
+                          ARROW LINK
+                          =============================================== */}
+
                       {projectUrl ? (
+
                         <Link
                           href={projectUrl}
                           aria-label={`View ${projectTitle}`}
-                          className="pointer-events-auto shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] hover:bg-[#d4b071] hover:text-[#08211c] transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+                          className="
+                            pointer-events-auto
+                            shrink-0
+                            w-14
+                            h-14
+                            rounded-full
+                            border
+                            border-[#d4b071]/70
+                            bg-white/5
+                            backdrop-blur-md
+                            flex
+                            items-center
+                            justify-center
+                            text-[#d4b071]
+                            hover:bg-[#d4b071]
+                            hover:text-[#08211c]
+                            transition-all
+                            duration-500
+                            shadow-[0_8px_30px_rgba(0,0,0,0.25)]
+                          "
                         >
 
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 transition duration-300"
+                            className="
+                              w-5
+                              h-5
+                              transition
+                              duration-300
+                            "
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -7031,8 +7477,26 @@ else {
                           </svg>
 
                         </Link>
+
                       ) : (
-                        <div className="shrink-0 w-14 h-14 rounded-full border border-[#d4b071]/70 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d4b071] shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+
+                        <div
+                          className="
+                            shrink-0
+                            w-14
+                            h-14
+                            rounded-full
+                            border
+                            border-[#d4b071]/70
+                            bg-white/5
+                            backdrop-blur-md
+                            flex
+                            items-center
+                            justify-center
+                            text-[#d4b071]
+                            shadow-[0_8px_30px_rgba(0,0,0,0.25)]
+                          "
+                        >
 
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -7050,6 +7514,7 @@ else {
                           </svg>
 
                         </div>
+
                       )}
 
                     </div>
@@ -7060,89 +7525,187 @@ else {
 
               </motion.div>
             );
-          })}
+          }
+        )}
 
       </div>
 
 
-      {/* ================= CTA ================= */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="mt-20 flex justify-center"
-      >
+      {/* ============================================================
+          VIEW ALL DEVELOPER PROJECTS CTA
+          ============================================================ */}
 
-        <Link
-          href={`/developers/${developerName
-            ?.toLowerCase()
-            ?.replace(/\s+/g, "-")}`}
-          className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-[24px] flex items-center gap-5"
+      {developerPortfolioUrl && (
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="mt-20 flex justify-center"
         >
 
-          {/* SHINE */}
-          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition duration-1000" />
+          <Link
+            href={developerPortfolioUrl}
+            className="
+              group
+              relative
+              overflow-hidden
+              bg-gradient-to-r
+              from-[#08211c]
+              to-[#0f3a30]
+              border
+              border-[#d4b071]
+              hover:shadow-[0_0_40px_rgba(212,176,113,0.3)]
+              transition-all
+              duration-500
+              px-10
+              md:px-14
+              py-5
+              rounded-[24px]
+              flex
+              items-center
+              gap-5
+            "
+          >
+
+            {/* ======================================================
+                SHINE
+                ====================================================== */}
+
+            <div
+              className="
+                absolute
+                inset-0
+                bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)]
+                translate-x-[-120%]
+                group-hover:translate-x-[120%]
+                transition
+                duration-1000
+              "
+            />
 
 
-          {/* ICON */}
-          <div className="relative z-10 w-12 h-12 rounded-full border border-[#d4b071] flex items-center justify-center text-[#d4b071]">
+            {/* ======================================================
+                ICON
+                ====================================================== */}
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
+            <div
+              className="
+                relative
+                z-10
+                w-12
+                h-12
+                rounded-full
+                border
+                border-[#d4b071]
+                flex
+                items-center
+                justify-center
+                text-[#d4b071]
+                shrink-0
+              "
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
-              />
-            </svg>
 
-          </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
+                />
+              </svg>
 
-
-          {/* TEXT */}
-          <div className="relative z-10 text-left">
-
-            <p className="text-white/50 text-[11px] uppercase tracking-[3px] mb-1">
-              Explore Complete Portfolio
-            </p>
-
-            <h4 className="text-[#e0bd7d] text-sm md:text-base uppercase tracking-[2px] font-semibold">
-              View All Projects By {developerName}
-            </h4>
-
-          </div>
+            </div>
 
 
-          {/* ARROW */}
-          <div className="relative z-10 text-[#d4b071] group-hover:translate-x-1 transition duration-300">
+            {/* ======================================================
+                TEXT
+                ====================================================== */}
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
+            <div
+              className="
+                relative
+                z-10
+                text-left
+              "
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
 
-          </div>
+              <p
+                className="
+                  text-white/50
+                  text-[11px]
+                  uppercase
+                  tracking-[3px]
+                  mb-1
+                "
+              >
+                Explore Complete Portfolio
+              </p>
 
-        </Link>
+              <h4
+                className="
+                  text-[#e0bd7d]
+                  text-sm
+                  md:text-base
+                  uppercase
+                  tracking-[2px]
+                  font-semibold
+                "
+              >
+                View All Projects By{" "}
+                {developerName}
+              </h4>
 
-      </motion.div>
+            </div>
+
+
+            {/* ======================================================
+                ARROW
+                ====================================================== */}
+
+            <div
+              className="
+                relative
+                z-10
+                text-[#d4b071]
+                group-hover:translate-x-1
+                transition
+                duration-300
+                shrink-0
+              "
+            >
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+
+            </div>
+
+          </Link>
+
+        </motion.div>
+      )}
+
+    </section>
+  );
+})()}
 
     </div>
   </section>
