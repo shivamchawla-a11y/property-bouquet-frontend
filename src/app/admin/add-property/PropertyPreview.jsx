@@ -6839,8 +6839,7 @@ else {
       : [];
 
   /* ==========================================================
-     DO NOT RENDER THE ENTIRE SECTION IF THERE ARE
-     NO OTHER PROJECTS
+     DO NOT SHOW THIS SECTION IF THERE ARE NO OTHER PROJECTS
      ========================================================== */
 
   if (!otherDeveloperProjects.length) {
@@ -6848,23 +6847,12 @@ else {
   }
 
   /* ==========================================================
-     BUILD THE CORRECT PUBLIC DEVELOPER URL
-
-     Rules:
-     m3m
-       → m3m-developer-projects
-
-     signature-global
-       → signature-global-developer-projects
-
-     spiti-developer
-       → spiti-developer-projects
-
-     ats-infrastructure-ltd
-       → ats-infrastructure-ltd-developer-projects
+     BUILD CORRECT PUBLIC DEVELOPER SLUG
      ========================================================== */
 
-  const buildPublicDeveloperSlug = (developerSlug) => {
+  const buildPublicDeveloperSlug = (
+    developerSlug
+  ) => {
     if (!developerSlug) {
       return "";
     }
@@ -6878,6 +6866,12 @@ else {
       return "";
     }
 
+    /*
+      Already correct:
+      m3m-developer-projects
+      spiti-developer-projects
+    */
+
     if (
       cleanSlug.endsWith(
         "-developer-projects"
@@ -6886,34 +6880,81 @@ else {
       return cleanSlug;
     }
 
+    /*
+      Backend:
+      spiti-developer
+
+      Public:
+      spiti-developer-projects
+    */
+
     if (
       cleanSlug.endsWith("-developer")
     ) {
       return `${cleanSlug}-projects`;
     }
 
+    /*
+      Backend:
+      m3m
+
+      Public:
+      m3m-developer-projects
+    */
+
     return `${cleanSlug}-developer-projects`;
   };
 
   /* ==========================================================
-     IMPORTANT:
-     Use the BACKEND DEVELOPER SLUG if available.
+     GET BACKEND DEVELOPER SLUG
 
-     developerData.slug is preferred.
-     slug is also supported because your developer
-     page passes the backend slug into the client.
+     IMPORTANT:
+     There is NO use of an undefined `slug` variable here.
+
+     We check several possible fields that may already exist
+     inside developerData.
      ========================================================== */
 
   const backendDeveloperSlug =
     developerData?.slug ||
+    developerData?.backendSlug ||
+    developerData?.developerSlug ||
     developerData?.data?.slug ||
-    slug ||
+    developerData?.data?.backendSlug ||
+    developerData?.data?.developerSlug ||
+    developerData?.developer?.slug ||
     "";
 
-  const publicDeveloperSlug =
+  /* ==========================================================
+     BUILD PUBLIC DEVELOPER SLUG
+     ========================================================== */
+
+  let publicDeveloperSlug =
     buildPublicDeveloperSlug(
       backendDeveloperSlug
     );
+
+  /* ==========================================================
+     SAFE FALLBACK
+
+     If the developer object does not contain a slug,
+     use developerName so the CTA does not disappear.
+
+     IMPORTANT:
+     This is only a fallback. If the actual backend slug
+     exists, it always takes priority above.
+     ========================================================== */
+
+  if (!publicDeveloperSlug && developerName) {
+    publicDeveloperSlug =
+      buildPublicDeveloperSlug(
+        developerName
+      );
+  }
+
+  /* ==========================================================
+     FINAL DEVELOPER PORTFOLIO URL
+     ========================================================== */
 
   const developerPortfolioUrl =
     publicDeveloperSlug
@@ -6934,7 +6975,7 @@ else {
         whileInView="visible"
         viewport={{ once: true }}
         variants={fadeUp}
-        className="text-center mb-16"
+        className="text-center mb-16 px-4"
       >
 
         <h2
@@ -6944,7 +6985,6 @@ else {
             leading-[1.1]
             font-light
             text-[#17342d]
-            px-4
           "
           style={{
             fontFamily:
@@ -6956,7 +6996,6 @@ else {
           <span className="inline-block text-[#b58b47] ml-2">
             {developerName}
           </span>
-
         </h2>
 
         <div
@@ -7006,14 +7045,17 @@ else {
         {otherDeveloperProjects.map(
           (project, i) => {
 
-            const projectUrl =
+            const projectSlug =
               project?.slug
-                ? `/${String(
-                    project.slug
-                  ).replace(
-                    /^\/+|\/+$/g,
-                    ""
-                  )}`
+                ?.trim()
+                ?.replace(
+                  /^\/+|\/+$/g,
+                  ""
+                ) || "";
+
+            const projectUrl =
+              projectSlug
+                ? `/${projectSlug}`
                 : null;
 
             const projectTitle =
@@ -7068,7 +7110,9 @@ else {
                 >
 
                   {heroImage ? (
+
                     projectUrl ? (
+
                       <Link
                         href={projectUrl}
                         aria-label={`View ${projectTitle}`}
@@ -7094,7 +7138,9 @@ else {
                         />
 
                       </Link>
+
                     ) : (
+
                       <img
                         src={heroImage}
                         alt={projectTitle}
@@ -7105,8 +7151,11 @@ else {
                           object-cover
                         "
                       />
+
                     )
+
                   ) : (
+
                     <div
                       className="
                         w-full
@@ -7114,6 +7163,7 @@ else {
                         bg-[#0f0f0f]
                       "
                     />
+
                   )}
 
 
@@ -7263,6 +7313,7 @@ else {
                     <div>
 
                       {projectUrl ? (
+
                         <h3
                           className="
                             text-white
@@ -7292,7 +7343,9 @@ else {
                           </Link>
 
                         </h3>
+
                       ) : (
+
                         <h3
                           className="
                             text-white
@@ -7309,6 +7362,7 @@ else {
                         >
                           {projectTitle}
                         </h3>
+
                       )}
 
 
@@ -7356,9 +7410,9 @@ else {
                       "
                     >
 
-                      {/* ===============================================
+                      {/* =================================================
                           PRICE
-                          =============================================== */}
+                          ================================================= */}
 
                       <div>
 
@@ -7425,9 +7479,9 @@ else {
                       </div>
 
 
-                      {/* ===============================================
-                          ARROW LINK
-                          =============================================== */}
+                      {/* =================================================
+                          ARROW
+                          ================================================= */}
 
                       {projectUrl ? (
 
@@ -7461,19 +7515,19 @@ else {
                             className="
                               w-5
                               h-5
-                              transition
-                              duration-300
                             "
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                             strokeWidth={2}
                           >
+
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               d="M13 7l5 5m0 0l-5 5m5-5H6"
                             />
+
                           </svg>
 
                         </Link>
@@ -7506,11 +7560,13 @@ else {
                             stroke="currentColor"
                             strokeWidth={2}
                           >
+
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               d="M13 7l5 5m0 0l-5 5m5-5H6"
                             />
+
                           </svg>
 
                         </div>
@@ -7536,16 +7592,23 @@ else {
           ============================================================ */}
 
       {developerPortfolioUrl && (
+
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUp}
-          className="mt-20 flex justify-center"
+          className="
+            mt-20
+            flex
+            justify-center
+            px-4
+          "
         >
 
           <Link
             href={developerPortfolioUrl}
+            aria-label={`View all projects by ${developerName}`}
             className="
               group
               relative
@@ -7581,6 +7644,7 @@ else {
                 group-hover:translate-x-[120%]
                 transition
                 duration-1000
+                pointer-events-none
               "
             />
 
@@ -7614,11 +7678,13 @@ else {
                 stroke="currentColor"
                 strokeWidth={1.8}
               >
+
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4m-18 5l9 4 9-4"
                 />
+
               </svg>
 
             </div>
@@ -7689,11 +7755,13 @@ else {
                 stroke="currentColor"
                 strokeWidth={1.8}
               >
+
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M13 7l5 5m0 0l-5 5m5-5H6"
                 />
+
               </svg>
 
             </div>
@@ -7701,6 +7769,7 @@ else {
           </Link>
 
         </motion.div>
+
       )}
 
     </section>
