@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import {
   ArrowRight,
   ArrowUpRight,
@@ -24,10 +25,15 @@ import Navbar from "@/components/home/Navbar";
 const SITE_URL = "https://propertybouquet.com";
 const API = `${SITE_URL}/api`;
 
+/* =========================================================
+   METADATA
+========================================================= */
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
 
-  title: "Luxury Real Estate Sitemap | Property Bouquet",
+  title:
+    "Luxury Real Estate Sitemap | Property Bouquet",
 
   description:
     "Explore the Property Bouquet sitemap to discover luxury properties, leading real estate developers, prime Gurgaon locations, property insights, knowledge resources, real estate tools and important legal information.",
@@ -54,6 +60,7 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+
     googleBot: {
       index: true,
       follow: true,
@@ -68,14 +75,20 @@ export const metadata = {
     locale: "en_IN",
     url: `${SITE_URL}/sitemap`,
     siteName: "Property Bouquet",
-    title: "Luxury Real Estate Sitemap | Property Bouquet",
+
+    title:
+      "Luxury Real Estate Sitemap | Property Bouquet",
+
     description:
       "Explore luxury properties, leading developers, prime Gurgaon locations, real estate insights, knowledge resources, tools and important legal information across Property Bouquet.",
   },
 
   twitter: {
     card: "summary",
-    title: "Luxury Real Estate Sitemap | Property Bouquet",
+
+    title:
+      "Luxury Real Estate Sitemap | Property Bouquet",
+
     description:
       "Explore luxury properties, leading developers, prime Gurgaon locations, insights, knowledge, tools and important information.",
   },
@@ -96,6 +109,14 @@ function extractArray(result) {
     return result;
   }
 
+  if (Array.isArray(result?.properties)) {
+    return result.properties;
+  }
+
+  if (Array.isArray(result?.developers)) {
+    return result.developers;
+  }
+
   return [];
 }
 
@@ -105,11 +126,14 @@ function extractArray(result) {
 
 async function getPublishedProperties() {
   try {
-    const res = await fetch(`${API}/properties?all=true`, {
-      next: {
-        revalidate: 3600,
-      },
-    });
+    const res = await fetch(
+      `${API}/properties?all=true`,
+      {
+        next: {
+          revalidate: 3600,
+        },
+      }
+    );
 
     if (!res.ok) {
       console.warn(
@@ -129,6 +153,7 @@ async function getPublishedProperties() {
           property?.status === "published" &&
           property?.isDeleted !== true &&
           property?.isActive !== false &&
+          property?.deletedFromStatus !== "trash" &&
           property?.slug
       )
       .sort((a, b) =>
@@ -160,11 +185,14 @@ async function getPublishedProperties() {
 
 async function getActiveDevelopers() {
   try {
-    const res = await fetch(`${API}/developers`, {
-      next: {
-        revalidate: 3600,
-      },
-    });
+    const res = await fetch(
+      `${API}/developers`,
+      {
+        next: {
+          revalidate: 3600,
+        },
+      }
+    );
 
     if (!res.ok) {
       console.warn(
@@ -212,16 +240,93 @@ async function getActiveDevelopers() {
    HELPERS
 ========================================================= */
 
-function getDeveloperSlug(
-  name = ""
-) {
-  return name
+/*
+ * IMPORTANT:
+ *
+ * This function is intentionally kept separate from the
+ * public developer slug builder.
+ *
+ * It is only used for a fallback grouping label.
+ */
+
+function getDeveloperSlug(name = "") {
+  return String(name)
     .toLowerCase()
     .trim()
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/* =========================================================
+   PUBLIC DEVELOPER SLUG
+========================================================= */
+
+/*
+ * CANONICAL PUBLIC DEVELOPER URL ARCHITECTURE
+ *
+ * Backend slug:
+ *
+ * m3m
+ * → m3m-developer-projects
+ *
+ * signature-global
+ * → signature-global-developer-projects
+ *
+ * spiti-developer
+ * → spiti-developer-projects
+ *
+ * ats-infrastructure-ltd
+ * → ats-infrastructure-ltd-developer-projects
+ *
+ * Existing "-developer-projects" is preserved.
+ *
+ * Existing "-developer" receives "-projects".
+ */
+
+function buildPublicDeveloperSlug(
+  developerSlug
+) {
+  if (!developerSlug) {
+    return "";
+  }
+
+  const cleanSlug = String(
+    developerSlug
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!cleanSlug) {
+    return "";
+  }
+
+  // Already canonical
+  if (
+    cleanSlug.endsWith(
+      "-developer-projects"
+    )
+  ) {
+    return cleanSlug;
+  }
+
+  // Backend slug already ends with "-developer"
+  if (
+    cleanSlug.endsWith(
+      "-developer"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+  // Normal backend developer slug
+  return `${cleanSlug}-developer-projects`;
+}
+
+/* =========================================================
+   GET DEVELOPER NAME
+========================================================= */
 
 function getDeveloperName(
   developer
@@ -233,6 +338,55 @@ function getDeveloperName(
   );
 }
 
+/* =========================================================
+   GET BACKEND DEVELOPER SLUG
+========================================================= */
+
+function getBackendDeveloperSlug(
+  developer
+) {
+  return (
+    developer?.slug ||
+    developer?.backendSlug ||
+    developer?.developerSlug ||
+    developer?.data?.slug ||
+    developer?.data?.backendSlug ||
+    developer?.data?.developerSlug ||
+    developer?.developer?.slug ||
+    ""
+  );
+}
+
+/* =========================================================
+   GET PUBLIC DEVELOPER URL
+========================================================= */
+
+function getPublicDeveloperUrl(
+  developer
+) {
+  const backendSlug =
+    getBackendDeveloperSlug(
+      developer
+    );
+
+  const publicSlug =
+    buildPublicDeveloperSlug(
+      backendSlug
+    );
+
+  if (!publicSlug) {
+    return null;
+  }
+
+  return `/developers/${encodeURIComponent(
+    publicSlug
+  )}`;
+}
+
+/* =========================================================
+   FORMAT PROPERTY TITLE
+========================================================= */
+
 function formatPropertyTitle(
   property
 ) {
@@ -243,6 +397,10 @@ function formatPropertyTitle(
   );
 }
 
+/* =========================================================
+   GROUP PROPERTIES BY DEVELOPER
+========================================================= */
+
 function groupPropertiesByDeveloper(
   properties
 ) {
@@ -250,17 +408,22 @@ function groupPropertiesByDeveloper(
 
   properties.forEach((property) => {
     const developer =
-      property?.coreDetails?.developerName ||
+      property?.coreDetails
+        ?.developerName ||
       "Other Properties";
 
     if (!grouped[developer]) {
       grouped[developer] = [];
     }
 
-    grouped[developer].push(property);
+    grouped[developer].push(
+      property
+    );
   });
 
-  return Object.entries(grouped).sort(
+  return Object.entries(
+    grouped
+  ).sort(
     ([a], [b]) =>
       a.localeCompare(b)
   );
@@ -349,43 +512,50 @@ const locations = [
 
   {
     name: "Golf Course Extension Road",
-    subtitle: "Premium residential destination",
+    subtitle:
+      "Premium residential destination",
     href: "/properties?location=Golf%20Course%20Extension%20Road",
   },
 
   {
     name: "Golf Course Road",
-    subtitle: "Established luxury address",
+    subtitle:
+      "Established luxury address",
     href: "/properties?location=Golf%20Course%20Road",
   },
 
   {
     name: "Sohna",
-    subtitle: "Emerging luxury destination",
+    subtitle:
+      "Emerging luxury destination",
     href: "/properties?location=Sohna",
   },
 
   {
     name: "Southern Peripheral Road",
-    subtitle: "Strategic growth corridor",
+    subtitle:
+      "Strategic growth corridor",
     href: "/properties?location=Southern%20Peripheral%20Road",
   },
 
   {
     name: "New Gurgaon",
-    subtitle: "Next-generation urban living",
+    subtitle:
+      "Next-generation urban living",
     href: "/properties?location=New%20Gurgaon",
   },
 
   {
     name: "Sector 63A",
-    subtitle: "Premium residential enclave",
+    subtitle:
+      "Premium residential enclave",
     href: "/properties?location=Sector%2063A",
   },
 
   {
     name: "Sector 58",
-    subtitle: "Prime Golf Course address",
+    subtitle:
+      "Prime Golf Course address",
     href: "/properties?location=Sector%2058",
   },
 ];
@@ -468,7 +638,9 @@ function GoldDivider({
   return (
     <div
       className={`flex items-center gap-3 ${
-        centered ? "justify-center" : ""
+        centered
+          ? "justify-center"
+          : ""
       }`}
     >
       <span className="h-px w-12 bg-[#c9a64b]" />
@@ -546,35 +718,46 @@ export default async function SitemapPage() {
     );
 
   /*
-   * Use actual developer records where available.
+   * Use actual developer CMS records.
    *
-   * This prevents the sitemap page from creating an
-   * incorrect developer URL from the display name.
+   * Developer URLs are generated from the actual backend slug
+   * through buildPublicDeveloperSlug().
    *
-   * If a developer cannot be matched to a property group,
-   * it is still displayed because it is an active CMS
-   * developer.
+   * This keeps this human-facing sitemap synchronized with:
+   *
+   * - src/app/sitemap.js
+   * - app/developers/[slug]/page.js
    */
+
   const developerItems =
     developers.length > 0
       ? developers
       : groupedProperties.map(
           ([name]) => ({
             name,
-            slug: getDeveloperSlug(name),
+            slug: getDeveloperSlug(
+              name
+            ),
           })
         );
 
+  /* =======================================================
+     SCHEMA
+  ======================================================= */
+
   const sitemapSchema = {
-    "@context": "https://schema.org",
+    "@context":
+      "https://schema.org",
 
     "@graph": [
       {
         "@type": "WebPage",
 
-        "@id": `${SITE_URL}/sitemap#webpage`,
+        "@id":
+          `${SITE_URL}/sitemap#webpage`,
 
-        url: `${SITE_URL}/sitemap`,
+        url:
+          `${SITE_URL}/sitemap`,
 
         name:
           "Luxury Real Estate Sitemap | Property Bouquet",
@@ -583,47 +766,64 @@ export default async function SitemapPage() {
           "Explore the Property Bouquet sitemap covering luxury properties, real estate developers, prime Gurgaon locations, property insights, knowledge resources, real estate tools and legal information.",
 
         isPartOf: {
-          "@id": `${SITE_URL}/#website`,
+          "@id":
+            `${SITE_URL}/#website`,
         },
 
         about: {
           "@type": "Thing",
-          name: "Luxury Real Estate",
+          name:
+            "Luxury Real Estate",
         },
 
         breadcrumb: {
-          "@id": `${SITE_URL}/sitemap#breadcrumb`,
+          "@id":
+            `${SITE_URL}/sitemap#breadcrumb`,
         },
 
         inLanguage: "en-IN",
       },
 
       {
-        "@type": "BreadcrumbList",
+        "@type":
+          "BreadcrumbList",
 
-        "@id": `${SITE_URL}/sitemap#breadcrumb`,
+        "@id":
+          `${SITE_URL}/sitemap#breadcrumb`,
 
         itemListElement: [
           {
-            "@type": "ListItem",
+            "@type":
+              "ListItem",
+
             position: 1,
+
             name: "Home",
-            item: `${SITE_URL}/`,
+
+            item:
+              `${SITE_URL}/`,
           },
 
           {
-            "@type": "ListItem",
+            "@type":
+              "ListItem",
+
             position: 2,
+
             name: "Sitemap",
-            item: `${SITE_URL}/sitemap`,
+
+            item:
+              `${SITE_URL}/sitemap`,
           },
         ],
       },
 
       {
-        "@type": "ItemList",
+        "@type":
+          "ItemList",
 
-        "@id": `${SITE_URL}/sitemap#primary-navigation`,
+        "@id":
+          `${SITE_URL}/sitemap#primary-navigation`,
 
         name:
           "Property Bouquet Website Sections",
@@ -637,21 +837,27 @@ export default async function SitemapPage() {
         itemListElement:
           primaryLinks.map(
             (item, index) => ({
-              "@type": "ListItem",
+              "@type":
+                "ListItem",
 
-              position: index + 1,
+              position:
+                index + 1,
 
-              name: item.title,
+              name:
+                item.title,
 
-              url: `${SITE_URL}${item.href}`,
+              url:
+                `${SITE_URL}${item.href}`,
             })
           ),
       },
 
       {
-        "@type": "ItemList",
+        "@type":
+          "ItemList",
 
-        "@id": `${SITE_URL}/sitemap#resources`,
+        "@id":
+          `${SITE_URL}/sitemap#resources`,
 
         name:
           "Property Bouquet Resources",
@@ -665,21 +871,27 @@ export default async function SitemapPage() {
         itemListElement:
           resources.map(
             (item, index) => ({
-              "@type": "ListItem",
+              "@type":
+                "ListItem",
 
-              position: index + 1,
+              position:
+                index + 1,
 
-              name: item.title,
+              name:
+                item.title,
 
-              url: `${SITE_URL}${item.href}`,
+              url:
+                `${SITE_URL}${item.href}`,
             })
           ),
       },
 
       {
-        "@type": "ItemList",
+        "@type":
+          "ItemList",
 
-        "@id": `${SITE_URL}/sitemap#legal`,
+        "@id":
+          `${SITE_URL}/sitemap#legal`,
 
         name:
           "Property Bouquet Legal & Policies",
@@ -693,13 +905,17 @@ export default async function SitemapPage() {
         itemListElement:
           legalLinks.map(
             (item, index) => ({
-              "@type": "ListItem",
+              "@type":
+                "ListItem",
 
-              position: index + 1,
+              position:
+                index + 1,
 
-              name: item.title,
+              name:
+                item.title,
 
-              url: `${SITE_URL}${item.href}`,
+              url:
+                `${SITE_URL}${item.href}`,
             })
           ),
       },
@@ -708,6 +924,10 @@ export default async function SitemapPage() {
 
   return (
     <>
+      {/* =====================================================
+          STRUCTURED DATA
+      ====================================================== */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -790,6 +1010,7 @@ export default async function SitemapPage() {
 
                 <h1 className="mt-8 max-w-4xl font-serif text-[48px] font-light leading-[1.04] tracking-[-0.035em] text-white sm:text-6xl lg:text-[76px]">
                   Discover
+
                   <span className="block text-[#d8b46b]">
                     Every Address.
                   </span>
@@ -832,6 +1053,7 @@ export default async function SitemapPage() {
                   </Link>
 
                 </div>
+
               </div>
 
               {/* Hero stats panel */}
@@ -873,7 +1095,9 @@ export default async function SitemapPage() {
                     <div className="py-5 pr-5">
 
                       <div className="font-serif text-3xl font-light text-[#e0c47c]">
-                        {properties.length}
+                        {
+                          properties.length
+                        }
                       </div>
 
                       <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -885,7 +1109,9 @@ export default async function SitemapPage() {
                     <div className="py-5 pl-5">
 
                       <div className="font-serif text-3xl font-light text-[#e0c47c]">
-                        {developerItems.length}
+                        {
+                          developerItems.length
+                        }
                       </div>
 
                       <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -937,8 +1163,12 @@ export default async function SitemapPage() {
 
                 return (
                   <Link
-                    key={item.href}
-                    href={item.href}
+                    key={
+                      item.href
+                    }
+                    href={
+                      item.href
+                    }
                     className="group relative bg-[#fbfaf7] p-7 transition duration-500 hover:bg-white"
                   >
 
@@ -958,17 +1188,21 @@ export default async function SitemapPage() {
 
                       <ArrowUpRight
                         size={16}
-                        className="text-[#a8aaa3] transition duration-300 group-hover:-translate-x-[-4px] group-hover:-translate-y-1 group-hover:text-[#a47c32]"
+                        className="text-[#a8aaa3] transition duration-300 group-hover:-translate-y-1 group-hover:text-[#a47c32]"
                       />
 
                     </div>
 
                     <h3 className="mt-7 font-serif text-[21px] font-light text-[#10231f]">
-                      {item.title}
+                      {
+                        item.title
+                      }
                     </h3>
 
                     <p className="mt-3 text-[13px] leading-6 text-[#68716d]">
-                      {item.description}
+                      {
+                        item.description
+                      }
                     </p>
 
                     <div className="mt-7 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#a47c32] opacity-0 transition duration-300 group-hover:opacity-100">
@@ -1024,8 +1258,7 @@ export default async function SitemapPage() {
 
             <div className="mt-14">
 
-              {properties.length >
-              0 ? (
+              {properties.length > 0 ? (
                 <div className="space-y-16">
 
                   {groupedProperties.map(
@@ -1045,9 +1278,7 @@ export default async function SitemapPage() {
 
                             <Building2
                               size={17}
-                              strokeWidth={
-                                1.25
-                              }
+                              strokeWidth={1.25}
                               className="text-[#a47c32]"
                             />
 
@@ -1067,10 +1298,12 @@ export default async function SitemapPage() {
                                 {
                                   developerProperties.length
                                 }{" "}
-                                {developerProperties.length ===
-                                1
-                                  ? "Property"
-                                  : "Properties"}
+                                {
+                                  developerProperties.length ===
+                                  1
+                                    ? "Property"
+                                    : "Properties"
+                                }
                               </span>
 
                             </div>
@@ -1104,9 +1337,11 @@ export default async function SitemapPage() {
                                   <div className="min-w-0">
 
                                     <span className="block text-[14px] leading-6 text-[#303a36] transition group-hover:text-[#8d6927]">
-                                      {formatPropertyTitle(
-                                        property
-                                      )}
+                                      {
+                                        formatPropertyTitle(
+                                          property
+                                        )
+                                      }
                                     </span>
 
                                     {property
@@ -1184,28 +1419,44 @@ export default async function SitemapPage() {
                       developer
                     );
 
-                  const developerSlug =
-                    developer?.slug ||
-                    getDeveloperSlug(
-                      developerName
+                  /*
+                   * IMPORTANT:
+                   *
+                   * Always use the actual backend developer slug.
+                   *
+                   * DO NOT create the public URL from developerName.
+                   *
+                   * Example:
+                   *
+                   * backend:
+                   * spiti-developer
+                   *
+                   * public:
+                   * spiti-developer-projects
+                   */
+
+                  const developerUrl =
+                    getPublicDeveloperUrl(
+                      developer
                     );
 
+                  /*
+                   * If there is no usable developer slug,
+                   * do not create a potentially incorrect URL.
+                   */
+
                   if (
-                    !developerSlug
+                    !developerUrl
                   ) {
                     return null;
                   }
 
                   return (
                     <Link
-                      key={
-                        `${developerName}-${developerSlug}`
+                      key={`${developerName}-${developerUrl}`}
+                      href={
+                        developerUrl
                       }
-                      href={`/developers/${encodeURIComponent(
-                        String(
-                          developerSlug
-                        ).trim()
-                      )}`}
                       className="group relative overflow-hidden border border-[#d8d5cb] bg-[#faf9f5] px-6 py-6 transition duration-500 hover:-translate-y-1 hover:border-[#c9a64b]/50 hover:bg-white"
                     >
 
@@ -1283,7 +1534,9 @@ export default async function SitemapPage() {
 
                 <div className="mb-5 flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.3em] text-[#d8b46b]">
 
-                  <MapPin size={13} />
+                  <MapPin
+                    size={13}
+                  />
 
                   Prime Destinations
 
@@ -1416,9 +1669,7 @@ export default async function SitemapPage() {
 
                         <Icon
                           size={18}
-                          strokeWidth={
-                            1.25
-                          }
+                          strokeWidth={1.25}
                           className="text-[#a47c32]"
                         />
 
@@ -1503,9 +1754,7 @@ export default async function SitemapPage() {
 
                           <Icon
                             size={18}
-                            strokeWidth={
-                              1.25
-                            }
+                            strokeWidth={1.25}
                             className="text-[#a47c32]"
                           />
 

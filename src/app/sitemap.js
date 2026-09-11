@@ -45,11 +45,17 @@
 // - No fake lastModified dates are generated.
 // - API failure does not break the sitemap.
 // - Duplicate URLs are automatically removed.
-//
+// - Developer URLs follow the canonical public developer slug
+//   architecture:
+//   backend slug "spiti-developer"
+//   → public slug "spiti-developer-projects"
 // ============================================================
 
-const API = "https://propertybouquet.com/api";
-const BASE_URL = "https://propertybouquet.com";
+const API =
+  "https://propertybouquet.com/api";
+
+const BASE_URL =
+  "https://propertybouquet.com";
 
 const REVALIDATE_TIME = 3600;
 
@@ -62,7 +68,7 @@ const REVALIDATE_TIME = 3600;
 // We use fetch-level revalidation rather than a route-level
 // revalidate export so this remains compatible with the current
 // Next.js setup.
-//
+// ============================================================
 
 const FETCH_OPTIONS = {
   next: {
@@ -78,7 +84,7 @@ const FETCH_OPTIONS = {
 //
 // This prevents one unavailable CMS endpoint from taking down
 // the complete sitemap.
-//
+// ============================================================
 
 async function safeFetch(url) {
   try {
@@ -125,9 +131,6 @@ async function safeFetch(url) {
     // }
     //
     // or similar structures.
-    //
-    // These fallbacks make the sitemap more tolerant without
-    // changing the canonical URL architecture.
     // ----------------------------------------------------------
 
     if (Array.isArray(json?.properties)) {
@@ -169,7 +172,7 @@ async function safeFetch(url) {
 //
 // We NEVER use the current date as a fallback because doing so
 // would falsely indicate that every URL was recently modified.
-//
+// ============================================================
 
 function getValidDate(...values) {
   for (const value of values) {
@@ -221,7 +224,7 @@ function isActive(item) {
 // If status exists, only "published" is allowed.
 //
 // If status does not exist, active content may still be included.
-//
+// ============================================================
 
 function isPublishedContent(item) {
   if (!isActive(item)) {
@@ -248,12 +251,14 @@ function isPublishedContent(item) {
 //
 // Examples:
 //
-// "/"                  → https://propertybouquet.com/
-// "/properties"       → https://propertybouquet.com/properties
-// "properties"        → https://propertybouquet.com/properties
+// "/"          → https://propertybouquet.com/
+// "/properties"
+//              → https://propertybouquet.com/properties
+// "properties"
+//              → https://propertybouquet.com/properties
 //
 // Absolute URLs are preserved.
-//
+// ============================================================
 
 function normalizeUrl(path) {
   if (!path) {
@@ -291,7 +296,7 @@ function normalizeUrl(path) {
 //
 // Map-based storage guarantees that the final sitemap never
 // contains duplicate URLs.
-//
+// ============================================================
 
 function addUrl(
   sitemap,
@@ -344,6 +349,10 @@ function addUrl(
 // Prevent malformed URLs if a slug unexpectedly contains
 // spaces or special characters.
 //
+// This function is used for normal property/article slugs.
+// Developer slugs use the dedicated public developer slug
+// builder below.
+// ============================================================
 
 function safeSlug(slug) {
   if (!slug) {
@@ -357,6 +366,74 @@ function safeSlug(slug) {
   }
 
   return encodeURIComponent(value);
+}
+
+// ============================================================
+// PUBLIC DEVELOPER SLUG BUILDER
+// ============================================================
+//
+// IMPORTANT:
+//
+// This MUST stay synchronized with the developer page URL
+// architecture.
+//
+// Backend slug                  Public slug
+// ------------------------------------------------------------
+// m3m                          m3m-developer-projects
+// signature-global             signature-global-developer-projects
+// spiti-developer              spiti-developer-projects
+// ats-infrastructure-ltd       ats-infrastructure-ltd-developer-projects
+//
+// Rules:
+//
+// 1. If already ending in "-developer-projects":
+//      keep it.
+//
+// 2. If ending in "-developer":
+//      append "-projects".
+//
+// 3. Otherwise:
+//      append "-developer-projects".
+// ============================================================
+
+function buildPublicDeveloperSlug(
+  developerSlug
+) {
+  if (!developerSlug) {
+    return "";
+  }
+
+  const cleanSlug = String(
+    developerSlug
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!cleanSlug) {
+    return "";
+  }
+
+  // Already canonical
+  if (
+    cleanSlug.endsWith(
+      "-developer-projects"
+    )
+  ) {
+    return cleanSlug;
+  }
+
+  // Existing "-developer" suffix
+  if (
+    cleanSlug.endsWith(
+      "-developer"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+  // Normal backend slug
+  return `${cleanSlug}-developer-projects`;
 }
 
 // ============================================================
@@ -474,16 +551,10 @@ export default async function sitemap() {
   // ==========================================================
   // PUBLIC PROPERTY TOOLS
   // ==========================================================
-  //
-  // IMPORTANT:
-  // Only include routes that actually exist publicly.
-  //
-  // Current known public tools:
-  //
-  // /tools/roi-calculator
-  // /tools/area-converter
-  //
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // ROI CALCULATOR
+  // ----------------------------------------------------------
 
   addUrl(
     sitemap,
@@ -493,6 +564,10 @@ export default async function sitemap() {
       changeFrequency: "monthly",
     }
   );
+
+  // ----------------------------------------------------------
+  // AREA CONVERTER
+  // ----------------------------------------------------------
 
   addUrl(
     sitemap,
@@ -511,7 +586,6 @@ export default async function sitemap() {
   //
   // If one fails, safeFetch() returns [] and the rest of the
   // sitemap continues normally.
-  //
   // ==========================================================
 
   const [
@@ -526,7 +600,7 @@ export default async function sitemap() {
     //
     // all=true ensures we don't accidentally sitemap only
     // the default paginated API response.
-    //
+    // --------------------------------------------------------
 
     safeFetch(
       `${API}/properties?all=true`
@@ -620,9 +694,7 @@ export default async function sitemap() {
             property?.updatedAt,
             property?.createdAt
           ),
-
         priority: 0.95,
-
         changeFrequency:
           "weekly",
       }
@@ -632,19 +704,54 @@ export default async function sitemap() {
   // ==========================================================
   // DEVELOPER DETAIL PAGES
   // ==========================================================
+  //
+  // IMPORTANT:
+  //
+  // MongoDB/backend slug is NOT necessarily the public slug.
+  //
+  // We therefore NEVER directly use:
+  //
+  // /developers/${developer.slug}
+  //
+  // Instead we use buildPublicDeveloperSlug().
+  // ==========================================================
 
   developers.forEach(
     (developer) => {
-      const slug =
-        safeSlug(
-          developer?.slug
+      // ------------------------------------------------------
+      // Get backend developer slug.
+      //
+      // Normal expected field:
+      // developer.slug
+      //
+      // Additional fallbacks are included for compatibility
+      // with possible API response structures.
+      // ------------------------------------------------------
+
+      const backendDeveloperSlug =
+        developer?.slug ||
+        developer?.backendSlug ||
+        developer?.developerSlug ||
+        developer?.data?.slug ||
+        developer?.data?.backendSlug ||
+        developer?.data?.developerSlug ||
+        developer?.developer?.slug ||
+        "";
+
+      // ------------------------------------------------------
+      // Build the canonical PUBLIC developer slug.
+      // ------------------------------------------------------
+
+      const publicDeveloperSlug =
+        buildPublicDeveloperSlug(
+          backendDeveloperSlug
         );
 
       // ------------------------------------------------------
       // Slug required.
       // ------------------------------------------------------
 
-      if (!slug) {
+      if (!publicDeveloperSlug) {
         return;
       }
 
@@ -669,23 +776,30 @@ export default async function sitemap() {
       }
 
       // ------------------------------------------------------
-      // Developer URL:
+      // PUBLIC DEVELOPER URL:
       //
-      // /developers/{slug}
+      // /developers/{publicDeveloperSlug}
+      //
+      // Examples:
+      //
+      // /developers/m3m-developer-projects
+      // /developers/signature-global-developer-projects
+      // /developers/spiti-developer-projects
+      // /developers/ats-infrastructure-ltd-developer-projects
       // ------------------------------------------------------
 
       addUrl(
         sitemap,
-        `/developers/${slug}`,
+        `/developers/${encodeURIComponent(
+          publicDeveloperSlug
+        )}`,
         {
           lastModified:
             getValidDate(
               developer?.updatedAt,
               developer?.createdAt
             ),
-
           priority: 0.82,
-
           changeFrequency:
             "monthly",
         }
@@ -735,9 +849,7 @@ export default async function sitemap() {
               article?.updatedAt,
               article?.createdAt
             ),
-
           priority: 0.78,
-
           changeFrequency:
             "monthly",
         }
@@ -787,9 +899,7 @@ export default async function sitemap() {
               article?.updatedAt,
               article?.createdAt
             ),
-
           priority: 0.78,
-
           changeFrequency:
             "weekly",
         }
@@ -807,7 +917,6 @@ export default async function sitemap() {
   // easier debugging.
   //
   // Homepage → priority → URL.
-  //
   // ==========================================================
 
   const sortedUrls = [
