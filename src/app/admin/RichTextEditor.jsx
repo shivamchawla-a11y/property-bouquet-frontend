@@ -1,281 +1,155 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 import "react-quill-new/dist/quill.snow.css";
-import "quill-table-better/dist/quill-table-better.css";
 import "./RichTextEditor.css";
-
-// ============================================================
-// REACT QUILL
-// ============================================================
 
 const ReactQuill = dynamic(
   () => import("react-quill-new"),
   {
     ssr: false,
+    loading: () => (
+      <div
+        style={{
+          minHeight: "220px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#64748b",
+          fontSize: "14px",
+          background: "#fff",
+        }}
+      >
+        Loading editor...
+      </div>
+    ),
   }
 );
 
-// ============================================================
-// QUILL MODULES
-// ============================================================
-
-const modules = {
+const MODULES = {
   toolbar: [
     [{ header: [1, 2, 3, 4, false] }],
-
     ["bold", "italic", "underline", "strike"],
-
     [{ color: [] }, { background: [] }],
-
     [{ align: [] }],
-
-    [{ list: "ordered" }],
-    [{ list: "bullet" }],
-
+    [{ list: "ordered" }, { list: "bullet" }],
     ["blockquote", "code-block"],
-
     ["link", "image"],
-
-    ["table"],
-
     ["clean"],
   ],
-
-  table: true,
 };
 
-// ============================================================
-// INTERNAL LINK CLEANER
-//
-// Property Bouquet internal links should NEVER be saved with:
-//
-// target="_blank"
-// rel="noopener"
-// rel="noreferrer"
-//
-// External links are NOT modified.
-// ============================================================
+const FORMATS = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "color",
+  "background",
+  "align",
+  "list",
+  "blockquote",
+  "code-block",
+  "link",
+  "image",
+];
 
-function cleanInternalLinks(html = "") {
-  if (!html || typeof html !== "string") {
-    return html;
-  }
-
-  // ----------------------------------------------------------
-  // Browser-side DOM parser
-  // ----------------------------------------------------------
-
-  if (typeof window !== "undefined" && typeof DOMParser !== "undefined") {
-    try {
-      const parser = new DOMParser();
-
-      const doc = parser.parseFromString(
-        `<div id="__rte_root__">${html}</div>`,
-        "text/html"
-      );
-
-      const root = doc.getElementById("__rte_root__");
-
-      if (!root) {
-        return html;
-      }
-
-      const links = root.querySelectorAll("a");
-
-      links.forEach((link) => {
-        const href = link.getAttribute("href") || "";
-
-        // ----------------------------------------------------
-        // Detect Property Bouquet internal links
-        //
-        // Handles:
-        // https://propertybouquet.com/...
-        // https://www.propertybouquet.com/...
-        // http://propertybouquet.com/...
-        // http://www.propertybouquet.com/...
-        // /relative/internal/path
-        // ----------------------------------------------------
-
-        let isInternalLink = false;
-
-        // Relative URL
-        if (
-          href.startsWith("/") &&
-          !href.startsWith("//")
-        ) {
-          isInternalLink = true;
-        }
-
-        // Absolute Property Bouquet URL
-        try {
-          if (
-            href.startsWith("http://") ||
-            href.startsWith("https://")
-          ) {
-            const url = new URL(href);
-
-            isInternalLink =
-              url.hostname === "propertybouquet.com" ||
-              url.hostname === "www.propertybouquet.com";
-          }
-        } catch {
-          // Invalid URL — leave untouched
-        }
-
-        // ----------------------------------------------------
-        // ONLY clean internal links
-        // ----------------------------------------------------
-
-        if (isInternalLink) {
-          // Remove new-tab behavior
-          link.removeAttribute("target");
-
-          // Remove rel completely if it only exists for
-          // noopener / noreferrer.
-          const rel = link.getAttribute("rel");
-
-          if (rel) {
-            const remainingRelTokens = rel
-              .split(/\s+/)
-              .filter(Boolean)
-              .filter(
-                (token) =>
-                  token.toLowerCase() !== "noopener" &&
-                  token.toLowerCase() !== "noreferrer"
-              );
-
-            if (remainingRelTokens.length > 0) {
-              link.setAttribute(
-                "rel",
-                remainingRelTokens.join(" ")
-              );
-            } else {
-              link.removeAttribute("rel");
-            }
-          }
-        }
-      });
-
-      return root.innerHTML;
-    } catch (error) {
-      console.error(
-        "RichTextEditor internal-link cleanup failed:",
-        error
-      );
-    }
-  }
-
-  // ----------------------------------------------------------
-  // Fallback cleanup
-  //
-  // Used only if DOMParser is unavailable.
-  // ----------------------------------------------------------
-
-  return html.replace(
-    /<a\b([^>]*)>/gi,
-    (fullMatch, attributes) => {
-      let isInternalLink = false;
-
-      const hrefMatch = attributes.match(
-        /\bhref\s*=\s*["']([^"']*)["']/i
-      );
-
-      if (hrefMatch) {
-        const href = hrefMatch[1];
-
-        // Relative internal link
-        if (
-          href.startsWith("/") &&
-          !href.startsWith("//")
-        ) {
-          isInternalLink = true;
-        }
-
-        // Absolute internal link
-        try {
-          if (
-            href.startsWith("http://") ||
-            href.startsWith("https://")
-          ) {
-            const url = new URL(href);
-
-            isInternalLink =
-              url.hostname === "propertybouquet.com" ||
-              url.hostname === "www.propertybouquet.com";
-          }
-        } catch {
-          // Leave invalid URLs untouched
-        }
-      }
-
-      if (!isInternalLink) {
-        return fullMatch;
-      }
-
-      let cleanedAttributes = attributes;
-
-      // Remove target="_blank"
-      cleanedAttributes = cleanedAttributes.replace(
-        /\s+target\s*=\s*["']_blank["']/gi,
-        ""
-      );
-
-      // Remove noopener/noreferrer from rel
-      cleanedAttributes = cleanedAttributes.replace(
-        /\s+rel\s*=\s*["']([^"']*)["']/gi,
-        (relMatch, relValue) => {
-          const remainingTokens = relValue
-            .split(/\s+/)
-            .filter(Boolean)
-            .filter(
-              (token) =>
-                token.toLowerCase() !== "noopener" &&
-                token.toLowerCase() !== "noreferrer"
-            );
-
-          if (remainingTokens.length === 0) {
-            return "";
-          }
-
-          return ` rel="${remainingTokens.join(" ")}"`;
-        }
-      );
-
-      return `<a${cleanedAttributes}>`;
-    }
+function isHTML(text = "") {
+  return /<\s*(h[1-6]|p|strong|b|em|i|u|ul|ol|li|blockquote|table|thead|tbody|tr|td|th|a|br|div|span)\b[^>]*>/i.test(
+    text
   );
 }
 
-// ============================================================
-// COMPONENT
-// ============================================================
+function cleanHTML(text = "") {
+  return text
+    .replace(/^```html\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+}
 
 export default function RichTextEditor({
-  value,
+  value = "",
   onChange,
 }) {
-  // ==========================================================
-  // HANDLE CONTENT CHANGE
-  // ==========================================================
+  const quillRef = useRef(null);
 
-  const handleChange = (content) => {
-    const cleanedContent = cleanInternalLinks(content);
+  useEffect(() => {
+    const quill = quillRef.current?.getEditor?.();
 
-    onChange(cleanedContent);
-  };
+    if (!quill) return;
 
-  // ==========================================================
-  // RENDER
-  // ==========================================================
+    const editor = quill.root;
+
+    const handlePaste = (event) => {
+      const clipboard = event.clipboardData;
+
+      if (!clipboard) return;
+
+      const text = clipboard.getData("text/plain");
+
+      /*
+       * If copied content is actually HTML stored as plain text,
+       * intercept it BEFORE Quill processes the paste.
+       */
+      if (!text || !isHTML(text)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const html = cleanHTML(text);
+
+      const range = quill.getSelection(true);
+
+      const index = range
+        ? range.index
+        : Math.max(0, quill.getLength() - 1);
+
+      quill.clipboard.dangerouslyPasteHTML(
+        index,
+        html,
+        "user"
+      );
+
+      const output =
+        typeof quill.getSemanticHTML === "function"
+          ? quill.getSemanticHTML()
+          : quill.root.innerHTML;
+
+      if (typeof onChange === "function") {
+        onChange(output);
+      }
+    };
+
+    /*
+     * TRUE = CAPTURE PHASE
+     *
+     * This is the critical fix.
+     * Our handler runs before Quill's own paste handler.
+     */
+    editor.addEventListener("paste", handlePaste, true);
+
+    return () => {
+      editor.removeEventListener("paste", handlePaste, true);
+    };
+  }, [onChange]);
 
   return (
-    <div className="bg-white">
+    <div
+      className="bg-white rich-text-editor-wrapper"
+      style={{ width: "100%" }}
+    >
       <ReactQuill
+        ref={quillRef}
         theme="snow"
         value={value || ""}
-        onChange={handleChange}
-        modules={modules}
+        onChange={onChange}
+        modules={MODULES}
+        formats={FORMATS}
         className="text-black"
       />
     </div>
