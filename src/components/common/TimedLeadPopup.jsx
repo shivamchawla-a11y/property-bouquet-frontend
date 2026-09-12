@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -17,8 +16,6 @@ import {
 export default function TimedLeadPopup() {
   const API = "/api";
 
-  const pathname = usePathname();
-
   const [open, setOpen] = useState(false);
 
   const [leadName, setLeadName] = useState("");
@@ -29,19 +26,6 @@ export default function TimedLeadPopup() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // ============================================================
-  // EXCLUDED ROUTES
-  // Popup will NEVER appear on these pages.
-  // ============================================================
-
-  const isExcludedPage =
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
-    pathname === "/login" ||
-    pathname.startsWith("/auth/") ||
-    pathname === "/forgot-password" ||
-    pathname === "/forget-password" ||
-    pathname === "/reset-password";
 
   // ============================================================
   // OPEN AFTER 4 SECONDS
@@ -49,14 +33,7 @@ export default function TimedLeadPopup() {
   // ============================================================
 
   useEffect(() => {
-    // ----------------------------------------------------------
-    // NEVER RUN TIMER ON ADMIN / AUTH PAGES
-    // ----------------------------------------------------------
-
-    if (isExcludedPage) {
-      setOpen(false);
-      return;
-    }
+    
 
     // ----------------------------------------------------------
     // CHECK WHETHER POPUP HAS ALREADY APPEARED THIS SESSION
@@ -110,7 +87,7 @@ export default function TimedLeadPopup() {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [isExcludedPage]);
+  }, []);
 
   // ============================================================
   // CLOSE

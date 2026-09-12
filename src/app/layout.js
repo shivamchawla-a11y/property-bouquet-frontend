@@ -9,7 +9,7 @@ import {
 } from "next/font/google";
 
 import FloatingContact from "@/components/common/FloatingContact";
-// import TimedLeadPopup from "@/components/common/TimedLeadPopup";
+import ConditionalTimedLeadPopup from "@/components/common/ConditionalTimedLeadPopup";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -113,11 +113,8 @@ export const metadata = {
     images: [
       {
         url: "/logo.webp",
-
         width: 512,
-
         height: 512,
-
         alt: "Property Bouquet Luxury Real Estate",
       },
     ],
@@ -186,10 +183,17 @@ export default function RootLayout({ children }) {
         {children}
 
         {/* ==================================================
-            GLOBAL 20-SECOND LEAD POPUP
+            GLOBAL TIMED LEAD POPUP
+            Excluded automatically on:
+            /admin/*
+            /login
+            /auth/*
+            /forgot-password
+            /forget-password
+            /reset-password
         ================================================== */}
 
-        {/* <TimedLeadPopup /> */}
+        <ConditionalTimedLeadPopup />
 
         {/* ==================================================
             FLOATING WHATSAPP + CALL BUTTONS
