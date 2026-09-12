@@ -1,82 +1,529 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import {
-  Pencil,
+  Search,
+  Plus,
   Eye,
-  RefreshCw,
+  Pencil,
   Trash2,
+  RotateCcw,
+  Trash,
   Star,
-  Globe,
   FileText,
+  CheckCircle2,
+  Clock3,
+  X,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 
-const API_URL =
-  "/api/knowledge";
+import { useRouter } from "next/navigation";
 
-export default function KnowledgePage() {
+const API_URL = "/api/knowledge";
+
+const CATEGORIES = [
+  "Buying Guide",
+  "Selling Guide",
+  "Investment",
+  "Legal",
+  "Home Loans",
+  "Taxation",
+  "Luxury Living",
+  "Interior Design",
+  "Market Education",
+  "NRI Guide",
+  "Tips & Tricks",
+  "General",
+];
+
+const ITEMS_PER_PAGE = 10;
+
+export default function KnowledgeAdminPage() {
   const router = useRouter();
 
-const [articles, setArticles] = useState([]);
+  // ============================================================
+  // STATE
+  // ============================================================
+
+  const [articles, setArticles] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  const [actionId, setActionId] = useState(null);
 
-  const [filter, setFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [categoryFilter, setCategoryFilter] =
-    useState("All");
+    useState("");
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [statusFilter, setStatusFilter] =
+    useState("");
 
-  const [itemsPerPage, setItemsPerPage] =
-    useState(10);
+  const [page, setPage] = useState(1);
 
-  const [actionId, setActionId] =
-    useState(null);
+  /*
+   * We maintain the number of articles in Trash
+   * separately so the Trash button can show its
+   * count even when the active list is being viewed.
+   */
+  const [trashCount, setTrashCount] = useState(0);
 
-  // ================= FETCH =================
+  // ============================================================
+  // SAFE JSON RESPONSE HELPER
+  // ============================================================
 
-  const fetchKnowledge = async () => {
+  const readJson = async (res) => {
     try {
-      setLoading(true);
-
-      const res = await fetch(API_URL, {
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setArticles(data.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+      return await res.json();
+    } catch {
+      return {};
     }
   };
 
+  // ============================================================
+  // FETCH ACTIVE ARTICLES
+  // ============================================================
+
+  const fetchKnowledge = useCallback(
+    async (showLoader = true) => {
+      try {
+        if (showLoader) {
+          setLoading(true);
+        }
+
+        const res = await fetch(API_URL, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        const data = await readJson(res);
+
+        if (!res.ok) {
+          throw new Error(
+            data?.message ||
+              "Failed to load knowledge articles."
+          );
+        }
+
+        const activeArticles = Array.isArray(
+          data?.data
+        )
+          ? data.data.filter(
+              (article) =>
+                article?.isDeleted !== true
+            )
+          : [];
+
+        setArticles(activeArticles);
+      } catch (error) {
+        console.error(
+          "FETCH KNOWLEDGE ERROR:",
+          error
+        );
+
+        alert(
+          error?.message ||
+            "Failed to load knowledge articles."
+        );
+      } finally {
+        if (showLoader) {
+          setLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  // ============================================================
+  // FETCH TRASH
+  // ============================================================
+
+  const fetchTrash = useCallback(
+    async (showLoader = true) => {
+      try {
+        if (showLoader) {
+          setLoading(true);
+        }
+
+        const res = await fetch(
+          `${API_URL}/trash/all`,
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
+
+        const data = await readJson(res);
+
+        if (!res.ok) {
+          throw new Error(
+            data?.message ||
+              "Failed to load Trash."
+          );
+        }
+
+        const trashArticles = Array.isArray(
+          data?.data
+        )
+          ? data.data.filter(
+              (article) =>
+                article?.isDeleted === true
+            )
+          : [];
+
+        setArticles(trashArticles);
+
+        setTrashCount(
+          trashArticles.length
+        );
+      } catch (error) {
+        console.error(
+          "FETCH TRASH ERROR:",
+          error
+        );
+
+        alert(
+          error?.message ||
+            "Failed to load Trash."
+        );
+      } finally {
+        if (showLoader) {
+          setLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  // ============================================================
+  // FETCH TRASH COUNT ONLY
+  // ============================================================
+
+  const fetchTrashCount = useCallback(
+    async () => {
+      try {
+        const res = await fetch(
+          `${API_URL}/trash/all`,
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
+
+        const data = await readJson(res);
+
+        if (!res.ok) {
+          return;
+        }
+
+        const trashArticles = Array.isArray(
+          data?.data
+        )
+          ? data.data.filter(
+              (article) =>
+                article?.isDeleted === true
+            )
+          : [];
+
+        setTrashCount(
+          trashArticles.length
+        );
+      } catch (error) {
+        console.error(
+          "FETCH TRASH COUNT ERROR:",
+          error
+        );
+      }
+    },
+    []
+  );
+
+  // ============================================================
+  // INITIAL LOAD
+  // ============================================================
+
   useEffect(() => {
     fetchKnowledge();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
+    fetchTrashCount();
   }, [
-    search,
-    sortBy,
-    filter,
-    categoryFilter,
-    itemsPerPage,
+    fetchKnowledge,
+    fetchTrashCount,
   ]);
 
-  // ================= PUBLISH =================
+  // ============================================================
+  // LOAD WHEN TAB CHANGES
+  // ============================================================
+
+  useEffect(() => {
+    setPage(1);
+
+    if (activeTab === "trash") {
+      fetchTrash();
+    } else {
+      fetchKnowledge();
+    }
+  }, [
+    activeTab,
+    fetchKnowledge,
+    fetchTrash,
+  ]);
+
+  // ============================================================
+  // COUNTS
+  // ============================================================
+
+  const counts = useMemo(() => {
+    /*
+     * On active tabs, articles contains active articles.
+     * On Trash tab, articles contains trash articles.
+     *
+     * Therefore we calculate the active counts only
+     * when the active list is being displayed.
+     */
+
+    if (activeTab === "trash") {
+      return {
+        all: 0,
+        published: 0,
+        draft: 0,
+        featured: 0,
+        trash: trashCount,
+      };
+    }
+
+    return {
+      all: articles.length,
+
+      published: articles.filter(
+        (article) =>
+          article?.status === "published"
+      ).length,
+
+      draft: articles.filter(
+        (article) =>
+          article?.status === "draft"
+      ).length,
+
+      featured: articles.filter(
+        (article) =>
+          article?.featured === true
+      ).length,
+
+      trash: trashCount,
+    };
+  }, [
+    articles,
+    activeTab,
+    trashCount,
+  ]);
+
+  // ============================================================
+  // FILTER
+  // ============================================================
+
+  const filteredArticles = useMemo(() => {
+    let result = [...articles];
+
+    // ----------------------------------------------------------
+    // SAFETY FILTER
+    // ----------------------------------------------------------
+
+    if (activeTab === "trash") {
+      result = result.filter(
+        (article) =>
+          article?.isDeleted === true
+      );
+    } else {
+      result = result.filter(
+        (article) =>
+          article?.isDeleted !== true
+      );
+    }
+
+    // ----------------------------------------------------------
+    // TAB FILTER
+    // ----------------------------------------------------------
+
+    if (activeTab === "published") {
+      result = result.filter(
+        (article) =>
+          article?.status === "published"
+      );
+    }
+
+    if (activeTab === "draft") {
+      result = result.filter(
+        (article) =>
+          article?.status === "draft"
+      );
+    }
+
+    if (activeTab === "featured") {
+      result = result.filter(
+        (article) =>
+          article?.featured === true
+      );
+    }
+
+    // ----------------------------------------------------------
+    // SEARCH
+    // ----------------------------------------------------------
+
+    const search =
+      searchTerm.trim().toLowerCase();
+
+    if (search) {
+      result = result.filter((article) => {
+        const title =
+          String(article?.title || "")
+            .toLowerCase();
+
+        const slug =
+          String(article?.slug || "")
+            .toLowerCase();
+
+        const description =
+          String(
+            article?.shortDescription || ""
+          ).toLowerCase();
+
+        return (
+          title.includes(search) ||
+          slug.includes(search) ||
+          description.includes(search)
+        );
+      });
+    }
+
+    // ----------------------------------------------------------
+    // CATEGORY
+    // ----------------------------------------------------------
+
+    if (categoryFilter) {
+      result = result.filter(
+        (article) =>
+          article?.category ===
+          categoryFilter
+      );
+    }
+
+    // ----------------------------------------------------------
+    // STATUS
+    // ----------------------------------------------------------
+
+    if (
+      statusFilter &&
+      activeTab !== "trash"
+    ) {
+      result = result.filter(
+        (article) =>
+          article?.status ===
+          statusFilter
+      );
+    }
+
+    return result;
+  }, [
+    articles,
+    activeTab,
+    searchTerm,
+    categoryFilter,
+    statusFilter,
+  ]);
+
+  // ============================================================
+  // PAGINATION
+  // ============================================================
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredArticles.length /
+        ITEMS_PER_PAGE
+    )
+  );
+
+  /*
+   * Safety:
+   * If filters reduce the number of pages,
+   * make sure the current page is still valid.
+   */
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const paginatedArticles =
+    filteredArticles.slice(
+      (page - 1) * ITEMS_PER_PAGE,
+      page * ITEMS_PER_PAGE
+    );
+
+  // ============================================================
+  // RESET PAGE WHEN FILTERS CHANGE
+  // ============================================================
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchTerm,
+    categoryFilter,
+    statusFilter,
+  ]);
+
+  // ============================================================
+  // CREATE
+  // ============================================================
+
+  const handleCreate = () => {
+    router.push(
+      "/admin/knowledge/create"
+    );
+  };
+
+  // ============================================================
+  // EDIT
+  // ============================================================
+
+  const handleEdit = (id) => {
+    if (!id) return;
+
+    router.push(
+      `/admin/knowledge/create?id=${id}`
+    );
+  };
+
+  // ============================================================
+  // VIEW
+  // ============================================================
+
+  const handleView = (slug) => {
+    if (!slug) return;
+
+    window.open(
+      `/knowledge/${slug}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  // ============================================================
+  // PUBLISH
+  // ============================================================
 
   const publishKnowledge = async (id) => {
     try {
@@ -86,37 +533,53 @@ const [articles, setArticles] = useState([]);
         `${API_URL}/update/${id}`,
         {
           method: "PUT",
+
           headers: {
             "Content-Type":
               "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({
             status: "published",
           }),
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  status: "published",
-                }
-              : item
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to publish article."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      await fetchKnowledge(false);
+      await fetchTrashCount();
+
+      alert(
+        "Article published successfully."
+      );
+    } catch (error) {
+      console.error(
+        "PUBLISH ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to publish article."
+      );
     } finally {
       setActionId(null);
     }
   };
 
-  // ================= DRAFT =================
+  // ============================================================
+  // MOVE TO DRAFT
+  // ============================================================
 
   const draftKnowledge = async (id) => {
     try {
@@ -126,86 +589,128 @@ const [articles, setArticles] = useState([]);
         `${API_URL}/update/${id}`,
         {
           method: "PUT",
+
           headers: {
             "Content-Type":
               "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({
             status: "draft",
           }),
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  status: "draft",
-                }
-              : item
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to move article to draft."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      await fetchKnowledge(false);
+      await fetchTrashCount();
+
+      alert(
+        "Article moved to Draft."
+      );
+    } catch (error) {
+      console.error(
+        "DRAFT ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to move article to draft."
+      );
     } finally {
       setActionId(null);
     }
   };
 
-  // ================= FEATURED =================
+  // ============================================================
+  // FEATURED
+  // ============================================================
 
   const toggleFeatured = async (
     id,
-    current
+    currentValue
   ) => {
     try {
+      setActionId(id);
+
       const res = await fetch(
         `${API_URL}/update/${id}`,
         {
           method: "PUT",
+
           headers: {
             "Content-Type":
               "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({
-            featured: !current,
+            featured:
+              !currentValue,
           }),
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  featured: !current,
-                }
-              : item
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to update featured status."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      await fetchKnowledge(false);
+
+      alert(
+        currentValue
+          ? "Article removed from Featured."
+          : "Article marked as Featured."
+      );
+    } catch (error) {
+      console.error(
+        "FEATURED ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to update featured status."
+      );
+    } finally {
+      setActionId(null);
     }
   };
 
-  // ================= MOVE TO TRASH =================
+  // ============================================================
+  // MOVE TO TRASH — SOFT DELETE
+  // ============================================================
 
   const moveToTrash = async (id) => {
-    if (
-      !confirm(
-        "Move article to trash?"
-      )
-    )
+    const confirmed =
+      window.confirm(
+        "Move this article to Trash?\n\nThe article will NOT be permanently deleted. It will remain in MongoDB and can be restored later from Trash."
+      );
+
+    if (!confirmed) {
       return;
+    }
 
     try {
+      setActionId(id);
+
       const res = await fetch(
         `${API_URL}/trash/${id}`,
         {
@@ -214,27 +719,62 @@ const [articles, setArticles] = useState([]);
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  isDeleted: true,
-                }
-              : item
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to move article to Trash."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      /*
+       * Refresh active list.
+       */
+      await fetchKnowledge(false);
+
+      /*
+       * Refresh Trash count.
+       */
+      await fetchTrashCount();
+
+      alert(
+        "Article moved to Trash successfully."
+      );
+    } catch (error) {
+      console.error(
+        "TRASH ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to move article to Trash."
+      );
+    } finally {
+      setActionId(null);
     }
   };
 
-  // ================= RESTORE =================
+  // ============================================================
+  // RESTORE FROM TRASH
+  // ============================================================
 
-  const restoreTrash = async (id) => {
+  const restoreFromTrash = async (
+    id
+  ) => {
+    const confirmed =
+      window.confirm(
+        "Restore this article from Trash?\n\nThe article will return to your active articles as a Draft."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
     try {
+      setActionId(id);
+
       const res = await fetch(
         `${API_URL}/restore/${id}`,
         {
@@ -243,34 +783,60 @@ const [articles, setArticles] = useState([]);
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  isDeleted: false,
-                }
-              : item
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to restore article."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      /*
+       * Refresh Trash list.
+       */
+      await fetchTrash(false);
+
+      /*
+       * Refresh count.
+       */
+      await fetchTrashCount();
+
+      alert(
+        "Article restored successfully as Draft."
+      );
+    } catch (error) {
+      console.error(
+        "RESTORE ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to restore article."
+      );
+    } finally {
+      setActionId(null);
     }
   };
 
-  // ================= DELETE FOREVER =================
+  // ============================================================
+  // DELETE FOREVER
+  // ============================================================
 
   const deleteForever = async (id) => {
-    if (
-      !confirm(
-        "Delete permanently?"
-      )
-    )
+    const confirmed =
+      window.confirm(
+        "DELETE THIS ARTICLE FOREVER?\n\nThis will permanently remove the article from MongoDB.\n\nThis action CANNOT be undone."
+      );
+
+    if (!confirmed) {
       return;
+    }
 
     try {
+      setActionId(id);
+
       const res = await fetch(
         `${API_URL}/delete/${id}`,
         {
@@ -279,861 +845,932 @@ const [articles, setArticles] = useState([]);
         }
       );
 
-      if (res.ok) {
-        setArticles((prev) =>
-          prev.filter(
-            (item) =>
-              item._id !== id
-          )
+      const data = await readJson(res);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to permanently delete article."
         );
       }
-    } catch (err) {
-      console.error(err);
+
+      /*
+       * Refresh Trash directly from MongoDB.
+       */
+      await fetchTrash(false);
+
+      /*
+       * Refresh Trash count.
+       */
+      await fetchTrashCount();
+
+      alert(
+        "Article permanently deleted from MongoDB."
+      );
+    } catch (error) {
+      console.error(
+        "PERMANENT DELETE ERROR:",
+        error
+      );
+
+      alert(
+        error?.message ||
+          "Failed to permanently delete article."
+      );
+    } finally {
+      setActionId(null);
     }
   };
 
-  // ================= FILTER =================
+  // ============================================================
+  // CLEAR FILTERS
+  // ============================================================
 
-  const filtered = articles
-    .filter((item) => {
-      const titleMatch =
-        item.title
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("");
+    setStatusFilter("");
+    setPage(1);
+  };
 
-      const categoryMatch =
-        categoryFilter === "All"
-          ? true
-          : item.category ===
-            categoryFilter;
+  // ============================================================
+  // FORMAT DATE
+  // ============================================================
 
-      const statusMatch =
-        filter === "all"
-          ? !item.isDeleted
-          : filter === "trash"
-          ? item.isDeleted
-          : item.status === filter &&
-            !item.isDeleted;
+  const formatDate = (value) => {
+    if (!value) return "—";
 
-      return (
-        titleMatch &&
-        categoryMatch &&
-        statusMatch
-      );
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return (
-            new Date(b.createdAt) -
-            new Date(a.createdAt)
-          );
+    try {
+      return new Date(
+        value
+      ).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return "—";
+    }
+  };
 
-        case "oldest":
-          return (
-            new Date(a.createdAt) -
-            new Date(b.createdAt)
-          );
+  // ============================================================
+  // REFRESH
+  // ============================================================
 
-        case "views":
-          return b.views - a.views;
+  const handleRefresh = async () => {
+    if (activeTab === "trash") {
+      await fetchTrash();
+    } else {
+      await fetchKnowledge();
+    }
 
-        case "featured":
-          return (
-            Number(b.featured) -
-            Number(a.featured)
-          );
+    await fetchTrashCount();
+  };
 
-        default:
-          return 0;
-      }
-    });
+  // ============================================================
+  // RENDER
+  // ============================================================
 
-  // ================= PAGINATION =================
+  return (
+    <main className="min-h-screen bg-[#f6f4ef] px-4 py-6 text-[#17342d] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1500px]">
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(
-      filtered.length /
-        itemsPerPage
-    )
-  );
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
 
-  const startIndex =
-    (currentPage - 1) *
-    itemsPerPage;
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[3px] text-[#b18a48]">
+              Property Bouquet
+            </p>
 
-  const paginatedArticles =
-    filtered.slice(
-      startIndex,
-      startIndex + itemsPerPage
-    );
-
-      return (
-    <div className="space-y-6">
-
-      {/* ================= HEADER ================= */}
-
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-
-        <div>
-          <h1 className="text-3xl font-extrabold text-[#0f3b2e] tracking-tight">
-                Knowledge Centre
+            <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-[#17342d] sm:text-4xl">
+              Knowledge Centre
             </h1>
 
-            <p className="text-gray-600 mt-1 text-sm">
-            Manage educational articles, buying guides, investment resources, FAQs and real estate knowledge content.
+            <p className="mt-1 text-sm text-slate-500">
+              Create, manage, publish and safely archive knowledge articles.
             </p>
-        </div>
-
-        <div className="flex items-center gap-3">
+          </div>
 
           <button
-            onClick={fetchKnowledge}
-            className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 transition flex items-center gap-2 text-sm font-semibold"
+            type="button"
+            onClick={handleCreate}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#17342d] px-5 text-sm font-semibold text-white shadow-lg transition hover:bg-[#0f2a23]"
           >
-            <RefreshCw size={16} />
-            Refresh
+            <Plus size={17} />
+            Create Article
           </button>
-
-          <button
-            onClick={() =>
-              router.push("/admin/knowledge/create")
-            }
-            className="
-            bg-gradient-to-r
-            from-[#c9a64b]
-            to-[#e0be69]
-            hover:opacity-90
-            text-black
-            px-5
-            py-3
-            rounded-xl
-            font-bold
-            shadow-lg
-            transition
-            "
-          >
-            + Add Article
-          </button>
-
-        </div>
-      </div>
-
-      {/* ================= STATS ================= */}
-
-      <div className="grid md:grid-cols-4 gap-4">
-
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Total Articles
-              </p>
-
-              <h3 className="text-3xl font-extrabold text-[#0f3b2e] mt-2">
-                {articles.filter(
-                  (n) => !n.isDeleted
-                ).length}
-              </h3>
-            </div>
-
-            <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center">
-              <FileText className="text-blue-600" />
-            </div>
-
-          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        {/* ======================================================
+            TOP NAVIGATION
+        ====================================================== */}
 
-          <div className="flex items-center justify-between">
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="flex flex-wrap gap-2">
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Published
-              </p>
+            <TabButton
+              active={activeTab === "all"}
+              onClick={() =>
+                setActiveTab("all")
+              }
+              icon={<FileText size={15} />}
+              label="All Articles"
+              count={counts.all}
+            />
 
-              <h3 className="text-3xl font-extrabold text-emerald-700 mt-2">
-                {
-                  articles.filter(
-                    (n) =>
-                      n.status ===
-                        "published" &&
-                      !n.isDeleted
-                  ).length
-                }
-              </h3>
-            </div>
+            <TabButton
+              active={
+                activeTab === "published"
+              }
+              onClick={() =>
+                setActiveTab("published")
+              }
+              icon={
+                <CheckCircle2 size={15} />
+              }
+              label="Published"
+              count={counts.published}
+            />
 
-            <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Globe className="text-emerald-600" />
-            </div>
+            <TabButton
+              active={
+                activeTab === "draft"
+              }
+              onClick={() =>
+                setActiveTab("draft")
+              }
+              icon={<Clock3 size={15} />}
+              label="Drafts"
+              count={counts.draft}
+            />
 
-          </div>
-        </div>
+            <TabButton
+              active={
+                activeTab === "featured"
+              }
+              onClick={() =>
+                setActiveTab("featured")
+              }
+              icon={<Star size={15} />}
+              label="Featured"
+              count={counts.featured}
+            />
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+            {/* ==================================================
+                TRASH
+            ================================================== */}
 
-          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() =>
+                setActiveTab("trash")
+              }
+              className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${
+                activeTab === "trash"
+                  ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-red-600"
+              }`}
+            >
+              <Trash2 size={15} />
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Drafts
-              </p>
-
-              <h3 className="text-3xl font-extrabold text-amber-700 mt-2">
-                {
-                  articles.filter(
-                    (n) =>
-                      n.status ===
-                        "draft" &&
-                      !n.isDeleted
-                  ).length
-                }
-              </h3>
-            </div>
-
-            <div className="h-12 w-12 rounded-xl bg-amber-50 flex items-center justify-center">
-              <Pencil className="text-amber-600" />
-            </div>
-
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Featured
-              </p>
-
-              <h3 className="text-3xl font-extrabold text-yellow-600 mt-2">
-                {
-                  articles.filter(
-                    (n) =>
-                      n.featured &&
-                      !n.isDeleted
-                  ).length
-                }
-              </h3>
-            </div>
-
-            <div className="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center">
-              <Star className="text-yellow-600" />
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      {/* ================= FILTER BAR ================= */}
-
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-
-        <div className="grid xl:grid-cols-5 gap-3">
-
-          {/* SEARCH */}
-
-          <input
-            type="text"
-            value={search}
-            onChange={(e) =>
-              setSearch(
-                e.target.value
-              )
-            }
-           placeholder="Search knowledge articles..."
-            className="
-            px-4
-            py-3
-            rounded-xl
-            border
-            border-gray-300
-            outline-none
-            text-gray-900
-            placeholder:text-gray-400
-            bg-white
-            focus:ring-2
-            focus:ring-[#0f3b2e]/20
-            "
-          />
-
-          {/* STATUS */}
-
-          <select
-            value={filter}
-            onChange={(e) =>
-              setFilter(
-                e.target.value
-              )
-            }
-            className="
-            px-4
-            py-3
-            rounded-xl
-            border
-            border-gray-300
-            bg-white
-            text-gray-900
-            "
-          >
-            <option value="all">
-              All Articles
-            </option>
-
-            <option value="published">
-              Published
-            </option>
-
-            <option value="draft">
-              Draft
-            </option>
-
-            <option value="trash">
               Trash
-            </option>
-          </select>
 
-          {/* CATEGORY */}
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  activeTab === "trash"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {counts.trash}
+              </span>
+            </button>
 
-          <select
-            value={categoryFilter}
-            onChange={(e) =>
-              setCategoryFilter(
-                e.target.value
-              )
-            }
-            className="
-            px-4
-            py-3
-            rounded-xl
-            border
-            border-gray-300
-            bg-white
-            text-gray-900
-            "
-          >
-            <option value="All">All Categories</option>
+            {/* ==================================================
+                REFRESH
+            ================================================== */}
 
-<option value="Buying Guide">
-  Buying Guide
-</option>
-
-<option value="Selling Guide">
-  Selling Guide
-</option>
-
-<option value="Investment">
-  Investment
-</option>
-
-<option value="Legal & Tax">
-  Legal & Tax
-</option>
-
-<option value="Home Loan">
-  Home Loan
-</option>
-
-<option value="Interior Design">
-  Interior Design
-</option>
-
-<option value="Real Estate Basics">
-  Real Estate Basics
-</option>
-
-<option value="Market Knowledge">
-  Market Knowledge
-</option>
-
-<option value="Luxury Homes">
-  Luxury Homes
-</option>
-
-<option value="NRI Corner">
-  NRI Corner
-</option>
-
-<option value="FAQ">
-  FAQ
-</option>
-
-<option value="Others">
-  Others
-</option>
-          </select>
-
-          {/* SORT */}
-
-          <select
-            value={sortBy}
-            onChange={(e) =>
-              setSortBy(
-                e.target.value
-              )
-            }
-            className="
-            px-4
-            py-3
-            rounded-xl
-            border
-            border-gray-300
-            bg-white
-            text-gray-900
-            "
-          >
-            <option value="newest">
-              Newest First
-            </option>
-
-            <option value="oldest">
-              Oldest First
-            </option>
-
-            <option value="views">
-              Most Viewed
-            </option>
-
-            <option value="featured">
-              Featured First
-            </option>
-          </select>
-
-          {/* RESULTS */}
-
-          <div className="flex items-center justify-center rounded-xl bg-[#0f3b2e] text-white font-bold">
-            {filtered.length} Knowledge Articles
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-[#17342d] disabled:opacity-50"
+              title="Refresh"
+            >
+              <RefreshCw
+                size={15}
+                className={
+                  loading
+                    ? "animate-spin"
+                    : ""
+                }
+              />
+            </button>
           </div>
-
         </div>
-      </div>
 
-            {/* ================= TABLE ================= */}
+        {/* ======================================================
+            TRASH NOTICE
+        ====================================================== */}
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        {activeTab === "trash" && (
+          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-red-800">
+            <AlertTriangle
+              size={18}
+              className="mt-0.5 shrink-0"
+            />
 
-        <table className="w-full">
+            <div>
+              <p className="text-sm font-semibold">
+                Trash / Soft Deleted Articles
+              </p>
 
-          <thead className="bg-[#f5f7f6]">
+              <p className="mt-1 text-xs leading-5 text-red-700">
+                Articles shown here still exist in MongoDB.
+                Restore an article to bring it back as a Draft,
+                or use Delete Forever to permanently remove it.
+              </p>
+            </div>
+          </div>
+        )}
 
-            <tr>
+        {/* ======================================================
+            FILTER BAR
+        ====================================================== */}
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                #
-              </th>
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid gap-3 lg:grid-cols-[1fr_220px_180px_auto]">
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Article
-              </th>
+            {/* SEARCH */}
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Category
-              </th>
+            <div className="relative">
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Author
-              </th>
+              <input
+                value={searchTerm}
+                onChange={(e) =>
+                  setSearchTerm(
+                    e.target.value
+                  )
+                }
+                placeholder="Search articles..."
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-800 outline-none transition focus:border-[#b18a48] focus:bg-white"
+              />
+            </div>
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Views
-              </th>
+            {/* CATEGORY */}
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Status
-              </th>
+            <select
+              value={categoryFilter}
+              onChange={(e) =>
+                setCategoryFilter(
+                  e.target.value
+                )
+              }
+              className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-[#b18a48]"
+            >
+              <option value="">
+                All Categories
+              </option>
 
-              <th className="p-4 text-left text-xs uppercase font-bold text-gray-600">
-                Featured
-              </th>
-
-              <th className="p-4 text-right text-xs uppercase font-bold text-gray-600">
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {loading ? (
-              <tr>
-                <td
-                  colSpan="8"
-                  className="text-center p-10 text-gray-500"
-                >
-                  Loading knowledge articles...
-                </td>
-              </tr>
-            ) : paginatedArticles.length === 0 ? (
-              <tr>
-                <td
-                  colSpan="8"
-                  className="text-center p-10 text-gray-500"
-                >
-                  No articles found. Click "Add Article" to create your first knowledge article.
-                </td>
-              </tr>
-            ) : (
-              paginatedArticles.map(
-                (item, index) => (
-                  <tr
-                    key={item._id}
-                    className="border-t border-gray-100 hover:bg-gray-50 transition"
+              {CATEGORIES.map(
+                (category) => (
+                  <option
+                    key={category}
+                    value={category}
                   >
-                    <td className="p-4 font-semibold text-gray-500">
-                      {startIndex +
-                        index +
-                        1}
-                    </td>
+                    {category}
+                  </option>
+                )
+              )}
+            </select>
 
-                    {/* ARTICLE */}
+            {/* STATUS */}
 
-                    <td className="p-4">
+            {activeTab !== "trash" ? (
+              <select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value
+                  )
+                }
+                className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-[#b18a48]"
+              >
+                <option value="">
+                  All Status
+                </option>
 
-                      <div className="max-w-[350px]">
+                <option value="published">
+                  Published
+                </option>
 
-                        <h3 className="font-semibold text-gray-900 line-clamp-1">
-                          {item.title}
-                        </h3>
+                <option value="draft">
+                  Draft
+                </option>
+              </select>
+            ) : (
+              <div className="flex h-11 items-center rounded-xl border border-red-100 bg-red-50 px-3 text-sm font-medium text-red-700">
+                Showing Trash only
+              </div>
+            )}
 
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                          {
-                            item.shortDescription
-                          }
-                        </p>
+            {/* CLEAR */}
 
-                      </div>
+            {(searchTerm ||
+              categoryFilter ||
+              statusFilter) && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                <X size={15} />
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
 
-                    </td>
+        {/* ======================================================
+            TABLE
+        ====================================================== */}
 
-                    {/* CATEGORY */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-                    <td className="p-4">
-                      <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
-                        {item.category}
-                      </span>
-                    </td>
+          {loading ? (
+            <div className="flex min-h-[350px] items-center justify-center">
+              <div className="text-center">
+                <RefreshCw
+                  size={24}
+                  className="mx-auto animate-spin text-[#b18a48]"
+                />
 
-                    {/* AUTHOR */}
+                <p className="mt-3 text-sm text-slate-500">
+                  {activeTab === "trash"
+                    ? "Loading Trash..."
+                    : "Loading knowledge articles..."}
+                </p>
+              </div>
+            </div>
+          ) : paginatedArticles.length === 0 ? (
+            <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
 
-                    <td className="p-4 text-sm text-gray-700">
-                      {item.author}
-                    </td>
+              {activeTab === "trash" ? (
+                <Trash2
+                  size={34}
+                  className="text-slate-300"
+                />
+              ) : (
+                <FileText
+                  size={34}
+                  className="text-slate-300"
+                />
+              )}
 
-                    {/* VIEWS */}
+              <h3 className="mt-4 text-lg font-semibold text-slate-700">
+                {activeTab === "trash"
+                  ? "Trash is empty"
+                  : "No articles found"}
+              </h3>
 
-                    <td className="p-4 font-semibold text-gray-700">
-                      {item.views || 0}
-                    </td>
+              <p className="mt-1 max-w-md text-sm text-slate-400">
+                {activeTab === "trash"
+                  ? "Articles moved to Trash will appear here until they are restored or permanently deleted."
+                  : "Try changing your filters or create a new knowledge article."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1100px]">
 
-                    {/* STATUS */}
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50">
 
-                    <td className="p-4">
+                      <th className="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+                        Article
+                      </th>
 
-                      {item.isDeleted ? (
-                        <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
-                          TRASH
-                        </span>
-                      ) : item.status ===
-                        "published" ? (
-                        <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                          PUBLISHED
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-                          DRAFT
-                        </span>
-                      )}
+                      <th className="px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+                        Category
+                      </th>
 
-                    </td>
+                      <th className="px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+                        Status
+                      </th>
 
-                    {/* FEATURED */}
+                      <th className="px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+                        Date
+                      </th>
 
-                    <td className="p-4">
+                      <th className="px-4 py-4 text-right text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+                        Actions
+                      </th>
 
-                      <button
-                        disabled={
-                          item.isDeleted
-                        }
-                        onClick={() =>
-                          toggleFeatured(
-                            item._id,
-                            item.featured
-                          )
-                        }
-                        className={`h-9 w-9 rounded-lg flex items-center justify-center transition ${
-                          item.featured
-                            ? "bg-yellow-500 text-white"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        <Star
-                          size={16}
-                        />
-                      </button>
+                    </tr>
+                  </thead>
 
-                    </td>
+                  <tbody>
 
-                    {/* ACTIONS */}
+                    {paginatedArticles.map(
+                      (article) => {
+                        const id =
+                          article?._id;
 
-                    <td className="p-4">
+                        const busy =
+                          actionId === id;
 
-                      <div className="flex justify-end gap-2 flex-wrap">
+                        const isTrash =
+                          article?.isDeleted ===
+                          true;
 
-                        {!item.isDeleted ? (
-                          <>
-                            {/* VIEW */}
+                        return (
+                          <tr
+                            key={id}
+                            className="border-b border-slate-100 transition hover:bg-slate-50/70"
+                          >
 
-                            <button
-                              onClick={() =>
-                                window.open(
-                                `/knowledge/${item.slug}`,
-                                "_blank"
-                                )
-                              }
-                              className="h-9 w-9 rounded-lg bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
-                            >
-                              <Eye
-                                size={14}
-                              />
-                            </button>
+                            {/* ARTICLE */}
 
-                            {/* EDIT */}
+                            <td className="max-w-[500px] px-5 py-5">
+                              <div className="flex items-start gap-3">
 
-                            <button
-                              onClick={() =>
-                                router.push(
-                                  `/admin/knowledge/edit/${item._id}`
-                                )
-                              }
-                              className="h-9 w-9 rounded-lg bg-[#0f3b2e] hover:bg-[#145240] text-white flex items-center justify-center"
-                            >
-                              <Pencil
-                                size={14}
-                              />
-                            </button>
+                                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#17342d] text-white">
+
+                                  {article?.featuredImage ? (
+                                    <img
+                                      src={
+                                        article.featuredImage
+                                      }
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <FileText
+                                      size={17}
+                                    />
+                                  )}
+
+                                </div>
+
+                                <div className="min-w-0">
+
+                                  <div className="flex items-center gap-2">
+
+                                    <h3 className="truncate text-sm font-semibold text-slate-800">
+                                      {article?.title ||
+                                        "Untitled Article"}
+                                    </h3>
+
+                                    {article?.featured &&
+                                      !isTrash && (
+                                        <Star
+                                          size={
+                                            13
+                                          }
+                                          className="shrink-0 fill-[#b18a48] text-[#b18a48]"
+                                        />
+                                      )}
+
+                                  </div>
+
+                                  <p className="mt-1 truncate text-xs text-slate-400">
+                                    /knowledge/
+                                    {article?.slug ||
+                                      "—"}
+                                  </p>
+
+                                  <p className="mt-2 line-clamp-1 text-xs text-slate-500">
+                                    {article?.shortDescription ||
+                                      "No description"}
+                                  </p>
+
+                                  {isTrash &&
+                                    article?.deletedAt && (
+                                      <p className="mt-1 text-[10px] font-medium text-red-500">
+                                        Trashed{" "}
+                                        {formatDate(
+                                          article.deletedAt
+                                        )}
+                                      </p>
+                                    )}
+
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* CATEGORY */}
+
+                            <td className="px-4 py-5">
+                              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-600">
+                                {article?.category ||
+                                  "General"}
+                              </span>
+                            </td>
 
                             {/* STATUS */}
 
-                            {item.status ===
-                            "published" ? (
-                              <button
-                                disabled={
-                                  actionId ===
-                                  item._id
-                                }
-                                onClick={() =>
-                                  draftKnowledge(
-                                    item._id
-                                  )
-                                }
-                                className="h-9 px-3 rounded-lg bg-red-50 text-red-600 text-xs font-semibold"
-                              >
-                                Draft
-                              </button>
-                            ) : (
-                              <button
-                                disabled={
-                                  actionId ===
-                                  item._id
-                                }
-                                onClick={() =>
-                                  publishKnowledge(
-                                    item._id
-                                  )
-                                }
-                                className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-xs font-semibold"
-                              >
-                                Publish
-                              </button>
-                            )}
+                            <td className="px-4 py-5">
 
-                            {/* TRASH */}
+                              {isTrash ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700">
+                                  <Trash2
+                                    size={12}
+                                  />
+                                  In Trash
+                                </span>
+                              ) : article?.status ===
+                                "published" ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700">
+                                  <CheckCircle2
+                                    size={12}
+                                  />
+                                  Published
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700">
+                                  <Clock3
+                                    size={12}
+                                  />
+                                  Draft
+                                </span>
+                              )}
 
-                            <button
-                              onClick={() =>
-                                moveToTrash(
-                                  item._id
-                                )
-                              }
-                              className="h-9 w-9 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
-                            >
-                              <Trash2
-                                size={14}
-                              />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {/* RESTORE */}
+                            </td>
 
-                            <button
-                              onClick={() =>
-                                restoreTrash(
-                                  item._id
-                                )
-                              }
-                              className="h-9 px-4 rounded-lg bg-emerald-600 text-white text-xs font-semibold"
-                            >
-                              Restore
-                            </button>
+                            {/* DATE */}
 
-                            {/* DELETE */}
+                            <td className="whitespace-nowrap px-4 py-5 text-xs text-slate-500">
 
-                            <button
-                              onClick={() =>
-                                deleteForever(
-                                  item._id
-                                )
-                              }
-                              className="h-9 px-4 rounded-lg bg-red-600 text-white text-xs font-semibold"
-                            >
-                              Delete Forever
-                            </button>
-                          </>
-                        )}
+                              {formatDate(
+                                isTrash
+                                  ? article?.deletedAt ||
+                                      article?.updatedAt
+                                  : article?.updatedAt ||
+                                      article?.publishDate ||
+                                      article?.createdAt
+                              )}
 
-                      </div>
+                            </td>
 
-                    </td>
+                            {/* ACTIONS */}
 
-                  </tr>
-                )
-              )
-            )}
+                            <td className="px-4 py-5">
 
-          </tbody>
+                              <div className="flex items-center justify-end gap-2">
 
-        </table>
+                                {/* VIEW */}
 
-      </div>
+                                {!isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleView(
+                                        article?.slug
+                                      )
+                                    }
+                                    disabled={busy}
+                                    title="View"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-[#17342d] hover:text-[#17342d] disabled:opacity-40"
+                                  >
+                                    <Eye
+                                      size={15}
+                                    />
+                                  </button>
+                                )}
 
-      {/* ================= PAGINATION ================= */}
+                                {/* EDIT */}
 
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                                {!isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleEdit(
+                                        id
+                                      )
+                                    }
+                                    disabled={busy}
+                                    title="Edit"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-[#b18a48] hover:text-[#b18a48] disabled:opacity-40"
+                                  >
+                                    <Pencil
+                                      size={15}
+                                    />
+                                  </button>
+                                )}
 
-        <p className="text-sm text-gray-600 font-medium">
-          Showing{" "}
-          <strong>
-            {filtered.length === 0
-              ? 0
-              : startIndex + 1}
-          </strong>{" "}
-          to{" "}
-          <strong>
-            {Math.min(
-              startIndex +
-                itemsPerPage,
-              filtered.length
-            )}
-          </strong>{" "}
-          of{" "}
-          <strong>
-            {filtered.length}
-          </strong>{" "}
-          Knowledge articles
-        </p>
+                                {/* FEATURED */}
 
-        <div className="flex items-center gap-3">
+                                {!isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      toggleFeatured(
+                                        id,
+                                        article?.featured ===
+                                          true
+                                      )
+                                    }
+                                    disabled={busy}
+                                    title={
+                                      article?.featured
+                                        ? "Remove featured"
+                                        : "Make featured"
+                                    }
+                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition disabled:opacity-40 ${
+                                      article?.featured
+                                        ? "border-[#b18a48]/30 bg-[#b18a48]/10 text-[#b18a48]"
+                                        : "border-slate-200 text-slate-400 hover:border-[#b18a48] hover:text-[#b18a48]"
+                                    }`}
+                                  >
+                                    <Star
+                                      size={15}
+                                      className={
+                                        article?.featured
+                                          ? "fill-current"
+                                          : ""
+                                      }
+                                    />
+                                  </button>
+                                )}
 
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(
-                Number(
-                  e.target.value
-                )
-              );
-              setCurrentPage(1);
-            }}
-            className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900"
-          >
-            <option value={10}>
-              10
-            </option>
+                                {/* PUBLISH / DRAFT */}
 
-            <option value={25}>
-              25
-            </option>
+                                {!isTrash &&
+                                  (article?.status ===
+                                  "published" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        draftKnowledge(
+                                          id
+                                        )
+                                      }
+                                      disabled={
+                                        busy
+                                      }
+                                      className="h-9 rounded-lg border border-amber-200 bg-amber-50 px-3 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-40"
+                                    >
+                                      Draft
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        publishKnowledge(
+                                          id
+                                        )
+                                      }
+                                      disabled={
+                                        busy
+                                      }
+                                      className="h-9 rounded-lg bg-[#17342d] px-3 text-[11px] font-semibold text-white transition hover:bg-[#0f2a23] disabled:opacity-40"
+                                    >
+                                      Publish
+                                    </button>
+                                  ))}
 
-            <option value={50}>
-              50
-            </option>
+                                {/* SOFT DELETE */}
 
-            <option value={100}>
-              100
-            </option>
-          </select>
+                                {!isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      moveToTrash(
+                                        id
+                                      )
+                                    }
+                                    disabled={busy}
+                                    title="Move to Trash"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-500 transition hover:bg-red-50 disabled:opacity-40"
+                                  >
+                                    {busy ? (
+                                      <RefreshCw
+                                        size={
+                                          15
+                                        }
+                                        className="animate-spin"
+                                      />
+                                    ) : (
+                                      <Trash2
+                                        size={
+                                          15
+                                        }
+                                      />
+                                    )}
+                                  </button>
+                                )}
 
-          {totalPages > 1 && (
-            <div className="flex gap-2">
+                                {/* RESTORE */}
 
-              <button
-                disabled={
-                  currentPage === 1
-                }
-                onClick={() =>
-                  setCurrentPage(
-                    (prev) =>
-                      prev - 1
-                  )
-                }
-                className="
-px-4
-py-2
-border
-rounded-lg
-bg-white
-text-gray-900
-"
-              >
-                Prev
-              </button>
+                                {isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      restoreFromTrash(
+                                        id
+                                      )
+                                    }
+                                    disabled={busy}
+                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-40"
+                                  >
+                                    {busy ? (
+                                      <RefreshCw
+                                        size={
+                                          14
+                                        }
+                                        className="animate-spin"
+                                      />
+                                    ) : (
+                                      <RotateCcw
+                                        size={
+                                          14
+                                        }
+                                      />
+                                    )}
 
-              <div className="px-4 py-2 bg-[#0f3b2e] text-white rounded-lg font-bold">
-                {currentPage}
+                                    Restore
+                                  </button>
+                                )}
+
+                                {/* DELETE FOREVER */}
+
+                                {isTrash && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      deleteForever(
+                                        id
+                                      )
+                                    }
+                                    disabled={busy}
+                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-40"
+                                  >
+                                    {busy ? (
+                                      <RefreshCw
+                                        size={
+                                          14
+                                        }
+                                        className="animate-spin"
+                                      />
+                                    ) : (
+                                      <Trash
+                                        size={
+                                          14
+                                        }
+                                      />
+                                    )}
+
+                                    Delete Forever
+                                  </button>
+                                )}
+
+                              </div>
+                            </td>
+
+                          </tr>
+                        );
+                      }
+                    )}
+
+                  </tbody>
+                </table>
               </div>
 
-              <button
-                disabled={
-                  currentPage ===
-                  totalPages
-                }
-                onClick={() =>
-                  setCurrentPage(
-                    (prev) =>
-                      prev + 1
-                  )
-                }
-                className="
-                px-4
-                py-2
-                border
-                rounded-lg
-                bg-white
-                text-gray-900
-                "
-              >
-                Next
-              </button>
+              {/* ==================================================
+                  PAGINATION
+              ================================================== */}
 
-            </div>
+              <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <p className="text-xs text-slate-500">
+
+                  Showing{" "}
+
+                  <span className="font-semibold text-slate-700">
+                    {filteredArticles.length ===
+                    0
+                      ? 0
+                      : (page - 1) *
+                          ITEMS_PER_PAGE +
+                        1}
+                  </span>
+
+                  {" "}–{" "}
+
+                  <span className="font-semibold text-slate-700">
+                    {Math.min(
+                      page *
+                        ITEMS_PER_PAGE,
+                      filteredArticles.length
+                    )}
+                  </span>
+
+                  {" "}of{" "}
+
+                  <span className="font-semibold text-slate-700">
+                    {
+                      filteredArticles.length
+                    }
+                  </span>
+
+                </p>
+
+                <div className="flex items-center gap-2">
+
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() =>
+                      setPage(
+                        (current) =>
+                          Math.max(
+                            1,
+                            current - 1
+                          )
+                      )
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+
+                  <span className="min-w-[70px] text-center text-xs font-semibold text-slate-600">
+                    {page} / {totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={
+                      page >= totalPages
+                    }
+                    onClick={() =>
+                      setPage(
+                        (current) =>
+                          Math.min(
+                            totalPages,
+                            current + 1
+                          )
+                      )
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+
+                </div>
+              </div>
+            </>
           )}
-
         </div>
-
       </div>
+    </main>
+  );
+}
 
-    </div>
+// ============================================================
+// TAB BUTTON
+// ============================================================
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  count,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${
+        active
+          ? "bg-[#17342d] text-white shadow-sm"
+          : "text-slate-600 hover:bg-slate-50"
+      }`}
+    >
+      {icon}
+
+      {label}
+
+      {typeof count === "number" && (
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] ${
+            active
+              ? "bg-white/15 text-white"
+              : "bg-slate-100 text-slate-500"
+          }`}
+        >
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
