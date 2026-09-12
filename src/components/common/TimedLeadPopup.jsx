@@ -26,15 +26,12 @@ export default function TimedLeadPopup() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-
   // ============================================================
   // OPEN AFTER 4 SECONDS
   // ONCE PER BROWSER SESSION
   // ============================================================
 
   useEffect(() => {
-    
-
     // ----------------------------------------------------------
     // CHECK WHETHER POPUP HAS ALREADY APPEARED THIS SESSION
     // ----------------------------------------------------------
@@ -273,14 +270,6 @@ export default function TimedLeadPopup() {
       setSubmitting(false);
     }
   };
-
-  // ============================================================
-  // NEVER RENDER ON EXCLUDED ROUTES
-  // ============================================================
-
-  if (isExcludedPage) {
-    return null;
-  }
 
   // ============================================================
   // RENDER
