@@ -9,7 +9,7 @@ import {
 } from "next/font/google";
 
 import FloatingContact from "@/components/common/FloatingContact";
-import TimedLeadPopup from "@/components/common/TimedLeadPopup";
+// import TimedLeadPopup from "@/components/common/TimedLeadPopup";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -189,7 +189,7 @@ export default function RootLayout({ children }) {
             GLOBAL 20-SECOND LEAD POPUP
         ================================================== */}
 
-        <TimedLeadPopup />
+        {/* <TimedLeadPopup /> */}
 
         {/* ==================================================
             FLOATING WHATSAPP + CALL BUTTONS
