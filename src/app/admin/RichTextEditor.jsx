@@ -5,10 +5,17 @@ import { useEffect, useRef } from "react";
 import "react-quill-new/dist/quill.snow.css";
 import "./RichTextEditor.css";
 
+/*
+|--------------------------------------------------------------------------
+| REACT QUILL
+|--------------------------------------------------------------------------
+*/
+
 const ReactQuill = dynamic(
   () => import("react-quill-new"),
   {
     ssr: false,
+
     loading: () => (
       <div
         style={{
@@ -30,10 +37,6 @@ const ReactQuill = dynamic(
 /*
 |--------------------------------------------------------------------------
 | QUILL MODULES
-|--------------------------------------------------------------------------
-|
-| Quill 2 includes a built-in table module.
-|
 |--------------------------------------------------------------------------
 */
 
@@ -62,7 +65,7 @@ const MODULES = {
   },
 
   /*
-   * Built-in Quill table module.
+   * Quill 2 built-in table module.
    */
   table: true,
 };
@@ -96,7 +99,7 @@ const FORMATS = [
 */
 
 function isHTML(text = "") {
-  return /<\s*(h[1-6]|p|strong|b|em|i|u|ul|ol|li|blockquote|table|thead|tbody|tr|td|th|a|br|div|span|img)\b[^>]*>/i.test(
+  return /<\s*(h[1-6]|p|strong|b|em|i|u|ul|ol|li|blockquote|table|thead|tbody|tfoot|tr|td|th|a|br|div|span|img|figure|figcaption)\b[^>]*>/i.test(
     text
   );
 }
@@ -136,15 +139,7 @@ function getAuthToken() {
 
 /*
 |--------------------------------------------------------------------------
-| READ RESPONSE SAFELY
-|--------------------------------------------------------------------------
-|
-| Prevents:
-|
-| Unexpected token '<', '<!DOCTYPE'...
-|
-| from appearing when the backend returns HTML.
-|
+| SAFE RESPONSE READER
 |--------------------------------------------------------------------------
 */
 
@@ -154,13 +149,10 @@ async function readResponse(response) {
 
   const rawText = await response.text();
 
-  /*
-   * JSON response.
-   */
   if (
-    contentType.includes(
-      "application/json"
-    )
+    contentType
+      .toLowerCase()
+      .includes("application/json")
   ) {
     try {
       return JSON.parse(rawText);
@@ -171,24 +163,98 @@ async function readResponse(response) {
     }
   }
 
-  /*
-   * HTML error page.
-   */
   if (
-    rawText.includes("<!DOCTYPE") ||
-    rawText.includes("<html")
+    rawText
+      .toLowerCase()
+      .includes("<!doctype") ||
+    rawText
+      .toLowerCase()
+      .includes("<html")
   ) {
+    if (response.status === 413) {
+      throw new Error(
+        "The request is too large. Please remove the large embedded image and upload it again."
+      );
+    }
+
     throw new Error(
       `Server returned an HTML error page (HTTP ${response.status}).`
     );
   }
 
-  /*
-   * Plain text error.
-   */
   throw new Error(
     rawText ||
       `Request failed with HTTP ${response.status}.`
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| BASE64 DETECTION
+|--------------------------------------------------------------------------
+*/
+
+function containsBase64Image(html = "") {
+  return /<img[^>]+src\s*=\s*["']data:image\//i.test(
+    html
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| BASE64 DATA URI → FILE
+|--------------------------------------------------------------------------
+|
+| Used when an image comes from Word, Google Docs,
+| screenshots, copied HTML, etc.
+|
+|--------------------------------------------------------------------------
+*/
+
+function dataUriToFile(dataUri, filename = "pasted-image") {
+  const match = dataUri.match(
+    /^data:(image\/[\w.+-]+);base64,(.+)$/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const mimeType = match[1];
+  const base64Data = match[2];
+
+  const binaryString =
+    window.atob(base64Data);
+
+  const length =
+    binaryString.length;
+
+  const bytes =
+    new Uint8Array(length);
+
+  for (let i = 0; i < length; i++) {
+    bytes[i] =
+      binaryString.charCodeAt(i);
+  }
+
+  let extension = "png";
+
+  if (mimeType === "image/jpeg") {
+    extension = "jpg";
+  } else if (mimeType === "image/webp") {
+    extension = "webp";
+  } else if (mimeType === "image/gif") {
+    extension = "gif";
+  } else if (mimeType === "image/svg+xml") {
+    extension = "svg";
+  }
+
+  return new File(
+    [bytes],
+    `${filename}.${extension}`,
+    {
+      type: mimeType,
+    }
   );
 }
 
@@ -205,12 +271,231 @@ export default function RichTextEditor({
   const quillRef = useRef(null);
 
   /*
+   * Always keep latest callback.
+   */
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  /*
   |--------------------------------------------------------------------------
-  | IMAGE UPLOAD HANDLER
+  | UPDATE PARENT VALUE
   |--------------------------------------------------------------------------
   */
 
-  const imageHandler = async () => {
+  const updateEditorValue = (quill) => {
+    if (!quill) {
+      return;
+    }
+
+    const output =
+      typeof quill.getSemanticHTML ===
+      "function"
+        ? quill.getSemanticHTML()
+        : quill.root.innerHTML;
+
+    if (containsBase64Image(output)) {
+      console.error(
+        "BLOCKED: Base64 image still exists in editor content."
+      );
+    }
+
+    if (
+      typeof onChangeRef.current ===
+      "function"
+    ) {
+      onChangeRef.current(output);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | UPLOAD IMAGE TO CLOUDINARY
+  |--------------------------------------------------------------------------
+  */
+
+  const uploadImageToCloudinary = async (
+    file
+  ) => {
+    if (!file) {
+      throw new Error(
+        "No image selected."
+      );
+    }
+
+    if (
+      !file.type ||
+      !file.type.startsWith("image/")
+    ) {
+      throw new Error(
+        "Only image files are allowed."
+      );
+    }
+
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
+      throw new Error(
+        "Image is too large. Please select an image smaller than 10 MB."
+      );
+    }
+
+    const token =
+      getAuthToken();
+
+    if (!token) {
+      throw new Error(
+        "Authentication token not found. Please log in again."
+      );
+    }
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "image",
+      file
+    );
+
+    const response =
+      await fetch(
+        "/api/knowledge/upload-image",
+        {
+          method: "POST",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: formData,
+        }
+      );
+
+    const result =
+      await readResponse(
+        response
+      );
+
+    if (
+      !response.ok ||
+      !result?.success ||
+      !result?.url
+    ) {
+      throw new Error(
+        result?.message ||
+          "Image upload failed."
+      );
+    }
+
+    return result.url;
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | INSERT IMAGE
+  |--------------------------------------------------------------------------
+  */
+
+  const insertImageIntoEditor = async (
+    quill,
+    file,
+    index
+  ) => {
+    if (!quill || !file) {
+      return;
+    }
+
+    const loadingText =
+      "Uploading image...";
+
+    quill.insertText(
+      index,
+      loadingText,
+      "user"
+    );
+
+    quill.setSelection(
+      index +
+        loadingText.length,
+      0,
+      "silent"
+    );
+
+    try {
+      const imageUrl =
+        await uploadImageToCloudinary(
+          file
+        );
+
+      /*
+       * Remove loading text.
+       */
+      quill.deleteText(
+        index,
+        loadingText.length,
+        "silent"
+      );
+
+      /*
+       * Insert Cloudinary URL.
+       */
+      quill.insertEmbed(
+        index,
+        "image",
+        imageUrl,
+        "user"
+      );
+
+      quill.setSelection(
+        index + 1,
+        0,
+        "silent"
+      );
+
+      updateEditorValue(quill);
+
+      return imageUrl;
+    } catch (error) {
+      console.error(
+        "KNOWLEDGE IMAGE UPLOAD ERROR:",
+        error
+      );
+
+      try {
+        const currentText =
+          quill.getText(
+            index,
+            loadingText.length
+          );
+
+        if (
+          currentText ===
+          loadingText
+        ) {
+          quill.deleteText(
+            index,
+            loadingText.length,
+            "silent"
+          );
+        }
+      } catch {
+        // Ignore cleanup errors.
+      }
+
+      throw error;
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | IMAGE BUTTON HANDLER
+  |--------------------------------------------------------------------------
+  */
+
+  const imageHandler = () => {
     const quill =
       quillRef.current?.getEditor?.();
 
@@ -218,23 +503,11 @@ export default function RichTextEditor({
       return;
     }
 
-    /*
-     * Create temporary file picker.
-     */
     const input =
       document.createElement("input");
 
-    input.setAttribute(
-      "type",
-      "file"
-    );
-
-    input.setAttribute(
-      "accept",
-      "image/*"
-    );
-
-    input.click();
+    input.type = "file";
+    input.accept = "image/*";
 
     input.onchange = async () => {
       const file =
@@ -244,276 +517,188 @@ export default function RichTextEditor({
         return;
       }
 
-      /*
-       * Validate image type.
-       */
-      if (
-        !file.type.startsWith(
-          "image/"
-        )
-      ) {
-        window.alert(
-          "Please select a valid image file."
-        );
-
-        return;
-      }
-
-      /*
-       * Maximum image size:
-       * 10 MB
-       */
-      if (
-        file.size >
-        10 * 1024 * 1024
-      ) {
-        window.alert(
-          "Image is too large. Please select an image smaller than 10 MB."
-        );
-
-        return;
-      }
-
-      /*
-       * Save cursor position.
-       */
-      const range =
-        quill.getSelection(true);
-
-      const index = range
-        ? range.index
-        : Math.max(
-            0,
-            quill.getLength() - 1
-          );
-
-      /*
-       * Insert temporary loading text.
-       */
-      const loadingText =
-        "Uploading image...";
-
-      quill.insertText(
-        index,
-        loadingText,
-        "user"
-      );
-
-      quill.setSelection(
-        index +
-          loadingText.length,
-        0,
-        "silent"
-      );
-
       try {
-        /*
-         * Get authentication token.
-         */
-        const token =
-          getAuthToken();
+        const range =
+          quill.getSelection(true);
 
-        if (!token) {
-          throw new Error(
-            "Authentication token not found. Please log in again."
-          );
-        }
+        const index = range
+          ? range.index
+          : Math.max(
+              0,
+              quill.getLength() - 1
+            );
 
-        /*
-         * Multipart FormData.
-         */
-        const formData =
-          new FormData();
-
-        formData.append(
-          "image",
-          file
+        await insertImageIntoEditor(
+          quill,
+          file,
+          index
         );
-
-        /*
-         * Upload image to backend.
-         */
-        const response =
-          await fetch(
-            "/api/knowledge/upload-image",
-            {
-              method: "POST",
-
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-
-              body: formData,
-            }
-          );
-
-        /*
-         * Safely parse response.
-         */
-        const result =
-          await readResponse(
-            response
-          );
-
-        /*
-         * Validate response.
-         */
-        if (
-          !response.ok ||
-          !result?.success ||
-          !result?.url
-        ) {
-          throw new Error(
-            result?.message ||
-              "Image upload failed."
-          );
-        }
-
-        /*
-         * Remove temporary text.
-         */
-        quill.deleteText(
-          index,
-          loadingText.length,
-          "silent"
-        );
-
-        /*
-         * Insert Cloudinary image.
-         */
-        quill.insertEmbed(
-          index,
-          "image",
-          result.url,
-          "user"
-        );
-
-        /*
-         * Move cursor after image.
-         */
-        quill.setSelection(
-          index + 1,
-          0,
-          "silent"
-        );
-
-        /*
-         * Update parent value.
-         */
-        const output =
-          typeof quill.getSemanticHTML ===
-          "function"
-            ? quill.getSemanticHTML()
-            : quill.root.innerHTML;
-
-        if (
-          typeof onChange ===
-          "function"
-        ) {
-          onChange(output);
-        }
       } catch (error) {
-        console.error(
-          "KNOWLEDGE IMAGE UPLOAD ERROR:",
-          error
-        );
-
-        /*
-         * Try to remove loading text.
-         */
-        try {
-          const currentText =
-            quill.getText(
-              index,
-              loadingText.length
-            );
-
-          if (
-            currentText ===
-            loadingText
-          ) {
-            quill.deleteText(
-              index,
-              loadingText.length,
-              "silent"
-            );
-          }
-        } catch {
-          /*
-           * Ignore cleanup errors.
-           */
-        }
-
         window.alert(
           error?.message ||
             "Failed to upload image. Please try again."
         );
       }
     };
+
+    input.click();
   };
 
   /*
   |--------------------------------------------------------------------------
-  | TABLE HANDLER
+  | REGISTER IMAGE HANDLER RELIABLY
   |--------------------------------------------------------------------------
   |
-  | Uses Quill 2's built-in table module.
+  | ReactQuill is dynamically loaded.
   |
+  | A normal useEffect([]) can execute before
+  | ReactQuill is available.
+  |
+  | We therefore retry until the editor exists.
+  |
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    let interval = null;
+    let attempts = 0;
+
+    const registerImageHandler = () => {
+      const quill =
+        quillRef.current?.getEditor?.();
+
+      if (!quill) {
+        return false;
+      }
+
+      const toolbar =
+        quill.getModule("toolbar");
+
+      if (!toolbar) {
+        return false;
+      }
+
+      toolbar.addHandler(
+        "image",
+        imageHandler
+      );
+
+      console.log(
+        "Knowledge RichTextEditor: Cloudinary image handler registered."
+      );
+
+      return true;
+    };
+
+    /*
+     * Try immediately.
+     */
+    if (registerImageHandler()) {
+      return () => {};
+    }
+
+    /*
+     * ReactQuill may still be loading.
+     */
+    interval = window.setInterval(() => {
+      attempts += 1;
+
+      if (
+        registerImageHandler() ||
+        attempts >= 50
+      ) {
+        if (interval) {
+          window.clearInterval(
+            interval
+          );
+        }
+      }
+    }, 100);
+
+    return () => {
+      if (interval) {
+        window.clearInterval(
+          interval
+        );
+      }
+    };
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | TABLE HELPER
+  |--------------------------------------------------------------------------
+  */
+
+  const getTableModule = () => {
+    const quill =
+      quillRef.current?.getEditor?.();
+
+    if (!quill) {
+      return {
+        quill: null,
+        table: null,
+      };
+    }
+
+    return {
+      quill,
+      table: quill.getModule("table"),
+    };
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | INSERT TABLE
   |--------------------------------------------------------------------------
   */
 
   const insertTable = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       window.alert(
         "Table module is not available. Please refresh the page."
       );
-
       return;
     }
 
-    /*
-     * Default table:
-     * 3 rows x 3 columns
-     */
-    table.insertTable(3, 3);
+    try {
+      table.insertTable(3, 3);
+      updateEditorValue(quill);
+    } catch (error) {
+      console.error(
+        "INSERT TABLE ERROR:",
+        error
+      );
 
-    updateEditorValue(quill);
+      window.alert(
+        "Unable to insert table."
+      );
+    }
   };
 
   /*
   |--------------------------------------------------------------------------
-  | TABLE ROW ABOVE
+  | INSERT ROW ABOVE
   |--------------------------------------------------------------------------
   */
 
   const insertRowAbove = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.insertRowAbove();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -529,28 +714,22 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | TABLE ROW BELOW
+  | INSERT ROW BELOW
   |--------------------------------------------------------------------------
   */
 
   const insertRowBelow = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.insertRowBelow();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -566,28 +745,22 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | TABLE COLUMN LEFT
+  | INSERT COLUMN LEFT
   |--------------------------------------------------------------------------
   */
 
   const insertColumnLeft = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.insertColumnLeft();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -603,28 +776,22 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | TABLE COLUMN RIGHT
+  | INSERT COLUMN RIGHT
   |--------------------------------------------------------------------------
   */
 
   const insertColumnRight = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.insertColumnRight();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -640,28 +807,22 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | DELETE TABLE ROW
+  | DELETE ROW
   |--------------------------------------------------------------------------
   */
 
   const deleteRow = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.deleteRow();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -677,28 +838,22 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | DELETE TABLE COLUMN
+  | DELETE COLUMN
   |--------------------------------------------------------------------------
   */
 
   const deleteColumn = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.deleteColumn();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -719,23 +874,17 @@ export default function RichTextEditor({
   */
 
   const deleteTable = () => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    const {
+      quill,
+      table,
+    } = getTableModule();
 
-    if (!quill) {
-      return;
-    }
-
-    const table =
-      quill.getModule("table");
-
-    if (!table) {
+    if (!quill || !table) {
       return;
     }
 
     try {
       table.deleteTable();
-
       updateEditorValue(quill);
     } catch (error) {
       console.error(
@@ -751,156 +900,497 @@ export default function RichTextEditor({
 
   /*
   |--------------------------------------------------------------------------
-  | UPDATE EDITOR VALUE
-  |--------------------------------------------------------------------------
-  */
-
-  const updateEditorValue = (
-    quill
-  ) => {
-    const output =
-      typeof quill.getSemanticHTML ===
-      "function"
-        ? quill.getSemanticHTML()
-        : quill.root.innerHTML;
-
-    if (
-      typeof onChange ===
-      "function"
-    ) {
-      onChange(output);
-    }
-  };
-
-  /*
-  |--------------------------------------------------------------------------
-  | REGISTER IMAGE HANDLER
+  | PASTE HANDLER
   |--------------------------------------------------------------------------
   */
 
   useEffect(() => {
-    const quill =
-      quillRef.current?.getEditor?.();
+    let interval = null;
+    let attempts = 0;
+    let cleanupPaste = null;
 
-    if (!quill) {
-      return;
-    }
+    const attachPasteHandler = () => {
+      const quill =
+        quillRef.current?.getEditor?.();
 
-    const toolbar =
-      quill.getModule(
-        "toolbar"
-      );
+      if (!quill) {
+        return false;
+      }
 
-    if (!toolbar) {
-      return;
-    }
+      const editor =
+        quill.root;
 
-    toolbar.addHandler(
-      "image",
-      imageHandler
-    );
-  }, []);
-
-  /*
-  |--------------------------------------------------------------------------
-  | PASTE HTML HANDLER
-  |--------------------------------------------------------------------------
-  */
-
-  useEffect(() => {
-    const quill =
-      quillRef.current?.getEditor?.();
-
-    if (!quill) {
-      return;
-    }
-
-    const editor =
-      quill.root;
-
-    const handlePaste = (
-      event
-    ) => {
-      const clipboard =
-        event.clipboardData;
-
-      if (!clipboard) {
-        return;
+      if (!editor) {
+        return false;
       }
 
       /*
-       * Read plain text.
-       */
-      const text =
-        clipboard.getData(
-          "text/plain"
-        );
-
-      /*
-       * If copied content is HTML
-       * represented as plain text,
-       * convert it back to HTML.
+       * Prevent attaching twice.
        */
       if (
-        !text ||
-        !isHTML(text)
+        editor.dataset
+          .knowledgePasteHandler ===
+        "true"
       ) {
-        return;
+        return true;
       }
 
-      event.preventDefault();
-      event.stopPropagation();
+      const handlePaste = async (
+        event
+      ) => {
+        const clipboard =
+          event.clipboardData;
 
-      const html =
-        cleanHTML(text);
+        if (!clipboard) {
+          return;
+        }
 
-      const range =
-        quill.getSelection(true);
+        /*
+        |--------------------------------------------------------------------------
+        | 1. DIRECT IMAGE PASTE
+        |--------------------------------------------------------------------------
+        */
 
-      const index = range
-        ? range.index
-        : Math.max(
-            0,
-            quill.getLength() - 1
+        const imageItem =
+          Array.from(
+            clipboard.items || []
+          ).find(
+            (item) =>
+              item.type &&
+              item.type.startsWith(
+                "image/"
+              )
           );
 
-      /*
-       * Paste HTML.
-       *
-       * Tables are intentionally included
-       * in isHTML() above.
-       */
-      quill.clipboard.dangerouslyPasteHTML(
-        index,
-        html,
-        "user"
-      );
+        if (imageItem) {
+          event.preventDefault();
+          event.stopPropagation();
 
-      updateEditorValue(
-        quill
-      );
-    };
+          const file =
+            imageItem.getAsFile();
 
-    /*
-     * CAPTURE PHASE
-     *
-     * Runs before Quill's own
-     * paste handler.
-     */
-    editor.addEventListener(
-      "paste",
-      handlePaste,
-      true
-    );
+          if (!file) {
+            return;
+          }
 
-    return () => {
-      editor.removeEventListener(
+          try {
+            const range =
+              quill.getSelection(true);
+
+            const index = range
+              ? range.index
+              : Math.max(
+                  0,
+                  quill.getLength() - 1
+                );
+
+            await insertImageIntoEditor(
+              quill,
+              file,
+              index
+            );
+          } catch (error) {
+            console.error(
+              "PASTED IMAGE UPLOAD ERROR:",
+              error
+            );
+
+            window.alert(
+              error?.message ||
+                "Failed to upload pasted image. Please try again."
+            );
+          }
+
+          return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. HTML PASTE
+        |--------------------------------------------------------------------------
+        */
+
+        const htmlData =
+          clipboard.getData(
+            "text/html"
+          );
+
+        const plainText =
+          clipboard.getData(
+            "text/plain"
+          );
+
+        /*
+         * If clipboard contains HTML,
+         * inspect its images.
+         */
+        if (
+          htmlData &&
+          isHTML(htmlData)
+        ) {
+          /*
+           * Find Base64 images.
+           */
+          if (
+            containsBase64Image(
+              htmlData
+            )
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            try {
+              const parser =
+                new DOMParser();
+
+              const documentFragment =
+                parser.parseFromString(
+                  htmlData,
+                  "text/html"
+                );
+
+              const images =
+                Array.from(
+                  documentFragment.querySelectorAll(
+                    'img[src^="data:image/"]'
+                  )
+                );
+
+              /*
+               * Upload each embedded image.
+               */
+              for (
+                let i = 0;
+                i < images.length;
+                i++
+              ) {
+                const img =
+                  images[i];
+
+                const dataUri =
+                  img.getAttribute(
+                    "src"
+                  );
+
+                if (!dataUri) {
+                  continue;
+                }
+
+                const file =
+                  dataUriToFile(
+                    dataUri,
+                    `knowledge-pasted-${Date.now()}-${i}`
+                  );
+
+                if (!file) {
+                  continue;
+                }
+
+                /*
+                 * Do not allow huge pasted
+                 * images to enter Quill.
+                 */
+                const imageUrl =
+                  await uploadImageToCloudinary(
+                    file
+                  );
+
+                img.setAttribute(
+                  "src",
+                  imageUrl
+                );
+              }
+
+              /*
+               * Remove unsafe image attributes.
+               */
+              documentFragment
+                .querySelectorAll("img")
+                .forEach((img) => {
+                  img.removeAttribute(
+                    "srcset"
+                  );
+
+                  img.removeAttribute(
+                    "onerror"
+                  );
+
+                  img.removeAttribute(
+                    "onclick"
+                  );
+                });
+
+              const safeHTML =
+                documentFragment.body
+                  .innerHTML;
+
+              const range =
+                quill.getSelection(
+                  true
+                );
+
+              const index = range
+                ? range.index
+                : Math.max(
+                    0,
+                    quill.getLength() - 1
+                  );
+
+              quill.clipboard.dangerouslyPasteHTML(
+                index,
+                safeHTML,
+                "user"
+              );
+
+              updateEditorValue(
+                quill
+              );
+            } catch (error) {
+              console.error(
+                "PASTED HTML IMAGE UPLOAD ERROR:",
+                error
+              );
+
+              window.alert(
+                error?.message ||
+                  "Failed to upload pasted image. Please try again."
+              );
+            }
+
+            return;
+          }
+
+          /*
+           * Normal HTML:
+           * let Quill handle it.
+           */
+          return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. HTML COPIED AS PLAIN TEXT
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+          plainText &&
+          isHTML(plainText)
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const html =
+            cleanHTML(
+              plainText
+            );
+
+          /*
+           * Base64 image in plain-text HTML.
+           */
+          if (
+            containsBase64Image(
+              html
+            )
+          ) {
+            try {
+              const parser =
+                new DOMParser();
+
+              const documentFragment =
+                parser.parseFromString(
+                  html,
+                  "text/html"
+                );
+
+              const images =
+                Array.from(
+                  documentFragment.querySelectorAll(
+                    'img[src^="data:image/"]'
+                  )
+                );
+
+              for (
+                let i = 0;
+                i < images.length;
+                i++
+              ) {
+                const img =
+                  images[i];
+
+                const dataUri =
+                  img.getAttribute(
+                    "src"
+                  );
+
+                if (!dataUri) {
+                  continue;
+                }
+
+                const file =
+                  dataUriToFile(
+                    dataUri,
+                    `knowledge-pasted-${Date.now()}-${i}`
+                  );
+
+                if (!file) {
+                  continue;
+                }
+
+                const imageUrl =
+                  await uploadImageToCloudinary(
+                    file
+                  );
+
+                img.setAttribute(
+                  "src",
+                  imageUrl
+                );
+              }
+
+              const safeHTML =
+                documentFragment.body
+                  .innerHTML;
+
+              const range =
+                quill.getSelection(
+                  true
+                );
+
+              const index = range
+                ? range.index
+                : Math.max(
+                    0,
+                    quill.getLength() - 1
+                  );
+
+              quill.clipboard.dangerouslyPasteHTML(
+                index,
+                safeHTML,
+                "user"
+              );
+
+              updateEditorValue(
+                quill
+              );
+            } catch (error) {
+              console.error(
+                "PLAIN HTML IMAGE UPLOAD ERROR:",
+                error
+              );
+
+              window.alert(
+                error?.message ||
+                  "Failed to process pasted content."
+              );
+            }
+
+            return;
+          }
+
+          /*
+           * Normal HTML/table paste.
+           */
+          const range =
+            quill.getSelection(
+              true
+            );
+
+          const index = range
+            ? range.index
+            : Math.max(
+                0,
+                quill.getLength() - 1
+              );
+
+          quill.clipboard.dangerouslyPasteHTML(
+            index,
+            html,
+            "user"
+          );
+
+          updateEditorValue(
+            quill
+          );
+
+          return;
+        }
+
+        /*
+         * Normal text:
+         * let Quill handle it.
+         */
+      };
+
+      editor.addEventListener(
         "paste",
         handlePaste,
         true
       );
+
+      editor.dataset
+        .knowledgePasteHandler =
+        "true";
+
+      cleanupPaste = () => {
+        editor.removeEventListener(
+          "paste",
+          handlePaste,
+          true
+        );
+
+        delete editor.dataset
+          .knowledgePasteHandler;
+      };
+
+      console.log(
+        "Knowledge RichTextEditor: paste handler registered."
+      );
+
+      return true;
     };
-  }, [onChange]);
+
+    /*
+     * Try immediately.
+     */
+    if (attachPasteHandler()) {
+      return () => {
+        if (cleanupPaste) {
+          cleanupPaste();
+        }
+      };
+    }
+
+    /*
+     * Wait for dynamically loaded ReactQuill.
+     */
+    interval = window.setInterval(() => {
+      attempts += 1;
+
+      if (
+        attachPasteHandler() ||
+        attempts >= 50
+      ) {
+        if (interval) {
+          window.clearInterval(
+            interval
+          );
+        }
+      }
+    }, 100);
+
+    return () => {
+      if (interval) {
+        window.clearInterval(
+          interval
+        );
+      }
+
+      if (cleanupPaste) {
+        cleanupPaste();
+      }
+    };
+  }, []);
 
   /*
   |--------------------------------------------------------------------------
@@ -913,41 +1403,21 @@ export default function RichTextEditor({
       className="bg-white rich-text-editor-wrapper"
       style={{
         width: "100%",
+        maxWidth: "100%",
       }}
     >
+
       {/* ================================================================
-          CUSTOM TABLE TOOLBAR
+          TABLE TOOLBAR
           ================================================================ */}
 
-      <div
-        className="knowledge-table-toolbar"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "6px",
-          padding: "8px 10px",
-          border: "1px solid #e2e8f0",
-          borderBottom: "0",
-          background: "#f8fafc",
-          alignItems: "center",
-        }}
-      >
+      <div className="knowledge-table-toolbar">
+
         <button
           type="button"
           onClick={insertTable}
           title="Insert 3 × 3 table"
-          style={{
-            border:
-              "1px solid #cbd5e1",
-            background: "#ffffff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "#17342d",
-          }}
+          className="table-insert-button"
         >
           Insert Table
         </button>
@@ -956,17 +1426,6 @@ export default function RichTextEditor({
           type="button"
           onClick={insertRowAbove}
           title="Insert row above"
-          style={{
-            border:
-              "1px solid #cbd5e1",
-            background: "#ffffff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#334155",
-          }}
         >
           + Row Above
         </button>
@@ -975,17 +1434,6 @@ export default function RichTextEditor({
           type="button"
           onClick={insertRowBelow}
           title="Insert row below"
-          style={{
-            border:
-              "1px solid #cbd5e1",
-            background: "#ffffff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#334155",
-          }}
         >
           + Row Below
         </button>
@@ -994,17 +1442,6 @@ export default function RichTextEditor({
           type="button"
           onClick={insertColumnLeft}
           title="Insert column left"
-          style={{
-            border:
-              "1px solid #cbd5e1",
-            background: "#ffffff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#334155",
-          }}
         >
           + Column Left
         </button>
@@ -1013,17 +1450,6 @@ export default function RichTextEditor({
           type="button"
           onClick={insertColumnRight}
           title="Insert column right"
-          style={{
-            border:
-              "1px solid #cbd5e1",
-            background: "#ffffff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#334155",
-          }}
         >
           + Column Right
         </button>
@@ -1032,17 +1458,6 @@ export default function RichTextEditor({
           type="button"
           onClick={deleteRow}
           title="Delete current row"
-          style={{
-            border:
-              "1px solid #fecaca",
-            background: "#fff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#b91c1c",
-          }}
         >
           Delete Row
         </button>
@@ -1051,17 +1466,6 @@ export default function RichTextEditor({
           type="button"
           onClick={deleteColumn}
           title="Delete current column"
-          style={{
-            border:
-              "1px solid #fecaca",
-            background: "#fff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#b91c1c",
-          }}
         >
           Delete Column
         </button>
@@ -1070,24 +1474,14 @@ export default function RichTextEditor({
           type="button"
           onClick={deleteTable}
           title="Delete current table"
-          style={{
-            border:
-              "1px solid #fecaca",
-            background: "#fff",
-            borderRadius: "6px",
-            padding:
-              "6px 10px",
-            cursor: "pointer",
-            fontSize: "13px",
-            color: "#b91c1c",
-          }}
         >
           Delete Table
         </button>
+
       </div>
 
       {/* ================================================================
-          QUILL
+          QUILL EDITOR
           ================================================================ */}
 
       <ReactQuill
@@ -1099,6 +1493,7 @@ export default function RichTextEditor({
         formats={FORMATS}
         className="text-black"
       />
+
     </div>
   );
 }
