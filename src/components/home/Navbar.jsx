@@ -54,9 +54,7 @@ const navItems = [
     key: "tools",
     href: "/#tools",
     items: [
-      "EMI Calculator",
       "ROI Calculator",
-      "Affordability Calculator",
       "Area Converter",
     ],
   },
@@ -448,15 +446,10 @@ setDevelopers(uniqueDevelopers);
 
     if (item.key === "tools") {
       const routes = {
-        "EMI Calculator":
-          "/tools/emi-calculator",
 
         "ROI Calculator":
           "/tools/roi-calculator",
-
-        "Affordability Calculator":
-          "/tools/affordability-calculator",
-
+      
         "Area Converter":
           "/tools/area-converter",
       };
@@ -631,14 +624,9 @@ setDevelopers(uniqueDevelopers);
 
     if (item.key === "tools") {
       const routes = {
-        "EMI Calculator":
-          "/tools/emi-calculator",
 
         "ROI Calculator":
           "/tools/roi-calculator",
-
-        "Affordability Calculator":
-          "/tools/affordability-calculator",
 
         "Area Converter":
           "/tools/area-converter",
