@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Navbar from "@/components/home/Navbar";
 import HeroSection from "@/components/home/HeroSection";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
-import ConsultationModal from "@/components/home/ConsultationModal";
+import NavbarConsultationModal from "@/components/home/NavbarConsultationModal";
 
 import { useState } from "react";
 
@@ -58,12 +58,12 @@ export default function HomePage() {
         }
       />
 
-      <ConsultationModal
-        open={showConsultation}
-        onClose={() =>
-          setShowConsultation(false)
-        }
-      />
+      <NavbarConsultationModal
+  open={showConsultation}
+  onClose={() =>
+    setShowConsultation(false)
+  }
+/>
 
       {/* DESKTOP HERO */}
       <div className="hidden md:block">
