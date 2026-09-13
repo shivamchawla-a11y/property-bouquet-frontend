@@ -1,115 +1,873 @@
-/* ================= LINKS ================= */
+/* ============================================================
+   PROPERTY BOUQUET
+   PREMIUM RICH TEXT EDITOR
+   RichTextEditor.css
+   ============================================================ */
+
+
+/* ============================================================
+   EDITOR WRAPPER
+   ============================================================ */
+
+.rich-text-editor-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+
+/* ============================================================
+   QUILL CONTAINER
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-container {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid #e2e2e2;
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: #ffffff;
+  font-family: inherit;
+}
+
+
+/* ============================================================
+   QUILL TOOLBAR
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-toolbar {
+  width: 100%;
+  border: 1px solid #e2e2e2;
+  border-radius: 14px 14px 0 0;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover,
+.rich-text-editor-wrapper .ql-toolbar button:focus,
+.rich-text-editor-wrapper .ql-toolbar .ql-picker-label:hover,
+.rich-text-editor-wrapper .ql-toolbar .ql-picker-label:focus {
+  color: #c6a15b;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active,
+.rich-text-editor-wrapper .ql-toolbar .ql-picker-label.ql-active,
+.rich-text-editor-wrapper .ql-toolbar .ql-picker-item.ql-selected {
+  color: #c6a15b;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-stroke,
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-stroke {
+  stroke: #c6a15b;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-fill,
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-fill {
+  fill: #c6a15b;
+}
+
+
+/* ============================================================
+   MAIN EDITOR AREA
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-editor {
+  width: 100%;
+  min-height: 320px;
+  max-width: 100%;
+  padding: 22px 24px;
+
+  box-sizing: border-box;
+
+  color: #1f2937;
+  background: #ffffff;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.8;
+
+  white-space: normal;
+
+  /*
+    Critical for long URLs, IDs, property names,
+    unbroken words and pasted content.
+  */
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+
+  /*
+    Prevent the editor itself from creating
+    unwanted horizontal overflow.
+  */
+  overflow-x: hidden;
+}
+
+
+/* ============================================================
+   PLACEHOLDER
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+  opacity: 1;
+}
+
+
+/* ============================================================
+   PARAGRAPHS
+   ============================================================ */
+
+.ql-editor p {
+  margin-top: 0;
+  margin-bottom: 14px;
+  line-height: 1.8;
+
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+.ql-editor p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* ============================================================
+   LINKS
+   ============================================================ */
 
 .ql-editor a {
-  color: #C6A15B !important;
+  color: #c6a15b !important;
   text-decoration: none !important;
   font-weight: 600;
-  transition: color .25s ease;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  transition:
+    color 0.25s ease,
+    text-decoration-color 0.25s ease;
 }
 
 .ql-editor a:hover {
-  color: #E4C67B !important;
+  color: #e4c67b !important;
   text-decoration: underline !important;
 }
 
-/* Optional: visited links stay gold */
 .ql-editor a:visited {
-  color: #C6A15B !important;
+  color: #c6a15b !important;
 }
 
-/* ================= HEADINGS ================= */
+
+/* ============================================================
+   HEADINGS
+   ============================================================ */
 
 .ql-editor h1,
 .ql-editor h2,
 .ql-editor h3,
-.ql-editor h4 {
+.ql-editor h4,
+.ql-editor h5,
+.ql-editor h6 {
+  color: #17342d;
   font-weight: 700;
-  margin-top: 1.2rem;
-  margin-bottom: .75rem;
+
+  line-height: 1.3;
+
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
 }
 
 .ql-editor h1 {
   font-size: 2rem;
+  margin-top: 1.4rem;
+  margin-bottom: 0.8rem;
 }
 
 .ql-editor h2 {
   font-size: 1.7rem;
+  margin-top: 1.3rem;
+  margin-bottom: 0.75rem;
 }
 
 .ql-editor h3 {
   font-size: 1.4rem;
+  margin-top: 1.2rem;
+  margin-bottom: 0.7rem;
 }
 
 .ql-editor h4 {
   font-size: 1.2rem;
+  margin-top: 1.1rem;
+  margin-bottom: 0.65rem;
 }
 
-/* ================= BLOCKQUOTE ================= */
-
-.ql-editor blockquote {
-  border-left: 4px solid #C6A15B;
-  padding-left: 18px;
-  color: #666;
-  font-style: italic;
-  margin: 16px 0;
+.ql-editor h5 {
+  font-size: 1.1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.6rem;
 }
 
-/* ================= LISTS ================= */
+.ql-editor h6 {
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+
+/* ============================================================
+   LISTS
+   ============================================================ */
 
 .ql-editor ul,
 .ql-editor ol {
-  padding-left: 28px;
+  padding-left: 30px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+
+  overflow-wrap: anywhere;
 }
 
 .ql-editor li {
-  margin: 6px 0;
+  margin: 5px 0;
+  padding-left: 4px;
+
+  line-height: 1.75;
+
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
 }
 
-/* ================= TABLE ================= */
+.ql-editor li::marker {
+  color: #c6a15b;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   BLOCKQUOTE
+   ============================================================ */
+
+.ql-editor blockquote {
+  margin: 20px 0;
+
+  padding: 12px 18px;
+
+  border-left: 4px solid #c6a15b;
+
+  background: #faf8f4;
+
+  color: #5f6368;
+
+  font-style: italic;
+  line-height: 1.8;
+
+  border-radius: 0 8px 8px 0;
+
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+
+/* ============================================================
+   CODE BLOCK
+   ============================================================ */
+
+.ql-editor pre.ql-syntax {
+  margin: 18px 0;
+  padding: 16px 18px;
+
+  background: #111827 !important;
+  color: #f9fafb !important;
+
+  border-radius: 10px;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+
+  overflow-x: auto;
+}
+
+
+/* ============================================================
+   INLINE CODE
+   ============================================================ */
+
+.ql-editor code {
+  display: inline;
+
+  padding: 2px 6px;
+
+  background: #f3f4f6;
+
+  color: #374151;
+
+  border-radius: 5px;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+
+  font-size: 0.9em;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+/*
+  Important:
+  Quill 2 creates real HTML tables.
+
+  These rules make sure tables remain inside
+  the editor and their contents wrap properly.
+*/
 
 .ql-editor table {
   width: 100%;
+  max-width: 100%;
+
+  margin: 22px 0;
+
   border-collapse: collapse;
-  margin: 18px 0;
+  border-spacing: 0;
+
+  table-layout: fixed;
+
+  background: #ffffff;
+
+  /*
+    Prevent table itself from pushing
+    the editor wider.
+  */
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
 }
+
+
+/* ============================================================
+   TABLE CELLS
+   ============================================================ */
 
 .ql-editor table td,
 .ql-editor table th {
-  border: 1px solid #ddd;
-  padding: 10px;
+  width: auto;
+
+  min-width: 0;
+
+  padding: 11px 12px;
+
+  border: 1px solid #d9d9d9;
+
+  color: #27313a;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  vertical-align: top;
+
+  line-height: 1.6;
+
+  /*
+    CRITICAL:
+    Allows long words, URLs and property names
+    to wrap instead of overflowing.
+  */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+
+  box-sizing: border-box;
 }
+
+
+/* ============================================================
+   TABLE HEADER
+   ============================================================ */
 
 .ql-editor table th {
-  background: #f8f8f8;
+  background: #f7f3ee;
+
+  color: #17342d;
+
+  font-weight: 700;
+
+  text-align: left;
 }
 
-/* ================= IMAGES ================= */
+
+/* ============================================================
+   TABLE ROWS
+   ============================================================ */
+
+.ql-editor table tr:nth-child(even) td {
+  background: #fcfbf9;
+}
+
+
+/* ============================================================
+   TABLE HOVER
+   ============================================================ */
+
+.ql-editor table tr:hover td {
+  background: #faf7f1;
+}
+
+
+/* ============================================================
+   TABLE PARAGRAPHS
+   ============================================================ */
+
+.ql-editor table p {
+  margin: 0;
+
+  line-height: 1.6;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+
+/* ============================================================
+   TABLE LINKS
+   ============================================================ */
+
+.ql-editor table a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+
+/* ============================================================
+   TABLE LISTS
+   ============================================================ */
+
+.ql-editor table ul,
+.ql-editor table ol {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding-left: 20px;
+}
+
+.ql-editor table li {
+  margin: 2px 0;
+}
+
+
+/* ============================================================
+   IMAGES
+   ============================================================ */
 
 .ql-editor img {
-  max-width: 100%;
-  border-radius: 12px;
-  margin: 18px auto;
   display: block;
+
+  width: auto;
+  max-width: 100%;
+  height: auto;
+
+  margin: 20px auto;
+
+  border-radius: 12px;
+
+  object-fit: contain;
+
+  /*
+    Prevent extremely long image URLs
+    or unusual image dimensions from
+    breaking the editor.
+  */
+  overflow: hidden;
 }
 
-/* ================= PARAGRAPHS ================= */
 
-.ql-editor p {
-  margin-bottom: 14px;
-  line-height: 1.8;
+/* ============================================================
+   IMAGE INSIDE LINK
+   ============================================================ */
+
+.ql-editor a img {
+  max-width: 100%;
+  height: auto;
 }
 
-/* ================= CODE ================= */
 
-.ql-editor pre {
-  background: #111;
-  color: #fff;
-  padding: 14px;
+/* ============================================================
+   HORIZONTAL RULE / DIVIDERS
+   ============================================================ */
+
+.ql-editor hr {
+  margin: 24px 0;
+
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+
+/* ============================================================
+   STRONG / BOLD
+   ============================================================ */
+
+.ql-editor strong,
+.ql-editor b {
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   ITALIC
+   ============================================================ */
+
+.ql-editor em,
+.ql-editor i {
+  font-style: italic;
+}
+
+
+/* ============================================================
+   UNDERLINE
+   ============================================================ */
+
+.ql-editor u {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+
+/* ============================================================
+   TEXT SELECTION
+   ============================================================ */
+
+.ql-editor ::selection {
+  background: rgba(198, 161, 91, 0.25);
+}
+
+
+/* ============================================================
+   QUILL CURSOR / FOCUS
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-editor:focus {
+  outline: none;
+}
+
+.rich-text-editor-wrapper:focus-within .ql-container {
+  border-color: #c6a15b;
+  box-shadow: 0 0 0 2px rgba(198, 161, 91, 0.08);
+}
+
+
+/* ============================================================
+   QUILL TOOLTIP
+   ============================================================ */
+
+.rich-text-editor-wrapper .ql-tooltip {
+  z-index: 50;
+
+  border: 1px solid #e5e7eb;
+
   border-radius: 10px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08);
+
+  background: #ffffff;
 }
 
-.ql-editor code {
-  background: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 5px;
+
+/* ============================================================
+   TABLE TOOLBAR
+   ============================================================ */
+
+.rich-text-editor-wrapper .table-toolbar {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #e2e2e2;
+
+  border-top: 0;
+
+  background: #faf9f7;
+}
+
+.rich-text-editor-wrapper .table-toolbar button {
+  border: 1px solid #ddd6cc;
+
+  border-radius: 8px;
+
+  padding: 7px 11px;
+
+  background: #ffffff;
+
+  color: #34423d;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.rich-text-editor-wrapper .table-toolbar button:hover {
+  border-color: #c6a15b;
+
+  color: #17342d;
+
+  background: #fffaf1;
+}
+
+.rich-text-editor-wrapper .table-toolbar button:active {
+  transform: translateY(1px);
+}
+
+.rich-text-editor-wrapper .table-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   TABLE TOOLBAR PRIMARY BUTTON
+   ============================================================ */
+
+.rich-text-editor-wrapper .table-toolbar .table-insert-button {
+  background: #17342d;
+  border-color: #17342d;
+  color: #ffffff;
+}
+
+.rich-text-editor-wrapper .table-toolbar .table-insert-button:hover {
+  background: #0f2a24;
+  border-color: #0f2a24;
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .rich-text-editor-wrapper .ql-editor {
+    min-height: 280px;
+
+    padding: 18px 16px;
+
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .ql-editor h1 {
+    font-size: 1.7rem;
+  }
+
+  .ql-editor h2 {
+    font-size: 1.5rem;
+  }
+
+  .ql-editor h3 {
+    font-size: 1.3rem;
+  }
+
+  .ql-editor h4 {
+    font-size: 1.15rem;
+  }
+
+  .ql-editor table {
+    margin: 18px 0;
+  }
+
+  .ql-editor table td,
+  .ql-editor table th {
+    padding: 9px 8px;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+  }
+
+  .ql-editor img {
+    margin: 16px auto;
+    border-radius: 10px;
+  }
+
+  .ql-editor blockquote {
+    padding-left: 14px;
+    margin: 16px 0;
+  }
+
+  .rich-text-editor-wrapper .table-toolbar {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .rich-text-editor-wrapper .table-toolbar button {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+  .rich-text-editor-wrapper .ql-editor {
+    padding: 16px 13px;
+
+    font-size: 15px;
+  }
+
+  .ql-editor h1 {
+    font-size: 1.55rem;
+  }
+
+  .ql-editor h2 {
+    font-size: 1.4rem;
+  }
+
+  .ql-editor h3 {
+    font-size: 1.25rem;
+  }
+
+  .ql-editor table td,
+  .ql-editor table th {
+    padding: 8px 7px;
+
+    font-size: 13px;
+  }
+
+  .rich-text-editor-wrapper .table-toolbar {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .rich-text-editor-wrapper .table-toolbar button {
+    width: 100%;
+  }
+
+  .rich-text-editor-wrapper .table-toolbar .table-insert-button {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* ============================================================
+   PREVENT MEDIA / EMBEDS FROM BREAKING LAYOUT
+   ============================================================ */
+
+.ql-editor iframe,
+.ql-editor video,
+.ql-editor embed,
+.ql-editor object {
+  display: block;
+
+  max-width: 100%;
+
+  margin: 20px auto;
+}
+
+
+/* ============================================================
+   PASTED CONTENT SAFETY
+   ============================================================ */
+
+.ql-editor * {
+  max-width: 100%;
+}
+
+
+/*
+  Do NOT apply width: 100% to images,
+  tables or inline elements.
+
+  max-width above is intentionally used only
+  as a general safety limit.
+*/
+
+
+/* ============================================================
+   MOBILE TABLE SAFETY
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  .ql-editor table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .ql-editor table td,
+  .ql-editor table th {
+    min-width: 0;
+
+    max-width: 0;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+
+/* ============================================================
+   PRINT / CLEAN OUTPUT SUPPORT
+   ============================================================ */
+
+@media print {
+
+  .ql-editor {
+    color: #000000;
+    background: #ffffff;
+  }
+
+  .ql-editor a {
+    color: inherit !important;
+    text-decoration: underline !important;
+  }
+
+  .ql-editor table {
+    page-break-inside: avoid;
+  }
+
+  .ql-editor img {
+    max-width: 100%;
+  }
 }
