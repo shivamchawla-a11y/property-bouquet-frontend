@@ -20,6 +20,7 @@ import {
   BookOpen,
   Route,
   Layers3,
+  Sparkles,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -34,6 +35,7 @@ export default function AdminLayout({ children }) {
   // ================= MENU =================
   const menu = [
     // ================= ALL ADMINS =================
+
     {
       name: "Dashboard",
       path: "/admin",
@@ -50,6 +52,15 @@ export default function AdminLayout({ children }) {
       name: "Add Property",
       path: "/admin/add-property",
       icon: PlusCircle,
+    },
+
+    // ================= AI PROPERTY CREATOR =================
+    // Available to BOTH Agent and SuperAdmin
+
+    {
+      name: "AI Create Property",
+      path: "/admin/ai-create-property",
+      icon: Sparkles,
     },
 
     {
@@ -152,60 +163,60 @@ export default function AdminLayout({ children }) {
     checkAuth();
   }, [router, isPreview]);
 
- // ================= LOADING =================
-if (!isPreview && (loading || !role)) {
-  return (
-    <div className="min-h-screen bg-[#fbfaf7] px-6 flex items-center justify-center">
-      <div className="flex w-full max-w-[420px] flex-col items-center text-center">
+  // ================= LOADING =================
+  if (!isPreview && (loading || !role)) {
+    return (
+      <div className="min-h-screen bg-[#fbfaf7] px-6 flex items-center justify-center">
+        <div className="flex w-full max-w-[420px] flex-col items-center text-center">
 
-        {/* LOGO */}
-        <div className="relative flex items-center justify-center">
-          <div className="absolute h-28 w-28 rounded-full bg-[#D4AF37]/10 blur-2xl animate-pulse" />
+          {/* LOGO */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute h-28 w-28 rounded-full bg-[#D4AF37]/10 blur-2xl animate-pulse" />
 
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]">
-            <img
-              src="/logo.webp"
-              alt="Property Bouquet"
-              className="h-14 w-14 object-contain"
-            />
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]">
+              <img
+                src="/logo.webp"
+                alt="Property Bouquet"
+                className="h-14 w-14 object-contain"
+              />
+            </div>
           </div>
+
+          {/* BRAND */}
+          <h2 className="mt-7 font-serif text-[25px] font-medium tracking-[0.5px] text-[#10251f]">
+            Property Bouquet
+          </h2>
+
+          {/* LOADING TEXT */}
+          <p className="mt-2 text-[11px] font-medium uppercase tracking-[2.5px] text-[#b58b45]">
+            Securing your dashboard
+          </p>
+
+          {/* LOADING BAR */}
+          <div className="mt-7 h-[2px] w-[180px] overflow-hidden rounded-full bg-[#e9e2d5]">
+            <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent animate-[loading_1.5s_ease-in-out_infinite]" />
+          </div>
+
+          {/* SUBTEXT */}
+          <p className="mt-4 text-[11px] leading-5 text-[#999]">
+            Verifying your administrator access...
+          </p>
         </div>
 
-        {/* BRAND */}
-        <h2 className="mt-7 font-serif text-[25px] font-medium tracking-[0.5px] text-[#10251f]">
-          Property Bouquet
-        </h2>
+        <style jsx>{`
+          @keyframes loading {
+            0% {
+              transform: translateX(-100%);
+            }
 
-        {/* LOADING TEXT */}
-        <p className="mt-2 text-[11px] font-medium uppercase tracking-[2.5px] text-[#b58b45]">
-          Securing your dashboard
-        </p>
-
-        {/* LOADING BAR */}
-        <div className="mt-7 h-[2px] w-[180px] overflow-hidden rounded-full bg-[#e9e2d5]">
-          <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent animate-[loading_1.5s_ease-in-out_infinite]" />
-        </div>
-
-        {/* SUBTEXT */}
-        <p className="mt-4 text-[11px] leading-5 text-[#999]">
-          Verifying your administrator access...
-        </p>
+            100% {
+              transform: translateX(200%);
+            }
+          }
+        `}</style>
       </div>
-
-      <style jsx>{`
-        @keyframes loading {
-          0% {
-            transform: translateX(-100%);
-          }
-
-          100% {
-            transform: translateX(200%);
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
+    );
+  }
 
   // ================= PREVIEW PAGE =================
   if (isPreview) {
@@ -269,7 +280,7 @@ if (!isPreview && (loading || !role)) {
               // No roles = available to every authenticated admin
               if (!item.roles) return true;
 
-              // Roles = SuperAdmin only
+              // Roles = restricted to specified roles
               return item.roles.includes(role);
             })
             .map((item) => {
@@ -277,10 +288,10 @@ if (!isPreview && (loading || !role)) {
               const Icon = item.icon;
 
               const active =
-  item.path === "/admin"
-    ? pathname === "/admin"
-    : pathname === item.path ||
-      pathname.startsWith(item.path + "/");
+                item.path === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === item.path ||
+                    pathname.startsWith(item.path + "/");
 
               return (
                 <Link
