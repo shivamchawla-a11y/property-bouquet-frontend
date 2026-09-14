@@ -452,7 +452,7 @@ const primaryLinks = [
 
   {
     title: "Locations",
-    href: "/properties",
+    href: "/locations",
     description:
       "Discover sought-after destinations and emerging real estate corridors.",
     icon: MapPin,
@@ -1563,7 +1563,7 @@ export default async function SitemapPage() {
                 </p>
 
                 <Link
-                  href="/properties"
+                  href="/locations"
                   className="group mt-8 inline-flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.2em] text-[#d8b46b]"
                 >
 
