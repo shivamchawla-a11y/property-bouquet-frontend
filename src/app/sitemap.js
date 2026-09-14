@@ -8,23 +8,8 @@
 // Canonical domain:
 // https://propertybouquet.com
 //
-// INCLUDED:
-// - Homepage
-// - Properties directory
-// - Developers directory
-// - Knowledge Centre
-// - Property Insights
-// - About
-// - Contact
-// - Human-facing Sitemap
-// - Privacy Policy
-// - Disclaimer
-// - Terms of Use
-// - Public property pages
-// - Public developer pages
-// - Published knowledge articles
-// - Published insight/news articles
-// - Public SEO tools
+// IMPORTANT:
+// This sitemap contains ONLY canonical public URLs.
 //
 // EXCLUDED:
 // - Admin pages
@@ -33,22 +18,25 @@
 // - Draft properties
 // - Deleted properties
 // - Inactive properties
-// - Inactive/deleted developers
 // - Draft knowledge content
 // - Draft insight/news content
 // - Query/filter URLs
 // - Duplicate URLs
+// - Non-canonical URLs
 //
-// IMPORTANT:
-// - Canonical domain is NON-WWW.
-// - No query parameters are added.
-// - No fake lastModified dates are generated.
-// - API failure does not break the sitemap.
-// - Duplicate URLs are automatically removed.
-// - Developer URLs follow the canonical public developer slug
-//   architecture:
-//   backend slug "spiti-developer"
-//   → public slug "spiti-developer-projects"
+// Developer URL architecture:
+//
+// m3m
+// → /developers/m3m-developer-projects
+//
+// signature-global
+// → /developers/signature-global-developer-projects
+//
+// spiti-developer
+// → /developers/spiti-developer-projects
+//
+// ats-infrastructure-ltd
+// → /developers/ats-infrastructure-ltd-developer-projects
 // ============================================================
 
 const API =
@@ -59,15 +47,9 @@ const BASE_URL =
 
 const REVALIDATE_TIME = 3600;
 
+
 // ============================================================
 // FETCH OPTIONS
-// ============================================================
-//
-// Cache API responses for one hour.
-//
-// We use fetch-level revalidation rather than a route-level
-// revalidate export so this remains compatible with the current
-// Next.js setup.
 // ============================================================
 
 const FETCH_OPTIONS = {
@@ -76,14 +58,9 @@ const FETCH_OPTIONS = {
   },
 };
 
+
 // ============================================================
 // SAFE FETCH
-// ============================================================
-//
-// If an API endpoint fails, sitemap generation continues.
-//
-// This prevents one unavailable CMS endpoint from taking down
-// the complete sitemap.
 // ============================================================
 
 async function safeFetch(url) {
@@ -103,48 +80,32 @@ async function safeFetch(url) {
 
     const json = await response.json();
 
-    // ----------------------------------------------------------
-    // Standard API response:
-    //
-    // {
-    //   data: [...]
-    // }
-    // ----------------------------------------------------------
-
+    // Standard API response
     if (Array.isArray(json?.data)) {
       return json.data;
     }
 
-    // ----------------------------------------------------------
-    // Direct array response.
-    // ----------------------------------------------------------
-
+    // Direct array
     if (Array.isArray(json)) {
       return json;
     }
 
-    // ----------------------------------------------------------
-    // Some APIs may return:
-    //
-    // {
-    //   properties: [...]
-    // }
-    //
-    // or similar structures.
-    // ----------------------------------------------------------
-
+    // Properties
     if (Array.isArray(json?.properties)) {
       return json.properties;
     }
 
+    // Developers
     if (Array.isArray(json?.developers)) {
       return json.developers;
     }
 
+    // Articles
     if (Array.isArray(json?.articles)) {
       return json.articles;
     }
 
+    // News
     if (Array.isArray(json?.news)) {
       return json.news;
     }
@@ -164,14 +125,9 @@ async function safeFetch(url) {
   }
 }
 
+
 // ============================================================
-// VALID DATE HELPER
-// ============================================================
-//
-// Returns the first valid date from the supplied values.
-//
-// We NEVER use the current date as a fallback because doing so
-// would falsely indicate that every URL was recently modified.
+// VALID DATE
 // ============================================================
 
 function getValidDate(...values) {
@@ -190,6 +146,7 @@ function getValidDate(...values) {
   return undefined;
 }
 
+
 // ============================================================
 // ACTIVE DOCUMENT CHECK
 // ============================================================
@@ -199,12 +156,10 @@ function isActive(item) {
     return false;
   }
 
-  // Explicitly deleted
   if (item.isDeleted === true) {
     return false;
   }
 
-  // Explicitly inactive
   if (item.isActive === false) {
     return false;
   }
@@ -212,18 +167,9 @@ function isActive(item) {
   return true;
 }
 
+
 // ============================================================
 // PUBLISHED CONTENT CHECK
-// ============================================================
-//
-// Used for:
-// - Knowledge Centre
-// - Insights
-// - News
-//
-// If status exists, only "published" is allowed.
-//
-// If status does not exist, active content may still be included.
 // ============================================================
 
 function isPublishedContent(item) {
@@ -242,22 +188,20 @@ function isPublishedContent(item) {
   return true;
 }
 
+
 // ============================================================
-// NORMALIZE URL
+// CANONICAL URL NORMALIZER
 // ============================================================
 //
-// Converts relative paths to the canonical Property Bouquet
-// domain.
+// This is important.
 //
-// Examples:
-//
-// "/"          → https://propertybouquet.com/
-// "/properties"
-//              → https://propertybouquet.com/properties
-// "properties"
-//              → https://propertybouquet.com/properties
-//
-// Absolute URLs are preserved.
+// It guarantees that sitemap URLs:
+// - use HTTPS
+// - use non-www
+// - contain no query strings
+// - contain no hash fragments
+// - don't have unnecessary trailing slashes
+// - remain on propertybouquet.com
 // ============================================================
 
 function normalizeUrl(path) {
@@ -265,37 +209,89 @@ function normalizeUrl(path) {
     return null;
   }
 
-  const value = String(path).trim();
+  let value = String(path).trim();
 
   if (!value) {
     return null;
   }
 
   // ----------------------------------------------------------
-  // Already absolute
+  // Absolute URL
   // ----------------------------------------------------------
 
   if (/^https?:\/\//i.test(value)) {
-    return value;
+    try {
+      const parsed = new URL(value);
+
+      // Only allow our own domain.
+      if (
+        parsed.hostname !==
+        "propertybouquet.com"
+      ) {
+        return null;
+      }
+
+      // Force HTTPS.
+      parsed.protocol = "https:";
+
+      // Force non-www.
+      parsed.hostname =
+        "propertybouquet.com";
+
+      // Remove query parameters.
+      parsed.search = "";
+
+      // Remove hash.
+      parsed.hash = "";
+
+      // Normalize pathname.
+      let pathname =
+        parsed.pathname || "/";
+
+      if (
+        pathname !== "/" &&
+        pathname.endsWith("/")
+      ) {
+        pathname =
+          pathname.slice(0, -1);
+      }
+
+      parsed.pathname = pathname;
+
+      return parsed.toString();
+    } catch {
+      return null;
+    }
   }
 
   // ----------------------------------------------------------
-  // Relative path
+  // Relative URL
   // ----------------------------------------------------------
 
-  const normalizedPath = value.startsWith("/")
-    ? value
-    : `/${value}`;
+  if (!value.startsWith("/")) {
+    value = `/${value}`;
+  }
 
-  return `${BASE_URL}${normalizedPath}`;
+  // Remove query string.
+  value = value.split("?")[0];
+
+  // Remove hash.
+  value = value.split("#")[0];
+
+  // Remove trailing slash except homepage.
+  if (
+    value !== "/" &&
+    value.endsWith("/")
+  ) {
+    value = value.slice(0, -1);
+  }
+
+  return `${BASE_URL}${value}`;
 }
+
 
 // ============================================================
 // ADD URL
-// ============================================================
-//
-// Map-based storage guarantees that the final sitemap never
-// contains duplicate URLs.
 // ============================================================
 
 function addUrl(
@@ -313,10 +309,7 @@ function addUrl(
     return;
   }
 
-  // ----------------------------------------------------------
-  // Never add duplicates.
-  // ----------------------------------------------------------
-
+  // Prevent duplicates.
   if (sitemap.has(url)) {
     return;
   }
@@ -326,10 +319,6 @@ function addUrl(
     changeFrequency,
     priority,
   };
-
-  // ----------------------------------------------------------
-  // Add lastModified only when a genuine date exists.
-  // ----------------------------------------------------------
 
   const validLastModified =
     getValidDate(lastModified);
@@ -342,16 +331,9 @@ function addUrl(
   sitemap.set(url, entry);
 }
 
+
 // ============================================================
 // SAFE SLUG
-// ============================================================
-//
-// Prevent malformed URLs if a slug unexpectedly contains
-// spaces or special characters.
-//
-// This function is used for normal property/article slugs.
-// Developer slugs use the dedicated public developer slug
-// builder below.
 // ============================================================
 
 function safeSlug(slug) {
@@ -359,41 +341,21 @@ function safeSlug(slug) {
     return null;
   }
 
-  const value = String(slug).trim();
+  const value =
+    String(slug).trim();
 
   if (!value) {
     return null;
   }
 
-  return encodeURIComponent(value);
+  return encodeURIComponent(
+    value
+  );
 }
+
 
 // ============================================================
 // PUBLIC DEVELOPER SLUG BUILDER
-// ============================================================
-//
-// IMPORTANT:
-//
-// This MUST stay synchronized with the developer page URL
-// architecture.
-//
-// Backend slug                  Public slug
-// ------------------------------------------------------------
-// m3m                          m3m-developer-projects
-// signature-global             signature-global-developer-projects
-// spiti-developer              spiti-developer-projects
-// ats-infrastructure-ltd       ats-infrastructure-ltd-developer-projects
-//
-// Rules:
-//
-// 1. If already ending in "-developer-projects":
-//      keep it.
-//
-// 2. If ending in "-developer":
-//      append "-projects".
-//
-// 3. Otherwise:
-//      append "-developer-projects".
 // ============================================================
 
 function buildPublicDeveloperSlug(
@@ -403,18 +365,17 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  const cleanSlug = String(
-    developerSlug
-  )
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
+  const cleanSlug =
+    String(developerSlug)
+      .trim()
+      .toLowerCase()
+      .replace(/^\/+|\/+$/g, "");
 
   if (!cleanSlug) {
     return "";
   }
 
-  // Already canonical
+  // Already canonical.
   if (
     cleanSlug.endsWith(
       "-developer-projects"
@@ -423,7 +384,7 @@ function buildPublicDeveloperSlug(
     return cleanSlug;
   }
 
-  // Existing "-developer" suffix
+  // Existing "-developer".
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -432,129 +393,124 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend slug
+  // Normal backend slug.
   return `${cleanSlug}-developer-projects`;
 }
+
 
 // ============================================================
 // MAIN SITEMAP
 // ============================================================
 
 export default async function sitemap() {
-  const sitemap = new Map();
+  const sitemap =
+    new Map();
 
   // ==========================================================
   // STATIC PUBLIC PAGES
   // ==========================================================
-
-  // ----------------------------------------------------------
-  // HOMEPAGE
-  // ----------------------------------------------------------
 
   addUrl(sitemap, "/", {
     priority: 1.0,
     changeFrequency: "daily",
   });
 
-  // ----------------------------------------------------------
-  // PROPERTY DIRECTORY
-  // ----------------------------------------------------------
+  addUrl(
+    sitemap,
+    "/properties",
+    {
+      priority: 0.95,
+      changeFrequency: "daily",
+    }
+  );
 
-  addUrl(sitemap, "/properties", {
-    priority: 0.95,
-    changeFrequency: "daily",
-  });
+  addUrl(
+    sitemap,
+    "/developers",
+    {
+      priority: 0.90,
+      changeFrequency: "weekly",
+    }
+  );
 
-  // ----------------------------------------------------------
-  // DEVELOPERS DIRECTORY
-  // ----------------------------------------------------------
+  addUrl(
+    sitemap,
+    "/knowledge",
+    {
+      priority: 0.82,
+      changeFrequency: "weekly",
+    }
+  );
 
-  addUrl(sitemap, "/developers", {
-    priority: 0.90,
-    changeFrequency: "weekly",
-  });
+  addUrl(
+    sitemap,
+    "/insights",
+    {
+      priority: 0.82,
+      changeFrequency: "weekly",
+    }
+  );
 
-  // ----------------------------------------------------------
-  // KNOWLEDGE CENTRE
-  // ----------------------------------------------------------
+  addUrl(
+    sitemap,
+    "/about",
+    {
+      priority: 0.70,
+      changeFrequency: "monthly",
+    }
+  );
 
-  addUrl(sitemap, "/knowledge", {
-    priority: 0.82,
-    changeFrequency: "weekly",
-  });
+  addUrl(
+    sitemap,
+    "/contact",
+    {
+      priority: 0.70,
+      changeFrequency: "monthly",
+    }
+  );
 
-  // ----------------------------------------------------------
-  // PROPERTY INSIGHTS
-  // ----------------------------------------------------------
+  // Human-facing sitemap.
+  addUrl(
+    sitemap,
+    "/sitemap",
+    {
+      priority: 0.60,
+      changeFrequency: "monthly",
+    }
+  );
 
-  addUrl(sitemap, "/insights", {
-    priority: 0.82,
-    changeFrequency: "weekly",
-  });
+  // Legal pages.
+  addUrl(
+    sitemap,
+    "/privacy-policy",
+    {
+      priority: 0.50,
+      changeFrequency: "yearly",
+    }
+  );
 
-  // ----------------------------------------------------------
-  // ABOUT
-  // ----------------------------------------------------------
+  addUrl(
+    sitemap,
+    "/disclaimer",
+    {
+      priority: 0.50,
+      changeFrequency: "yearly",
+    }
+  );
 
-  addUrl(sitemap, "/about", {
-    priority: 0.70,
-    changeFrequency: "monthly",
-  });
+  addUrl(
+    sitemap,
+    "/terms-of-use",
+    {
+      priority: 0.50,
+      changeFrequency: "yearly",
+    }
+  );
 
-  // ----------------------------------------------------------
-  // CONTACT
-  // ----------------------------------------------------------
-
-  addUrl(sitemap, "/contact", {
-    priority: 0.70,
-    changeFrequency: "monthly",
-  });
-
-  // ----------------------------------------------------------
-  // HUMAN-FACING SITEMAP
-  //
-  // This is different from /sitemap.xml.
-  // ----------------------------------------------------------
-
-  addUrl(sitemap, "/sitemap", {
-    priority: 0.60,
-    changeFrequency: "monthly",
-  });
-
-  // ----------------------------------------------------------
-  // PRIVACY POLICY
-  // ----------------------------------------------------------
-
-  addUrl(sitemap, "/privacy", {
-    priority: 0.50,
-    changeFrequency: "yearly",
-  });
-
-  // ----------------------------------------------------------
-  // DISCLAIMER
-  // ----------------------------------------------------------
-
-  addUrl(sitemap, "/disclaimer", {
-    priority: 0.50,
-    changeFrequency: "yearly",
-  });
-
-  // ----------------------------------------------------------
-  // TERMS OF USE
-  // ----------------------------------------------------------
-
-  addUrl(sitemap, "/terms-of-use", {
-    priority: 0.50,
-    changeFrequency: "yearly",
-  });
 
   // ==========================================================
-  // PUBLIC PROPERTY TOOLS
+  // PUBLIC SEO TOOLS
   // ==========================================================
-
-  // ----------------------------------------------------------
-  // ROI CALCULATOR
-  // ----------------------------------------------------------
 
   addUrl(
     sitemap,
@@ -565,10 +521,6 @@ export default async function sitemap() {
     }
   );
 
-  // ----------------------------------------------------------
-  // AREA CONVERTER
-  // ----------------------------------------------------------
-
   addUrl(
     sitemap,
     "/tools/area-converter",
@@ -578,14 +530,9 @@ export default async function sitemap() {
     }
   );
 
+
   // ==========================================================
   // FETCH DYNAMIC DATA
-  // ==========================================================
-  //
-  // All API requests run in parallel.
-  //
-  // If one fails, safeFetch() returns [] and the rest of the
-  // sitemap continues normally.
   // ==========================================================
 
   const [
@@ -594,199 +541,122 @@ export default async function sitemap() {
     knowledgeArticles,
     insights,
   ] = await Promise.all([
-    // --------------------------------------------------------
-    // PROPERTIES
-    // --------------------------------------------------------
-    //
-    // all=true ensures we don't accidentally sitemap only
-    // the default paginated API response.
-    // --------------------------------------------------------
-
     safeFetch(
       `${API}/properties?all=true`
     ),
-
-    // --------------------------------------------------------
-    // DEVELOPERS
-    // --------------------------------------------------------
 
     safeFetch(
       `${API}/developers`
     ),
 
-    // --------------------------------------------------------
-    // KNOWLEDGE CENTRE
-    // --------------------------------------------------------
-
     safeFetch(
       `${API}/knowledge`
     ),
-
-    // --------------------------------------------------------
-    // INSIGHTS / NEWS
-    // --------------------------------------------------------
 
     safeFetch(
       `${API}/news`
     ),
   ]);
 
+
   // ==========================================================
-  // PROPERTY DETAIL PAGES
+  // PROPERTY PAGES
   // ==========================================================
 
-  properties.forEach((property) => {
-    const slug = safeSlug(
-      property?.slug
-    );
-
-    // --------------------------------------------------------
-    // Slug required.
-    // --------------------------------------------------------
-
-    if (!slug) {
-      return;
-    }
-
-    // --------------------------------------------------------
-    // ONLY PUBLISHED PROPERTIES
-    // --------------------------------------------------------
-
-    if (
-      property?.status !==
-      "published"
-    ) {
-      return;
-    }
-
-    // --------------------------------------------------------
-    // EXCLUDE DELETED PROPERTIES
-    // --------------------------------------------------------
-
-    if (
-      property?.isDeleted === true
-    ) {
-      return;
-    }
-
-    // --------------------------------------------------------
-    // EXCLUDE INACTIVE PROPERTIES
-    // --------------------------------------------------------
-
-    if (
-      property?.isActive === false
-    ) {
-      return;
-    }
-
-    // --------------------------------------------------------
-    // PUBLIC PROPERTY ARCHITECTURE:
-    //
-    // https://propertybouquet.com/{slug}
-    // --------------------------------------------------------
-
-    addUrl(
-      sitemap,
-      `/${slug}`,
-      {
-        lastModified:
-          getValidDate(
-            property?.updatedAt,
-            property?.createdAt
-          ),
-        priority: 0.95,
-        changeFrequency:
-          "weekly",
+  properties.forEach(
+    (property) => {
+      if (!property) {
+        return;
       }
-    );
-  });
+
+      const slug =
+        safeSlug(
+          property.slug
+        );
+
+      if (!slug) {
+        return;
+      }
+
+      // Published only.
+      if (
+        property.status !==
+        "published"
+      ) {
+        return;
+      }
+
+      // Deleted excluded.
+      if (
+        property.isDeleted === true
+      ) {
+        return;
+      }
+
+      // Inactive excluded.
+      if (
+        property.isActive === false
+      ) {
+        return;
+      }
+
+      addUrl(
+        sitemap,
+        `/${slug}`,
+        {
+          lastModified:
+            getValidDate(
+              property.updatedAt,
+              property.createdAt
+            ),
+          priority: 0.95,
+          changeFrequency: "weekly",
+        }
+      );
+    }
+  );
+
 
   // ==========================================================
-  // DEVELOPER DETAIL PAGES
-  // ==========================================================
-  //
-  // IMPORTANT:
-  //
-  // MongoDB/backend slug is NOT necessarily the public slug.
-  //
-  // We therefore NEVER directly use:
-  //
-  // /developers/${developer.slug}
-  //
-  // Instead we use buildPublicDeveloperSlug().
+  // DEVELOPER PAGES
   // ==========================================================
 
   developers.forEach(
     (developer) => {
-      // ------------------------------------------------------
-      // Get backend developer slug.
-      //
-      // Normal expected field:
-      // developer.slug
-      //
-      // Additional fallbacks are included for compatibility
-      // with possible API response structures.
-      // ------------------------------------------------------
+      if (!developer) {
+        return;
+      }
 
       const backendDeveloperSlug =
-        developer?.slug ||
-        developer?.backendSlug ||
-        developer?.developerSlug ||
-        developer?.data?.slug ||
-        developer?.data?.backendSlug ||
-        developer?.data?.developerSlug ||
-        developer?.developer?.slug ||
+        developer.slug ||
+        developer.backendSlug ||
+        developer.developerSlug ||
+        developer.data?.slug ||
+        developer.data?.backendSlug ||
+        developer.data?.developerSlug ||
+        developer.developer?.slug ||
         "";
-
-      // ------------------------------------------------------
-      // Build the canonical PUBLIC developer slug.
-      // ------------------------------------------------------
 
       const publicDeveloperSlug =
         buildPublicDeveloperSlug(
           backendDeveloperSlug
         );
 
-      // ------------------------------------------------------
-      // Slug required.
-      // ------------------------------------------------------
-
       if (!publicDeveloperSlug) {
         return;
       }
 
-      // ------------------------------------------------------
-      // Exclude deleted developers.
-      // ------------------------------------------------------
-
       if (
-        developer?.isDeleted === true
+        developer.isDeleted === true
       ) {
         return;
       }
 
-      // ------------------------------------------------------
-      // Exclude inactive developers.
-      // ------------------------------------------------------
-
       if (
-        developer?.isActive === false
+        developer.isActive === false
       ) {
         return;
       }
-
-      // ------------------------------------------------------
-      // PUBLIC DEVELOPER URL:
-      //
-      // /developers/{publicDeveloperSlug}
-      //
-      // Examples:
-      //
-      // /developers/m3m-developer-projects
-      // /developers/signature-global-developer-projects
-      // /developers/spiti-developer-projects
-      // /developers/ats-infrastructure-ltd-developer-projects
-      // ------------------------------------------------------
 
       addUrl(
         sitemap,
@@ -796,35 +666,35 @@ export default async function sitemap() {
         {
           lastModified:
             getValidDate(
-              developer?.updatedAt,
-              developer?.createdAt
+              developer.updatedAt,
+              developer.createdAt
             ),
           priority: 0.82,
-          changeFrequency:
-            "monthly",
+          changeFrequency: "monthly",
         }
       );
     }
   );
 
+
   // ==========================================================
-  // KNOWLEDGE CENTRE ARTICLES
+  // KNOWLEDGE ARTICLES
   // ==========================================================
 
   knowledgeArticles.forEach(
     (article) => {
+      if (!article) {
+        return;
+      }
+
       const slug =
         safeSlug(
-          article?.slug
+          article.slug
         );
 
       if (!slug) {
         return;
       }
-
-      // ------------------------------------------------------
-      // Only published and active content.
-      // ------------------------------------------------------
 
       if (
         !isPublishedContent(
@@ -833,12 +703,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
-      // ------------------------------------------------------
-      // Knowledge URL:
-      //
-      // /knowledge/{slug}
-      // ------------------------------------------------------
 
       addUrl(
         sitemap,
@@ -846,16 +710,16 @@ export default async function sitemap() {
         {
           lastModified:
             getValidDate(
-              article?.updatedAt,
-              article?.createdAt
+              article.updatedAt,
+              article.createdAt
             ),
           priority: 0.78,
-          changeFrequency:
-            "monthly",
+          changeFrequency: "monthly",
         }
       );
     }
   );
+
 
   // ==========================================================
   // PROPERTY INSIGHTS / NEWS
@@ -863,18 +727,18 @@ export default async function sitemap() {
 
   insights.forEach(
     (article) => {
+      if (!article) {
+        return;
+      }
+
       const slug =
         safeSlug(
-          article?.slug
+          article.slug
         );
 
       if (!slug) {
         return;
       }
-
-      // ------------------------------------------------------
-      // Only published and active content.
-      // ------------------------------------------------------
 
       if (
         !isPublishedContent(
@@ -884,85 +748,65 @@ export default async function sitemap() {
         return;
       }
 
-      // ------------------------------------------------------
-      // Insights URL:
-      //
-      // /insights/{slug}
-      // ------------------------------------------------------
-
       addUrl(
         sitemap,
         `/insights/${slug}`,
         {
           lastModified:
             getValidDate(
-              article?.updatedAt,
-              article?.createdAt
+              article.updatedAt,
+              article.createdAt
             ),
           priority: 0.78,
-          changeFrequency:
-            "weekly",
+          changeFrequency: "weekly",
         }
       );
     }
   );
 
+
   // ==========================================================
   // FINAL SORT
   // ==========================================================
-  //
-  // Sitemap ordering does not affect Google rankings.
-  //
-  // We use deterministic ordering for cleaner output and
-  // easier debugging.
-  //
-  // Homepage → priority → URL.
-  // ==========================================================
 
-  const sortedUrls = [
-    ...sitemap.values(),
-  ].sort((a, b) => {
-    // --------------------------------------------------------
-    // Homepage first.
-    // --------------------------------------------------------
+  const sortedUrls =
+    [...sitemap.values()]
+      .sort((a, b) => {
+        // Homepage first.
+        if (
+          a.url ===
+          `${BASE_URL}/`
+        ) {
+          return -1;
+        }
 
-    if (
-      a.url === `${BASE_URL}/`
-    ) {
-      return -1;
-    }
+        if (
+          b.url ===
+          `${BASE_URL}/`
+        ) {
+          return 1;
+        }
 
-    if (
-      b.url === `${BASE_URL}/`
-    ) {
-      return 1;
-    }
+        // Higher priority first.
+        if (
+          a.priority !==
+          b.priority
+        ) {
+          return (
+            b.priority -
+            a.priority
+          );
+        }
 
-    // --------------------------------------------------------
-    // Higher priority first.
-    // --------------------------------------------------------
+        // Alphabetical.
+        return a.url.localeCompare(
+          b.url
+        );
+      });
 
-    if (
-      a.priority !==
-      b.priority
-    ) {
-      return (
-        b.priority -
-        a.priority
-      );
-    }
-
-    // --------------------------------------------------------
-    // Alphabetical URL ordering.
-    // --------------------------------------------------------
-
-    return a.url.localeCompare(
-      b.url
-    );
-  });
 
   // ==========================================================
-  // PRODUCTION DIAGNOSTICS
+  // DIAGNOSTICS
   // ==========================================================
 
   console.log(
@@ -973,8 +817,9 @@ export default async function sitemap() {
     `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
   );
 
+
   // ==========================================================
-  // RETURN NEXT.JS SITEMAP
+  // RETURN
   // ==========================================================
 
   return sortedUrls;

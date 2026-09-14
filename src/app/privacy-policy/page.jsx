@@ -32,7 +32,7 @@ export const metadata = {
 
   alternates: {
     canonical:
-      `${SITE_URL}/privacy`,
+      `${SITE_URL}/privacy-policy`,
   },
 
   robots: {
@@ -55,7 +55,7 @@ export const metadata = {
     locale: "en_IN",
 
     url:
-      `${SITE_URL}/privacy`,
+      `${SITE_URL}/privacy-policy`,
 
     siteName:
       "Property Bouquet",
@@ -114,7 +114,7 @@ function safeJsonLd(data) {
 
 export default function PrivacyPage() {
   const canonicalUrl =
-    `${SITE_URL}/privacy`;
+    `${SITE_URL}/privacy-policy`;
 
   // ==========================================================
   // BREADCRUMB SCHEMA

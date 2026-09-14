@@ -10,6 +10,13 @@ export const metadata = {
   title: "Property Insights | Property Bouquet",
   description:
     "Luxury real estate news, market intelligence, investment insights and expert analysis by Property Bouquet.",
+
+  // =========================================================
+  // CANONICAL URL
+  // =========================================================
+  alternates: {
+    canonical: "https://propertybouquet.com/insights",
+  },
 };
 
 export default function InsightsPage() {
@@ -17,25 +24,22 @@ export default function InsightsPage() {
     <main className="min-h-screen bg-[#050608] text-white">
 
       {/* Navbar */}
-
       <Navbar />
 
       {/* Hero */}
-
       <HeroSectionInsights />
 
       {/* Temporary Section */}
       {/* Remove this after we build the Filter Bar */}
-
       <section className="relative bg-gradient-to-b from-[#050608] via-[#f7f5f1] to-[#faf8f3]"></section>
 
       <InsightsFilterBar />
 
-<FeaturedInsights/>
+      <FeaturedInsights />
 
-<BottomCTA/>
+      <BottomCTA />
+
       {/* Footer */}
-
       <Footer />
 
     </main>

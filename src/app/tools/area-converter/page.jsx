@@ -5,7 +5,7 @@ import Navbar from "@/components/home/Navbar";
 import HeroSection from "@/components/area-converter/HeroSection";
 import AreaConverterTool from "@/components/area-converter/AreaConverterTool";
 import ConversionTable from "@/components/area-converter/ConversionTable";
-import OtherConverters from "@/components/area-converter/OtherConverters";
+// import OtherConverters from "@/components/area-converter/OtherConverters";
 import AboutAreaConverter from "@/components/area-converter/AboutAreaConverter";
 import FAQSection from "@/components/area-converter/FAQSection";
 import Footer from "@/components/home/Footer";
@@ -58,12 +58,12 @@ export default function AreaConverterPage() {
       {/* ===================================================== */}
       {/* OTHER CONVERTERS                                      */}
       {/* ===================================================== */}
-      <section
+      {/* <section
         aria-labelledby="other-converters-heading"
         className="relative"
       >
         <OtherConverters />
-      </section>
+      </section> */}
 
       {/* ===================================================== */}
       {/* FAQ                                                   */}
