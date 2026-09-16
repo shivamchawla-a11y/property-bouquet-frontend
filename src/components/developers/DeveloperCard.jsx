@@ -8,7 +8,9 @@ import { ArrowRight, Bookmark } from "lucide-react";
 // ============================================================
 
 function buildDeveloperPublicSlug(slug) {
-  if (!slug) return "";
+  if (!slug) {
+    return "";
+  }
 
   const cleanSlug = String(slug)
     .trim()
@@ -19,27 +21,61 @@ function buildDeveloperPublicSlug(slug) {
     return "";
   }
 
-  // Already complete public URL slug
-  if (cleanSlug.endsWith("-developer-projects")) {
+  // =========================================================
+  // ALREADY COMPLETE PUBLIC SLUG
+  // =========================================================
+  //
+  // example:
+  // spiti-developer-projects
+  // -> spiti-developer-projects
+  //
+  // example:
+  // spiti-developers-projects
+  // -> spiti-developers-projects
+  //
+  if (
+    cleanSlug.endsWith("-developer-projects") ||
+    cleanSlug.endsWith("-developers-projects")
+  ) {
     return cleanSlug;
   }
 
-  // Backend slug already contains "-developer"
+  // =========================================================
+  // BACKEND SLUG ALREADY ENDS WITH "-developer"
+  // =========================================================
   //
-  // Example:
-  // signature-global-developer
-  // ->
-  // signature-global-developer-projects
-  if (cleanSlug.includes("-developer")) {
+  // example:
+  // spiti-developer
+  // -> spiti-developer-projects
+  //
+  if (cleanSlug.endsWith("-developer")) {
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend slug
+  // =========================================================
+  // BACKEND SLUG ALREADY ENDS WITH "-developers"
+  // =========================================================
   //
-  // Example:
+  // example:
+  // spiti-developers
+  // -> spiti-developers-projects
+  //
+  if (cleanSlug.endsWith("-developers")) {
+    return `${cleanSlug}-projects`;
+  }
+
+  // =========================================================
+  // NORMAL BACKEND SLUG
+  // =========================================================
+  //
+  // example:
   // m3m
-  // ->
-  // m3m-developer-projects
+  // -> m3m-developer-projects
+  //
+  // example:
+  // signature-global
+  // -> signature-global-developer-projects
+  //
   return `${cleanSlug}-developer-projects`;
 }
 
