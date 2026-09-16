@@ -821,49 +821,124 @@ export default function LocationSlugClient({
           >
 
             {/* ==================================================
-                BREADCRUMB
-            ================================================== */}
+    FULL LOCATION BREADCRUMB
+    Example:
+    Home → Locations → Gurgaon → Golf Course Road → Sector 56
+================================================== */}
 
-            <div
-              className="
-                mb-8
-                flex
-                flex-wrap
-                items-center
-                gap-2
-                text-[11px]
-                font-medium
-                uppercase
-                tracking-[0.22em]
-                text-white/55
-                md:gap-3
-                md:text-xs
-              "
-            >
+<div
+  className="
+    mb-8
+    flex
+    flex-wrap
+    items-center
+    gap-2
+    text-[11px]
+    font-medium
+    uppercase
+    tracking-[0.18em]
+    text-white/55
+    md:gap-3
+    md:text-xs
+  "
+>
+  {/* HOME */}
 
-              <Link
-                href="/"
-                className="transition hover:text-[#D4AF37]"
-              >
-                Home
-              </Link>
+  <Link
+    href="/"
+    className="transition hover:text-[#D4AF37]"
+  >
+    Home
+  </Link>
 
-              <span>/</span>
+  <span>/</span>
 
-              <Link
-                href="/locations"
-                className="transition hover:text-[#D4AF37]"
-              >
-                Locations
-              </Link>
+  {/* LOCATIONS */}
 
-              <span>/</span>
+  <Link
+    href="/locations"
+    className="transition hover:text-[#D4AF37]"
+  >
+    Locations
+  </Link>
 
+  {/* BUILD FULL PARENT → CHILD CHAIN */}
+
+  {(() => {
+    const hierarchy = [];
+
+    const visited = new Set();
+
+    let current = location;
+
+    while (current) {
+      const currentId =
+        current?._id?.toString?.() ||
+        current?.id?.toString?.() ||
+        current?.slug ||
+        current?.name;
+
+      if (
+        currentId &&
+        visited.has(currentId)
+      ) {
+        break;
+      }
+
+      if (currentId) {
+        visited.add(currentId);
+      }
+
+      hierarchy.unshift(current);
+
+      current = current?.parent;
+    }
+
+    return hierarchy.map(
+      (item, index) => {
+        const itemName =
+          item?.name || "Location";
+
+        const isLast =
+          index === hierarchy.length - 1;
+
+        return (
+          <div
+            key={
+              item?._id?.toString?.() ||
+              item?.slug ||
+              itemName
+            }
+            className="
+              flex
+              items-center
+              gap-2
+              md:gap-3
+            "
+          >
+            <span>/</span>
+
+            {isLast ? (
               <span className="text-[#D4AF37]">
-                {locationName}
+                {itemName}
               </span>
-
-            </div>
+            ) : (
+              <Link
+                href={`/locations/${item?.slug || ""}`}
+                className="
+                  transition
+                  hover:text-[#D4AF37]
+                "
+              >
+                {itemName}
+              </Link>
+            )}
+          </div>
+        );
+      }
+    );
+  })()}
+</div>
 
             {/* ==================================================
                 PREMIUM BADGE

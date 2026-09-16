@@ -1,260 +1,158 @@
-import { notFound } from "next/navigation";
+import {
+  notFound,
+  permanentRedirect,
+} from "next/navigation";
+
 import LocationSlugClient from "./LocationSlugClient";
 
 const SITE_URL = "https://propertybouquet.com";
 const API = "https://propertybouquet.com";
 
-// ============================================================
-// PUBLIC LOCATION URL RULE
-// ============================================================
-//
-// BACKEND SLUG
-//
-// gurgaon
-//      ↓
-// /locations/gurgaon
-//
-// sector-65
-//      ↓
-// /locations/sector-65
-//
-// golf-course-road
-//      ↓
-// /locations/golf-course-road
-//
-// ============================================================
+/* ============================================================
+   HELPERS
+============================================================ */
 
-
-// ============================================================
-// TEXT HELPERS
-// ============================================================
-
-function cleanText(value) {
-  if (!value || typeof value !== "string") {
-    return "";
-  }
-
-  return value
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function truncateDescription(text, maxLength = 160) {
-  const cleaned = cleanText(text);
-
-  if (!cleaned) {
-    return "";
-  }
-
-  if (cleaned.length <= maxLength) {
-    return cleaned;
-  }
-
-  return `${cleaned
-    .substring(0, maxLength - 3)
-    .trim()}...`;
-}
-
-
-// ============================================================
-// BACKEND SLUG → PUBLIC SEO SLUG
-// ============================================================
-//
-// Location URLs use the backend location slug directly.
-//
-// gurgaon
-// → /locations/gurgaon
-//
-// sector-65
-// → /locations/sector-65
-//
-// ============================================================
-
-function buildPublicLocationSlug(locationSlug) {
-  if (!locationSlug) {
-    return "";
-  }
-
-  const cleanSlug = String(locationSlug)
+function cleanSlug(value) {
+  return String(value || "")
     .trim()
     .toLowerCase()
     .replace(/^\/+|\/+$/g, "");
-
-  if (!cleanSlug) {
-    return "";
-  }
-
-  return cleanSlug;
 }
 
+/* ============================================================
+   PUBLIC LOCATION SLUG
+============================================================ */
 
-// ============================================================
-// PUBLIC LOCATION SLUG → BACKEND SLUG
-// ============================================================
-//
-// The public location slug maps directly to the backend slug.
-//
-// /locations/gurgaon
-//        ↓
-// gurgaon
-//
-// /locations/sector-65
-//        ↓
-// sector-65
-//
-// ============================================================
+function buildPublicLocationSlug(location) {
+  if (!location) return "";
 
-function getBackendLocationSlug(publicSlug) {
-  if (!publicSlug) {
-    return "";
+  const currentSlug = cleanSlug(location.slug);
+
+  if (!currentSlug) return "";
+
+  let root = location;
+  const visited = new Set();
+
+  while (root?.parent) {
+    const rootId =
+      root?._id?.toString?.() ||
+      root?.id?.toString?.() ||
+      root?.slug ||
+      root?.name;
+
+    if (rootId && visited.has(rootId)) {
+      break;
+    }
+
+    if (rootId) {
+      visited.add(rootId);
+    }
+
+    root = root.parent;
   }
 
-  const cleanSlug = String(publicSlug)
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
+  const rootSlug = cleanSlug(root?.slug);
 
-  if (!cleanSlug) {
-    return "";
+  if (!rootSlug || rootSlug === currentSlug) {
+    return `properties-in-${currentSlug}`;
   }
 
-  return cleanSlug;
+  return `properties-in-${currentSlug}-${rootSlug}`;
 }
 
+/* ============================================================
+   LOCATION IMAGE INHERITANCE
+============================================================ */
 
-// ============================================================
-// VALIDATE PUBLIC URL
-// ============================================================
-//
-// ONLY:
-//
-// /locations/{location-slug}
-//
-// is valid.
-//
-// ============================================================
+function getClosestLocationImage(location) {
+  const visited = new Set();
 
-function isValidPublicLocationSlug(slug) {
-  if (!slug) {
-    return false;
+  let current = location;
+
+  while (current) {
+    const currentId =
+      current?._id?.toString?.() ||
+      current?.id?.toString?.() ||
+      current?.slug ||
+      current?.name;
+
+    if (currentId && visited.has(currentId)) {
+      break;
+    }
+
+    if (currentId) {
+      visited.add(currentId);
+    }
+
+    const image =
+      typeof current?.image === "string"
+        ? current.image.trim()
+        : "";
+
+    if (image) {
+      return image;
+    }
+
+    current = current.parent;
   }
 
-  const cleanSlug = String(slug)
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
-
-  if (!cleanSlug) {
-    return false;
-  }
-
-  // Prevent malformed / nested location paths.
-  if (
-    cleanSlug.includes("/") ||
-    cleanSlug.includes("\\")
-  ) {
-    return false;
-  }
-
-  return true;
+  return "";
 }
 
+/* ============================================================
+   LOCATION NAME
+============================================================ */
 
-// ============================================================
-// LOCATION NAME → SEO DISPLAY NAME
-// ============================================================
-//
-// IMPORTANT:
-//
-// This keeps the actual location name clean.
-//
-// Gurgaon
-// → Gurgaon
-//
-// Sector 65
-// → Sector 65
-//
-// Golf Course Road
-// → Golf Course Road
-//
-// ============================================================
+function getLocationName(location) {
+  return (
+    location?.name ||
+    location?.seoName ||
+    "Prime Location"
+  );
+}
 
-function getSeoLocationName(locationName) {
-  const cleanName = cleanText(locationName);
+/* ============================================================
+   LOCATION DESCRIPTION
+============================================================ */
 
-  if (!cleanName) {
-    return "Prime Location";
+function getLocationDescription(
+  location,
+  properties = []
+) {
+  if (location?.description) {
+    return location.description;
   }
 
-  return cleanName;
+  const locationName = getLocationName(location);
+
+  const developerNames = [
+    ...new Set(
+      properties
+        .map(
+          (property) =>
+            property?.coreDetails?.developerName
+        )
+        .filter(Boolean)
+    ),
+  ];
+
+  const developerText =
+    developerNames.length > 0
+      ? ` featuring developments by ${developerNames
+          .slice(0, 5)
+          .join(", ")}`
+      : "";
+
+  return `Explore luxury properties, premium residences and investment opportunities in ${locationName}${developerText}. Discover curated real estate projects with Property Bouquet.`;
 }
 
+/* ============================================================
+   FETCH OLD/BACKEND LOCATION
+============================================================ */
 
-// ============================================================
-// PUBLIC LOCATION URL
-// ============================================================
-
-function buildLocationUrl(backendSlug) {
-  const publicSlug =
-    buildPublicLocationSlug(
-      backendSlug
-    );
-
-  return `${SITE_URL}/locations/${encodeURIComponent(
-    publicSlug
-  )}`;
-}
-
-
-// ============================================================
-// PROPERTY URL
-// ============================================================
-
-function buildPropertyUrl(slug) {
-  return `${SITE_URL}/${encodeURIComponent(slug)}`;
-}
-
-
-// ============================================================
-// FETCH LOCATION DATA
-// ============================================================
-
-async function getLocation(publicSlug) {
-  if (!publicSlug) {
-    return null;
-  }
-
+async function getBackendLocation(backendSlug) {
   try {
-    // ==========================================================
-    // STRICT PUBLIC URL VALIDATION
-    // ==========================================================
-
-    if (!isValidPublicLocationSlug(publicSlug)) {
-      console.warn(
-        `Rejected old/invalid location URL: "${publicSlug}"`
-      );
-
-      return null;
-    }
-
-    // ==========================================================
-    // GET BACKEND SLUG
-    // ==========================================================
-
-    const backendSlug =
-      getBackendLocationSlug(
-        publicSlug
-      );
-
-    if (!backendSlug) {
-      return null;
-    }
-
-    // ==========================================================
-    // FETCH LOCATION
-    // ==========================================================
-
-    const res = await fetch(
+    const response = await fetch(
       `${API}/api/locations/${encodeURIComponent(
         backendSlug
       )}`,
@@ -265,86 +163,20 @@ async function getLocation(publicSlug) {
       }
     );
 
-    if (!res.ok) {
-      console.warn(
-        `Location "${backendSlug}" returned ${res.status}`
-      );
-
+    if (!response.ok) {
       return null;
     }
 
-    const data =
-      await res.json();
+    const data = await response.json();
 
-    // ==========================================================
-    // SUPPORT COMMON BACKEND RESPONSE STRUCTURES
-    // ==========================================================
-
-    const matchedLocation =
-      data?.location ||
-      data?.data?.location ||
-      data?.data ||
-      null;
-
-    if (!matchedLocation) {
-      console.error(
-        `No location found for public slug "${publicSlug}".`
-      );
-
+    if (!data?.success || !data?.location) {
       return null;
     }
 
-    // ==========================================================
-    // GET PROPERTIES
-    // ==========================================================
-
-    const rawProperties =
-      Array.isArray(data?.properties)
-        ? data.properties
-        : Array.isArray(data?.data?.properties)
-        ? data.data.properties
-        : [];
-
-    // ==========================================================
-    // ONLY PUBLISHED + NON-DELETED PROPERTIES
-    // ==========================================================
-
-    const publishedProperties =
-      rawProperties.filter(
-        (property) =>
-          property?.status === "published" &&
-          property?.isDeleted !== true &&
-          property?.deletedFromStatus !== "trash"
-      );
-
-    // ==========================================================
-    // BUILD CANONICAL PUBLIC SLUG
-    // ==========================================================
-
-    const publicCanonicalSlug =
-      buildPublicLocationSlug(
-        backendSlug
-      );
-
-    // ==========================================================
-    // RETURN
-    // ==========================================================
-
-    return {
-      location:
-        matchedLocation,
-
-      properties:
-        publishedProperties,
-
-      backendSlug,
-
-      publicSlug:
-        publicCanonicalSlug,
-    };
+    return data;
   } catch (error) {
     console.error(
-      `Location data fetch error for public slug "${publicSlug}":`,
+      "Failed to fetch backend location:",
       error
     );
 
@@ -352,1085 +184,495 @@ async function getLocation(publicSlug) {
   }
 }
 
+/* ============================================================
+   FETCH PUBLIC LOCATION
+============================================================ */
 
-// ============================================================
-// GET PROJECT LOCATION NAMES
-// ============================================================
-
-function getPropertyLocation(property) {
-  const locations = [];
-
-  const locationData =
-    property?.locationData;
-
-  // ----------------------------------------------------------
-  // Main location
-  // ----------------------------------------------------------
-
-  if (locationData?.locationName) {
-    locations.push(
-      cleanText(
-        locationData.locationName
-      )
+async function getPublicLocation(publicSlug) {
+  try {
+    const response = await fetch(
+      `${API}/api/locations/public/${encodeURIComponent(
+        publicSlug
+      )}`,
+      {
+        next: {
+          revalidate: 300,
+        },
+      }
     );
-  }
 
-  // ----------------------------------------------------------
-  // Custom location
-  // ----------------------------------------------------------
+    if (!response.ok) {
+      return null;
+    }
 
-  if (locationData?.customLocation) {
-    locations.push(
-      cleanText(
-        locationData.customLocation
-      )
+    const data = await response.json();
+
+    if (!data?.success || !data?.location) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(
+      "Failed to fetch public location:",
+      error
     );
+
+    return null;
   }
+}
 
-  // ----------------------------------------------------------
-  // Location hierarchy
-  // ----------------------------------------------------------
+/* ============================================================
+   FILTER PUBLISHED PROPERTIES
+============================================================ */
 
-  let current =
-    locationData?.locationRef;
+function filterPublishedProperties(
+  properties = []
+) {
+  return properties.filter((property) => {
+    if (!property) return false;
+
+    if (property.status !== "published") {
+      return false;
+    }
+
+    if (property.isDeleted === true) {
+      return false;
+    }
+
+    if (
+      property.deletedFromStatus === "trash"
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+/* ============================================================
+   BUILD BREADCRUMB CHAIN
+============================================================ */
+
+function buildLocationChain(location) {
+  const chain = [];
+  const visited = new Set();
+
+  let current = location;
 
   while (current) {
-    if (current?.name) {
-      const name =
-        cleanText(
-          current.name
-        );
+    const id =
+      current?._id?.toString?.() ||
+      current?.id?.toString?.() ||
+      current?.slug ||
+      current?.name;
 
-      if (
-        name &&
-        !locations.some(
-          (existing) =>
-            existing.toLowerCase() ===
-            name.toLowerCase()
-        )
-      ) {
-        locations.push(name);
-      }
+    if (id && visited.has(id)) {
+      break;
     }
 
-    current =
-      current.parent;
-  }
-
-  return locations.filter(Boolean);
-}
-
-
-// ============================================================
-// GET PROJECT DEVELOPERS
-// ============================================================
-
-function getLocationDevelopers(properties) {
-  const developers = [];
-
-  for (const property of properties) {
-    const developerNames = [
-      property?.developerName,
-
-      property?.coreDetails
-        ?.developerName,
-
-      property?.developer
-        ?.name,
-
-      property?.developerData
-        ?.name,
-
-      property?.developerRef
-        ?.name,
-    ]
-      .filter(Boolean)
-      .map((name) =>
-        cleanText(name)
-      );
-
-    for (const developer of developerNames) {
-      if (
-        !developers.some(
-          (existing) =>
-            existing.toLowerCase() ===
-            developer.toLowerCase()
-        )
-      ) {
-        developers.push(
-          developer
-        );
-      }
+    if (id) {
+      visited.add(id);
     }
+
+    chain.unshift(current);
+
+    current = current.parent;
   }
 
-  return developers.slice(
-    0,
-    10
-  );
+  return chain;
 }
 
-
-// ============================================================
-// GET PROJECT NAMES
-// ============================================================
-
-function getProjectNames(properties) {
-  return properties
-    .map((property) =>
-      cleanText(
-        property?.coreDetails?.title
-      )
-    )
-    .filter(Boolean);
-}
-
-
-// ============================================================
-// METADATA
-// ============================================================
+/* ============================================================
+   GENERATE METADATA
+============================================================ */
 
 export async function generateMetadata({
   params,
 }) {
   const { slug } = await params;
 
-  const data =
-    await getLocation(slug);
+  const publicSlug = cleanSlug(slug);
 
-  // ==========================================================
-  // 404 METADATA
-  // ==========================================================
+  if (!publicSlug) {
+    return {};
+  }
+
+  /*
+   * First try the NEW public SEO URL.
+   */
+  let data =
+    await getPublicLocation(publicSlug);
+
+  /*
+   * If the public URL did not match, try the OLD
+   * backend slug so that old URLs can redirect.
+   */
+  if (!data) {
+    const oldData =
+      await getBackendLocation(publicSlug);
+
+    if (oldData?.location) {
+      const canonicalPublicSlug =
+        buildPublicLocationSlug(
+          oldData.location
+        );
+
+      if (
+        canonicalPublicSlug &&
+        canonicalPublicSlug !== publicSlug
+      ) {
+        permanentRedirect(
+          `/locations/${canonicalPublicSlug}`
+        );
+      }
+
+      data = oldData;
+    }
+  }
 
   if (!data?.location) {
     return {
-      metadataBase:
-        new URL(SITE_URL),
-
       title:
         "Location Not Found | Property Bouquet",
-
-      description:
-        "The requested real estate location could not be found on Property Bouquet.",
-
       robots: {
         index: false,
-        follow: true,
+        follow: false,
       },
     };
   }
 
-  // ==========================================================
-  // LOCATION DATA
-  // ==========================================================
-
-  const location =
-    data.location;
+  const location = data.location;
 
   const properties =
-    data.properties || [];
-
-  const backendSlug =
-    data.backendSlug;
-
-  // ==========================================================
-  // LOCATION NAME
-  // ==========================================================
+    filterPublishedProperties(
+      data.properties || []
+    );
 
   const locationName =
-    cleanText(
-      location?.name
-    ) ||
-    "Prime Location";
+    getLocationName(location);
 
-  // ==========================================================
-  // SEO LOCATION NAME
-  // ==========================================================
-
-  const seoLocationName =
-    getSeoLocationName(
-      locationName
-    );
-
-  // ==========================================================
-  // PROJECT DATA
-  // ==========================================================
-
-  const projectNames =
-    getProjectNames(
-      properties
-    );
-
-  const developers =
-    getLocationDevelopers(
-      properties
-    );
-
-  const projectCount =
-    properties.length;
-
-  // ==========================================================
-  // PROJECT COUNT
-  // ==========================================================
-
-  const projectCountText =
-    projectCount === 1
-      ? "1 project"
-      : `${projectCount} projects`;
-
-  // ==========================================================
-  // DEVELOPER PHRASE
-  // ==========================================================
-
-  let developerPhrase = "";
-
-  if (developers.length === 1) {
-    developerPhrase =
-      ` by ${developers[0]}`;
-  } else if (
-    developers.length === 2
-  ) {
-    developerPhrase =
-      ` by ${developers[0]} and ${developers[1]}`;
-  } else if (
-    developers.length > 2
-  ) {
-    developerPhrase =
-      ` by ${developers
-        .slice(0, 3)
-        .join(", ")}`;
-  }
-
-  // ==========================================================
-  // PRIMARY SEO TITLE
-  // ==========================================================
-  //
-  // Gurgaon:
-  // Luxury Properties in Gurgaon | Projects & Real Estate
-  //
-  // Sector 65:
-  // Luxury Properties in Sector 65 | Projects & Real Estate
-  //
-  // ==========================================================
-
-  const title =
-    `Luxury Properties in ${seoLocationName} | Projects & Real Estate`;
-
-  // ==========================================================
-  // SEO DESCRIPTION
-  // ==========================================================
-
-  let description =
-    `Explore luxury properties in ${seoLocationName} on Property Bouquet. Browse all ${projectCountText} with residential and commercial properties, prices, floor plans, amenities, locations and detailed project information`;
-
-  if (developerPhrase) {
-    description +=
-      developerPhrase;
-  }
-
-  description += ".";
-
-  const metaDescription =
-    truncateDescription(
-      description,
-      160
-    );
-
-  // ==========================================================
-  // CANONICAL URL
-  // ==========================================================
+  const canonicalPublicSlug =
+    buildPublicLocationSlug(location);
 
   const canonicalUrl =
-    buildLocationUrl(
-      backendSlug
+    `${SITE_URL}/locations/${canonicalPublicSlug}`;
+
+  const description =
+    getLocationDescription(
+      location,
+      properties
     );
 
-  // ==========================================================
-  // LOCATION IMAGE
-  // ==========================================================
+  /*
+   * Current image first.
+   * If missing, use parent.
+   * If parent missing, use grandparent.
+   */
+  const inheritedImage =
+    getClosestLocationImage(location);
 
-  const locationImage =
-    location?.image ||
-    location?.coverImage ||
-    location?.bannerImage ||
-    location?.logo ||
-    `${SITE_URL}/og-image.jpg`;
-
-  // ==========================================================
-  // KEYWORDS
-  // ==========================================================
-
-  const keywords = [
-    // Location
-    `${locationName} real estate`,
-    `${locationName} properties`,
-    `${locationName} property`,
-    `${locationName} residential projects`,
-    `${locationName} commercial projects`,
-    `${locationName} real estate projects`,
-
-    // Luxury
-    `luxury properties in ${locationName}`,
-    `luxury homes in ${locationName}`,
-    `premium properties in ${locationName}`,
-    `luxury apartments in ${locationName}`,
-    `premium apartments in ${locationName}`,
-    `luxury flats in ${locationName}`,
-
-    // Investment
-    `property investment in ${locationName}`,
-    `real estate investment in ${locationName}`,
-    `best properties in ${locationName}`,
-    `property for sale in ${locationName}`,
-
-    // Project information
-    `projects in ${locationName}`,
-    `new projects in ${locationName}`,
-    `upcoming projects in ${locationName}`,
-    `property prices in ${locationName}`,
-    `floor plans in ${locationName}`,
-    `properties with amenities in ${locationName}`,
-
-    // Developers
-    ...developers
-      .slice(0, 10)
-      .map(
-        (developer) =>
-          `${developer} projects in ${locationName}`
-      ),
-
-    // Actual project names
-    ...projectNames.slice(
-      0,
-      15
-    ),
-
-    // Generic
-    "luxury real estate",
-    "premium real estate",
-    "residential properties",
-    "commercial properties",
-    "real estate projects",
-    "property developers",
-    "luxury homes",
-
-    // Brand
-    "Property Bouquet",
-    "Property Bouquet properties",
-    "Property Bouquet locations",
-  ];
-
-  // ==========================================================
-  // RETURN METADATA
-  // ==========================================================
+  const ogImage =
+    inheritedImage ||
+    properties?.[0]?.media?.heroImageUrl ||
+    `${SITE_URL}/logo.png`;
 
   return {
-    metadataBase:
-      new URL(SITE_URL),
+    title: `Luxury Properties in ${locationName} | Projects & Real Estate`,
 
-    title,
-
-    description:
-      metaDescription,
-
-    keywords,
-
-    applicationName:
-      "Property Bouquet",
-
-    // ========================================================
-    // CANONICAL
-    // ========================================================
+    description,
 
     alternates: {
-      canonical:
-        canonicalUrl,
+      canonical: canonicalUrl,
     },
-
-    // ========================================================
-    // ROBOTS
-    // ========================================================
 
     robots: {
       index: true,
       follow: true,
-
       googleBot: {
         index: true,
         follow: true,
-
-        noimageindex: false,
-
-        "max-image-preview":
-          "large",
-
-        "max-snippet":
-          -1,
-
-        "max-video-preview":
-          -1,
       },
     },
 
-    // ========================================================
-    // OPEN GRAPH
-    // ========================================================
-
     openGraph: {
+      title: `Luxury Properties in ${locationName} | Property Bouquet`,
+      description,
+      url: canonicalUrl,
+      siteName: "Property Bouquet",
       type: "website",
-
-      locale: "en_IN",
-
-      url:
-        canonicalUrl,
-
-      siteName:
-        "Property Bouquet",
-
-      title,
-
-      description:
-        metaDescription,
 
       images: [
         {
-          url:
-            locationImage,
-
-          width:
-            1200,
-
-          height:
-            630,
-
-          alt:
-            title,
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `Luxury properties in ${locationName}`,
         },
       ],
     },
 
-    // ========================================================
-    // TWITTER / X
-    // ========================================================
-
     twitter: {
-      card:
-        "summary_large_image",
-
-      title,
-
-      description:
-        metaDescription,
-
-      images: [
-        locationImage,
-      ],
+      card: "summary_large_image",
+      title: `Luxury Properties in ${locationName} | Property Bouquet`,
+      description,
+      images: [ogImage],
     },
   };
 }
 
+/* ============================================================
+   LOCATION PAGE
+============================================================ */
 
-// ============================================================
-// JSON-LD SAFE STRINGIFY
-// ============================================================
-
-function safeJsonLd(data) {
-  return JSON.stringify(data).replace(
-    /</g,
-    "\\u003c"
-  );
-}
-
-
-// ============================================================
-// PAGE
-// ============================================================
-
-export default async function LocationSlugPage({
+export default async function LocationPage({
   params,
 }) {
   const { slug } = await params;
 
-  // ==========================================================
-  // STRICT PUBLIC URL CHECK
-  // ==========================================================
+  const requestedSlug = cleanSlug(slug);
 
-  if (
-    !isValidPublicLocationSlug(
-      slug
-    )
-  ) {
+  if (!requestedSlug) {
     notFound();
   }
 
-  // ==========================================================
-  // SERVER-SIDE FETCH
-  // ==========================================================
+  /* ==========================================================
+     FIRST: TRY NEW PUBLIC URL
+  ========================================================== */
 
-  const data =
-    await getLocation(slug);
+  let data =
+    await getPublicLocation(
+      requestedSlug
+    );
 
-  // ==========================================================
-  // REAL 404
-  // ==========================================================
+  /* ==========================================================
+     OLD URL REDIRECT
+  ========================================================== */
+
+  if (!data) {
+    const oldData =
+      await getBackendLocation(
+        requestedSlug
+      );
+
+    if (!oldData?.location) {
+      notFound();
+    }
+
+    const canonicalPublicSlug =
+      buildPublicLocationSlug(
+        oldData.location
+      );
+
+    /*
+     * Redirect old backend URL to the new SEO URL.
+     *
+     * Example:
+     *
+     * /locations/sector-56
+     *
+     * becomes:
+     *
+     * /locations/properties-in-sector-56-gurgaon
+     */
+    if (
+      canonicalPublicSlug &&
+      canonicalPublicSlug !== requestedSlug
+    ) {
+      permanentRedirect(
+        `/locations/${canonicalPublicSlug}`
+      );
+    }
+
+    data = oldData;
+  }
 
   if (!data?.location) {
     notFound();
   }
 
-  // ==========================================================
-  // BASIC DATA
-  // ==========================================================
+  /* ==========================================================
+     LOCATION
+  ========================================================== */
 
-  const location =
-    data.location;
+  const location = data.location;
+
+  /* ==========================================================
+     PROPERTIES
+  ========================================================== */
 
   const properties =
-    data.properties || [];
+    filterPublishedProperties(
+      data.properties || []
+    );
 
-  const backendSlug =
-    data.backendSlug;
+  /* ==========================================================
+     PUBLIC SLUG
+  ========================================================== */
 
-  // ==========================================================
-  // LOCATION NAME
-  // ==========================================================
+  const publicSlug =
+    buildPublicLocationSlug(location);
+
+  /* ==========================================================
+     INHERITED IMAGE
+  ========================================================== */
+
+  /*
+   * Current location image wins.
+   *
+   * Otherwise:
+   *
+   * Sector 56
+   *     ↓
+   * Golf Course Road
+   *     ↓
+   * Gurgaon
+   */
+  const locationImage =
+    getClosestLocationImage(location);
+
+  /*
+   * Pass the inherited image to the client.
+   *
+   * This allows the hero to use the parent image even
+   * when the current location itself has no image.
+   */
+  const locationForClient = {
+    ...location,
+    image:
+      locationImage ||
+      location?.image ||
+      "",
+  };
+
+  /* ==========================================================
+     BREADCRUMB
+  ========================================================== */
+
+  const locationChain =
+    buildLocationChain(location);
+
+  /* ==========================================================
+     JSON-LD
+  ========================================================== */
 
   const locationName =
-    cleanText(
-      location?.name
-    ) ||
-    "Prime Location";
-
-  // ==========================================================
-  // SEO LOCATION NAME
-  // ==========================================================
-
-  const seoLocationName =
-    getSeoLocationName(
-      locationName
-    );
-
-  // ==========================================================
-  // PUBLIC CANONICAL URL
-  // ==========================================================
+    getLocationName(location);
 
   const canonicalUrl =
-    buildLocationUrl(
-      backendSlug
-    );
-
-  // ==========================================================
-  // LOCATION DESCRIPTION
-  // ==========================================================
-
-  const locationDescription =
-    cleanText(
-      location?.description
-    ) ||
-    `Explore premium real estate projects, luxury residences, and investment opportunities in ${seoLocationName} on Property Bouquet.`;
-
-  // ==========================================================
-  // LOCATION IMAGE
-  // ==========================================================
-
-  const locationImage =
-    location?.image ||
-    location?.coverImage ||
-    location?.bannerImage ||
-    location?.logo ||
-    `${SITE_URL}/og-image.jpg`;
-
-  // ==========================================================
-  // DEVELOPERS
-  // ==========================================================
-
-  const developers =
-    getLocationDevelopers(
-      properties
-    );
-
-  // ==========================================================
-  // PROJECT NAMES
-  // ==========================================================
-
-  const projectNames =
-    getProjectNames(
-      properties
-    );
-
-  // ==========================================================
-  // LOCATION HIERARCHY
-  // ==========================================================
-
-  const locationHierarchy = [];
-
-  let currentLocation =
-    location;
-
-  while (
-    currentLocation
-  ) {
-    if (
-      currentLocation?.name
-    ) {
-      const name =
-        cleanText(
-          currentLocation.name
-        );
-
-      if (
-        name &&
-        !locationHierarchy.some(
-          (existing) =>
-            existing.toLowerCase() ===
-            name.toLowerCase()
-        )
-      ) {
-        locationHierarchy.push(
-          name
-        );
-      }
-    }
-
-    currentLocation =
-      currentLocation.parent;
-  }
-
-  // ==========================================================
-  // LOCATION DESCRIPTION FOR SCHEMA
-  // ==========================================================
-
-  let developerDescription =
-    "";
-
-  if (developers.length === 1) {
-    developerDescription =
-      ` Premium projects in this location include developments by ${developers[0]}.`;
-  } else if (
-    developers.length === 2
-  ) {
-    developerDescription =
-      ` Premium projects in this location include developments by ${developers[0]} and ${developers[1]}.`;
-  } else if (
-    developers.length > 2
-  ) {
-    developerDescription =
-      ` Premium projects in this location include developments by ${developers
-        .slice(0, 5)
-        .join(", ")}.`;
-  }
-
-  // ==========================================================
-  // PLACE SCHEMA
-  // ==========================================================
-
-  const placeSchema = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "Place",
-
-    "@id":
-      `${canonicalUrl}#place`,
-
-    name:
-      locationName,
-
-    url:
-      canonicalUrl,
-
-    description:
-      locationDescription,
-
-    ...(locationImage
-      ? {
-          image:
-            locationImage,
-        }
-      : {}),
-  };
-
-  // ==========================================================
-  // WEB PAGE SCHEMA
-  // ==========================================================
-
-  const webPageSchema = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "WebPage",
-
-    "@id":
-      `${canonicalUrl}#webpage`,
-
-    url:
-      canonicalUrl,
-
-    name:
-      `Luxury Properties in ${seoLocationName}`,
-
-    headline:
-      `Luxury Properties in ${seoLocationName}`,
-
-    description:
-      `${locationDescription}${developerDescription}`,
-
-    inLanguage:
-      "en-IN",
-
-    isPartOf: {
-      "@type":
-        "WebSite",
-
-      "@id":
-        `${SITE_URL}/#website`,
-
-      name:
-        "Property Bouquet",
-
-      url:
-        SITE_URL,
-    },
-
-    about: {
-      "@id":
-        `${canonicalUrl}#place`,
-    },
-
-    mainEntity: {
-      "@id":
-        `${canonicalUrl}#place`,
-    },
-  };
-
-  // ==========================================================
-  // BREADCRUMB SCHEMA
-  // ==========================================================
+    `${SITE_URL}/locations/${publicSlug}`;
 
   const breadcrumbItems = [
     {
-      "@type":
-        "ListItem",
-
-      position:
-        1,
-
-      name:
-        "Home",
-
-      item:
-        SITE_URL,
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: SITE_URL,
     },
 
     {
-      "@type":
-        "ListItem",
+      "@type": "ListItem",
+      position: 2,
+      name: "Locations",
+      item: `${SITE_URL}/locations`,
+    },
 
-      position:
-        2,
+    ...locationChain.map(
+      (item, index) => {
+        const itemPublicSlug =
+          buildPublicLocationSlug(item);
 
-      name:
-        "Locations",
+        return {
+          "@type": "ListItem",
+          position: index + 3,
+          name: getLocationName(item),
+          item: `${SITE_URL}/locations/${itemPublicSlug}`,
+        };
+      }
+    ),
+  ];
 
-      item:
-        `${SITE_URL}/locations`,
+  const inheritedImage =
+    getClosestLocationImage(location);
+
+  const schemaImage =
+    inheritedImage ||
+    properties?.[0]?.media?.heroImageUrl ||
+    `${SITE_URL}/logo.png`;
+
+  const schema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Place",
+      name: locationName,
+      url: canonicalUrl,
+      image: schemaImage,
+    },
+
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: `Luxury Properties in ${locationName}`,
+      url: canonicalUrl,
+      description:
+        getLocationDescription(
+          location,
+          properties
+        ),
+      isPartOf: {
+        "@type": "WebSite",
+        name: "Property Bouquet",
+        url: SITE_URL,
+      },
+    },
+
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: `Properties in ${locationName}`,
+      url: canonicalUrl,
+
+      about: {
+        "@type": "Place",
+        name: locationName,
+      },
+
+      numberOfItems: properties.length,
+    },
+
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbItems,
     },
   ];
 
-  // ==========================================================
-  // ADD LOCATION HIERARCHY
-  // ==========================================================
-
-  if (
-    locationHierarchy.length > 1
-  ) {
-    const reversedHierarchy =
-      [...locationHierarchy]
-        .reverse();
-
-    reversedHierarchy.forEach(
-      (
-        hierarchyName,
-        index
-      ) => {
-        const isCurrent =
-          index ===
-          reversedHierarchy.length - 1;
-
-        breadcrumbItems.push({
-          "@type":
-            "ListItem",
-
-          position:
-            breadcrumbItems.length + 1,
-
-          name:
-            hierarchyName,
-
-          ...(isCurrent
-            ? {
-                item:
-                  canonicalUrl,
-              }
-            : {}),
-        });
-      }
-    );
-  } else {
-    breadcrumbItems.push({
-      "@type":
-        "ListItem",
-
-      position:
-        3,
-
-      name:
-        seoLocationName,
-
-      item:
-        canonicalUrl,
-    });
-  }
-
-  const breadcrumbSchema = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "BreadcrumbList",
-
-    itemListElement:
-      breadcrumbItems,
-  };
-
-  // ==========================================================
-  // PROJECT ITEM LIST
-  // ==========================================================
-
-  const projectItems =
-    properties
-      .slice(0, 50)
-      .map(
-        (
-          property,
-          index
-        ) => {
-          const propertySlug =
-            cleanText(
-              property?.slug
-            );
-
-          const propertyTitle =
-            cleanText(
-              property
-                ?.coreDetails
-                ?.title
-            ) ||
-            "Luxury Property";
-
-          if (!propertySlug) {
-            return null;
-          }
-
-          const propertyUrl =
-            buildPropertyUrl(
-              propertySlug
-            );
-
-          const heroImage =
-            property
-              ?.media
-              ?.heroImageUrl;
-
-          return {
-            "@type":
-              "ListItem",
-
-            position:
-              index + 1,
-
-            name:
-              propertyTitle,
-
-            url:
-              propertyUrl,
-
-            item: {
-              "@type":
-                "RealEstateListing",
-
-              "@id":
-                `${propertyUrl}#listing`,
-
-              name:
-                propertyTitle,
-
-              url:
-                propertyUrl,
-
-              ...(heroImage
-                ? {
-                    image:
-                      heroImage,
-                  }
-                : {}),
-            },
-          };
-        }
-      )
-      .filter(Boolean);
-
-  // ==========================================================
-  // COLLECTION PAGE SCHEMA
-  // ==========================================================
-
-  const collectionSchema = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "CollectionPage",
-
-    "@id":
-      `${canonicalUrl}#collection`,
-
-    url:
-      canonicalUrl,
-
-    name:
-      `Luxury Properties in ${seoLocationName}`,
-
-    headline:
-      `Luxury Properties in ${seoLocationName}`,
-
-    description:
-      `Explore luxury properties and real estate projects in ${seoLocationName} on Property Bouquet.${developerDescription}`,
-
-    inLanguage:
-      "en-IN",
-
-    isPartOf: {
-      "@type":
-        "WebSite",
-
-      "@id":
-        `${SITE_URL}/#website`,
-
-      name:
-        "Property Bouquet",
-
-      url:
-        SITE_URL,
-    },
-
-    about: {
-      "@id":
-        `${canonicalUrl}#place`,
-    },
-
-    mainEntity: {
-      "@type":
-        "ItemList",
-
-      "@id":
-        `${canonicalUrl}#projects`,
-
-      numberOfItems:
-        projectItems.length,
-
-      itemListElement:
-        projectItems,
-    },
-
-    ...(locationHierarchy.length > 0
-      ? {
-          spatialCoverage: {
-            "@type":
-              "Place",
-
-            name:
-              locationHierarchy.join(
-                ", "
-              ),
-          },
-        }
-      : {}),
-  };
-
-  // ==========================================================
-  // RETURN SERVER HTML
-  // ==========================================================
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <>
-      {/* ======================================================
-          PLACE JSON-LD
-      ====================================================== */}
+      {/* ========================================================
+          STRUCTURED DATA
+      ======================================================== */}
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              placeSchema
-            ),
+          __html: JSON.stringify(schema),
         }}
       />
 
-      {/* ======================================================
-          WEB PAGE JSON-LD
-      ====================================================== */}
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              webPageSchema
-            ),
-        }}
-      />
-
-      {/* ======================================================
-          BREADCRUMB JSON-LD
-      ====================================================== */}
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              breadcrumbSchema
-            ),
-        }}
-      />
-
-      {/* ======================================================
-          COLLECTION / PROJECTS JSON-LD
-      ====================================================== */}
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              collectionSchema
-            ),
-        }}
-      />
-
-      {/* ======================================================
-          CLIENT UI
-      ====================================================== */}
+      {/* ========================================================
+          LOCATION CLIENT PAGE
+      ======================================================== */}
 
       <LocationSlugClient
-        location={location}
+        location={locationForClient}
         properties={properties}
-        slug={backendSlug}
+        slug={publicSlug}
       />
     </>
   );
 }
-
