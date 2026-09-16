@@ -21,7 +21,37 @@ function cleanSlug(value) {
 
 /* ============================================================
    PUBLIC LOCATION SLUG
-============================================================ */
+   ============================================================ */
+
+function getLocationPreposition(location) {
+  const name = String(location?.name || "")
+    .trim()
+    .toLowerCase();
+
+  const slug = String(location?.slug || "")
+    .trim()
+    .toLowerCase();
+
+  const value = `${name} ${slug}`;
+
+  const onKeywords = [
+    "expressway",
+    "express way",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
+
+  return onKeywords.some((keyword) =>
+    value.includes(keyword)
+  )
+    ? "on"
+    : "in";
+}
 
 function buildPublicLocationSlug(location) {
   if (!location) return "";
@@ -31,6 +61,7 @@ function buildPublicLocationSlug(location) {
   if (!currentSlug) return "";
 
   let root = location;
+
   const visited = new Set();
 
   while (root?.parent) {
@@ -53,11 +84,17 @@ function buildPublicLocationSlug(location) {
 
   const rootSlug = cleanSlug(root?.slug);
 
-  if (!rootSlug || rootSlug === currentSlug) {
-    return `properties-in-${currentSlug}`;
+  const preposition =
+    getLocationPreposition(location);
+
+  if (
+    !rootSlug ||
+    rootSlug === currentSlug
+  ) {
+    return `properties-${preposition}-${currentSlug}`;
   }
 
-  return `properties-in-${currentSlug}-${rootSlug}`;
+  return `properties-${preposition}-${currentSlug}-${rootSlug}`;
 }
 
 /* ============================================================

@@ -47,6 +47,94 @@ export default function LocationSlugClient({
     location?.name ||
     "Prime Location";
 
+
+    // ============================================================
+// PUBLIC LOCATION URL HELPERS
+// ============================================================
+
+const getLocationPreposition = (location) => {
+  const name = String(location?.name || "")
+    .trim()
+    .toLowerCase();
+
+  const slug = String(location?.slug || "")
+    .trim()
+    .toLowerCase();
+
+  const value = `${name} ${slug}`;
+
+  const onKeywords = [
+    "expressway",
+    "express way",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
+
+  return onKeywords.some((keyword) =>
+    value.includes(keyword)
+  )
+    ? "on"
+    : "in";
+};
+
+const buildPublicLocationSlug = (location) => {
+  if (!location) return "";
+
+  const currentSlug = String(location?.slug || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!currentSlug) return "";
+
+  let root = location;
+
+  const visited = new Set();
+
+  while (root?.parent) {
+    const rootId =
+      root?._id?.toString?.() ||
+      root?.id?.toString?.() ||
+      root?.slug ||
+      root?.name;
+
+    if (
+      rootId &&
+      visited.has(rootId)
+    ) {
+      break;
+    }
+
+    if (rootId) {
+      visited.add(rootId);
+    }
+
+    root = root.parent;
+  }
+
+  const rootSlug = String(root?.slug || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  const preposition =
+    getLocationPreposition(location);
+
+  if (
+    !rootSlug ||
+    rootSlug === currentSlug
+  ) {
+    return `properties-${preposition}-${currentSlug}`;
+  }
+
+  return `properties-${preposition}-${currentSlug}-${rootSlug}`;
+};
+
   // ============================================================
   // FIND CLOSEST AVAILABLE LOCATION IMAGE
   // ============================================================
@@ -556,7 +644,7 @@ export default function LocationSlugClient({
   // ============================================================
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7]">
+    <div className="min-h-screen bg-[#f7f7f7] text-[#111827]">
 
       {/* ======================================================
           NAVBAR
@@ -569,16 +657,17 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <section
-        className="
-          relative
-          min-h-[780px]
-          overflow-hidden
-          bg-[#061811]
-          pt-[120px]
-          pb-16
-          md:min-h-[850px]
-        "
-      >
+  className="
+    relative
+    min-h-[780px]
+    overflow-hidden
+    bg-[#061811]
+    pt-[120px]
+    pb-16
+    text-white
+    md:min-h-[850px]
+  "
+>
 
         {/* ====================================================
             FULL BACKGROUND IMAGE
@@ -924,14 +1013,14 @@ export default function LocationSlugClient({
               </span>
             ) : (
               <Link
-                href={`/locations/${item?.slug || ""}`}
-                className="
-                  transition
-                  hover:text-[#D4AF37]
-                "
-              >
-                {itemName}
-              </Link>
+  href={`/locations/${buildPublicLocationSlug(item)}`}
+  className="
+    transition
+    hover:text-[#D4AF37]
+  "
+>
+  {itemName}
+</Link>
             )}
           </div>
         );
@@ -1779,15 +1868,16 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <section
-        id="projects"
-        className="
-          mx-auto
-          max-w-[1500px]
-          px-4
-          py-16
-          md:py-20
-        "
-      >
+  id="projects"
+  className="
+    mx-auto
+    max-w-[1500px]
+    px-4
+    py-16
+    text-[#111827]
+    md:py-20
+  "
+>
 
         <div
           className="
