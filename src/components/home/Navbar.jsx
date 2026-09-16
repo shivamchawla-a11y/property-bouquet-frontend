@@ -3,14 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import {
   Menu,
   X,
   ChevronDown,
   Phone,
 } from "lucide-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+
+// =========================================================
+// NAVIGATION ITEMS
+// =========================================================
 
 const navItems = [
   {
@@ -18,16 +24,19 @@ const navItems = [
     key: "properties",
     href: "/properties",
   },
+
   {
     title: "Locations",
     key: "locations",
-    href: "/properties",
+    href: "/locations",
   },
+
   {
     title: "Developers",
     key: "developers",
     href: "/developers",
   },
+
   {
     title: "Knowledge Centre",
     key: "knowledge",
@@ -39,6 +48,7 @@ const navItems = [
       "Investment Guides",
     ],
   },
+
   {
     title: "Property Insights",
     key: "insights",
@@ -49,6 +59,7 @@ const navItems = [
       "Investment Trends",
     ],
   },
+
   {
     title: "Tools",
     key: "tools",
@@ -58,11 +69,13 @@ const navItems = [
       "Area Converter",
     ],
   },
+
   {
     title: "About Us",
     key: "about",
     href: "/about",
   },
+
   {
     title: "Contact",
     key: "contact",
@@ -72,29 +85,269 @@ const navItems = [
 
 // =========================================================
 // PUBLIC DEVELOPER URL
+//
+// Examples:
+//
+// m3m
+// → /developers/m3m-developer-projects
+//
+// signature-global
+// → /developers/signature-global-developer-projects
+//
+// spiti-developer
+// → /developers/spiti-developer-projects
+//
+// spiti-developers
+// → /developers/spiti-developers-projects
+//
+// spiti-developer-projects
+// → unchanged
+//
+// spiti-developers-projects
+// → unchanged
 // =========================================================
 
 const getDeveloperProjectUrl = (slug) => {
-  if (!slug) return "/developers";
+  if (!slug) {
+    return "/developers";
+  }
 
   const cleanSlug = String(slug)
     .toLowerCase()
     .trim()
     .replace(/^\/+|\/+$/g, "");
 
-  // Already complete
-  if (cleanSlug.endsWith("-developer-projects")) {
+  if (!cleanSlug) {
+    return "/developers";
+  }
+
+  // Already complete public URL
+  if (
+    cleanSlug.endsWith("-developer-projects") ||
+    cleanSlug.endsWith("-developers-projects")
+  ) {
     return `/developers/${cleanSlug}`;
   }
 
-  // Backend slug already contains "-developer"
+  // Backend slug already ends with "-developer"
   if (cleanSlug.endsWith("-developer")) {
+    return `/developers/${cleanSlug}-projects`;
+  }
+
+  // Backend slug already ends with "-developers"
+  if (cleanSlug.endsWith("-developers")) {
     return `/developers/${cleanSlug}-projects`;
   }
 
   // Normal backend slug
   return `/developers/${cleanSlug}-developer-projects`;
 };
+
+// =========================================================
+// LOCATION PREPOSITION
+//
+// Roads / Expressways / Highways etc.
+// → "on"
+//
+// Sectors / Cities / Localities etc.
+// → "in"
+// =========================================================
+
+const getLocationPreposition = (location) => {
+  const name = String(location?.name || "")
+    .trim()
+    .toLowerCase();
+
+  const slug = String(location?.slug || "")
+    .trim()
+    .toLowerCase();
+
+  const value = `${name} ${slug}`;
+
+  const onKeywords = [
+    "expressway",
+    "express way",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
+
+  return onKeywords.some((keyword) =>
+    value.includes(keyword)
+  )
+    ? "on"
+    : "in";
+};
+
+// =========================================================
+// LOCATION SLUGIFY
+// =========================================================
+
+const slugifyLocation = (value) => {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+// =========================================================
+// FIND LOCATION + MOST-PARENT LOCATION
+//
+// IMPORTANT:
+//
+// The /api/locations/tree endpoint already contains
+// the hierarchy through "children".
+//
+// Example:
+//
+// Gurgaon
+//   └── Farukhnagar
+//
+// When Farukhnagar is found:
+//
+// {
+//   location: Farukhnagar,
+//   root: Gurgaon
+// }
+//
+// This is more reliable than trying to use
+// location.parent on the frontend.
+// =========================================================
+
+const findLocationInTree = (
+  tree,
+  locationName,
+  root = null
+) => {
+  if (!Array.isArray(tree)) {
+    return null;
+  }
+
+  const target = String(locationName || "")
+    .trim()
+    .toLowerCase();
+
+  for (const location of tree) {
+    // The first location at the current hierarchy level
+    // becomes the most-parent/root location.
+    const currentRoot = root || location;
+
+    const currentName = String(
+      location?.name || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    // Found requested location
+    if (currentName === target) {
+      return {
+        location,
+        root: currentRoot,
+      };
+    }
+
+    // Search children recursively
+    const found = findLocationInTree(
+      location?.children || [],
+      locationName,
+      currentRoot
+    );
+
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
+};
+
+// =========================================================
+// PUBLIC LOCATION SEO URL
+//
+// CURRENT LOCATION + MOST-PARENT LOCATION ONLY
+//
+// Examples:
+//
+// Gurgaon
+// → /locations/properties-in-gurgaon
+//
+// Farukhnagar
+// → /locations/properties-in-farukhnagar-gurgaon
+//
+// Sector 56
+// → /locations/properties-in-sector-56-gurgaon
+//
+// Golf Course Road
+// → /locations/properties-on-golf-course-road-gurgaon
+//
+// Dwarka Expressway
+// → /locations/properties-on-dwarka-expressway-gurgaon
+//
+// IMPORTANT:
+//
+// Intermediate parents are NOT included.
+// =========================================================
+
+const getPublicLocationUrl = (
+  location,
+  root = null
+) => {
+  if (!location) {
+    return "/locations";
+  }
+
+  const currentSlug = slugifyLocation(
+    location.slug ||
+      location.name ||
+      ""
+  );
+
+  if (!currentSlug) {
+    return "/locations";
+  }
+
+  const rootSlug = slugifyLocation(
+    root?.slug ||
+      root?.name ||
+      ""
+  );
+
+  const preposition =
+    getLocationPreposition(location);
+
+  // -------------------------------------------------------
+  // Child location
+  //
+  // Current + most-parent
+  //
+  // Farukhnagar + Gurgaon
+  // -------------------------------------------------------
+
+  if (
+    rootSlug &&
+    rootSlug !== currentSlug
+  ) {
+    return `/locations/properties-${preposition}-${currentSlug}-${rootSlug}`;
+  }
+
+  // -------------------------------------------------------
+  // Root location
+  //
+  // Gurgaon
+  // → /locations/properties-in-gurgaon
+  // -------------------------------------------------------
+
+  return `/locations/properties-${preposition}-${currentSlug}`;
+};
+
+// =========================================================
+// NAVBAR
+// =========================================================
 
 export default function Navbar({
   onConsultationClick,
@@ -115,9 +368,15 @@ export default function Navbar({
     useState(null);
 
   const [locations, setLocations] = useState([]);
+  const [locationTree, setLocationTree] = useState([]);
+
   const [developers, setDevelopers] = useState([]);
-  const [propertyTypes, setPropertyTypes] = useState([]);
-  const [properties, setProperties] = useState([]);
+
+  const [propertyTypes, setPropertyTypes] =
+    useState([]);
+
+  const [properties, setProperties] =
+    useState([]);
 
   const [showLocationModal, setShowLocationModal] =
     useState(false);
@@ -140,22 +399,31 @@ export default function Navbar({
       setScrolled(window.scrollY > 30);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener(
+      "scroll",
+      handleScroll
+    );
 
     return () =>
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
   }, []);
 
-  const lightNavbar = forceSolid || scrolled;
+  const lightNavbar =
+    forceSolid || scrolled;
 
   // =========================================================
-  // FETCH PROPERTIES
+  // FETCH PROPERTIES / LOCATIONS / DEVELOPERS
   // =========================================================
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const res = await fetch("/api/properties");
+        const res = await fetch(
+          "/api/properties"
+        );
 
         const data = await res.json();
 
@@ -165,115 +433,176 @@ export default function Navbar({
           );
         }
 
-        const propertyData = data?.data || [];
+        const propertyData =
+          data?.data || [];
 
         setProperties(propertyData);
 
         // =====================================================
+        // LOCATION TREE
+        // =====================================================
+
+        try {
+          const locationRes =
+            await fetch(
+              "/api/locations/tree"
+            );
+
+          const locationData =
+            await locationRes.json();
+
+          if (locationRes.ok) {
+            setLocationTree(
+              locationData?.data || []
+            );
+          }
+        } catch (locationError) {
+          console.error(
+            "Navbar location tree error:",
+            locationError
+          );
+        }
+
+        // =====================================================
         // LOCATIONS
+        //
+        // Existing location names are preserved.
+        // This does NOT change location search/filter logic.
         // =====================================================
 
         const uniqueLocations = [
           ...new Set(
-            propertyData.flatMap((property) => {
-              const location =
-                property?.locationData?.locationName;
+            propertyData.flatMap(
+              (property) => {
+                const location =
+                  property
+                    ?.locationData
+                    ?.locationName;
 
-              if (!location) return [];
+                if (!location) {
+                  return [];
+                }
 
-              return location
-                .split(">")
-                .map((item) => item.trim())
-                .filter(Boolean);
-            })
+                return location
+                  .split(">")
+                  .map((item) =>
+                    item.trim()
+                  )
+                  .filter(Boolean);
+              }
+            )
           ),
         ].sort();
 
-        setLocations(uniqueLocations);
+        setLocations(
+          uniqueLocations
+        );
 
         // =====================================================
         // DEVELOPERS
+        //
+        // Sorted by:
+        // 1. Property count
+        // 2. Alphabetical tie-break
         // =====================================================
 
-        // =====================================================
-// DEVELOPERS
-// Sorted by number of properties
-// Highest property count first
-// Alphabetical order used as tie-breaker
-// =====================================================
+        const developerMap =
+          new Map();
 
-const developerMap = new Map();
+        propertyData.forEach(
+          (property) => {
+            const developerName =
+              property
+                ?.coreDetails
+                ?.developerName;
 
-propertyData.forEach((property) => {
-  const developerName =
-    property?.coreDetails?.developerName;
+            if (!developerName) {
+              return;
+            }
 
-  if (!developerName) return;
+            const developer =
+              property
+                ?.coreDetails
+                ?.developerRef;
 
-  const developer =
-    property?.coreDetails?.developerRef;
+            const existing =
+              developerMap.get(
+                developerName
+              );
 
-  const existing =
-    developerMap.get(developerName);
+            // -------------------------------------------------
+            // Existing developer
+            // -------------------------------------------------
 
-  // -----------------------------------------------------
-  // Developer already exists → increase property count
-  // -----------------------------------------------------
+            if (existing) {
+              existing.propertyCount += 1;
+              return;
+            }
 
-  if (existing) {
-    existing.propertyCount += 1;
-    return;
-  }
+            // -------------------------------------------------
+            // Developer slug
+            // -------------------------------------------------
 
-  // -----------------------------------------------------
-  // Generate developer slug
-  // Prefer backend developer slug if available
-  // -----------------------------------------------------
+            const developerSlug =
+              developer?.slug ||
+              developerName
+                .toLowerCase()
+                .trim()
+                .replace(
+                  /[^a-z0-9]+/g,
+                  "-"
+                )
+                .replace(
+                  /^-+|-+$/g,
+                  "");
 
-  const developerSlug =
-    developer?.slug ||
-    developerName
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+            // -------------------------------------------------
+            // First property for developer
+            // -------------------------------------------------
 
-  // -----------------------------------------------------
-  // First property for this developer
-  // -----------------------------------------------------
+            developerMap.set(
+              developerName,
+              {
+                name: developerName,
 
-  developerMap.set(developerName, {
-    name: developerName,
+                slug: developerSlug,
 
-    slug: developerSlug,
+                logo:
+                  developer?.logo ||
+                  developer?.image ||
+                  property
+                    .coreDetails
+                    ?.developerLogo ||
+                  property
+                    .coreDetails
+                    ?.developerImage ||
+                  "/placeholder.png",
 
-    logo:
-      developer?.logo ||
-      developer?.image ||
-      property.coreDetails?.developerLogo ||
-      property.coreDetails?.developerImage ||
-      "/placeholder.png",
+                propertyCount: 1,
+              }
+            );
+          }
+        );
 
-    propertyCount: 1,
-  });
-});
+        // -----------------------------------------------------
+        // SORT DEVELOPERS
+        // -----------------------------------------------------
 
-// -------------------------------------------------------
-// SORT
-// 1. Most properties first
-// 2. Alphabetical order if property count is equal
-// -------------------------------------------------------
+        const uniqueDevelopers =
+          Array.from(
+            developerMap.values()
+          ).sort(
+            (a, b) =>
+              b.propertyCount -
+                a.propertyCount ||
+              a.name.localeCompare(
+                b.name
+              )
+          );
 
-const uniqueDevelopers = Array.from(
-  developerMap.values()
-).sort(
-  (a, b) =>
-    b.propertyCount - a.propertyCount ||
-    a.name.localeCompare(b.name)
-);
-
-setDevelopers(uniqueDevelopers);
-
+        setDevelopers(
+          uniqueDevelopers
+        );
 
         // =====================================================
         // PROPERTY TYPES
@@ -284,14 +613,17 @@ setDevelopers(uniqueDevelopers);
             propertyData
               .map(
                 (property) =>
-                  property?.categoryData
+                  property
+                    ?.categoryData
                     ?.categoryName
               )
               .filter(Boolean)
           ),
         ].sort();
 
-        setPropertyTypes(uniqueCategories);
+        setPropertyTypes(
+          uniqueCategories
+        );
       } catch (err) {
         console.error(
           "Navbar property fetch error:",
@@ -307,34 +639,45 @@ setDevelopers(uniqueDevelopers);
   // MOBILE ITEMS
   // =========================================================
 
-  const mobileItems = navItems.map((item) => {
-    let items = item.items || [];
+  const mobileItems =
+    navItems.map((item) => {
+      let items =
+        item.items || [];
 
-    if (item.key === "properties") {
-      items = propertyTypes;
-    }
+      if (
+        item.key === "properties"
+      ) {
+        items = propertyTypes;
+      }
 
-    if (item.key === "locations") {
-      items = [
-        ...locations.slice(0, 5),
-        "View All Locations →",
-      ];
-    }
+      if (
+        item.key === "locations"
+      ) {
+        items = [
+          ...locations.slice(0, 5),
+          "View All Locations →",
+        ];
+      }
 
-    if (item.key === "developers") {
-      items = [
-        ...developers
-          .slice(0, 5)
-          .map((developer) => developer.name),
-        "View All Developers →",
-      ];
-    }
+      if (
+        item.key === "developers"
+      ) {
+        items = [
+          ...developers
+            .slice(0, 5)
+            .map(
+              (developer) =>
+                developer.name
+            ),
+          "View All Developers →",
+        ];
+      }
 
-    return {
-      ...item,
-      items,
-    };
-  });
+      return {
+        ...item,
+        items,
+      };
+    });
 
   // =========================================================
   // CLOSE MOBILE MENU
@@ -349,12 +692,17 @@ setDevelopers(uniqueDevelopers);
   // MOBILE NAVIGATION
   // =========================================================
 
-  const handleMobileNavigation = (item, sub) => {
+  const handleMobileNavigation = (
+    item,
+    sub
+  ) => {
     // =======================================================
     // PROPERTIES
     // =======================================================
 
-    if (item.key === "properties") {
+    if (
+      item.key === "properties"
+    ) {
       closeMobileMenu();
 
       router.push(
@@ -370,21 +718,56 @@ setDevelopers(uniqueDevelopers);
     // LOCATIONS
     // =======================================================
 
-    if (item.key === "locations") {
-      if (sub === "View All Locations →") {
+    if (
+      item.key === "locations"
+    ) {
+      // -----------------------------------------------------
+      // VIEW ALL
+      // -----------------------------------------------------
+
+      if (
+        sub ===
+        "View All Locations →"
+      ) {
         closeMobileMenu();
+
         setLocationSearch("");
-        setShowLocationModal(true);
+
+        setShowLocationModal(
+          true
+        );
+
         return;
       }
 
+      // -----------------------------------------------------
+      // Find location and its
+      // most-parent/root location
+      // -----------------------------------------------------
+
+      const locationData =
+        findLocationInTree(
+          locationTree,
+          sub
+        );
+
       closeMobileMenu();
 
-      router.push(
-        `/properties?location=${encodeURIComponent(
-          sub
-        )}`
-      );
+      if (locationData) {
+        router.push(
+          getPublicLocationUrl(
+            locationData.location,
+            locationData.root
+          )
+        );
+      } else {
+        // Safe fallback
+        router.push(
+          `/properties?location=${encodeURIComponent(
+            sub
+          )}`
+        );
+      }
 
       return;
     }
@@ -393,34 +776,58 @@ setDevelopers(uniqueDevelopers);
     // DEVELOPERS
     // =======================================================
 
-    if (item.key === "developers") {
-  if (sub === "View All Developers →") {
-    closeMobileMenu();
-    setDeveloperSearch("");
-    setShowDeveloperModal(true);
-    return;
-  }
+    if (
+      item.key === "developers"
+    ) {
+      // -----------------------------------------------------
+      // VIEW ALL
+      // -----------------------------------------------------
 
-  const developer = developers.find(
-    (item) => item.name === sub
-  );
+      if (
+        sub ===
+        "View All Developers →"
+      ) {
+        closeMobileMenu();
 
-  closeMobileMenu();
+        setDeveloperSearch("");
 
-  if (developer?.slug) {
-    router.push(
-      getDeveloperProjectUrl(developer.slug)
-    );
-  }
+        setShowDeveloperModal(
+          true
+        );
 
-  return;
-}
+        return;
+      }
+
+      // -----------------------------------------------------
+      // Find developer
+      // -----------------------------------------------------
+
+      const developer =
+        developers.find(
+          (item) =>
+            item.name === sub
+        );
+
+      closeMobileMenu();
+
+      if (developer?.slug) {
+        router.push(
+          getDeveloperProjectUrl(
+            developer.slug
+          )
+        );
+      }
+
+      return;
+    }
 
     // =======================================================
     // KNOWLEDGE CENTRE
     // =======================================================
 
-    if (item.key === "knowledge") {
+    if (
+      item.key === "knowledge"
+    ) {
       closeMobileMenu();
 
       router.push("/knowledge");
@@ -432,7 +839,9 @@ setDevelopers(uniqueDevelopers);
     // PROPERTY INSIGHTS
     // =======================================================
 
-    if (item.key === "insights") {
+    if (
+      item.key === "insights"
+    ) {
       closeMobileMenu();
 
       router.push("/insights");
@@ -444,20 +853,23 @@ setDevelopers(uniqueDevelopers);
     // TOOLS
     // =======================================================
 
-    if (item.key === "tools") {
+    if (
+      item.key === "tools"
+    ) {
       const routes = {
-
         "ROI Calculator":
           "/tools/roi-calculator",
-      
+
         "Area Converter":
           "/tools/area-converter",
       };
 
-      const route = routes[sub];
+      const route =
+        routes[sub];
 
       if (route) {
         closeMobileMenu();
+
         router.push(route);
       }
 
@@ -469,33 +881,64 @@ setDevelopers(uniqueDevelopers);
   // MOBILE MAIN ITEM CLICK
   // =========================================================
 
-  const handleMobileItemClick = (item) => {
+  const handleMobileItemClick = (
+    item
+  ) => {
+    // -------------------------------------------------------
+    // TOOLS
+    // -------------------------------------------------------
 
-    if (item.key === "tools") {
-  closeMobileMenu();
-  router.push("/#tools");
-  return;
-}
-    // DIRECT LINKS — NO DROPDOWN
+    if (
+      item.key === "tools"
+    ) {
+      closeMobileMenu();
+
+      router.push("/#tools");
+
+      return;
+    }
+
+    // -------------------------------------------------------
+    // DIRECT LINKS
+    // -------------------------------------------------------
+
     if (
       item.key === "about" ||
       item.key === "contact"
     ) {
       closeMobileMenu();
-      router.push(item.href);
+
+      router.push(
+        item.href
+      );
+
       return;
     }
 
-    // If there are no dropdown items, go directly
-    if (!item.items || item.items.length === 0) {
+    // -------------------------------------------------------
+    // No dropdown
+    // -------------------------------------------------------
+
+    if (
+      !item.items ||
+      item.items.length === 0
+    ) {
       closeMobileMenu();
-      router.push(item.href || "/");
+
+      router.push(
+        item.href || "/"
+      );
+
       return;
     }
 
+    // -------------------------------------------------------
     // Toggle dropdown
+    // -------------------------------------------------------
+
     setMobileDropdown(
-      mobileDropdown === item.title
+      mobileDropdown ===
+        item.title
         ? null
         : item.title
     );
@@ -505,25 +948,38 @@ setDevelopers(uniqueDevelopers);
   // DESKTOP DROPDOWN ITEMS
   // =========================================================
 
-  const getDesktopDropdownItems = (item) => {
-    let dropdownItems = item.items || [];
+  const getDesktopDropdownItems = (
+    item
+  ) => {
+    let dropdownItems =
+      item.items || [];
 
-    if (item.key === "properties") {
-      dropdownItems = propertyTypes;
+    if (
+      item.key === "properties"
+    ) {
+      dropdownItems =
+        propertyTypes;
     }
 
-    if (item.key === "locations") {
+    if (
+      item.key === "locations"
+    ) {
       dropdownItems = [
         ...locations.slice(0, 5),
         "View All Locations →",
       ];
     }
 
-    if (item.key === "developers") {
+    if (
+      item.key === "developers"
+    ) {
       dropdownItems = [
         ...developers
           .slice(0, 5)
-          .map((developer) => developer.name),
+          .map(
+            (developer) =>
+              developer.name
+          ),
         "View All Developers →",
       ];
     }
@@ -535,12 +991,17 @@ setDevelopers(uniqueDevelopers);
   // DESKTOP DROPDOWN CLICK
   // =========================================================
 
-  const handleDesktopSubNavigation = (item, sub) => {
+  const handleDesktopSubNavigation = (
+    item,
+    sub
+  ) => {
     // =======================================================
     // PROPERTIES
     // =======================================================
 
-    if (item.key === "properties") {
+    if (
+      item.key === "properties"
+    ) {
       router.push(
         `/properties?propertyType=${encodeURIComponent(
           sub
@@ -554,21 +1015,56 @@ setDevelopers(uniqueDevelopers);
     // LOCATIONS
     // =======================================================
 
-    if (item.key === "locations") {
-      if (sub === "View All Locations →") {
+    if (
+      item.key === "locations"
+    ) {
+      // -----------------------------------------------------
+      // VIEW ALL
+      // -----------------------------------------------------
+
+      if (
+        sub ===
+        "View All Locations →"
+      ) {
         setLocationSearch("");
-        setShowLocationModal(true);
+
+        setShowLocationModal(
+          true
+        );
+
         setActive(null);
+
         return;
       }
 
-      router.push(
-        `/properties?location=${encodeURIComponent(
+      // -----------------------------------------------------
+      // Find location + root
+      // -----------------------------------------------------
+
+      const locationData =
+        findLocationInTree(
+          locationTree,
           sub
-        )}`
-      );
+        );
+
+      if (locationData) {
+        router.push(
+          getPublicLocationUrl(
+            locationData.location,
+            locationData.root
+          )
+        );
+      } else {
+        // Safe fallback
+        router.push(
+          `/properties?location=${encodeURIComponent(
+            sub
+          )}`
+        );
+      }
 
       setActive(null);
+
       return;
     }
 
@@ -576,35 +1072,64 @@ setDevelopers(uniqueDevelopers);
     // DEVELOPERS
     // =======================================================
 
-    if (item.key === "developers") {
-  if (sub === "View All Developers →") {
-    setDeveloperSearch("");
-    setShowDeveloperModal(true);
-    setActive(null);
-    return;
-  }
+    if (
+      item.key === "developers"
+    ) {
+      // -----------------------------------------------------
+      // VIEW ALL
+      // -----------------------------------------------------
 
-  const developer = developers.find(
-    (item) => item.name === sub
-  );
+      if (
+        sub ===
+        "View All Developers →"
+      ) {
+        setDeveloperSearch("");
 
-  if (developer?.slug) {
-    router.push(
-      getDeveloperProjectUrl(developer.slug)
-    );
-  }
+        setShowDeveloperModal(
+          true
+        );
 
-  setActive(null);
-  return;
-}
+        setActive(null);
+
+        return;
+      }
+
+      // -----------------------------------------------------
+      // Find developer
+      // -----------------------------------------------------
+
+      const developer =
+        developers.find(
+          (item) =>
+            item.name === sub
+        );
+
+      if (developer?.slug) {
+        router.push(
+          getDeveloperProjectUrl(
+            developer.slug
+          )
+        );
+      }
+
+      setActive(null);
+
+      return;
+    }
 
     // =======================================================
     // KNOWLEDGE CENTRE
     // =======================================================
 
-    if (item.key === "knowledge") {
-      router.push("/knowledge");
+    if (
+      item.key === "knowledge"
+    ) {
+      router.push(
+        "/knowledge"
+      );
+
       setActive(null);
+
       return;
     }
 
@@ -612,9 +1137,15 @@ setDevelopers(uniqueDevelopers);
     // PROPERTY INSIGHTS
     // =======================================================
 
-    if (item.key === "insights") {
-      router.push("/insights");
+    if (
+      item.key === "insights"
+    ) {
+      router.push(
+        "/insights"
+      );
+
       setActive(null);
+
       return;
     }
 
@@ -622,9 +1153,10 @@ setDevelopers(uniqueDevelopers);
     // TOOLS
     // =======================================================
 
-    if (item.key === "tools") {
+    if (
+      item.key === "tools"
+    ) {
       const routes = {
-
         "ROI Calculator":
           "/tools/roi-calculator",
 
@@ -632,13 +1164,17 @@ setDevelopers(uniqueDevelopers);
           "/tools/area-converter",
       };
 
-      const route = routes[sub];
+      const route =
+        routes[sub];
 
       if (route) {
-        router.push(route);
+        router.push(
+          route
+        );
       }
 
       setActive(null);
+
       return;
     }
   };
@@ -765,12 +1301,16 @@ setDevelopers(uniqueDevelopers);
             {/* ================================================= */}
 
             <nav className="hidden xl:flex items-center gap-[2px]">
+
               {navItems.map((item) => {
                 const dropdownItems =
-                  getDesktopDropdownItems(item);
+                  getDesktopDropdownItems(
+                    item
+                  );
 
                 const hasDropdown =
-                  dropdownItems.length > 0;
+                  dropdownItems.length >
+                  0;
 
                 return (
                   <div
@@ -778,19 +1318,25 @@ setDevelopers(uniqueDevelopers);
                     className="relative"
                     onMouseEnter={() =>
                       hasDropdown
-                        ? setActive(item.title)
+                        ? setActive(
+                            item.title
+                          )
                         : setActive(null)
                     }
                     onMouseLeave={() =>
                       setActive(null)
                     }
                   >
+
                     {/* MENU TITLE */}
 
                     <div className="flex items-center h-9">
 
                       <Link
-                        href={item.href ?? "/"}
+                        href={
+                          item.href ??
+                          "/"
+                        }
                         className="
                           flex
                           items-center
@@ -807,7 +1353,7 @@ setDevelopers(uniqueDevelopers);
                         {item.title}
                       </Link>
 
-                      {/* ONLY SHOW ARROW IF THERE IS A DROPDOWN */}
+                      {/* ONLY SHOW ARROW IF DROPDOWN */}
 
                       {hasDropdown && (
                         <button
@@ -815,7 +1361,8 @@ setDevelopers(uniqueDevelopers);
                           aria-label={`Open ${item.title} menu`}
                           onClick={() =>
                             setActive(
-                              active === item.title
+                              active ===
+                                item.title
                                 ? null
                                 : item.title
                             )
@@ -829,20 +1376,23 @@ setDevelopers(uniqueDevelopers);
                           <ChevronDown
                             size={13}
                             className={`transition duration-300 ${
-                              active === item.title
+                              active ===
+                              item.title
                                 ? "rotate-180"
                                 : ""
                             }`}
                           />
                         </button>
                       )}
+
                     </div>
 
                     {/* DESKTOP DROPDOWN */}
 
                     <AnimatePresence>
                       {hasDropdown &&
-                        active === item.title && (
+                        active ===
+                          item.title && (
                           <motion.div
                             initial={{
                               opacity: 0,
@@ -913,9 +1463,11 @@ setDevelopers(uniqueDevelopers);
                           </motion.div>
                         )}
                     </AnimatePresence>
+
                   </div>
                 );
               })}
+
             </nav>
           </div>
 
@@ -931,7 +1483,9 @@ setDevelopers(uniqueDevelopers);
 
             <button
               type="button"
-              onClick={onConsultationClick}
+              onClick={
+                onConsultationClick
+              }
               className="
                 hidden
                 lg:flex
@@ -1124,7 +1678,10 @@ setDevelopers(uniqueDevelopers);
                 setMobileMenuOpen(
                   !mobileMenuOpen
                 );
-                setMobileDropdown(null);
+
+                setMobileDropdown(
+                  null
+                );
               }}
               className="
                 xl:hidden
@@ -1152,6 +1709,7 @@ setDevelopers(uniqueDevelopers);
                 <Menu size={18} />
               )}
             </button>
+
           </div>
         </div>
       </div>
@@ -1166,10 +1724,18 @@ setDevelopers(uniqueDevelopers);
             {/* BACKDROP */}
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeMobileMenu}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
+              exit={{
+                opacity: 0,
+              }}
+              onClick={
+                closeMobileMenu
+              }
               className="
                 fixed
                 inset-0
@@ -1242,7 +1808,9 @@ setDevelopers(uniqueDevelopers);
 
                 <button
                   type="button"
-                  onClick={closeMobileMenu}
+                  onClick={
+                    closeMobileMenu
+                  }
                   className="
                     w-10
                     h-10
@@ -1263,116 +1831,123 @@ setDevelopers(uniqueDevelopers);
 
               <div className="p-4">
 
-                {mobileItems.map((item) => {
-                  const hasDropdown =
-                    item.items &&
-                    item.items.length > 0;
+                {mobileItems.map(
+                  (item) => {
+                    const hasDropdown =
+                      item.items &&
+                      item.items.length >
+                        0;
 
-                  const isOpen =
-                    mobileDropdown ===
-                    item.title;
+                    const isOpen =
+                      mobileDropdown ===
+                      item.title;
 
-                  return (
-                    <div
-                      key={item.title}
-                      className="border-b border-white/10"
-                    >
-
-                      {/* MAIN MOBILE ITEM */}
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleMobileItemClick(
-                            item
-                          )
+                    return (
+                      <div
+                        key={
+                          item.title
                         }
-                        className="
-                          w-full
-                          flex
-                          items-center
-                          justify-between
-                          py-5
-                          text-left
-                          text-white
-                          font-medium
-                        "
+                        className="border-b border-white/10"
                       >
-                        <span>
-                          {item.title}
-                        </span>
 
-                        {/* ONLY SHOW ARROW FOR REAL DROPDOWNS */}
+                        {/* MAIN MOBILE ITEM */}
 
-                        {hasDropdown && (
-                          <ChevronDown
-                            size={15}
-                            className={`transition duration-300 ${
-                              isOpen
-                                ? "rotate-180 text-[#d6aa53]"
-                                : "text-white/70"
-                            }`}
-                          />
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleMobileItemClick(
+                              item
+                            )
+                          }
+                          className="
+                            w-full
+                            flex
+                            items-center
+                            justify-between
+                            py-5
+                            text-left
+                            text-white
+                            font-medium
+                          "
+                        >
+                          <span>
+                            {item.title}
+                          </span>
 
-                      {/* SUBMENU */}
-
-                      <AnimatePresence>
-                        {hasDropdown &&
-                          isOpen && (
-                            <motion.div
-                              initial={{
-                                height: 0,
-                                opacity: 0,
-                              }}
-                              animate={{
-                                height: "auto",
-                                opacity: 1,
-                              }}
-                              exit={{
-                                height: 0,
-                                opacity: 0,
-                              }}
-                              transition={{
-                                duration: 0.2,
-                              }}
-                              className="overflow-hidden pb-4"
-                            >
-                              {item.items.map(
-                                (sub) => (
-                                  <button
-                                    key={sub}
-                                    type="button"
-                                    onClick={() =>
-                                      handleMobileNavigation(
-                                        item,
-                                        sub
-                                      )
-                                    }
-                                    className="
-                                      block
-                                      w-full
-                                      text-left
-                                      px-4
-                                      py-3
-                                      rounded-xl
-                                      text-white/70
-                                      hover:bg-white/5
-                                      hover:text-[#d6aa53]
-                                      transition
-                                    "
-                                  >
-                                    {sub}
-                                  </button>
-                                )
-                              )}
-                            </motion.div>
+                          {hasDropdown && (
+                            <ChevronDown
+                              size={15}
+                              className={`transition duration-300 ${
+                                isOpen
+                                  ? "rotate-180 text-[#d6aa53]"
+                                  : "text-white/70"
+                              }`}
+                            />
                           )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
+                        </button>
+
+                        {/* SUBMENU */}
+
+                        <AnimatePresence>
+                          {hasDropdown &&
+                            isOpen && (
+                              <motion.div
+                                initial={{
+                                  height: 0,
+                                  opacity: 0,
+                                }}
+                                animate={{
+                                  height:
+                                    "auto",
+                                  opacity: 1,
+                                }}
+                                exit={{
+                                  height: 0,
+                                  opacity: 0,
+                                }}
+                                transition={{
+                                  duration: 0.2,
+                                }}
+                                className="overflow-hidden pb-4"
+                              >
+                                {item.items.map(
+                                  (sub) => (
+                                    <button
+                                      key={
+                                        sub
+                                      }
+                                      type="button"
+                                      onClick={() =>
+                                        handleMobileNavigation(
+                                          item,
+                                          sub
+                                        )
+                                      }
+                                      className="
+                                        block
+                                        w-full
+                                        text-left
+                                        px-4
+                                        py-3
+                                        rounded-xl
+                                        text-white/70
+                                        hover:bg-white/5
+                                        hover:text-[#d6aa53]
+                                        transition
+                                      "
+                                    >
+                                      {sub}
+                                    </button>
+                                  )
+                                )}
+                              </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                      </div>
+                    );
+                  }
+                )}
 
                 {/* ================================================= */}
                 {/* MOBILE CALL BUTTON */}
@@ -1380,7 +1955,9 @@ setDevelopers(uniqueDevelopers);
 
                 <button
                   type="button"
-                  onClick={onConsultationClick}
+                  onClick={
+                    onConsultationClick
+                  }
                   className="
                     w-full
                     mt-6
@@ -1420,7 +1997,9 @@ setDevelopers(uniqueDevelopers);
 
                     <Link
                       href="/auth"
-                      onClick={closeMobileMenu}
+                      onClick={
+                        closeMobileMenu
+                      }
                       className="
                         h-[48px]
                         rounded-xl
@@ -1437,7 +2016,9 @@ setDevelopers(uniqueDevelopers);
 
                     <Link
                       href="/auth"
-                      onClick={closeMobileMenu}
+                      onClick={
+                        closeMobileMenu
+                      }
                       className="
                         h-[48px]
                         rounded-xl
@@ -1456,7 +2037,9 @@ setDevelopers(uniqueDevelopers);
 
                   <Link
                     href="/contact"
-                    onClick={closeMobileMenu}
+                    onClick={
+                      closeMobileMenu
+                    }
                     className="
                       h-[48px]
                       rounded-xl
@@ -1485,9 +2068,15 @@ setDevelopers(uniqueDevelopers);
       <AnimatePresence>
         {showDeveloperModal && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
             className="
               fixed
               inset-0
@@ -1502,7 +2091,9 @@ setDevelopers(uniqueDevelopers);
               px-4
             "
             onClick={() =>
-              setShowDeveloperModal(false)
+              setShowDeveloperModal(
+                false
+              )
             }
           >
             <motion.div
@@ -1569,6 +2160,7 @@ setDevelopers(uniqueDevelopers);
                 <div className="flex items-start justify-between">
 
                   <div>
+
                     <p
                       className="
                         text-[#c89d58]
@@ -1601,6 +2193,7 @@ setDevelopers(uniqueDevelopers);
                     >
                       Browse all developer partners
                     </p>
+
                   </div>
 
                   <button
@@ -1625,6 +2218,7 @@ setDevelopers(uniqueDevelopers);
                   >
                     ✕
                   </button>
+
                 </div>
               </div>
 
@@ -1642,7 +2236,9 @@ setDevelopers(uniqueDevelopers);
                 "
               >
                 <input
-                  value={developerSearch}
+                  value={
+                    developerSearch
+                  }
                   onChange={(e) =>
                     setDeveloperSearch(
                       e.target.value
@@ -1677,96 +2273,112 @@ setDevelopers(uniqueDevelopers);
                 "
               >
                 {developers
-                  .filter((developer) =>
+                  .filter(
+                    (developer) =>
+                      developer.name
+                        .toLowerCase()
+                        .includes(
+                          developerSearch.toLowerCase()
+                        )
+                  )
+                  .map(
+                    (developer) => (
+                      <button
+                        key={
+                          developer.name
+                        }
+                        type="button"
+                        onClick={() => {
+                          setShowDeveloperModal(
+                            false
+                          );
+
+                          if (
+                            developer?.slug
+                          ) {
+                            router.push(
+                              getDeveloperProjectUrl(
+                                developer.slug
+                              )
+                            );
+                          }
+                        }}
+                        className="
+                          w-full
+                          px-6
+                          py-4
+                          flex
+                          items-center
+                          gap-4
+                          border-b
+                          border-white/[0.04]
+                          hover:bg-white/[0.03]
+                          transition-all
+                          text-left
+                          group
+                        "
+                      >
+                        <img
+                          src={
+                            developer.logo
+                          }
+                          alt={
+                            developer.name
+                          }
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "/placeholder.png";
+                          }}
+                          className="
+                            w-12
+                            h-12
+                            rounded-xl
+                            object-cover
+                            border
+                            border-white/10
+                            bg-white/5
+                            shrink-0
+                          "
+                        />
+
+                        <div className="flex-1">
+
+                          <p
+                            className="
+                              text-white
+                              text-[15px]
+                              font-medium
+                              group-hover:text-[#c89d58]
+                              transition-colors
+                            "
+                          >
+                            {
+                              developer.name
+                            }
+                          </p>
+
+                          <p
+                            className="
+                              text-white/40
+                              text-[12px]
+                              mt-0.5
+                            "
+                          >
+                            Developer Partner
+                          </p>
+
+                        </div>
+                      </button>
+                    )
+                  )}
+
+                {developers.filter(
+                  (developer) =>
                     developer.name
                       .toLowerCase()
                       .includes(
                         developerSearch.toLowerCase()
                       )
-                  )
-                  .map((developer) => (
-                    <button
-                      key={developer.name}
-                      type="button"
-                      onClick={() => {
-                        setShowDeveloperModal(
-                          false
-                        );
-
-                       if (developer?.slug) {
-  router.push(
-    getDeveloperProjectUrl(developer.slug)
-  );
-}
-                      }}
-                      className="
-                        w-full
-                        px-6
-                        py-4
-                        flex
-                        items-center
-                        gap-4
-                        border-b
-                        border-white/[0.04]
-                        hover:bg-white/[0.03]
-                        transition-all
-                        text-left
-                        group
-                      "
-                    >
-                      <img
-                        src={developer.logo}
-                        alt={developer.name}
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "/placeholder.png";
-                        }}
-                        className="
-                          w-12
-                          h-12
-                          rounded-xl
-                          object-cover
-                          border
-                          border-white/10
-                          bg-white/5
-                          shrink-0
-                        "
-                      />
-
-                      <div className="flex-1">
-
-                        <p
-                          className="
-                            text-white
-                            text-[15px]
-                            font-medium
-                            group-hover:text-[#c89d58]
-                            transition-colors
-                          "
-                        >
-                          {developer.name}
-                        </p>
-
-                        <p
-                          className="
-                            text-white/40
-                            text-[12px]
-                            mt-0.5
-                          "
-                        >
-                          Developer Partner
-                        </p>
-
-                      </div>
-                    </button>
-                  ))}
-
-                {developers.filter((developer) =>
-                  developer.name
-                    .toLowerCase()
-                    .includes(
-                      developerSearch.toLowerCase()
-                    )
                 ).length === 0 && (
                   <div className="py-14 text-center">
                     <p className="text-white/40">
@@ -1774,6 +2386,7 @@ setDevelopers(uniqueDevelopers);
                     </p>
                   </div>
                 )}
+
               </div>
             </motion.div>
           </motion.div>
@@ -1785,9 +2398,15 @@ setDevelopers(uniqueDevelopers);
 
         {showLocationModal && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
             className="
               fixed
               inset-0
@@ -1802,7 +2421,9 @@ setDevelopers(uniqueDevelopers);
               px-4
             "
             onClick={() =>
-              setShowLocationModal(false)
+              setShowLocationModal(
+                false
+              )
             }
           >
             <motion.div
@@ -1888,7 +2509,9 @@ setDevelopers(uniqueDevelopers);
               <div className="p-5 border-b border-white/10">
 
                 <input
-                  value={locationSearch}
+                  value={
+                    locationSearch
+                  }
                   onChange={(e) =>
                     setLocationSearch(
                       e.target.value
@@ -1917,58 +2540,87 @@ setDevelopers(uniqueDevelopers);
               <div className="max-h-[260px] overflow-y-auto">
 
                 {locations
-                  .filter((location) =>
+                  .filter(
+                    (location) =>
+                      location
+                        .toLowerCase()
+                        .includes(
+                          locationSearch.toLowerCase()
+                        )
+                  )
+                  .map(
+                    (location) => (
+                      <button
+                        key={
+                          location
+                        }
+                        type="button"
+                        onClick={() => {
+
+                          setShowLocationModal(
+                            false
+                          );
+
+                          // -------------------------------------------------
+                          // Find location + most-parent/root
+                          // -------------------------------------------------
+
+                          const locationData =
+                            findLocationInTree(
+                              locationTree,
+                              location
+                            );
+
+                          if (
+                            locationData
+                          ) {
+                            router.push(
+                              getPublicLocationUrl(
+                                locationData.location,
+                                locationData.root
+                              )
+                            );
+                          } else {
+                            // Safe fallback
+                            router.push(
+                              `/properties?location=${encodeURIComponent(
+                                location
+                              )}`
+                            );
+                          }
+                        }}
+                        className="
+                          w-full
+                          px-6
+                          py-4
+                          flex
+                          items-center
+                          justify-between
+                          border-b
+                          border-white/[0.04]
+                          hover:bg-white/[0.03]
+                          transition-all
+                          text-left
+                        "
+                      >
+                        <span className="text-white text-[14px]">
+                          {location}
+                        </span>
+
+                        <span className="text-[#c89d58] text-[16px]">
+                          →
+                        </span>
+                      </button>
+                    )
+                  )}
+
+                {locations.filter(
+                  (location) =>
                     location
                       .toLowerCase()
                       .includes(
                         locationSearch.toLowerCase()
                       )
-                  )
-                  .map((location) => (
-                    <button
-                      key={location}
-                      type="button"
-                      onClick={() => {
-                        setShowLocationModal(
-                          false
-                        );
-
-                        router.push(
-                          `/properties?location=${encodeURIComponent(
-                            location
-                          )}`
-                        );
-                      }}
-                      className="
-                        w-full
-                        px-6
-                        py-4
-                        flex
-                        items-center
-                        justify-between
-                        border-b
-                        border-white/[0.04]
-                        hover:bg-white/[0.03]
-                        transition-all
-                        text-left
-                      "
-                    >
-                      <span className="text-white text-[14px]">
-                        {location}
-                      </span>
-
-                      <span className="text-[#c89d58] text-[16px]">
-                        →
-                      </span>
-                    </button>
-                  ))}
-
-                {locations.filter((location) =>
-                  location
-                    .toLowerCase()
-                    .includes(
-                      locationSearch.toLowerCase()
-                    )
                 ).length === 0 && (
                   <div className="py-14 text-center text-white/40">
                     No locations found
@@ -1979,6 +2631,7 @@ setDevelopers(uniqueDevelopers);
             </motion.div>
           </motion.div>
         )}
+
       </AnimatePresence>
     </header>
   );
