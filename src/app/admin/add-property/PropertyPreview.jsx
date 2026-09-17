@@ -6824,60 +6824,91 @@ else {
      BUILD CORRECT PUBLIC DEVELOPER SLUG
      ========================================================== */
 
-  const buildPublicDeveloperSlug = (
-    developerSlug
-  ) => {
-    if (!developerSlug) {
-      return "";
-    }
+ /* ==========================================================
+   BUILD CORRECT PUBLIC DEVELOPER SLUG
+   ========================================================== */
 
-    const cleanSlug = String(developerSlug)
-      .trim()
-      .toLowerCase()
-      .replace(/^\/+|\/+$/g, "");
+const buildPublicDeveloperSlug = (
+  developerSlug
+) => {
+  if (!developerSlug) {
+    return "";
+  }
 
-    if (!cleanSlug) {
-      return "";
-    }
+  const cleanSlug = String(developerSlug)
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
 
-    /*
-      Already correct:
-      m3m-developer-projects
-      spiti-developer-projects
-    */
+  if (!cleanSlug) {
+    return "";
+  }
 
-    if (
-      cleanSlug.endsWith(
-        "-developer-projects"
-      )
-    ) {
-      return cleanSlug;
-    }
+  /* ========================================================
+     ALREADY COMPLETE PUBLIC URL
 
-    /*
-      Backend:
-      spiti-developer
+     m3m-developer-projects
+     spiti-developer-projects
+     spiti-developers-projects
+     ======================================================== */
 
-      Public:
-      spiti-developer-projects
-    */
+  if (
+    cleanSlug.endsWith(
+      "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
+    )
+  ) {
+    return cleanSlug;
+  }
 
-    if (
-      cleanSlug.endsWith("-developer")
-    ) {
-      return `${cleanSlug}-projects`;
-    }
+  /* ========================================================
+     BACKEND SLUG ALREADY ENDS WITH "-developer"
 
-    /*
-      Backend:
-      m3m
+     spiti-developer
+     ↓
+     spiti-developer-projects
+     ======================================================== */
 
-      Public:
-      m3m-developer-projects
-    */
+  if (
+    cleanSlug.endsWith(
+      "-developer"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
 
-    return `${cleanSlug}-developer-projects`;
-  };
+  /* ========================================================
+     BACKEND SLUG ALREADY ENDS WITH "-developers"
+
+     spiti-developers
+     ↓
+     spiti-developers-projects
+     ======================================================== */
+
+  if (
+    cleanSlug.endsWith(
+      "-developers"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+  /* ========================================================
+     NORMAL BACKEND SLUG
+
+     m3m
+     ↓
+     m3m-developer-projects
+
+     parsvnath
+     ↓
+     parsvnath-developer-projects
+     ======================================================== */
+
+  return `${cleanSlug}-developer-projects`;
+};
 
   /* ==========================================================
      GET BACKEND DEVELOPER SLUG

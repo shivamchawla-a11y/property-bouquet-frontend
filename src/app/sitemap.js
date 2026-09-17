@@ -24,6 +24,26 @@
 // - Duplicate URLs
 // - Non-canonical URLs
 //
+// LOCATION URL ARCHITECTURE:
+//
+// Sector 56
+// → /locations/properties-in-sector-56-gurgaon
+//
+// Golf Course Road
+// → /locations/properties-on-golf-course-road-gurgaon
+//
+// Dwarka Expressway
+// → /locations/properties-on-dwarka-expressway-gurgaon
+//
+// Gurgaon
+// → /locations/properties-in-gurgaon
+//
+// Greater Kailash
+// → /locations/properties-in-greater-kailash-delhi
+//
+// Farukhnagar
+// → /locations/properties-in-farukhnagar-gurgaon
+//
 // Developer URL architecture:
 //
 // m3m
@@ -37,6 +57,10 @@
 //
 // ats-infrastructure-ltd
 // → /developers/ats-infrastructure-ltd-developer-projects
+//
+// parsvnath-developers
+// → /developers/parsvnath-developers-projects
+//
 // ============================================================
 
 const API =
@@ -80,35 +104,73 @@ async function safeFetch(url) {
 
     const json = await response.json();
 
+
+    // --------------------------------------------------------
     // Standard API response
+    // --------------------------------------------------------
+
     if (Array.isArray(json?.data)) {
       return json.data;
     }
 
+
+    // --------------------------------------------------------
     // Direct array
+    // --------------------------------------------------------
+
     if (Array.isArray(json)) {
       return json;
     }
 
+
+    // --------------------------------------------------------
     // Properties
+    // --------------------------------------------------------
+
     if (Array.isArray(json?.properties)) {
       return json.properties;
     }
 
+
+    // --------------------------------------------------------
     // Developers
+    // --------------------------------------------------------
+
     if (Array.isArray(json?.developers)) {
       return json.developers;
     }
 
+
+    // --------------------------------------------------------
+    // Locations
+    // --------------------------------------------------------
+
+    if (Array.isArray(json?.locations)) {
+      return json.locations;
+    }
+
+
+    // --------------------------------------------------------
     // Articles
+    // --------------------------------------------------------
+
     if (Array.isArray(json?.articles)) {
       return json.articles;
     }
 
+
+    // --------------------------------------------------------
     // News
+    // --------------------------------------------------------
+
     if (Array.isArray(json?.news)) {
       return json.news;
     }
+
+
+    // --------------------------------------------------------
+    // Unexpected response
+    // --------------------------------------------------------
 
     console.warn(
       `⚠️ Sitemap API returned an unexpected data format: ${url}`
@@ -193,15 +255,15 @@ function isPublishedContent(item) {
 // CANONICAL URL NORMALIZER
 // ============================================================
 //
-// This is important.
+// Guarantees sitemap URLs:
 //
-// It guarantees that sitemap URLs:
-// - use HTTPS
-// - use non-www
-// - contain no query strings
-// - contain no hash fragments
-// - don't have unnecessary trailing slashes
-// - remain on propertybouquet.com
+// - HTTPS
+// - non-www
+// - no query strings
+// - no hash fragments
+// - no unnecessary trailing slash
+// - propertybouquet.com only
+//
 // ============================================================
 
 function normalizeUrl(path) {
@@ -215,36 +277,63 @@ function normalizeUrl(path) {
     return null;
   }
 
-  // ----------------------------------------------------------
-  // Absolute URL
-  // ----------------------------------------------------------
+
+  // ==========================================================
+  // ABSOLUTE URL
+  // ==========================================================
 
   if (/^https?:\/\//i.test(value)) {
     try {
       const parsed = new URL(value);
 
-      // Only allow our own domain.
+
+      // ------------------------------------------------------
+      // Only allow our own domain
+      // ------------------------------------------------------
+
       if (
         parsed.hostname !==
-        "propertybouquet.com"
+          "propertybouquet.com" &&
+        parsed.hostname !==
+          "www.propertybouquet.com"
       ) {
         return null;
       }
 
-      // Force HTTPS.
+
+      // ------------------------------------------------------
+      // Force HTTPS
+      // ------------------------------------------------------
+
       parsed.protocol = "https:";
 
-      // Force non-www.
+
+      // ------------------------------------------------------
+      // Force non-www
+      // ------------------------------------------------------
+
       parsed.hostname =
         "propertybouquet.com";
 
-      // Remove query parameters.
+
+      // ------------------------------------------------------
+      // Remove query parameters
+      // ------------------------------------------------------
+
       parsed.search = "";
 
-      // Remove hash.
+
+      // ------------------------------------------------------
+      // Remove hash
+      // ------------------------------------------------------
+
       parsed.hash = "";
 
-      // Normalize pathname.
+
+      // ------------------------------------------------------
+      // Normalize pathname
+      // ------------------------------------------------------
+
       let pathname =
         parsed.pathname || "/";
 
@@ -264,26 +353,40 @@ function normalizeUrl(path) {
     }
   }
 
-  // ----------------------------------------------------------
-  // Relative URL
-  // ----------------------------------------------------------
+
+  // ==========================================================
+  // RELATIVE URL
+  // ==========================================================
 
   if (!value.startsWith("/")) {
     value = `/${value}`;
   }
 
-  // Remove query string.
+
+  // ----------------------------------------------------------
+  // Remove query string
+  // ----------------------------------------------------------
+
   value = value.split("?")[0];
 
-  // Remove hash.
+
+  // ----------------------------------------------------------
+  // Remove hash
+  // ----------------------------------------------------------
+
   value = value.split("#")[0];
 
-  // Remove trailing slash except homepage.
+
+  // ----------------------------------------------------------
+  // Remove trailing slash except homepage
+  // ----------------------------------------------------------
+
   if (
     value !== "/" &&
     value.endsWith("/")
   ) {
-    value = value.slice(0, -1);
+    value =
+      value.slice(0, -1);
   }
 
   return `${BASE_URL}${value}`;
@@ -309,16 +412,26 @@ function addUrl(
     return;
   }
 
-  // Prevent duplicates.
+
+  // ----------------------------------------------------------
+  // Prevent duplicates
+  // ----------------------------------------------------------
+
   if (sitemap.has(url)) {
     return;
   }
+
 
   const entry = {
     url,
     changeFrequency,
     priority,
   };
+
+
+  // ----------------------------------------------------------
+  // Valid last modified date
+  // ----------------------------------------------------------
 
   const validLastModified =
     getValidDate(lastModified);
@@ -327,6 +440,7 @@ function addUrl(
     entry.lastModified =
       validLastModified;
   }
+
 
   sitemap.set(url, entry);
 }
@@ -355,7 +469,331 @@ function safeSlug(slug) {
 
 
 // ============================================================
+// SLUGIFY
+// ============================================================
+
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+
+// ============================================================
+// LOCATION PREPOSITION
+// ============================================================
+//
+// Roads / expressways / highways / streets / avenues etc.
+// use "on".
+//
+// Sectors / cities / localities etc.
+// use "in".
+//
+// Examples:
+//
+// Golf Course Road
+// → on
+//
+// Dwarka Expressway
+// → on
+//
+// Sector 56
+// → in
+//
+// Gurgaon
+// → in
+//
+// ============================================================
+
+function getLocationPreposition(location) {
+  const name =
+    String(location?.name || "")
+      .trim()
+      .toLowerCase();
+
+  const slug =
+    String(location?.slug || "")
+      .trim()
+      .toLowerCase();
+
+  const value =
+    `${name} ${slug}`;
+
+
+  const onKeywords = [
+    "expressway",
+    "express way",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
+
+
+  return onKeywords.some(
+    (keyword) =>
+      value.includes(keyword)
+  )
+    ? "on"
+    : "in";
+}
+
+
+// ============================================================
+// GET LOCATION ID
+// ============================================================
+
+function getLocationId(location) {
+  if (!location) {
+    return "";
+  }
+
+  return (
+    location?._id?.toString?.() ||
+    location?.id?.toString?.() ||
+    location?.toString?.() ||
+    ""
+  );
+}
+
+
+// ============================================================
+// GET PARENT ID
+// ============================================================
+
+function getParentId(location) {
+  if (!location?.parent) {
+    return "";
+  }
+
+  return (
+    location.parent?._id?.toString?.() ||
+    location.parent?.id?.toString?.() ||
+    location.parent?.toString?.() ||
+    ""
+  );
+}
+
+
+// ============================================================
+// FIND LOCATION BY ID
+// ============================================================
+
+function findLocationById(
+  locations,
+  id
+) {
+  if (!id) {
+    return null;
+  }
+
+  const targetId =
+    String(id);
+
+
+  for (const location of locations) {
+    if (!location) {
+      continue;
+    }
+
+
+    const currentId =
+      getLocationId(location);
+
+    if (
+      currentId &&
+      currentId === targetId
+    ) {
+      return location;
+    }
+  }
+
+  return null;
+}
+
+
+// ============================================================
+// GET ROOT LOCATION
+// ============================================================
+//
+// Example:
+//
+// Sector 56
+// → Gurgaon
+//
+// Golf Course Road
+// → Gurgaon
+//
+// Greater Kailash
+// → Delhi
+//
+// ============================================================
+
+function getRootLocation(
+  location,
+  locations
+) {
+  if (!location) {
+    return null;
+  }
+
+  let root =
+    location;
+
+  const visited =
+    new Set();
+
+
+  while (root?.parent) {
+    const parentId =
+      getParentId(root);
+
+    if (!parentId) {
+      break;
+    }
+
+
+    // Prevent circular parent relationships
+    if (
+      visited.has(parentId)
+    ) {
+      break;
+    }
+
+    visited.add(parentId);
+
+
+    const parent =
+      findLocationById(
+        locations,
+        parentId
+      );
+
+    if (!parent) {
+      break;
+    }
+
+    root =
+      parent;
+  }
+
+  return root;
+}
+
+
+// ============================================================
+// BUILD PUBLIC LOCATION SLUG
+// ============================================================
+//
+// Current location + root location.
+//
+// Examples:
+//
+// Sector 56
+// parent Gurgaon
+//
+// → properties-in-sector-56-gurgaon
+//
+// Golf Course Road
+// parent Gurgaon
+//
+// → properties-on-golf-course-road-gurgaon
+//
+// Gurgaon
+//
+// → properties-in-gurgaon
+//
+// Greater Kailash
+// parent Delhi
+//
+// → properties-in-greater-kailash-delhi
+//
+// ============================================================
+
+function buildPublicLocationSlug(
+  location,
+  locations
+) {
+  if (!location) {
+    return "";
+  }
+
+
+  const currentPart =
+    slugify(
+      location.slug ||
+        location.name ||
+        ""
+    );
+
+
+  if (!currentPart) {
+    return "";
+  }
+
+
+  const root =
+    getRootLocation(
+      location,
+      locations
+    );
+
+
+  const rootPart =
+    slugify(
+      root?.slug ||
+        root?.name ||
+        ""
+    );
+
+
+  const preposition =
+    getLocationPreposition(
+      location
+    );
+
+
+  if (
+    rootPart &&
+    rootPart !== currentPart
+  ) {
+    return `properties-${preposition}-${currentPart}-${rootPart}`;
+  }
+
+
+  return `properties-${preposition}-${currentPart}`;
+}
+
+
+// ============================================================
 // PUBLIC DEVELOPER SLUG BUILDER
+// ============================================================
+//
+// Correct architecture:
+//
+// m3m
+// → m3m-developer-projects
+//
+// signature-global
+// → signature-global-developer-projects
+//
+// spiti-developer
+// → spiti-developer-projects
+//
+// spiti-developers
+// → spiti-developers-projects
+//
+// spiti-developer-projects
+// → unchanged
+//
+// spiti-developers-projects
+// → unchanged
+//
 // ============================================================
 
 function buildPublicDeveloperSlug(
@@ -365,26 +803,42 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
+
   const cleanSlug =
     String(developerSlug)
       .trim()
       .toLowerCase()
-      .replace(/^\/+|\/+$/g, "");
+      .replace(
+        /^\/+|\/+$/g,
+        ""
+      );
+
 
   if (!cleanSlug) {
     return "";
   }
 
-  // Already canonical.
+
+  // ==========================================================
+  // ALREADY CANONICAL
+  // ==========================================================
+
   if (
     cleanSlug.endsWith(
       "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
     )
   ) {
     return cleanSlug;
   }
 
-  // Existing "-developer".
+
+  // ==========================================================
+  // BACKEND SLUG ENDS WITH "-developer"
+  // ==========================================================
+
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -393,7 +847,24 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend slug.
+
+  // ==========================================================
+  // BACKEND SLUG ENDS WITH "-developers"
+  // ==========================================================
+
+  if (
+    cleanSlug.endsWith(
+      "-developers"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+
+  // ==========================================================
+  // NORMAL BACKEND SLUG
+  // ==========================================================
+
   return `${cleanSlug}-developer-projects`;
 }
 
@@ -406,14 +877,20 @@ export default async function sitemap() {
   const sitemap =
     new Map();
 
+
   // ==========================================================
   // STATIC PUBLIC PAGES
   // ==========================================================
 
-  addUrl(sitemap, "/", {
-    priority: 1.0,
-    changeFrequency: "daily",
-  });
+  addUrl(
+    sitemap,
+    "/",
+    {
+      priority: 1.0,
+      changeFrequency: "daily",
+    }
+  );
+
 
   addUrl(
     sitemap,
@@ -424,6 +901,7 @@ export default async function sitemap() {
     }
   );
 
+
   addUrl(
     sitemap,
     "/developers",
@@ -432,6 +910,17 @@ export default async function sitemap() {
       changeFrequency: "weekly",
     }
   );
+
+
+  addUrl(
+    sitemap,
+    "/locations",
+    {
+      priority: 0.90,
+      changeFrequency: "weekly",
+    }
+  );
+
 
   addUrl(
     sitemap,
@@ -442,6 +931,7 @@ export default async function sitemap() {
     }
   );
 
+
   addUrl(
     sitemap,
     "/insights",
@@ -450,6 +940,7 @@ export default async function sitemap() {
       changeFrequency: "weekly",
     }
   );
+
 
   addUrl(
     sitemap,
@@ -460,6 +951,7 @@ export default async function sitemap() {
     }
   );
 
+
   addUrl(
     sitemap,
     "/contact",
@@ -469,7 +961,11 @@ export default async function sitemap() {
     }
   );
 
-  // Human-facing sitemap.
+
+  // ==========================================================
+  // HUMAN-FACING SITEMAP
+  // ==========================================================
+
   addUrl(
     sitemap,
     "/sitemap",
@@ -479,7 +975,11 @@ export default async function sitemap() {
     }
   );
 
-  // Legal pages.
+
+  // ==========================================================
+  // LEGAL PAGES
+  // ==========================================================
+
   addUrl(
     sitemap,
     "/privacy-policy",
@@ -489,6 +989,7 @@ export default async function sitemap() {
     }
   );
 
+
   addUrl(
     sitemap,
     "/disclaimer",
@@ -497,6 +998,7 @@ export default async function sitemap() {
       changeFrequency: "yearly",
     }
   );
+
 
   addUrl(
     sitemap,
@@ -521,6 +1023,7 @@ export default async function sitemap() {
     }
   );
 
+
   addUrl(
     sitemap,
     "/tools/area-converter",
@@ -538,6 +1041,7 @@ export default async function sitemap() {
   const [
     properties,
     developers,
+    locations,
     knowledgeArticles,
     insights,
   ] = await Promise.all([
@@ -547,6 +1051,10 @@ export default async function sitemap() {
 
     safeFetch(
       `${API}/developers`
+    ),
+
+    safeFetch(
+      `${API}/locations`
     ),
 
     safeFetch(
@@ -569,16 +1077,22 @@ export default async function sitemap() {
         return;
       }
 
+
       const slug =
         safeSlug(
           property.slug
         );
 
+
       if (!slug) {
         return;
       }
 
-      // Published only.
+
+      // ------------------------------------------------------
+      // Published only
+      // ------------------------------------------------------
+
       if (
         property.status !==
         "published"
@@ -586,19 +1100,40 @@ export default async function sitemap() {
         return;
       }
 
-      // Deleted excluded.
+
+      // ------------------------------------------------------
+      // Deleted excluded
+      // ------------------------------------------------------
+
       if (
         property.isDeleted === true
       ) {
         return;
       }
 
-      // Inactive excluded.
+
+      // ------------------------------------------------------
+      // Inactive excluded
+      // ------------------------------------------------------
+
       if (
         property.isActive === false
       ) {
         return;
       }
+
+
+      // ------------------------------------------------------
+      // Trash excluded
+      // ------------------------------------------------------
+
+      if (
+        property.deletedFromStatus ===
+        "trash"
+      ) {
+        return;
+      }
+
 
       addUrl(
         sitemap,
@@ -609,8 +1144,11 @@ export default async function sitemap() {
               property.updatedAt,
               property.createdAt
             ),
+
           priority: 0.95,
-          changeFrequency: "weekly",
+
+          changeFrequency:
+            "weekly",
         }
       );
     }
@@ -627,6 +1165,11 @@ export default async function sitemap() {
         return;
       }
 
+
+      // ------------------------------------------------------
+      // Extract backend developer slug
+      // ------------------------------------------------------
+
       const backendDeveloperSlug =
         developer.slug ||
         developer.backendSlug ||
@@ -637,14 +1180,21 @@ export default async function sitemap() {
         developer.developer?.slug ||
         "";
 
+
       const publicDeveloperSlug =
         buildPublicDeveloperSlug(
           backendDeveloperSlug
         );
 
+
       if (!publicDeveloperSlug) {
         return;
       }
+
+
+      // ------------------------------------------------------
+      // Deleted excluded
+      // ------------------------------------------------------
 
       if (
         developer.isDeleted === true
@@ -652,11 +1202,17 @@ export default async function sitemap() {
         return;
       }
 
+
+      // ------------------------------------------------------
+      // Inactive excluded
+      // ------------------------------------------------------
+
       if (
         developer.isActive === false
       ) {
         return;
       }
+
 
       addUrl(
         sitemap,
@@ -669,8 +1225,90 @@ export default async function sitemap() {
               developer.updatedAt,
               developer.createdAt
             ),
+
           priority: 0.82,
-          changeFrequency: "monthly",
+
+          changeFrequency:
+            "monthly",
+        }
+      );
+    }
+  );
+
+
+  // ==========================================================
+  // LOCATION PAGES
+  // ==========================================================
+  //
+  // ONLY canonical public location URLs are added.
+  //
+  // Legacy URLs such as:
+  //
+  // /locations/sector-56
+  // /locations/gurgaon
+  // /locations/golf-course-road
+  //
+  // are intentionally NOT added.
+  //
+  // ==========================================================
+
+  locations.forEach(
+    (location) => {
+      if (!location) {
+        return;
+      }
+
+
+      // ------------------------------------------------------
+      // Deleted excluded
+      // ------------------------------------------------------
+
+      if (
+        location.isDeleted === true
+      ) {
+        return;
+      }
+
+
+      // ------------------------------------------------------
+      // Inactive excluded
+      // ------------------------------------------------------
+
+      if (
+        location.isActive === false
+      ) {
+        return;
+      }
+
+
+      const publicLocationSlug =
+        buildPublicLocationSlug(
+          location,
+          locations
+        );
+
+
+      if (!publicLocationSlug) {
+        return;
+      }
+
+
+      addUrl(
+        sitemap,
+        `/locations/${encodeURIComponent(
+          publicLocationSlug
+        )}`,
+        {
+          lastModified:
+            getValidDate(
+              location.updatedAt,
+              location.createdAt
+            ),
+
+          priority: 0.88,
+
+          changeFrequency:
+            "weekly",
         }
       );
     }
@@ -687,14 +1325,17 @@ export default async function sitemap() {
         return;
       }
 
+
       const slug =
         safeSlug(
           article.slug
         );
 
+
       if (!slug) {
         return;
       }
+
 
       if (
         !isPublishedContent(
@@ -703,6 +1344,7 @@ export default async function sitemap() {
       ) {
         return;
       }
+
 
       addUrl(
         sitemap,
@@ -713,8 +1355,11 @@ export default async function sitemap() {
               article.updatedAt,
               article.createdAt
             ),
+
           priority: 0.78,
-          changeFrequency: "monthly",
+
+          changeFrequency:
+            "monthly",
         }
       );
     }
@@ -731,14 +1376,17 @@ export default async function sitemap() {
         return;
       }
 
+
       const slug =
         safeSlug(
           article.slug
         );
 
+
       if (!slug) {
         return;
       }
+
 
       if (
         !isPublishedContent(
@@ -747,6 +1395,7 @@ export default async function sitemap() {
       ) {
         return;
       }
+
 
       addUrl(
         sitemap,
@@ -757,8 +1406,11 @@ export default async function sitemap() {
               article.updatedAt,
               article.createdAt
             ),
+
           priority: 0.78,
-          changeFrequency: "weekly",
+
+          changeFrequency:
+            "weekly",
         }
       );
     }
@@ -772,13 +1424,18 @@ export default async function sitemap() {
   const sortedUrls =
     [...sitemap.values()]
       .sort((a, b) => {
-        // Homepage first.
+
+        // ----------------------------------------------------
+        // Homepage first
+        // ----------------------------------------------------
+
         if (
           a.url ===
           `${BASE_URL}/`
         ) {
           return -1;
         }
+
 
         if (
           b.url ===
@@ -787,7 +1444,11 @@ export default async function sitemap() {
           return 1;
         }
 
-        // Higher priority first.
+
+        // ----------------------------------------------------
+        // Higher priority first
+        // ----------------------------------------------------
+
         if (
           a.priority !==
           b.priority
@@ -798,7 +1459,11 @@ export default async function sitemap() {
           );
         }
 
-        // Alphabetical.
+
+        // ----------------------------------------------------
+        // Alphabetical
+        // ----------------------------------------------------
+
         return a.url.localeCompare(
           b.url
         );
@@ -813,8 +1478,9 @@ export default async function sitemap() {
     `✅ Property Bouquet sitemap generated successfully: ${sortedUrls.length} URLs`
   );
 
+
   console.log(
-    `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
+    `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Locations: ${locations.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
   );
 
 

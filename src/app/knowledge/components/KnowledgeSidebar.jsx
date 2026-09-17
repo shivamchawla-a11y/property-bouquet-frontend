@@ -137,12 +137,6 @@ export default function KnowledgeSidebar() {
 
       <div className="relative overflow-hidden rounded-2xl">
 
-        <img
-          src="/knowledge/advisor.jpg"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-
         <div className="absolute inset-0 bg-[#07111d]/80" />
 
         <div className="relative z-10 p-7">
