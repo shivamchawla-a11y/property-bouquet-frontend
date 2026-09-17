@@ -3,10 +3,10 @@
 import { formatPrice } from "@/utils/formatPrice";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
-import PropertyFilters from "@/utils/PropertyFilters";
 import Footer from "@/components/home/Footer";
 
 import {
@@ -19,6 +19,117 @@ import {
   X,
 } from "lucide-react";
 
+/*
+|--------------------------------------------------------------------------
+| PERFORMANCE
+|--------------------------------------------------------------------------
+| PropertyFilters can be a relatively large client-side component.
+|
+| It is not required for the initial SEO/content render, so load it
+| separately. This reduces the JavaScript that has to be downloaded
+| and executed immediately when the developer page opens.
+|
+| IMPORTANT:
+| Filter functionality itself is NOT changed.
+|--------------------------------------------------------------------------
+*/
+
+const PropertyFilters = dynamic(
+  () => import("@/utils/PropertyFilters"),
+  {
+    ssr: false,
+
+    loading: () => (
+      <div
+        className="
+          min-h-[220px]
+          rounded-2xl
+          bg-[#f7f7f7]
+          animate-pulse
+        "
+        aria-label="Loading property filters"
+      />
+    ),
+  }
+);
+
+/*
+|--------------------------------------------------------------------------
+| IMAGE OPTIMIZATION
+|--------------------------------------------------------------------------
+|
+| Your CMS images are commonly served from Cloudinary.
+|
+| For Cloudinary images we automatically request:
+|
+| f_auto = automatic modern image format
+| q_auto = automatic quality optimization
+| w_xxx  = appropriate image width
+| c_limit = don't enlarge the original unnecessarily
+|
+| Non-Cloudinary URLs are returned unchanged.
+|
+|--------------------------------------------------------------------------
+*/
+
+function optimizeImageUrl(
+  src,
+  width
+) {
+  if (!src) {
+    return "";
+  }
+
+  const value = String(src);
+
+  /*
+   * Cloudinary
+   */
+  if (
+    value.includes(
+      "res.cloudinary.com"
+    ) &&
+    value.includes("/image/upload/")
+  ) {
+    return value.replace(
+      "/image/upload/",
+      `/image/upload/f_auto,q_auto,w_${width},c_limit/`
+    );
+  }
+
+  /*
+   * Other image hosts
+   *
+   * Keep the URL unchanged so we do not break
+   * external image sources.
+   */
+  return value;
+}
+
+/*
+|--------------------------------------------------------------------------
+| HERO IMAGE WIDTH
+|--------------------------------------------------------------------------
+*/
+
+const HERO_IMAGE_WIDTH = 1600;
+
+/*
+|--------------------------------------------------------------------------
+| DEVELOPER LOGO WIDTH
+|--------------------------------------------------------------------------
+*/
+
+const LOGO_IMAGE_WIDTH = 300;
+
+/*
+|--------------------------------------------------------------------------
+| PROPERTY CARD IMAGE WIDTH
+|--------------------------------------------------------------------------
+*/
+
+const PROPERTY_IMAGE_WIDTH = 700;
+
 export default function DeveloperSlugClient({
   developer,
   properties = [],
@@ -26,14 +137,21 @@ export default function DeveloperSlugClient({
 }) {
   const searchParams = useSearchParams();
 
-  // IMPORTANT:
-  // Start with the server-provided properties instead of [].
-  // This allows project cards + their <a href> links to exist
-  // in the initial server-rendered HTML / View Page Source.
+  /*
+  |--------------------------------------------------------------------------
+  | IMPORTANT:
+  | Start with server-provided properties.
+  |
+  | This preserves crawlable project links in the initial rendered
+  | page structure.
+  |--------------------------------------------------------------------------
+  */
+
   const [filteredProperties, setFilteredProperties] =
     useState(() => [...properties]);
 
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] =
+    useState("newest");
 
   const [visibleCards, setVisibleCards] =
     useState(9);
@@ -43,9 +161,11 @@ export default function DeveloperSlugClient({
 
   const CARDS_PER_PAGE = 9;
 
-  // ============================================================
-  // URL FILTERS
-  // ============================================================
+  /*
+  |--------------------------------------------------------------------------
+  | URL FILTERS
+  |--------------------------------------------------------------------------
+  */
 
   const selectedLocation =
     searchParams.get("location");
@@ -66,32 +186,44 @@ export default function DeveloperSlugClient({
   const selectedPropertyType =
     searchParams.get("propertyType");
 
-  // ============================================================
-  // INITIAL / URL FILTERING
-  // ============================================================
+  /*
+  |--------------------------------------------------------------------------
+  | URL FILTERING
+  |--------------------------------------------------------------------------
+  |
+  | FILTER LOGIC IS UNCHANGED.
+  |--------------------------------------------------------------------------
+  */
 
   useEffect(() => {
     let result = [...properties];
 
-    // ==========================================================
-    // SEARCH
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | SEARCH
+    |--------------------------------------------------------------------------
+    */
 
     const search =
       searchParams.get("search");
 
     if (search) {
+      const normalizedSearch =
+        search.toLowerCase();
+
       result = result.filter(
         (property) =>
           property?.coreDetails?.title
             ?.toLowerCase()
-            .includes(search.toLowerCase())
+            .includes(normalizedSearch)
       );
     }
 
-    // ==========================================================
-    // CATEGORY / PROPERTY TYPE
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORY / PROPERTY TYPE
+    |--------------------------------------------------------------------------
+    */
 
     const type =
       searchParams.get("propertyType");
@@ -112,16 +244,22 @@ export default function DeveloperSlugClient({
           }
 
           return (
-            categoryName.includes(searchCategory) ||
-            searchCategory.includes(categoryName)
+            categoryName.includes(
+              searchCategory
+            ) ||
+            searchCategory.includes(
+              categoryName
+            )
           );
         }
       );
     }
 
-    // ==========================================================
-    // LOCATION
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | LOCATION
+    |--------------------------------------------------------------------------
+    */
 
     const location =
       searchParams.get("location");
@@ -134,12 +272,15 @@ export default function DeveloperSlugClient({
         (property) => {
           const locationNames = [];
 
-          // ----------------------------------------------------
-          // LOCATION HIERARCHY
-          // ----------------------------------------------------
+          /*
+          |--------------------------------------------------------------------------
+          | LOCATION HIERARCHY
+          |--------------------------------------------------------------------------
+          */
 
           let current =
-            property?.locationData?.locationRef;
+            property?.locationData
+              ?.locationRef;
 
           while (current) {
             if (current?.name) {
@@ -153,12 +294,15 @@ export default function DeveloperSlugClient({
             current = current.parent;
           }
 
-          // ----------------------------------------------------
-          // FALLBACK LOCATION
-          // ----------------------------------------------------
+          /*
+          |--------------------------------------------------------------------------
+          | FALLBACK LOCATION
+          |--------------------------------------------------------------------------
+          */
 
           if (
-            property?.locationData?.locationName
+            property?.locationData
+              ?.locationName
           ) {
             locationNames.push(
               property.locationData.locationName
@@ -167,12 +311,15 @@ export default function DeveloperSlugClient({
             );
           }
 
-          // ----------------------------------------------------
-          // CUSTOM LOCATION
-          // ----------------------------------------------------
+          /*
+          |--------------------------------------------------------------------------
+          | CUSTOM LOCATION
+          |--------------------------------------------------------------------------
+          */
 
           if (
-            property?.locationData?.customLocation
+            property?.locationData
+              ?.customLocation
           ) {
             locationNames.push(
               property.locationData.customLocation
@@ -183,15 +330,19 @@ export default function DeveloperSlugClient({
 
           return locationNames.some(
             (name) =>
-              name.includes(searchLocation)
+              name.includes(
+                searchLocation
+              )
           );
         }
       );
     }
 
-    // ==========================================================
-    // DEVELOPER
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | DEVELOPER
+    |--------------------------------------------------------------------------
+    */
 
     const developerFilter =
       searchParams.get("developer");
@@ -206,13 +357,10 @@ export default function DeveloperSlugClient({
         (property) => {
           const developerNames = [
             property?.developerName,
-
-            property?.coreDetails?.developerName,
-
+            property?.coreDetails
+              ?.developerName,
             property?.developer?.name,
-
             property?.developerData?.name,
-
             property?.developerRef?.name,
           ]
             .filter(Boolean)
@@ -224,16 +372,22 @@ export default function DeveloperSlugClient({
 
           return developerNames.some(
             (name) =>
-              name.includes(searchDeveloper) ||
-              searchDeveloper.includes(name)
+              name.includes(
+                searchDeveloper
+              ) ||
+              searchDeveloper.includes(
+                name
+              )
           );
         }
       );
     }
 
-    // ==========================================================
-    // BUDGET
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | BUDGET
+    |--------------------------------------------------------------------------
+    */
 
     const budget =
       searchParams.get("budget");
@@ -252,7 +406,9 @@ export default function DeveloperSlugClient({
       ) {
         result = result.filter(
           (property) => {
-            // Price on request always remains visible.
+            /*
+             * Price on request remains visible.
+             */
             if (
               property?.coreDetails
                 ?.priceOnRequest
@@ -278,9 +434,11 @@ export default function DeveloperSlugClient({
       }
     }
 
-    // ==========================================================
-    // AMENITIES
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | AMENITIES
+    |--------------------------------------------------------------------------
+    */
 
     const amenitiesParam =
       searchParams.get("amenity");
@@ -301,7 +459,8 @@ export default function DeveloperSlugClient({
       result = result.filter(
         (property) => {
           const propertyAmenities =
-            property?.overview?.amenities
+            property?.overview
+              ?.amenities
               ?.map(
                 (item) =>
                   item?.heading
@@ -322,9 +481,11 @@ export default function DeveloperSlugClient({
       );
     }
 
-    // ==========================================================
-    // BHK
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | BHK
+    |--------------------------------------------------------------------------
+    */
 
     const bhk =
       searchParams.get("bhk");
@@ -346,9 +507,11 @@ export default function DeveloperSlugClient({
       );
     }
 
-    // ==========================================================
-    // SORTING
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | SORTING
+    |--------------------------------------------------------------------------
+    */
 
     if (sortBy === "newest") {
       result.sort(
@@ -363,7 +526,8 @@ export default function DeveloperSlugClient({
     }
 
     if (
-      sortBy === "price-low-high"
+      sortBy ===
+      "price-low-high"
     ) {
       result.sort(
         (a, b) =>
@@ -379,7 +543,8 @@ export default function DeveloperSlugClient({
     }
 
     if (
-      sortBy === "price-high-low"
+      sortBy ===
+      "price-high-low"
     ) {
       result.sort(
         (a, b) =>
@@ -398,32 +563,41 @@ export default function DeveloperSlugClient({
       CARDS_PER_PAGE
     );
 
-    setFilteredProperties(result);
+    setFilteredProperties(
+      result
+    );
   }, [
     properties,
     searchParams,
     sortBy,
   ]);
 
-  // ============================================================
-  // BODY LOCK
-  // ============================================================
+  /*
+  |--------------------------------------------------------------------------
+  | BODY LOCK
+  |--------------------------------------------------------------------------
+  */
 
   useEffect(() => {
-    document.body.style.overflow =
-      showFilters
-        ? "hidden"
-        : "auto";
+    if (showFilters) {
+      document.body.style.overflow =
+        "hidden";
+    } else {
+      document.body.style.overflow =
+        "";
+    }
 
     return () => {
       document.body.style.overflow =
-        "auto";
+        "";
     };
   }, [showFilters]);
 
-  // ============================================================
-  // CURRENT PROPERTIES
-  // ============================================================
+  /*
+  |--------------------------------------------------------------------------
+  | CURRENT PROPERTIES
+  |--------------------------------------------------------------------------
+  */
 
   const currentProperties =
     filteredProperties.slice(
@@ -431,12 +605,38 @@ export default function DeveloperSlugClient({
       visibleCards
     );
 
-  // ============================================================
-  // RENDER
-  // ============================================================
+  /*
+  |--------------------------------------------------------------------------
+  | PREPARE HERO IMAGE
+  |--------------------------------------------------------------------------
+  */
+
+  const optimizedDeveloperImage =
+    optimizeImageUrl(
+      developer?.image,
+      HERO_IMAGE_WIDTH
+    );
+
+  /*
+  |--------------------------------------------------------------------------
+  | PREPARE LOGO
+  |--------------------------------------------------------------------------
+  */
+
+  const optimizedDeveloperLogo =
+    optimizeImageUrl(
+      developer?.logo,
+      LOGO_IMAGE_WIDTH
+    );
+
+  /*
+  |--------------------------------------------------------------------------
+  | RENDER
+  |--------------------------------------------------------------------------
+  */
 
   return (
-    <div className="bg-[#f7f7f7] min-h-screen">
+    <div className="min-h-screen bg-[#f7f7f7]">
 
       {/* ======================================================
           NAVBAR
@@ -461,17 +661,30 @@ export default function DeveloperSlugClient({
         "
       >
 
-        {/* BACKGROUND */}
+        {/* ==================================================
+            HERO IMAGE
 
-        {developer?.image && (
+            Important performance changes:
+            - explicit width/height
+            - fetchPriority high
+            - loading eager
+            - optimized Cloudinary URL
+            ================================================== */}
+
+        {optimizedDeveloperImage && (
           <img
-            src={developer.image}
+            src={optimizedDeveloperImage}
             alt=""
+            width={1600}
+            height={900}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="
               absolute
               inset-0
-              w-full
               h-full
+              w-full
               object-cover
               opacity-30
             "
@@ -480,56 +693,133 @@ export default function DeveloperSlugClient({
 
         {/* OVERLAYS */}
 
-        <div className="absolute inset-0 bg-black/60" />
+        <div
+          className="
+            absolute
+            inset-0
+            bg-black/60
+          "
+          aria-hidden="true"
+        />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-[#081c15] via-[#081c15]/85 to-transparent" />
+        <div
+          className="
+            absolute
+            inset-0
+            bg-gradient-to-r
+            from-[#081c15]
+            via-[#081c15]/85
+            to-transparent
+          "
+          aria-hidden="true"
+        />
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(212,175,55,0.18),_transparent_35%)]" />
+        <div
+          className="
+            absolute
+            inset-0
+            bg-[radial-gradient(circle_at_top_right,_rgba(212,175,55,0.18),_transparent_35%)]
+          "
+          aria-hidden="true"
+        />
 
         {/* CONTENT */}
 
-        <div className="relative z-10 max-w-[1500px] mx-auto w-full px-6">
+        <div
+          className="
+            relative
+            z-10
+            mx-auto
+            w-full
+            max-w-[1500px]
+            px-6
+          "
+        >
 
           <div className="max-w-[760px]">
 
             {/* BREADCRUMB */}
 
-            <div className="mb-8 flex items-center gap-3 text-sm tracking-[0.18em] uppercase text-white/60">
+            <nav
+              aria-label="Breadcrumb"
+              className="
+                mb-8
+                flex
+                items-center
+                gap-3
+                text-sm
+                uppercase
+                tracking-[0.18em]
+                text-white/60
+              "
+            >
 
               <Link
                 href="/"
-                className="hover:text-[#D4AF37] transition"
+                className="
+                  transition
+                  hover:text-[#D4AF37]
+                "
               >
                 Home
               </Link>
 
-              <span>/</span>
+              <span aria-hidden="true">
+                /
+              </span>
 
               <Link
                 href="/developers"
-                className="hover:text-[#D4AF37] transition"
+                className="
+                  transition
+                  hover:text-[#D4AF37]
+                "
               >
                 Developers
               </Link>
 
-              <span>/</span>
+              <span aria-hidden="true">
+                /
+              </span>
 
               <span className="text-[#D4AF37]">
                 {developer.name}
               </span>
 
-            </div>
+            </nav>
 
             {/* BADGE */}
 
-            <div className="inline-flex items-center gap-3 rounded-full border border-[#D4AF37]/30 bg-white/10 px-6 py-3 backdrop-blur-xl">
+            <div
+              className="
+                inline-flex
+                items-center
+                gap-3
+                rounded-full
+                border
+                border-[#D4AF37]/30
+                bg-white/10
+                px-6
+                py-3
+                backdrop-blur-xl
+              "
+            >
 
               <Trophy
                 size={18}
                 className="text-[#D4AF37]"
+                aria-hidden="true"
               />
 
-              <span className="text-[13px] font-semibold uppercase tracking-[0.22em] text-[#F3E5AB]">
+              <span
+                className="
+                  text-[13px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.22em]
+                  text-[#F3E5AB]
+                "
+              >
                 Luxury Developer Collection
               </span>
 
@@ -551,17 +841,31 @@ export default function DeveloperSlugClient({
                   border
                   border-white/15
                   bg-white/95
-                  backdrop-blur-2xl
                   shadow-[0_35px_80px_rgba(0,0,0,0.45)]
                 "
               >
 
-                <div className="absolute inset-0 rounded-[36px] border border-[#D4AF37]/25" />
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    rounded-[36px]
+                    border
+                    border-[#D4AF37]/25
+                  "
+                  aria-hidden="true"
+                />
 
-                {developer?.logo && (
+                {optimizedDeveloperLogo && (
                   <img
-                    src={developer.logo}
-                    alt={developer.name}
+                    src={
+                      optimizedDeveloperLogo
+                    }
+                    alt={`${developer.name} logo`}
+                    width={300}
+                    height={300}
+                    loading="eager"
+                    decoding="async"
                     className="
                       relative
                       z-10
@@ -593,7 +897,18 @@ export default function DeveloperSlugClient({
               {developer.name}
             </h1>
 
-            <div className="mt-8 h-[2px] w-32 rounded-full bg-gradient-to-r from-[#D4AF37] to-transparent" />
+            <div
+              className="
+                mt-8
+                h-[2px]
+                w-32
+                rounded-full
+                bg-gradient-to-r
+                from-[#D4AF37]
+                to-transparent
+              "
+              aria-hidden="true"
+            />
 
             {/* DESCRIPTION */}
 
@@ -618,9 +933,25 @@ export default function DeveloperSlugClient({
 
             {/* STATS */}
 
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
+            <div
+              className="
+                mt-12
+                grid
+                gap-5
+                md:grid-cols-3
+              "
+            >
 
-              <div className="rounded-[26px] border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
+              <div
+                className="
+                  rounded-[26px]
+                  border
+                  border-white/10
+                  bg-white/10
+                  p-6
+                  backdrop-blur-xl
+                "
+              >
 
                 <p className="text-4xl font-bold text-[#D4AF37]">
                   {properties.length}+
@@ -632,7 +963,16 @@ export default function DeveloperSlugClient({
 
               </div>
 
-              <div className="rounded-[26px] border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
+              <div
+                className="
+                  rounded-[26px]
+                  border
+                  border-white/10
+                  bg-white/10
+                  p-6
+                  backdrop-blur-xl
+                "
+              >
 
                 <p className="text-4xl font-bold text-[#D4AF37]">
                   Verified
@@ -644,7 +984,16 @@ export default function DeveloperSlugClient({
 
               </div>
 
-              <div className="rounded-[26px] border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
+              <div
+                className="
+                  rounded-[26px]
+                  border
+                  border-white/10
+                  bg-white/10
+                  p-6
+                  backdrop-blur-xl
+                "
+              >
 
                 <p className="text-4xl font-bold text-[#D4AF37]">
                   Premium
@@ -714,7 +1063,19 @@ export default function DeveloperSlugClient({
 
         {/* SCROLL */}
 
-        <div className="absolute bottom-10 right-10 hidden md:flex flex-col items-center gap-3">
+        <div
+          className="
+            absolute
+            bottom-10
+            right-10
+            hidden
+            flex-col
+            items-center
+            gap-3
+            md:flex
+          "
+          aria-hidden="true"
+        >
 
           <span className="text-[11px] uppercase tracking-[0.3em] text-white/50">
             Scroll
@@ -735,27 +1096,98 @@ export default function DeveloperSlugClient({
       ====================================================== */}
 
       {developer?.description && (
-        <section className="relative bg-white py-24 overflow-hidden">
+        <section
+          className="
+            relative
+            overflow-hidden
+            bg-white
+            py-24
+          "
+        >
 
-          <div className="absolute top-0 right-0 w-[450px] h-[450px] rounded-full bg-[#D4AF37]/8 blur-[120px]" />
+          <div
+            className="
+              absolute
+              right-0
+              top-0
+              h-[450px]
+              w-[450px]
+              rounded-full
+              bg-[#D4AF37]/8
+              blur-[120px]
+            "
+            aria-hidden="true"
+          />
 
-          <div className="max-w-[1450px] mx-auto px-6 relative z-10">
+          <div
+            className="
+              relative
+              z-10
+              mx-auto
+              max-w-[1450px]
+              px-6
+            "
+          >
 
-            <div className="grid lg:grid-cols-[1.4fr_420px] gap-16 items-start">
+            <div
+              className="
+                grid
+                items-start
+                gap-16
+                lg:grid-cols-[1.4fr_420px]
+              "
+            >
 
               <div>
 
-                <span className="inline-flex items-center rounded-full bg-[#0B221B] px-5 py-2 text-[11px] uppercase tracking-[0.28em] text-[#D4AF37]">
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    bg-[#0B221B]
+                    px-5
+                    py-2
+                    text-[11px]
+                    uppercase
+                    tracking-[0.28em]
+                    text-[#D4AF37]
+                  "
+                >
                   About The Developer
                 </span>
 
-                <h2 className="mt-7 font-playfair text-4xl md:text-5xl text-[#0B221B] leading-tight">
+                <h2
+                  className="
+                    mt-7
+                    font-playfair
+                    text-4xl
+                    leading-tight
+                    text-[#0B221B]
+                    md:text-5xl
+                  "
+                >
                   {developer.name}
                 </h2>
 
-                <div className="mt-6 h-[2px] w-28 bg-[#D4AF37]" />
+                <div
+                  className="
+                    mt-6
+                    h-[2px]
+                    w-28
+                    bg-[#D4AF37]
+                  "
+                  aria-hidden="true"
+                />
 
-                <div className="mt-10 text-[17px] leading-[2.05] text-[#4d4d4d]">
+                <div
+                  className="
+                    mt-10
+                    text-[17px]
+                    leading-[2.05]
+                    text-[#4d4d4d]
+                  "
+                >
 
                   <p className="whitespace-pre-line">
                     {developer.description}
@@ -767,17 +1199,51 @@ export default function DeveloperSlugClient({
 
               <div>
 
-                <div className="sticky top-28 rounded-[32px] border border-[#eadfcb] bg-white p-8 shadow-[0_20px_70px_rgba(0,0,0,0.06)]">
+                <div
+                  className="
+                    rounded-[32px]
+                    border
+                    border-[#eadfcb]
+                    bg-white
+                    p-8
+                    shadow-[0_20px_70px_rgba(0,0,0,0.06)]
+                    lg:sticky
+                    lg:top-28
+                  "
+                >
 
                   <div className="flex items-center gap-3">
 
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0B221B] text-[#D4AF37]">
-                      <Building2 size={24} />
+                    <div
+                      className="
+                        flex
+                        h-14
+                        w-14
+                        items-center
+                        justify-center
+                        rounded-2xl
+                        bg-[#0B221B]
+                        text-[#D4AF37]
+                      "
+                    >
+
+                      <Building2
+                        size={24}
+                        aria-hidden="true"
+                      />
+
                     </div>
 
                     <div>
 
-                      <p className="text-[11px] uppercase tracking-[0.25em] text-[#B58B2D]">
+                      <p
+                        className="
+                          text-[11px]
+                          uppercase
+                          tracking-[0.25em]
+                          text-[#B58B2D]
+                        "
+                      >
                         Company Highlights
                       </p>
 
@@ -804,11 +1270,23 @@ export default function DeveloperSlugClient({
                         className="flex items-start gap-4"
                       >
 
-                        <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#D4AF37]/15">
+                        <div
+                          className="
+                            mt-1
+                            flex
+                            h-8
+                            w-8
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-[#D4AF37]/15
+                          "
+                        >
 
                           <BadgeCheck
                             size={16}
                             className="text-[#B58B2D]"
+                            aria-hidden="true"
                           />
 
                         </div>
@@ -822,9 +1300,25 @@ export default function DeveloperSlugClient({
 
                   </div>
 
-                  <div className="mt-10 rounded-2xl bg-gradient-to-r from-[#0B221B] to-[#123126] p-6">
+                  <div
+                    className="
+                      mt-10
+                      rounded-2xl
+                      bg-gradient-to-r
+                      from-[#0B221B]
+                      to-[#123126]
+                      p-6
+                    "
+                  >
 
-                    <p className="text-[#D4AF37] uppercase tracking-[0.2em] text-[11px]">
+                    <p
+                      className="
+                        text-[11px]
+                        uppercase
+                        tracking-[0.2em]
+                        text-[#D4AF37]
+                      "
+                    >
                       Portfolio
                     </p>
 
@@ -855,18 +1349,48 @@ export default function DeveloperSlugClient({
 
       <section
         id="projects"
-        className="max-w-[1500px] mx-auto px-4 py-16"
+        className="
+          mx-auto
+          max-w-[1500px]
+          px-4
+          py-16
+        "
       >
 
-        <div className="grid xl:grid-cols-[360px_1fr] gap-16 items-start">
+        <div
+          className="
+            grid
+            items-start
+            gap-16
+            xl:grid-cols-[360px_1fr]
+          "
+        >
 
           {/* ==================================================
               DESKTOP FILTERS
-          ================================================== */}
+              ================================================== */}
 
-          <aside className="hidden xl:block sticky top-28 self-start">
+          <aside
+            className="
+              sticky
+              top-28
+              hidden
+              self-start
+              xl:block
+            "
+            aria-label="Property filters"
+          >
 
-            <div className="rounded-[34px] border border-[#E8DFC9] bg-white p-7 shadow-[0_20px_70px_rgba(0,0,0,0.06)]">
+            <div
+              className="
+                rounded-[34px]
+                border
+                border-[#E8DFC9]
+                bg-white
+                p-7
+                shadow-[0_20px_70px_rgba(0,0,0,0.06)]
+              "
+            >
 
               <p className="text-[11px] uppercase tracking-[0.25em] text-[#B58B2D]">
                 Property Search
@@ -876,14 +1400,20 @@ export default function DeveloperSlugClient({
                 Refine Results
               </h3>
 
-              <div className="mt-5 h-[2px] w-20 bg-[#D4AF37]" />
+              <div
+                className="mt-5 h-[2px] w-20 bg-[#D4AF37]"
+                aria-hidden="true"
+              />
 
               <div className="mt-7">
 
                 <PropertyFilters
                   properties={properties}
                   onFiltered={(data) => {
-                    setFilteredProperties(data);
+                    setFilteredProperties(
+                      data
+                    );
+
                     setVisibleCards(
                       CARDS_PER_PAGE
                     );
@@ -917,25 +1447,65 @@ export default function DeveloperSlugClient({
 
           {/* ==================================================
               RIGHT CONTENT
-          ================================================== */}
+              ================================================== */}
 
           <div>
 
             {/* TOP BAR */}
 
-            <div className="mb-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+            <div
+              className="
+                mb-10
+                flex
+                flex-col
+                gap-8
+                lg:flex-row
+                lg:items-end
+                lg:justify-between
+              "
+            >
 
               <div>
 
-                <span className="inline-flex items-center rounded-full bg-[#0B221B] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#D4AF37]">
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    bg-[#0B221B]
+                    px-5
+                    py-2
+                    text-[11px]
+                    uppercase
+                    tracking-[0.25em]
+                    text-[#D4AF37]
+                  "
+                >
                   Exclusive Collection
                 </span>
 
-                <h2 className="mt-5 font-playfair text-4xl md:text-5xl text-[#081c15] leading-tight">
+                <h2
+                  className="
+                    mt-5
+                    font-playfair
+                    text-4xl
+                    leading-tight
+                    text-[#081c15]
+                    md:text-5xl
+                  "
+                >
                   Projects by {developer.name}
                 </h2>
 
-                <div className="mt-5 h-[2px] w-28 bg-[#D4AF37]" />
+                <div
+                  className="
+                    mt-5
+                    h-[2px]
+                    w-28
+                    bg-[#D4AF37]
+                  "
+                  aria-hidden="true"
+                />
 
                 <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#666]">
                   Browse an exclusive portfolio of luxury
@@ -951,33 +1521,55 @@ export default function DeveloperSlugClient({
                 {/* MOBILE FILTER */}
 
                 <button
+                  type="button"
                   onClick={() =>
                     setShowFilters(true)
                   }
+                  aria-label="Open property filters"
                   className="
-                    xl:hidden
-                    h-14
-                    px-6
-                    rounded-2xl
-                    bg-[#081c15]
-                    text-white
-                    font-semibold
                     flex
+                    h-14
                     items-center
                     justify-center
                     gap-2
+                    rounded-2xl
+                    bg-[#081c15]
+                    px-6
+                    font-semibold
+                    text-white
+                    xl:hidden
                   "
                 >
+
                   <SlidersHorizontal
                     size={17}
+                    aria-hidden="true"
                   />
 
                   Filters
+
                 </button>
 
-                <div className="rounded-2xl border border-[#E6DDCC] bg-white px-7 py-4 shadow-sm">
+                <div
+                  className="
+                    rounded-2xl
+                    border
+                    border-[#E6DDCC]
+                    bg-white
+                    px-7
+                    py-4
+                    shadow-sm
+                  "
+                >
 
-                  <p className="text-[12px] uppercase tracking-[0.18em] text-[#888]">
+                  <p
+                    className="
+                      text-[12px]
+                      uppercase
+                      tracking-[0.18em]
+                      text-[#888]
+                    "
+                  >
                     Available Projects
                   </p>
 
@@ -993,33 +1585,40 @@ export default function DeveloperSlugClient({
 
             {/* SORT */}
 
-            <div className="mb-8 flex justify-end items-center gap-3">
+            <div className="mb-8 flex items-center justify-end gap-3">
 
-              <span className="text-sm font-semibold text-gray-500">
+              <label
+                htmlFor="developer-project-sort"
+                className="text-sm font-semibold text-gray-500"
+              >
                 Sort By
-              </span>
+              </label>
 
               <div className="relative">
 
                 <select
+                  id="developer-project-sort"
                   value={sortBy}
                   onChange={(e) =>
-                    setSortBy(e.target.value)
+                    setSortBy(
+                      e.target.value
+                    )
                   }
+                  aria-label="Sort developer projects"
                   className="
                     h-12
                     min-w-[220px]
-                    pl-4
-                    pr-10
+                    cursor-pointer
+                    appearance-none
                     rounded-xl
                     border
                     border-[#d4af37]/25
                     bg-white
-                    text-[#081c15]
+                    pl-4
+                    pr-10
                     font-semibold
+                    text-[#081c15]
                     outline-none
-                    appearance-none
-                    cursor-pointer
                     shadow-sm
                     focus:border-[#D4AF37]
                     focus:ring-4
@@ -1041,7 +1640,17 @@ export default function DeveloperSlugClient({
 
                 </select>
 
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37] pointer-events-none">
+                <span
+                  className="
+                    pointer-events-none
+                    absolute
+                    right-4
+                    top-1/2
+                    -translate-y-1/2
+                    text-[#D4AF37]
+                  "
+                  aria-hidden="true"
+                >
                   ▼
                 </span>
 
@@ -1050,12 +1659,20 @@ export default function DeveloperSlugClient({
             </div>
 
             {/* ==================================================
-                GRID
-            ================================================== */}
+                PROPERTY GRID
+                ================================================== */}
 
-            {currentProperties.length > 0 ? (
+            {currentProperties.length >
+            0 ? (
 
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div
+                className="
+                  grid
+                  gap-8
+                  md:grid-cols-2
+                  xl:grid-cols-3
+                "
+              >
 
                 {currentProperties.map(
                   (property) => {
@@ -1064,27 +1681,30 @@ export default function DeveloperSlugClient({
                       property?.slug;
 
                     const propertyTitle =
-                      property?.coreDetails
+                      property
+                        ?.coreDetails
                         ?.title ||
                       "Luxury property";
 
+                    const propertyImage =
+                      optimizeImageUrl(
+                        property?.media
+                          ?.heroImageUrl ||
+                          "/placeholder.jpg",
+                        PROPERTY_IMAGE_WIDTH
+                      );
+
                     /*
-                     * IMPORTANT SEO CHANGE:
-                     *
-                     * The entire project card is now a real
-                     * Next.js <Link>.
-                     *
-                     * Next.js renders this as:
-                     *
-                     * <a href="/property-slug">
-                     *
-                     * This makes the project URL a genuine
-                     * crawlable internal link.
-                     */
+                    |--------------------------------------------------------------------------
+                    | REAL CRAWLABLE INTERNAL LINK
+                    |--------------------------------------------------------------------------
+                    */
 
                     return (
                       <Link
-                        key={property._id}
+                        key={
+                          property._id
+                        }
                         href={
                           propertySlug
                             ? `/${propertySlug}`
@@ -1095,51 +1715,85 @@ export default function DeveloperSlugClient({
                           group
                           relative
                           block
-                          bg-white
-                          rounded-[32px]
                           overflow-hidden
+                          rounded-[32px]
                           border
                           border-gray-100
+                          bg-white
+                          text-[#081c15]
                           shadow-lg
-                          hover:shadow-2xl
                           transition-all
                           duration-500
+                          hover:shadow-2xl
                         "
                       >
 
                         {/* IMAGE */}
 
-                        <div className="relative h-[320px] overflow-hidden">
+                        <div
+                          className="
+                            relative
+                            h-[320px]
+                            overflow-hidden
+                          "
+                        >
 
                           <img
                             src={
-                              property?.media
-                                ?.heroImageUrl ||
-                              "/placeholder.jpg"
+                              propertyImage
                             }
                             alt={
                               propertyTitle
                             }
+                            width={700}
+                            height={500}
+                            loading="lazy"
+                            decoding="async"
                             className="
-                              w-full
                               h-full
+                              w-full
                               object-cover
-                              group-hover:scale-110
                               transition
                               duration-700
+                              group-hover:scale-110
                             "
                           />
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                          <div
+                            className="
+                              absolute
+                              inset-0
+                              bg-gradient-to-t
+                              from-black/90
+                              via-black/10
+                              to-transparent
+                            "
+                            aria-hidden="true"
+                          />
 
                           {/* PRICE */}
 
-                          <div className="absolute top-5 right-5 bg-[#081c15] text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl">
+                          <div
+                            className="
+                              absolute
+                              right-5
+                              top-5
+                              rounded-full
+                              bg-[#081c15]
+                              px-5
+                              py-2
+                              text-sm
+                              font-bold
+                              text-white
+                              shadow-2xl
+                            "
+                          >
 
                             {property?.coreDetails
                               ?.priceOnRequest ? (
                               "On Request"
-                            ) : property?.coreDetails
+                            ) : property
+                                ?.coreDetails
                                 ?.startingPrice ? (
                               <>
                                 ₹
@@ -1168,22 +1822,47 @@ export default function DeveloperSlugClient({
 
                           {/* CONTENT */}
 
-                          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                          <div
+                            className="
+                              absolute
+                              bottom-0
+                              left-0
+                              right-0
+                              p-6
+                              text-white
+                            "
+                          >
 
-                            <h3 className="text-2xl font-black leading-tight">
-
+                            <h3
+                              className="
+                                text-2xl
+                                font-black
+                                leading-tight
+                              "
+                            >
                               {
-                                property?.coreDetails
+                                property
+                                  ?.coreDetails
                                   ?.title
                               }
-
                             </h3>
 
-                            <div className="flex items-center gap-2 text-white/80 mt-3">
+                            <div
+                              className="
+                                mt-3
+                                flex
+                                items-center
+                                gap-2
+                                text-white/80
+                              "
+                            >
 
-                              <MapPin size={16} />
+                              <MapPin
+                                size={16}
+                                aria-hidden="true"
+                              />
 
-                              <span className="text-sm truncate">
+                              <span className="truncate text-sm">
 
                                 {property
                                   ?.locationData
@@ -1203,9 +1882,23 @@ export default function DeveloperSlugClient({
 
                         {/* BOTTOM */}
 
-                        <div className="p-6">
+                        <div
+                          className="
+                            p-6
+                            text-[#081c15]
+                          "
+                        >
 
-                          <div className="flex items-center justify-between mb-5 text-sm text-black/60">
+                          <div
+                            className="
+                              mb-5
+                              flex
+                              items-center
+                              justify-between
+                              text-sm
+                              text-black/60
+                            "
+                          >
 
                             <span>
                               {property
@@ -1233,13 +1926,33 @@ export default function DeveloperSlugClient({
 
                           </div>
 
-                          <div className="w-full h-14 rounded-2xl bg-[#081c15] hover:bg-[#1b4332] text-white font-bold flex items-center justify-center gap-3 transition-all duration-300">
+                          <div
+                            className="
+                              flex
+                              h-14
+                              w-full
+                              items-center
+                              justify-center
+                              gap-3
+                              rounded-2xl
+                              bg-[#081c15]
+                              font-bold
+                              text-white
+                              transition-all
+                              duration-300
+                              hover:bg-[#1b4332]
+                            "
+                          >
 
                             Explore Property
 
                             <ArrowRight
                               size={18}
-                              className="group-hover:translate-x-1 transition"
+                              className="
+                                transition
+                                group-hover:translate-x-1
+                              "
+                              aria-hidden="true"
                             />
 
                           </div>
@@ -1255,13 +1968,21 @@ export default function DeveloperSlugClient({
 
             ) : (
 
-              <div className="bg-white rounded-[32px] p-20 text-center shadow-xl">
+              <div
+                className="
+                  rounded-[32px]
+                  bg-white
+                  p-20
+                  text-center
+                  shadow-xl
+                "
+              >
 
                 <h3 className="text-4xl font-black text-[#081c15]">
                   No Projects Found
                 </h3>
 
-                <p className="text-gray-500 mt-4 text-lg">
+                <p className="mt-4 text-lg text-gray-500">
                   Try adjusting your filters.
                 </p>
 
@@ -1271,12 +1992,13 @@ export default function DeveloperSlugClient({
 
             {/* LOAD MORE */}
 
-            <div className="flex justify-center mt-12">
+            <div className="mt-12 flex justify-center">
 
               {visibleCards <
                 filteredProperties.length && (
 
                 <button
+                  type="button"
                   onClick={() =>
                     setVisibleCards(
                       (prev) =>
@@ -1284,13 +2006,14 @@ export default function DeveloperSlugClient({
                         CARDS_PER_PAGE
                     )
                   }
+                  aria-label="Load more developer projects"
                   className="
-                    px-10
                     h-14
                     rounded-2xl
                     bg-[#D4AF37]
-                    text-black
+                    px-10
                     font-bold
+                    text-black
                     shadow-lg
                     transition-all
                     duration-300
@@ -1317,12 +2040,31 @@ export default function DeveloperSlugClient({
 
       {showFilters && (
 
-        <div className="fixed inset-0 z-[9999] xl:hidden">
+        <div
+          className="
+            fixed
+            inset-0
+            z-[9999]
+            xl:hidden
+          "
+          role="dialog"
+          aria-modal="true"
+          aria-label="Property filters"
+        >
 
           {/* OVERLAY */}
 
-          <div
-            className="absolute inset-0 bg-black/60"
+          <button
+            type="button"
+            aria-label="Close property filters"
+            className="
+              absolute
+              inset-0
+              h-full
+              w-full
+              cursor-default
+              bg-black/60
+            "
             onClick={() =>
               setShowFilters(false)
             }
@@ -1338,44 +2080,70 @@ export default function DeveloperSlugClient({
               h-full
               w-[88%]
               max-w-[380px]
-              bg-white
               overflow-y-auto
+              bg-white
               shadow-2xl
             "
           >
 
             {/* HEADER */}
 
-            <div className="sticky top-0 bg-white z-20 border-b p-5 flex items-center justify-between">
+            <div
+              className="
+                sticky
+                top-0
+                z-20
+                flex
+                items-center
+                justify-between
+                border-b
+                bg-white
+                p-5
+              "
+            >
 
               <div>
 
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#B58B2D]">
+                <p
+                  className="
+                    text-[10px]
+                    uppercase
+                    tracking-[0.2em]
+                    text-[#B58B2D]
+                  "
+                >
                   Property Search
                 </p>
 
-                <h2 className="text-xl font-bold text-[#081c15] mt-1">
+                <h2 className="mt-1 text-xl font-bold text-[#081c15]">
                   Filters
                 </h2>
 
               </div>
 
               <button
+                type="button"
                 onClick={() =>
                   setShowFilters(false)
                 }
+                aria-label="Close property filters"
                 className="
-                  w-10
-                  h-10
-                  rounded-full
-                  bg-gray-100
                   flex
+                  h-10
+                  w-10
                   items-center
                   justify-center
+                  rounded-full
+                  bg-gray-100
                   text-gray-700
                 "
               >
-                <X size={20} />
+
+                <X
+                  size={20}
+                  aria-hidden="true"
+                />
+
               </button>
 
             </div>
@@ -1387,11 +2155,17 @@ export default function DeveloperSlugClient({
               <PropertyFilters
                 properties={properties}
                 onFiltered={(data) => {
-                  setFilteredProperties(data);
+                  setFilteredProperties(
+                    data
+                  );
+
                   setVisibleCards(
                     CARDS_PER_PAGE
                   );
-                  setShowFilters(false);
+
+                  setShowFilters(
+                    false
+                  );
                 }}
                 selectedLocation={
                   selectedLocation
