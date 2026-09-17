@@ -234,6 +234,36 @@ function safeSlug(slug) {
 // Public slug:
 // ats-infrastructure-ltd-developer-projects
 // ============================================================
+// ============================================================
+// PUBLIC DEVELOPER SLUG BUILDER
+// ============================================================
+//
+// Canonical public developer URL architecture:
+//
+// Backend slug:
+// m3m
+// → /developers/m3m-developer-projects
+//
+// Backend slug:
+// signature-global
+// → /developers/signature-global-developer-projects
+//
+// Backend slug:
+// spiti-developer
+// → /developers/spiti-developer-projects
+//
+// Backend slug:
+// parsvnath-developers
+// → /developers/parsvnath-developers-projects
+//
+// Backend slug:
+// parsvnath-developer-projects
+// → unchanged
+//
+// Backend slug:
+// parsvnath-developers-projects
+// → unchanged
+// ============================================================
 
 function buildPublicDeveloperSlug(
   developerSlug
@@ -242,9 +272,7 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  const cleanSlug = String(
-    developerSlug
-  )
+  const cleanSlug = String(developerSlug)
     .trim()
     .toLowerCase()
     .replace(/^\/+|\/+$/g, "");
@@ -253,16 +281,25 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  // Already canonical
+  // ----------------------------------------------------------
+  // Already canonical:
+  // example-developer-projects
+  // ----------------------------------------------------------
   if (
     cleanSlug.endsWith(
       "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
     )
   ) {
     return cleanSlug;
   }
 
-  // Existing "-developer" suffix
+  // ----------------------------------------------------------
+  // Backend slug already ends with:
+  // example-developer
+  // ----------------------------------------------------------
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -271,7 +308,22 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend slug
+  // ----------------------------------------------------------
+  // Backend slug already ends with:
+  // example-developers
+  // ----------------------------------------------------------
+  if (
+    cleanSlug.endsWith(
+      "-developers"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+  // ----------------------------------------------------------
+  // Normal backend slug:
+  // example
+  // ----------------------------------------------------------
   return `${cleanSlug}-developer-projects`;
 }
 

@@ -117,6 +117,10 @@ function extractArray(result) {
     return result.developers;
   }
 
+  if (Array.isArray(result?.locations)) {
+    return result.locations;
+  }
+
   return [];
 }
 
@@ -209,7 +213,7 @@ async function getActiveDevelopers() {
     return developers
       .filter(
         (developer) =>
-          developer?.slug &&
+          getBackendDeveloperSlug(developer) &&
           developer?.isDeleted !== true &&
           developer?.isActive !== false
       )
@@ -237,25 +241,146 @@ async function getActiveDevelopers() {
 }
 
 /* =========================================================
-   HELPERS
+   FETCH ACTIVE LOCATIONS
 ========================================================= */
 
 /*
  * IMPORTANT:
  *
- * This function is intentionally kept separate from the
- * public developer slug builder.
+ * We use the actual CMS location tree.
  *
- * It is only used for a fallback grouping label.
+ * This allows the human sitemap to use the same
+ * canonical location URL architecture as the public
+ * location pages.
+ *
+ * Example:
+ *
+ * Sector 56
+ * → /locations/properties-in-sector-56-gurgaon
+ *
+ * Golf Course Road
+ * → /locations/properties-on-golf-course-road-gurgaon
+ *
+ * Dwarka Expressway
+ * → /locations/properties-on-dwarka-expressway-gurgaon
+ *
+ * The URL uses:
+ *
+ * CURRENT LOCATION + ROOT PARENT
+ *
+ * and does NOT expose intermediate parents.
  */
 
-function getDeveloperSlug(name = "") {
-  return String(name)
-    .toLowerCase()
+async function getLocations() {
+  try {
+    const res = await fetch(
+      `${API}/locations/tree`,
+      {
+        next: {
+          revalidate: 3600,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      console.warn(
+        `Sitemap page locations request failed: ${res.status}`
+      );
+
+      return [];
+    }
+
+    const result = await res.json();
+
+    /*
+     * The tree endpoint may return:
+     *
+     * { data: [...] }
+     *
+     * or:
+     *
+     * [...]
+     */
+
+    const tree =
+      Array.isArray(result?.data)
+        ? result.data
+        : Array.isArray(result)
+        ? result
+        : Array.isArray(result?.locations)
+        ? result.locations
+        : [];
+
+    const flattened = [];
+
+    const walk = (
+      items,
+      parent = null
+    ) => {
+      if (!Array.isArray(items)) {
+        return;
+      }
+
+      items.forEach((location) => {
+        if (!location) {
+          return;
+        }
+
+        flattened.push({
+          ...location,
+          __parentNode: parent,
+        });
+
+        if (
+          Array.isArray(
+            location.children
+          )
+        ) {
+          walk(
+            location.children,
+            location
+          );
+        }
+      });
+    };
+
+    walk(tree);
+
+    return flattened.filter(
+      (location) =>
+        location?.name &&
+        location?.isDeleted !== true &&
+        location?.isActive !== false
+    );
+  } catch (error) {
+    console.error(
+      "Sitemap locations fetch failed:",
+      error
+    );
+
+    return [];
+  }
+}
+
+/* =========================================================
+   SAFE SLUG
+========================================================= */
+
+function safeSlug(slug) {
+  if (!slug) {
+    return null;
+  }
+
+  const value = String(slug)
     .trim()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!value) {
+    return null;
+  }
+
+  return value;
 }
 
 /* =========================================================
@@ -264,8 +389,6 @@ function getDeveloperSlug(name = "") {
 
 /*
  * CANONICAL PUBLIC DEVELOPER URL ARCHITECTURE
- *
- * Backend slug:
  *
  * m3m
  * → m3m-developer-projects
@@ -276,12 +399,14 @@ function getDeveloperSlug(name = "") {
  * spiti-developer
  * → spiti-developer-projects
  *
- * ats-infrastructure-ltd
- * → ats-infrastructure-ltd-developer-projects
+ * parsvnath-developers
+ * → parsvnath-developers-projects
  *
- * Existing "-developer-projects" is preserved.
+ * parsvnath-developer-projects
+ * → unchanged
  *
- * Existing "-developer" receives "-projects".
+ * parsvnath-developers-projects
+ * → unchanged
  */
 
 function buildPublicDeveloperSlug(
@@ -302,16 +427,21 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  // Already canonical
+  /* Already canonical */
+
   if (
     cleanSlug.endsWith(
       "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
     )
   ) {
     return cleanSlug;
   }
 
-  // Backend slug already ends with "-developer"
+  /* Backend slug ends with -developer */
+
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -320,7 +450,18 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend developer slug
+  /* Backend slug ends with -developers */
+
+  if (
+    cleanSlug.endsWith(
+      "-developers"
+    )
+  ) {
+    return `${cleanSlug}-projects`;
+  }
+
+  /* Normal backend slug */
+
   return `${cleanSlug}-developer-projects`;
 }
 
@@ -430,6 +571,280 @@ function groupPropertiesByDeveloper(
 }
 
 /* =========================================================
+   LOCATION HELPERS
+========================================================= */
+
+/* Convert a location name/slug to a URL-safe slug */
+
+function slugifyLocation(
+  value
+) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/* =========================================================
+   LOCATION PREPOSITION
+========================================================= */
+
+/*
+ * Roads / expressways / highways etc.
+ * use "on".
+ *
+ * Sectors / cities / localities etc.
+ * use "in".
+ */
+
+function getLocationPreposition(
+  location
+) {
+  const name = String(
+    location?.name || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const slug = String(
+    location?.slug || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const value = `${name} ${slug}`;
+
+  const onKeywords = [
+    "expressway",
+    "express way",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
+
+  return onKeywords.some(
+    (keyword) =>
+      value.includes(keyword)
+  )
+    ? "on"
+    : "in";
+}
+
+/* =========================================================
+   LOCATION ID
+========================================================= */
+
+function getLocationId(
+  location
+) {
+  if (!location) {
+    return "";
+  }
+
+  return (
+    location?._id
+      ?.toString?.() ||
+    location?.id
+      ?.toString?.() ||
+    ""
+  );
+}
+
+/* =========================================================
+   GET PARENT LOCATION
+========================================================= */
+
+function getParentLocation(
+  location,
+  locations
+) {
+  if (!location) {
+    return null;
+  }
+
+  /*
+   * Tree data already gives us the direct parent.
+   */
+
+  if (location.__parentNode) {
+    return location.__parentNode;
+  }
+
+  /*
+   * Fallback for flat data containing
+   * parent IDs.
+   */
+
+  const parentId =
+    location?.parent?._id
+      ?.toString?.() ||
+    location?.parent?.id
+      ?.toString?.() ||
+    location?.parent
+      ?.toString?.() ||
+    "";
+
+  if (!parentId) {
+    return null;
+  }
+
+  return (
+    locations.find(
+      (item) =>
+        getLocationId(item) ===
+        parentId
+    ) || null
+  );
+}
+
+/* =========================================================
+   GET ROOT LOCATION
+========================================================= */
+
+function getRootLocation(
+  location,
+  locations
+) {
+  if (!location) {
+    return null;
+  }
+
+  let current = location;
+
+  const visited = new Set();
+
+  while (current) {
+    const currentId =
+      getLocationId(current);
+
+    if (
+      currentId &&
+      visited.has(currentId)
+    ) {
+      break;
+    }
+
+    if (currentId) {
+      visited.add(currentId);
+    }
+
+    const parent =
+      getParentLocation(
+        current,
+        locations
+      );
+
+    if (!parent) {
+      break;
+    }
+
+    current = parent;
+  }
+
+  return current;
+}
+
+/* =========================================================
+   BUILD PUBLIC LOCATION SLUG
+========================================================= */
+
+/*
+ * IMPORTANT:
+ *
+ * Public URL uses:
+ *
+ * CURRENT LOCATION + ROOT LOCATION
+ *
+ * Example:
+ *
+ * Gurgaon
+ * → properties-in-gurgaon
+ *
+ * Golf Course Road under Gurgaon
+ * → properties-on-golf-course-road-gurgaon
+ *
+ * Sector 56 under Golf Course Road under Gurgaon
+ * → properties-in-sector-56-gurgaon
+ *
+ * Intermediate parents are intentionally omitted.
+ */
+
+function buildPublicLocationSlug(
+  location,
+  locations
+) {
+  if (!location) {
+    return "";
+  }
+
+  const currentPart =
+    slugifyLocation(
+      location.slug ||
+        location.name ||
+        ""
+    );
+
+  if (!currentPart) {
+    return "";
+  }
+
+  const root =
+    getRootLocation(
+      location,
+      locations
+    );
+
+  const rootPart =
+    slugifyLocation(
+      root?.slug ||
+        root?.name ||
+        ""
+    );
+
+  const preposition =
+    getLocationPreposition(
+      location
+    );
+
+  if (
+    rootPart &&
+    rootPart !== currentPart
+  ) {
+    return `properties-${preposition}-${currentPart}-${rootPart}`;
+  }
+
+  return `properties-${preposition}-${currentPart}`;
+}
+
+/* =========================================================
+   GET PUBLIC LOCATION URL
+========================================================= */
+
+function getPublicLocationUrl(
+  location,
+  locations
+) {
+  const publicSlug =
+    buildPublicLocationSlug(
+      location,
+      locations
+    );
+
+  if (!publicSlug) {
+    return null;
+  }
+
+  return `/locations/${encodeURIComponent(
+    publicSlug
+  )}`;
+}
+
+/* =========================================================
    PRIMARY NAVIGATION
 ========================================================= */
 
@@ -483,7 +898,8 @@ const primaryLinks = [
   },
 
   {
-    title: "About Property Bouquet",
+    title:
+      "About Property Bouquet",
     href: "/about",
     description:
       "Learn about our philosophy, expertise and approach to luxury real estate.",
@@ -496,67 +912,6 @@ const primaryLinks = [
     description:
       "Connect with our advisors for personalised property guidance.",
     icon: Compass,
-  },
-];
-
-/* =========================================================
-   LOCATIONS
-========================================================= */
-
-const locations = [
-  {
-    name: "Dwarka Expressway",
-    subtitle: "High-growth corridor",
-    href: "/properties?location=Dwarka%20Expressway",
-  },
-
-  {
-    name: "Golf Course Extension Road",
-    subtitle:
-      "Premium residential destination",
-    href: "/properties?location=Golf%20Course%20Extension%20Road",
-  },
-
-  {
-    name: "Golf Course Road",
-    subtitle:
-      "Established luxury address",
-    href: "/properties?location=Golf%20Course%20Road",
-  },
-
-  {
-    name: "Sohna",
-    subtitle:
-      "Emerging luxury destination",
-    href: "/properties?location=Sohna",
-  },
-
-  {
-    name: "Southern Peripheral Road",
-    subtitle:
-      "Strategic growth corridor",
-    href: "/properties?location=Southern%20Peripheral%20Road",
-  },
-
-  {
-    name: "New Gurgaon",
-    subtitle:
-      "Next-generation urban living",
-    href: "/properties?location=New%20Gurgaon",
-  },
-
-  {
-    name: "Sector 63A",
-    subtitle:
-      "Premium residential enclave",
-    href: "/properties?location=Sector%2063A",
-  },
-
-  {
-    name: "Sector 58",
-    subtitle:
-      "Prime Golf Course address",
-    href: "/properties?location=Sector%2058",
   },
 ];
 
@@ -707,9 +1062,11 @@ export default async function SitemapPage() {
   const [
     properties,
     developers,
+    locations,
   ] = await Promise.all([
     getPublishedProperties(),
     getActiveDevelopers(),
+    getLocations(),
   ]);
 
   const groupedProperties =
@@ -720,13 +1077,8 @@ export default async function SitemapPage() {
   /*
    * Use actual developer CMS records.
    *
-   * Developer URLs are generated from the actual backend slug
-   * through buildPublicDeveloperSlug().
-   *
-   * This keeps this human-facing sitemap synchronized with:
-   *
-   * - src/app/sitemap.js
-   * - app/developers/[slug]/page.js
+   * If developer records are unavailable,
+   * use grouped property names as fallback.
    */
 
   const developerItems =
@@ -919,6 +1271,57 @@ export default async function SitemapPage() {
             })
           ),
       },
+
+      {
+        "@type":
+          "ItemList",
+
+        "@id":
+          `${SITE_URL}/sitemap#locations`,
+
+        name:
+          "Property Bouquet Locations",
+
+        description:
+          "Public Property Bouquet location pages for real estate destinations and local markets.",
+
+        numberOfItems:
+          locations.length,
+
+        itemListElement:
+          locations
+            .map(
+              (
+                location,
+                index
+              ) => {
+                const url =
+                  getPublicLocationUrl(
+                    location,
+                    locations
+                  );
+
+                if (!url) {
+                  return null;
+                }
+
+                return {
+                  "@type":
+                    "ListItem",
+
+                  position:
+                    index + 1,
+
+                  name:
+                    location.name,
+
+                  url:
+                    `${SITE_URL}${url}`,
+                };
+              }
+            )
+            .filter(Boolean),
+      },
     ],
   };
 
@@ -959,6 +1362,7 @@ export default async function SitemapPage() {
               style={{
                 backgroundImage:
                   "linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)",
+
                 backgroundSize:
                   "90px 90px",
               }}
@@ -971,8 +1375,6 @@ export default async function SitemapPage() {
           </div>
 
           <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-32 sm:pt-36 lg:px-8 lg:pb-28 lg:pt-40">
-
-            {/* Breadcrumb */}
 
             <div className="mb-12 flex items-center gap-2 text-[11px] tracking-wide text-white/45">
 
@@ -996,24 +1398,26 @@ export default async function SitemapPage() {
 
             <div className="grid items-end gap-14 lg:grid-cols-[1.25fr_.75fr]">
 
-              {/* Hero copy */}
-
               <div>
 
                 <div className="mb-7 inline-flex items-center gap-3">
+
                   <span className="text-[10px] font-medium uppercase tracking-[0.34em] text-[#d8b46b]">
                     Property Bouquet
                   </span>
+
                 </div>
 
                 <GoldDivider />
 
                 <h1 className="mt-8 max-w-4xl font-serif text-[48px] font-light leading-[1.04] tracking-[-0.035em] text-white sm:text-6xl lg:text-[76px]">
+
                   Discover
 
                   <span className="block text-[#d8b46b]">
                     Every Address.
                   </span>
+
                 </h1>
 
                 <p className="mt-7 max-w-2xl text-sm leading-7 text-white/60 sm:text-base sm:leading-8">
@@ -1056,8 +1460,6 @@ export default async function SitemapPage() {
 
               </div>
 
-              {/* Hero stats panel */}
-
               <div className="lg:justify-self-end">
 
                 <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] p-6 backdrop-blur-xl sm:p-7">
@@ -1095,9 +1497,7 @@ export default async function SitemapPage() {
                     <div className="py-5 pr-5">
 
                       <div className="font-serif text-3xl font-light text-[#e0c47c]">
-                        {
-                          properties.length
-                        }
+                        {properties.length}
                       </div>
 
                       <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -1109,9 +1509,7 @@ export default async function SitemapPage() {
                     <div className="py-5 pl-5">
 
                       <div className="font-serif text-3xl font-light text-[#e0c47c]">
-                        {
-                          developerItems.length
-                        }
+                        {developerItems.length}
                       </div>
 
                       <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -1194,9 +1592,7 @@ export default async function SitemapPage() {
                     </div>
 
                     <h3 className="mt-7 font-serif text-[21px] font-light text-[#10231f]">
-                      {
-                        item.title
-                      }
+                      {item.title}
                     </h3>
 
                     <p className="mt-3 text-[13px] leading-6 text-[#68716d]">
@@ -1259,6 +1655,7 @@ export default async function SitemapPage() {
             <div className="mt-14">
 
               {properties.length > 0 ? (
+
                 <div className="space-y-16">
 
                   {groupedProperties.map(
@@ -1266,6 +1663,7 @@ export default async function SitemapPage() {
                       developer,
                       developerProperties,
                     ]) => (
+
                       <div
                         key={
                           developer
@@ -1295,15 +1693,18 @@ export default async function SitemapPage() {
                               </h3>
 
                               <span className="rounded-full border border-[#d9d6cc] px-2.5 py-1 text-[9px] uppercase tracking-[0.12em] text-[#7a807c]">
+
                                 {
                                   developerProperties.length
                                 }{" "}
+
                                 {
                                   developerProperties.length ===
                                   1
                                     ? "Property"
                                     : "Properties"
                                 }
+
                               </span>
 
                             </div>
@@ -1320,6 +1721,7 @@ export default async function SitemapPage() {
                             (
                               property
                             ) => (
+
                               <Link
                                 key={
                                   property.slug
@@ -1348,11 +1750,13 @@ export default async function SitemapPage() {
                                       ?.categoryData
                                       ?.categoryName && (
                                       <span className="mt-1.5 block text-[9px] uppercase tracking-[0.15em] text-[#929691]">
+
                                         {
                                           property
                                             .categoryData
                                             .categoryName
                                         }
+
                                       </span>
                                     )}
 
@@ -1366,17 +1770,21 @@ export default async function SitemapPage() {
                                 </div>
 
                               </Link>
+
                             )
                           )}
 
                         </div>
 
                       </div>
+
                     )
                   )}
 
                 </div>
+
               ) : (
+
                 <div className="border border-[#dedbd2] bg-[#faf9f5] px-6 py-14 text-center">
 
                   <p className="text-sm text-[#777d78]">
@@ -1386,6 +1794,7 @@ export default async function SitemapPage() {
                   </p>
 
                 </div>
+
               )}
 
             </div>
@@ -1414,36 +1823,16 @@ export default async function SitemapPage() {
 
               {developerItems.map(
                 (developer) => {
+
                   const developerName =
                     getDeveloperName(
                       developer
                     );
 
-                  /*
-                   * IMPORTANT:
-                   *
-                   * Always use the actual backend developer slug.
-                   *
-                   * DO NOT create the public URL from developerName.
-                   *
-                   * Example:
-                   *
-                   * backend:
-                   * spiti-developer
-                   *
-                   * public:
-                   * spiti-developer-projects
-                   */
-
                   const developerUrl =
                     getPublicDeveloperUrl(
                       developer
                     );
-
-                  /*
-                   * If there is no usable developer slug,
-                   * do not create a potentially incorrect URL.
-                   */
 
                   if (
                     !developerUrl
@@ -1580,47 +1969,78 @@ export default async function SitemapPage() {
 
               <div className="grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">
 
-                {locations.map(
-                  (location) => (
-                    <Link
-                      key={
-                        location.name
+                {locations.length >
+                0 ? (
+
+                  locations.map(
+                    (
+                      location
+                    ) => {
+
+                      const locationUrl =
+                        getPublicLocationUrl(
+                          location,
+                          locations
+                        );
+
+                      if (
+                        !locationUrl
+                      ) {
+                        return null;
                       }
-                      href={
-                        location.href
-                      }
-                      className="group relative bg-[#0a211b] p-6 transition duration-500 hover:bg-[#102c24]"
-                    >
 
-                      <div className="flex items-start justify-between gap-5">
+                      return (
+                        <Link
+                          key={`${getLocationId(location)}-${locationUrl}`}
+                          href={
+                            locationUrl
+                          }
+                          className="group relative bg-[#0a211b] p-6 transition duration-500 hover:bg-[#102c24]"
+                        >
 
-                        <div>
+                          <div className="flex items-start justify-between gap-5">
 
-                          <h3 className="font-serif text-lg font-light text-white transition group-hover:text-[#e0c47c]">
-                            {
-                              location.name
-                            }
-                          </h3>
+                            <div>
 
-                          <p className="mt-2 text-[10px] uppercase tracking-[0.13em] text-white/30">
-                            {
-                              location.subtitle
-                            }
-                          </p>
+                              <h3 className="font-serif text-lg font-light text-white transition group-hover:text-[#e0c47c]">
+                                {
+                                  location.name
+                                }
+                              </h3>
 
-                        </div>
+                              <p className="mt-2 text-[10px] uppercase tracking-[0.13em] text-white/30">
+                                Property
+                                opportunities
+                              </p>
 
-                        <ArrowUpRight
-                          size={15}
-                          className="mt-1 shrink-0 text-white/25 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#d8b46b]"
-                        />
+                            </div>
 
-                      </div>
+                            <ArrowUpRight
+                              size={15}
+                              className="mt-1 shrink-0 text-white/25 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#d8b46b]"
+                            />
 
-                      <div className="mt-6 h-px w-6 bg-[#c9a64b]/60 transition-all duration-500 group-hover:w-12" />
+                          </div>
 
-                    </Link>
+                          <div className="mt-6 h-px w-6 bg-[#c9a64b]/60 transition-all duration-500 group-hover:w-12" />
+
+                        </Link>
+                      );
+                    }
                   )
+
+                ) : (
+
+                  <div className="col-span-full px-6 py-12 text-center">
+
+                    <p className="text-sm text-white/50">
+                      Location collection
+                      is currently being
+                      updated.
+                    </p>
+
+                  </div>
+
                 )}
 
               </div>
@@ -1647,6 +2067,7 @@ export default async function SitemapPage() {
 
             {resources.map(
               (resource) => {
+
                 const Icon =
                   resource.icon;
 
@@ -1732,6 +2153,7 @@ export default async function SitemapPage() {
 
               {legalLinks.map(
                 (item) => {
+
                   const Icon =
                     item.icon;
 
