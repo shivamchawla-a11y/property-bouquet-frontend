@@ -11,34 +11,28 @@ import {
   Check,
   X,
   RefreshCw,
+  FileEdit,
 } from "lucide-react";
 
 export default function LocationPage() {
-  const API =
-    "/api";
+  const API = "/api";
 
   const [locations, setLocations] = useState([]);
   const [expanded, setExpanded] = useState({});
-  const [activeInput, setActiveInput] =
-    useState(null);
-  const [inputValue, setInputValue] =
-    useState("");
+  const [activeInput, setActiveInput] = useState(null);
+  const [inputValue, setInputValue] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-const [editImage, setEditImage] = useState("");
-
-const [uploading, setUploading] = useState(false);
+  const [editImage, setEditImage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [editingId, setEditingId] =
-    useState(null);
-  const [editValue, setEditValue] =
-    useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
   const [search, setSearch] = useState("");
 
   // ================= PAGINATION =================
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 12;
 
@@ -47,14 +41,13 @@ const [uploading, setUploading] = useState(false);
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `${API}/locations/tree`
-      );
+      const res = await fetch(`${API}/locations/tree`);
 
       const data = await res.json();
 
-      if (res.ok)
+      if (res.ok) {
         setLocations(data.data || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -71,88 +64,81 @@ const [uploading, setUploading] = useState(false);
   }, [search]);
 
   // ================= VALIDATE FILE =================
-const validateFile = (file) => {
-  if (!file) return false;
+  const validateFile = (file) => {
+    if (!file) return false;
 
-  if (!file.type.startsWith("image/")) {
-    alert("Only image files allowed");
-    return false;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    alert("Max file size is 5MB");
-    return false;
-  }
-
-  return true;
-};
-
-// ================= UPLOAD IMAGE =================
-const uploadImage = async (file) => {
-  try {
-    const data = new FormData();
-
-    data.append("file", file);
-
-    const res = await fetch(
-      "/api/upload-developer",
-      {
-        method: "POST",
-        body: data,
-      }
-    );
-
-    const result = await res.json();
-
-    if (!res.ok || !result.url) {
-      throw new Error(
-        result.message || "Upload failed"
-      );
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files allowed");
+      return false;
     }
 
-    return result.url;
-  } catch (err) {
-    console.error(err);
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Max file size is 5MB");
+      return false;
+    }
 
-    alert("Upload failed");
+    return true;
+  };
 
-    return null;
-  }
-};
+  // ================= UPLOAD IMAGE =================
+  const uploadImage = async (file) => {
+    try {
+      const data = new FormData();
 
-// ================= NEW LOCATION IMAGE =================
-const handleLocationImageUpload = async (
-  file
-) => {
-  if (!validateFile(file)) return;
+      data.append("file", file);
 
-  setUploading(true);
+      const res = await fetch("/api/upload-developer", {
+        method: "POST",
+        body: data,
+      });
 
-  const url = await uploadImage(file);
+      const result = await res.json();
 
-  if (url) {
-    setImageUrl(url);
-  }
+      if (!res.ok || !result.url) {
+        throw new Error(
+          result.message || "Upload failed"
+        );
+      }
 
-  setUploading(false);
-};
+      return result.url;
+    } catch (err) {
+      console.error(err);
 
-// ================= EDIT LOCATION IMAGE =================
-const handleEditImageUpload = async (
-  file
-) => {
-  if (!validateFile(file)) return;
+      alert("Upload failed");
 
-  setUploading(true);
+      return null;
+    }
+  };
 
-  const url = await uploadImage(file);
+  // ================= NEW LOCATION IMAGE =================
+  const handleLocationImageUpload = async (file) => {
+    if (!validateFile(file)) return;
 
-  if (url) {
-    setEditImage(url);
-  }
+    setUploading(true);
 
-  setUploading(false);
-};
+    const url = await uploadImage(file);
+
+    if (url) {
+      setImageUrl(url);
+    }
+
+    setUploading(false);
+  };
+
+  // ================= EDIT LOCATION IMAGE =================
+  const handleEditImageUpload = async (file) => {
+    if (!validateFile(file)) return;
+
+    setUploading(true);
+
+    const url = await uploadImage(file);
+
+    if (url) {
+      setEditImage(url);
+    }
+
+    setUploading(false);
+  };
 
   // ================= ADD =================
   const addLocation = async (parentId) => {
@@ -171,10 +157,10 @@ const handleEditImageUpload = async (
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-        name: inputValue,
-        parent: parentId || null,
-        image: imageUrl,
-      }),
+          name: inputValue,
+          parent: parentId || null,
+          image: imageUrl,
+        }),
       }
     );
 
@@ -187,17 +173,20 @@ const handleEditImageUpload = async (
 
     await fetchLocations();
 
-setInputValue("");
-setImageUrl("");
-setActiveInput(null);
+    setInputValue("");
+    setImageUrl("");
+    setActiveInput(null);
   };
 
   // ================= DELETE =================
   const deleteLocation = async (id) => {
     if (
-      !confirm("Delete this location?")
-    )
+      !confirm(
+        "Delete this location?"
+      )
+    ) {
       return;
+    }
 
     const token =
       localStorage.getItem("token");
@@ -222,14 +211,14 @@ setActiveInput(null);
     fetchLocations();
   };
 
-  // ================= UPDATE =================
+  // ================= UPDATE LOCATION NAME / IMAGE =================
   const updateLocation = async (id) => {
     if (!editValue.trim()) return;
 
     const token =
       localStorage.getItem("token");
 
-    await fetch(
+    const res = await fetch(
       `${API}/locations/${id}`,
       {
         method: "PATCH",
@@ -239,11 +228,21 @@ setActiveInput(null);
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-  name: editValue,
-  image: editImage,
-}),
+          name: editValue,
+          image: editImage,
+        }),
       }
     );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(
+        data.message ||
+          "Update failed"
+      );
+      return;
+    }
 
     setEditingId(null);
 
@@ -258,8 +257,9 @@ setActiveInput(null);
 
   // ================= AUTO EXPAND =================
   const shouldExpand = (node) => {
-    if (matchesSearch(node.name))
+    if (matchesSearch(node.name)) {
       return true;
+    }
 
     return node.children?.some(
       shouldExpand
@@ -279,12 +279,14 @@ setActiveInput(null);
   );
 
   const startIndex =
-    (currentPage - 1) * itemsPerPage;
+    (currentPage - 1) *
+    itemsPerPage;
 
   const paginatedLocations =
     filteredLocations.slice(
       startIndex,
-      startIndex + itemsPerPage
+      startIndex +
+        itemsPerPage
     );
 
   // ================= TREE =================
@@ -302,27 +304,34 @@ setActiveInput(null);
           key={node._id}
           className="mb-2"
         >
-          {/* NODE */}
+          {/* =====================================================
+              NODE
+          ====================================================== */}
           <div
             className="relative group transition-all duration-300"
             style={{
-              marginLeft: level * 36,
+              marginLeft:
+                level * 36,
             }}
           >
             <div
-  className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
-    editingId === node._id
-      ? "border-[#0f3b2e] bg-[#f6faf8]"
-      : "border-gray-200 bg-gradient-to-r from-white to-gray-50"
-  }`}
->
-
-              {/* CONNECTOR */}
+              className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
+                editingId ===
+                node._id
+                  ? "border-[#0f3b2e] bg-[#f6faf8]"
+                  : "border-gray-200 bg-gradient-to-r from-white to-gray-50"
+              }`}
+            >
+              {/* =================================================
+                  CONNECTOR
+              ================================================== */}
               {level > 0 && (
                 <div className="absolute left-[-18px] top-0 bottom-0 border-l border-dashed border-gray-300" />
               )}
 
-              {/* EXPAND */}
+              {/* =================================================
+                  EXPAND
+              ================================================== */}
               {node.children?.length >
               0 ? (
                 <button
@@ -353,118 +362,131 @@ setActiveInput(null);
                 <span className="w-4" />
               )}
 
-              {/* ICON */}
+              {/* =================================================
+                  LOCATION IMAGE
+              ================================================== */}
               <div
-  className="
-    h-12
-    w-12
-    rounded-xl
-    overflow-hidden
-    border
-    border-gray-200
-    shadow-sm
-    shrink-0
-    bg-gradient-to-br
-    from-gray-50
-    to-gray-100
-  "
->
-  {node.image ? (
-  <img
-    src={node.image}
-    alt={node.name}
-    className="
-      h-full
-      w-full
-      object-cover
-    "
-  />
-) : (
-  <div className="h-full w-full flex items-center justify-center">
-    <MapPin
-      size={16}
-      className="text-[#0f3b2e]"
-    />
-  </div>
-)}
-</div>
+                className="
+                  h-12
+                  w-12
+                  rounded-xl
+                  overflow-hidden
+                  border
+                  border-gray-200
+                  shadow-sm
+                  shrink-0
+                  bg-gradient-to-br
+                  from-gray-50
+                  to-gray-100
+                "
+              >
+                {node.image ? (
+                  <img
+                    src={node.image}
+                    alt={node.name}
+                    className="
+                      h-full
+                      w-full
+                      object-cover
+                    "
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <MapPin
+                      size={16}
+                      className="text-[#0f3b2e]"
+                    />
+                  </div>
+                )}
+              </div>
 
-              {/* SR NUMBER */}
+              {/* =================================================
+                  SR NUMBER
+              ================================================== */}
               <div className="text-xs font-bold text-gray-400 w-[24px]">
                 {startIndex +
-                  nodes.indexOf(node) +
+                  nodes.indexOf(
+                    node
+                  ) +
                   1}
               </div>
 
-              {/* NAME */}
+              {/* =================================================
+                  NAME
+              ================================================== */}
               <div className="flex-1 min-w-0 pr-4">
                 {editingId ===
                 node._id ? (
                   <div className="space-y-2 w-full max-w-xl">
+                    <input
+                      value={
+                        editValue
+                      }
+                      onChange={(e) =>
+                        setEditValue(
+                          e.target
+                            .value
+                        )
+                      }
+                      placeholder="Location Name"
+                      className="
+                        w-full
+                        bg-white
+                        text-gray-900
+                        placeholder:text-gray-400
+                        caret-[#0f3b2e]
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-2.5
+                        outline-none
+                        focus:ring-2
+                        focus:ring-[#0f3b2e]/20
+                      "
+                    />
 
-  <input
-    value={editValue}
-    onChange={(e) =>
-      setEditValue(e.target.value)
-    }
-    placeholder="Location Name"
-    className="
-w-full
-bg-white
-text-gray-900
-placeholder:text-gray-400
-caret-[#0f3b2e]
-border
-border-gray-300
-rounded-xl
-px-4
-py-2.5
-outline-none
-focus:ring-2
-focus:ring-[#0f3b2e]/20
-"
-  />
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          document
+                            .getElementById(
+                              "editLocationImageUpload"
+                            )
+                            ?.click()
+                        }
+                        className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+                      >
+                        {uploading
+                          ? "Uploading..."
+                          : "Change Image"}
+                      </button>
 
-  <div className="flex items-center gap-3">
-  <button
-    type="button"
-    onClick={() =>
-      document
-        .getElementById(
-          "editLocationImageUpload"
-        )
-        ?.click()
-    }
-    className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
-  >
-    {uploading
-      ? "Uploading..."
-      : "Change Image"}
-  </button>
-
-  {editImage && (
-    <img
-      src={editImage}
-      alt=""
-      className="h-14 w-14 rounded-lg object-cover border"
-    />
-  )}
-</div>
-
-</div>
+                      {editImage && (
+                        <img
+                          src={
+                            editImage
+                          }
+                          alt=""
+                          className="h-14 w-14 rounded-lg object-cover border"
+                        />
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   <div>
                     <div className="flex items-center gap-2">
-  <p className="font-semibold text-sm text-gray-800 truncate">
-    {node.name}
-  </p>
+                      <p className="font-semibold text-sm text-gray-800 truncate">
+                        {node.name}
+                      </p>
 
-  {node.image && (
-    <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-      Image
-    </span>
-  )}
-</div>
+                      {node.image && (
+                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                          Image
+                        </span>
+                      )}
+                    </div>
 
                     {level > 0 && (
                       <p className="text-[10px] text-gray-400">
@@ -475,7 +497,9 @@ focus:ring-[#0f3b2e]/20
                 )}
               </div>
 
-              {/* COUNT */}
+              {/* =================================================
+                  CHILD COUNT
+              ================================================== */}
               {node.children?.length >
                 0 && (
                 <div className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
@@ -486,172 +510,253 @@ focus:ring-[#0f3b2e]/20
                 </div>
               )}
 
-              {/* ACTIONS */}
-<div className="flex items-center gap-2 shrink-0">
+              {/* =================================================
+                  ACTIONS
+              ================================================== */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* ADD */}
+                <button
+                  onClick={() => {
+                    setActiveInput(
+                      node._id
+                    );
+                    setInputValue(
+                      ""
+                    );
+                  }}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition"
+                  title="Add sub-location"
+                >
+                  <Plus size={13} />
+                </button>
 
-  {/* ADD */}
-  <button
-    onClick={() => {
-      setActiveInput(node._id);
-      setInputValue("");
-    }}
-    className="h-8 w-8 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition"
-  >
-    <Plus size={13} />
-  </button>
+                {/* =================================================
+                    EDIT LOCATION NAME / IMAGE
+                ================================================== */}
+                {editingId ===
+                node._id ? (
+                  <>
+                    <button
+                      onClick={() =>
+                        updateLocation(
+                          node._id
+                        )
+                      }
+                      className="h-8 w-8 flex items-center justify-center rounded-lg bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 transition"
+                      title="Save location"
+                    >
+                      <Check
+                        size={13}
+                      />
+                    </button>
 
-  {/* EDIT */}
-  {editingId === node._id ? (
-    <>
-      <button
-        onClick={() =>
-          updateLocation(node._id)
-        }
-        className="h-8 w-8 flex items-center justify-center rounded-lg bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 transition"
-      >
-        <Check size={13} />
-      </button>
+                    <button
+                      onClick={() =>
+                        setEditingId(
+                          null
+                        )
+                      }
+                      className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition"
+                      title="Cancel"
+                    >
+                      <X size={13} />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingId(
+                        node._id
+                      );
+                      setEditValue(
+                        node.name
+                      );
+                      setEditImage(
+                        node.image ||
+                          ""
+                      );
+                    }}
+                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition"
+                    title="Edit location name/image"
+                  >
+                    <Pencil
+                      size={13}
+                    />
+                  </button>
+                )}
 
-      <button
-        onClick={() =>
-          setEditingId(null)
-        }
-        className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition"
-      >
-        <X size={13} />
-      </button>
-    </>
-  ) : (
-    <button
-      onClick={() => {
-      setEditingId(node._id);
-      setEditValue(node.name);
-      setEditImage(node.image || "");
-    }}
-      className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition"
-    >
-      <Pencil size={13} />
-    </button>
-  )}
+                {/* =================================================
+                    EDIT PUBLIC LOCATION PAGE
+                ================================================== */}
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/admin/location/${node._id}/edit`,
+                      "_self"
+                    )
+                  }
+                  className="
+                    h-8
+                    px-3
+                    rounded-lg
+                    bg-[#0f3b2e]
+                    hover:bg-[#174b3b]
+                    text-white
+                    border
+                    border-[#0f3b2e]
+                    text-[11px]
+                    font-semibold
+                    transition
+                    flex
+                    items-center
+                    gap-1.5
+                  "
+                  title="Edit public location page"
+                >
+                  <FileEdit
+                    size={12}
+                  />
+                  Edit Page
+                </button>
 
-  {/* VIEW */}
-  <button
-    onClick={() =>
-      window.open(
-        `/locations/${node.slug}`,
-        "_blank"
-      )
-    }
-    className="h-8 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-semibold transition"
-  >
-    View
-  </button>
+                {/* =================================================
+                    VIEW PUBLIC PAGE
+                ================================================== */}
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/locations/${node.slug}`,
+                      "_blank"
+                    )
+                  }
+                  className="h-8 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-semibold transition"
+                >
+                  View
+                </button>
 
-  {/* DELETE */}
-  <button
-    onClick={() =>
-      deleteLocation(node._id)
-    }
-    className="h-8 w-8 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition"
-  >
-    <Trash2 size={13} />
-  </button>
-</div>
+                {/* =================================================
+                    DELETE
+                ================================================== */}
+                <button
+                  onClick={() =>
+                    deleteLocation(
+                      node._id
+                    )
+                  }
+                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition"
+                  title="Delete location"
+                >
+                  <Trash2
+                    size={13}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* ADD INPUT */}
+          {/* =====================================================
+              ADD SUB-LOCATION INPUT
+          ====================================================== */}
           {activeInput ===
             node._id && (
             <div
-  className="
-mt-3
-rounded-xl
-border
-border-blue-200
-bg-blue-50
-p-4
-space-y-4
-shadow-sm
-"
-  style={{
-    marginLeft:
-      (level + 1) * 18,
-  }}
->
-  <input
-    autoFocus
-    value={inputValue}
-    onChange={(e) =>
-      setInputValue(e.target.value)
-    }
-    placeholder="Sub-location name"
-    className="
-w-full
-bg-white
-text-gray-900
-placeholder:text-gray-400
-caret-[#0f3b2e]
-border
-border-gray-300
-rounded-xl
-px-4
-py-2.5
-outline-none
-focus:ring-2
-focus:ring-[#0f3b2e]/20
-"
-  />
+              className="
+                mt-3
+                rounded-xl
+                border
+                border-blue-200
+                bg-blue-50
+                p-4
+                space-y-4
+                shadow-sm
+              "
+              style={{
+                marginLeft:
+                  (level + 1) *
+                  18,
+              }}
+            >
+              <input
+                autoFocus
+                value={inputValue}
+                onChange={(e) =>
+                  setInputValue(
+                    e.target.value
+                  )
+                }
+                placeholder="Sub-location name"
+                className="
+                  w-full
+                  bg-white
+                  text-gray-900
+                  placeholder:text-gray-400
+                  caret-[#0f3b2e]
+                  border
+                  border-gray-300
+                  rounded-xl
+                  px-4
+                  py-2.5
+                  outline-none
+                  focus:ring-2
+                  focus:ring-[#0f3b2e]/20
+                "
+              />
 
-  <div className="flex items-center gap-3">
-  <button
-    type="button"
-    onClick={() =>
-      document
-        .getElementById(
-          "locationImageUpload"
-        )
-        ?.click()
-    }
-    className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
-  >
-    {uploading
-      ? "Uploading..."
-      : "Upload Image"}
-  </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById(
+                        "locationImageUpload"
+                      )
+                      ?.click()
+                  }
+                  className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+                >
+                  {uploading
+                    ? "Uploading..."
+                    : "Upload Image"}
+                </button>
 
-  {imageUrl && (
-    <img
-      src={imageUrl}
-      alt=""
-      className="h-10 w-10 rounded-lg object-cover border"
-    />
-  )}
-</div>
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="h-10 w-10 rounded-lg object-cover border"
+                  />
+                )}
+              </div>
 
-  <div className="flex gap-2">
-    <button
-      onClick={() =>
-        addLocation(node._id)
-      }
-      className="bg-blue-600 text-white px-3 py-2 rounded-lg"
-    >
-      Add
-    </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    addLocation(
+                      node._id
+                    )
+                  }
+                  className="bg-blue-600 text-white px-3 py-2 rounded-lg"
+                >
+                  Add
+                </button>
 
-    <button
-      onClick={() =>
-        setActiveInput(null)
-      }
-      className="text-sm text-gray-600"
-    >
-      Cancel
-    </button>
-  </div>
-</div>
+                <button
+                  onClick={() =>
+                    setActiveInput(
+                      null
+                    )
+                  }
+                  className="text-sm text-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
 
-          {/* CHILDREN */}
+          {/* =====================================================
+              CHILDREN
+          ====================================================== */}
           {isExpanded &&
             node.children
               ?.length > 0 && (
@@ -671,11 +776,9 @@ focus:ring-[#0f3b2e]/20
   const addRoot = () =>
     addLocation(null);
 
-
   // ================= LOADING =================
   if (loading) {
     return (
-      
       <div className="h-[60vh] flex items-center justify-center text-sm font-medium text-gray-600">
         Loading locations...
       </div>
@@ -683,46 +786,50 @@ focus:ring-[#0f3b2e]/20
   }
 
   return (
+    <div
+      className="p-4 bg-[#f7f8f7] min-h-screen space-y-5"
+      style={{
+        color: "#111827",
+      }}
+    >
+      {/* =====================================================
+          NEW LOCATION IMAGE UPLOAD
+      ====================================================== */}
+      <input
+        id="locationImageUpload"
+        type="file"
+        hidden
+        accept="image/*"
+        onChange={(e) => {
+          handleLocationImageUpload(
+            e.target.files?.[0]
+          );
 
-<div
-  className="p-4 bg-[#f7f8f7] min-h-screen space-y-5"
-  style={{
-    color: "#111827",
-  }}
->
-        {/* ================= NEW LOCATION IMAGE ================= */}
-<input
-  id="locationImageUpload"
-  type="file"
-  hidden
-  accept="image/*"
-  onChange={(e) => {
-    handleLocationImageUpload(
-      e.target.files?.[0]
-    );
+          e.target.value = "";
+        }}
+      />
 
-    e.target.value = "";
-  }}
-/>
+      {/* =====================================================
+          EDIT LOCATION IMAGE UPLOAD
+      ====================================================== */}
+      <input
+        id="editLocationImageUpload"
+        type="file"
+        hidden
+        accept="image/*"
+        onChange={(e) => {
+          handleEditImageUpload(
+            e.target.files?.[0]
+          );
 
-{/* ================= EDIT LOCATION IMAGE ================= */}
-<input
-  id="editLocationImageUpload"
-  type="file"
-  hidden
-  accept="image/*"
-  onChange={(e) => {
-    handleEditImageUpload(
-      e.target.files?.[0]
-    );
+          e.target.value = "";
+        }}
+      />
 
-    e.target.value = "";
-  }}
-/>
-
-      {/* ================= HEADER ================= */}
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
         <div>
           <h1 className="text-3xl font-extrabold text-[#0f3b2e] flex items-center gap-2 tracking-tight">
             <MapPin size={24} />
@@ -748,7 +855,9 @@ focus:ring-[#0f3b2e]/20
         </button>
       </div>
 
-      {/* ================= SEARCH ================= */}
+      {/* =====================================================
+          SEARCH
+      ====================================================== */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <input
           placeholder="Search locations..."
@@ -762,69 +871,75 @@ focus:ring-[#0f3b2e]/20
         />
       </div>
 
-      {/* ================= ADD ROOT ================= */}
+      {/* =====================================================
+          ADD ROOT LOCATION
+      ====================================================== */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-
         <input
-  value={inputValue}
-  onChange={(e) => setInputValue(e.target.value)}
-  placeholder="Add root location"
-  className="
-    flex-1
-    min-w-[280px]
-    bg-white
-    text-gray-900
-    placeholder:text-gray-400
-    caret-[#0f3b2e]
-    border
-    border-gray-300
-    rounded-xl
-    px-4
-    py-2.5
-    outline-none
-    focus:border-[#0f3b2e]
-    focus:ring-2
-    focus:ring-[#0f3b2e]/20
-  "
-/>
+          value={inputValue}
+          onChange={(e) =>
+            setInputValue(
+              e.target.value
+            )
+          }
+          placeholder="Add root location"
+          className="
+            flex-1
+            min-w-[280px]
+            bg-white
+            text-gray-900
+            placeholder:text-gray-400
+            caret-[#0f3b2e]
+            border
+            border-gray-300
+            rounded-xl
+            px-4
+            py-2.5
+            outline-none
+            focus:border-[#0f3b2e]
+            focus:ring-2
+            focus:ring-[#0f3b2e]/20
+          "
+        />
 
-<div className="flex flex-wrap items-center gap-4 mt-4">
-  <button
-    type="button"
-    onClick={() =>
-      document
-        .getElementById(
-          "locationImageUpload"
-        )
-        ?.click()
-    }
-    className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium"
-  >
-    {uploading
-      ? "Uploading..."
-      : "Upload Image"}
-  </button>
+        <div className="flex flex-wrap items-center gap-4 mt-4">
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById(
+                  "locationImageUpload"
+                )
+                ?.click()
+            }
+            className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium"
+          >
+            {uploading
+              ? "Uploading..."
+              : "Upload Image"}
+          </button>
 
-  {imageUrl && (
-    <img
-      src={imageUrl}
-      alt=""
-      className="h-12 w-12 rounded-lg object-cover border"
-    />
-  )}
-</div>
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt=""
+              className="h-12 w-12 rounded-lg object-cover border"
+            />
+          )}
+        </div>
 
-<button
-  onClick={addRoot}
-  className="bg-[#0f3b2e] text-white px-5 py-2.5 rounded-xl"
->
-  Add Location
-</button>
+        <button
+          onClick={addRoot}
+          className="bg-[#0f3b2e] text-white px-5 py-2.5 rounded-xl mt-4"
+        >
+          Add Location
+        </button>
       </div>
 
-      {/* ================= TREE ================= */}
+      {/* =====================================================
+          LOCATION TREE
+      ====================================================== */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-
         {paginatedLocations.length ? (
           renderTree(
             paginatedLocations
@@ -835,10 +950,11 @@ focus:ring-[#0f3b2e]/20
           </p>
         )}
 
-        {/* ================= PAGINATION ================= */}
+        {/* =================================================
+            PAGINATION
+        ================================================== */}
         {totalPages > 1 && (
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
-
             <p className="text-xs text-gray-600 font-medium">
               Showing{" "}
               <span className="font-bold">
@@ -862,7 +978,6 @@ focus:ring-[#0f3b2e]/20
             </p>
 
             <div className="flex items-center gap-2 flex-wrap">
-
               {/* PREV */}
               <button
                 disabled={

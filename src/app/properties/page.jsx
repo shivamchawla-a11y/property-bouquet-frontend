@@ -2,6 +2,134 @@ import { Suspense } from "react";
 import PropertiesClient from "./PropertiesClient";
 
 const SITE_URL = "https://propertybouquet.com";
+const API = "https://propertybouquet.com/api";
+
+// ============================================================
+// FETCH PUBLISHED PROPERTIES FOR SEO
+// ============================================================
+
+async function getPublishedProperties() {
+  try {
+    const res = await fetch(`${API}/properties`, {
+      next: {
+        revalidate: 300,
+      },
+    });
+
+    if (!res.ok) {
+      console.error(
+        "Properties SEO fetch failed:",
+        res.status
+      );
+
+      return [];
+    }
+
+    const data = await res.json();
+
+    const properties = Array.isArray(data?.data)
+      ? data.data
+      : [];
+
+    return properties.filter(
+      (property) =>
+        property?.status === "published" &&
+        property?.isDeleted !== true &&
+        property?.deletedFromStatus !== "trash"
+    );
+  } catch (error) {
+    console.error(
+      "Properties SEO fetch error:",
+      error
+    );
+
+    return [];
+  }
+}
+
+// ============================================================
+// TEXT HELPERS
+// ============================================================
+
+function cleanText(value) {
+  if (!value || typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\s+/g, " ").trim();
+}
+
+// ============================================================
+// LOCATION HELPERS
+// ============================================================
+
+function getPropertyLocations(property) {
+  const locations = [];
+
+  const locationData =
+    property?.locationData;
+
+  if (locationData?.locationName) {
+    locations.push(
+      cleanText(locationData.locationName)
+    );
+  }
+
+  if (locationData?.customLocation) {
+    locations.push(
+      cleanText(locationData.customLocation)
+    );
+  }
+
+  let current =
+    locationData?.locationRef;
+
+  while (current) {
+    const name = cleanText(current?.name);
+
+    if (
+      name &&
+      !locations.some(
+        (existing) =>
+          existing.toLowerCase() ===
+          name.toLowerCase()
+      )
+    ) {
+      locations.push(name);
+    }
+
+    current = current?.parent;
+  }
+
+  return locations.filter(Boolean);
+}
+
+// ============================================================
+// UNIQUE LOCATIONS
+// ============================================================
+
+function getUniqueLocations(properties) {
+  const locations = [];
+
+  for (const property of properties) {
+    const propertyLocations =
+      getPropertyLocations(property);
+
+    for (const location of propertyLocations) {
+      if (
+        !locations.some(
+          (existing) =>
+            existing.toLowerCase() ===
+            location.toLowerCase()
+        )
+      ) {
+        locations.push(location);
+      }
+    }
+  }
+
+  return locations.slice(0, 10);
+}
 
 // ============================================================
 // METADATA
@@ -15,7 +143,8 @@ export async function generateMetadata() {
     "Discover luxury properties, apartments, villas and plots on Property Bouquet. Explore premium real estate projects with prices, floor plans, amenities, locations and trusted developer details.";
 
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase:
+      new URL(SITE_URL),
 
     // ========================================================
     // PRIMARY SEO
@@ -56,14 +185,16 @@ export async function generateMetadata() {
     // BRAND
     // ========================================================
 
-    applicationName: "Property Bouquet",
+    applicationName:
+      "Property Bouquet",
 
     // ========================================================
     // CANONICAL
     // ========================================================
 
     alternates: {
-      canonical: `${SITE_URL}/properties`,
+      canonical:
+        `${SITE_URL}/properties`,
     },
 
     // ========================================================
@@ -93,9 +224,11 @@ export async function generateMetadata() {
 
       locale: "en_IN",
 
-      url: `${SITE_URL}/properties`,
+      url:
+        `${SITE_URL}/properties`,
 
-      siteName: "Property Bouquet",
+      siteName:
+        "Property Bouquet",
 
       title,
 
@@ -103,9 +236,13 @@ export async function generateMetadata() {
 
       images: [
         {
-          url: `${SITE_URL}/og-image.jpg`,
+          url:
+            `${SITE_URL}/og-image.jpg`,
+
           width: 1200,
+
           height: 630,
+
           alt:
             "Luxury Properties, Apartments, Villas and Plots - Property Bouquet",
         },
@@ -117,13 +254,16 @@ export async function generateMetadata() {
     // ========================================================
 
     twitter: {
-      card: "summary_large_image",
+      card:
+        "summary_large_image",
 
       title,
 
       description,
 
-      images: [`${SITE_URL}/og-image.jpg`],
+      images: [
+        `${SITE_URL}/og-image.jpg`,
+      ],
     },
   };
 }
@@ -133,30 +273,44 @@ export async function generateMetadata() {
 // ============================================================
 
 function safeJsonLd(data) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
+  return JSON.stringify(data).replace(
+    /</g,
+    "\\u003c"
+  );
 }
 
 // ============================================================
 // PAGE
 // ============================================================
 
-export default function Page() {
-  const canonicalUrl = `${SITE_URL}/properties`;
+export default async function Page() {
+  const properties =
+    await getPublishedProperties();
+
+  const canonicalUrl =
+    `${SITE_URL}/properties`;
+
+  const locations =
+    getUniqueLocations(properties);
 
   // ==========================================================
   // BREADCRUMB SCHEMA
   // ==========================================================
 
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
+    "@context":
+      "https://schema.org",
 
-    "@type": "BreadcrumbList",
+    "@type":
+      "BreadcrumbList",
 
-    "@id": `${canonicalUrl}#breadcrumb`,
+    "@id":
+      `${canonicalUrl}#breadcrumb`,
 
     itemListElement: [
       {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
 
         position: 1,
 
@@ -166,7 +320,8 @@ export default function Page() {
       },
 
       {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
 
         position: 2,
 
@@ -178,67 +333,181 @@ export default function Page() {
   };
 
   // ==========================================================
+  // PROPERTY ITEM LIST
+  // ==========================================================
+
+  const propertyItems = properties
+    .slice(0, 50)
+    .map((property, index) => {
+      const slug =
+        cleanText(property?.slug);
+
+      const title =
+        cleanText(
+          property?.coreDetails?.title
+        );
+
+      if (!slug || !title) {
+        return null;
+      }
+
+      const propertyUrl =
+        `${SITE_URL}/${encodeURIComponent(slug)}`;
+
+      const image =
+        property?.media?.heroImageUrl;
+
+      const description =
+        cleanText(
+          property?.overview?.description ||
+            property?.heroSection
+              ?.heroDescription ||
+            `${title} property details, prices, floor plans, amenities and location.`
+        );
+
+      return {
+        "@type":
+          "ListItem",
+
+        position:
+          index + 1,
+
+        name:
+          title,
+
+        url:
+          propertyUrl,
+
+        item: {
+          "@type":
+            "RealEstateListing",
+
+          "@id":
+            `${propertyUrl}#listing`,
+
+          name:
+            title,
+
+          url:
+            propertyUrl,
+
+          description,
+
+          ...(image
+            ? {
+                image,
+              }
+            : {}),
+
+          ...(property?.coreDetails
+            ?.startingPrice
+            ? {
+                offers: {
+                  "@type":
+                    "Offer",
+
+                  url:
+                    propertyUrl,
+
+                  priceCurrency:
+                    "INR",
+
+                  price:
+                    property.coreDetails
+                      .startingPrice,
+
+                  availability:
+                    "https://schema.org/InStock",
+                },
+              }
+            : {}),
+        },
+      };
+    })
+    .filter(Boolean);
+
+  // ==========================================================
   // COLLECTION PAGE SCHEMA
   // ==========================================================
 
   const collectionSchema = {
-    "@context": "https://schema.org",
+    "@context":
+      "https://schema.org",
 
-    "@type": "CollectionPage",
+    "@type":
+      "CollectionPage",
 
-    "@id": `${canonicalUrl}#collection`,
+    "@id":
+      `${canonicalUrl}#collection`,
 
-    url: canonicalUrl,
+    url:
+      canonicalUrl,
 
-    name: "Luxury Properties, Apartments, Villas & Plots",
+    name:
+      "Luxury Properties, Apartments, Villas & Plots",
 
-    headline: "Luxury Properties, Apartments, Villas & Plots",
+    headline:
+      "Luxury Properties, Apartments, Villas & Plots",
 
     description:
       "Discover luxury properties, apartments, villas and plots on Property Bouquet. Explore premium real estate projects with prices, floor plans, amenities, locations and developer details.",
 
-    inLanguage: "en-IN",
+    inLanguage:
+      "en-IN",
 
     isPartOf: {
-      "@type": "WebSite",
+      "@type":
+        "WebSite",
 
-      "@id": `${SITE_URL}#website`,
+      "@id":
+        `${SITE_URL}#website`,
 
-      name: "Property Bouquet",
+      name:
+        "Property Bouquet",
 
-      url: SITE_URL,
+      url:
+        SITE_URL,
     },
 
     about: {
-      "@type": "Thing",
+      "@type":
+        "Thing",
 
-      name: "Luxury Real Estate Properties",
+      name:
+        "Luxury Real Estate Properties",
     },
-
-    // ========================================================
-    // IMPORTANT:
-    // Do NOT fetch /api/properties here.
-    //
-    // The actual property collection is rendered by
-    // PropertiesClient.
-    //
-    // This prevents the 3.23 MB API response from being
-    // pulled into Next.js server data cache just for SEO.
-    // ========================================================
 
     mainEntity: {
-      "@type": "ItemList",
+      "@type":
+        "ItemList",
 
-      "@id": `${canonicalUrl}#property-list`,
+      "@id":
+        `${canonicalUrl}#property-list`,
 
-      name: "Available Properties",
+      name:
+        "Available Properties",
 
-      itemListOrder: "https://schema.org/ItemListOrderAscending",
+      numberOfItems:
+        propertyItems.length,
 
-      numberOfItems: 0,
-
-      itemListElement: [],
+      itemListElement:
+        propertyItems,
     },
+
+    ...(locations.length > 0
+      ? {
+          spatialCoverage:
+            locations.map(
+              (location) => ({
+                "@type":
+                  "Place",
+
+                name:
+                  location,
+              })
+            ),
+        }
+      : {}),
   };
 
   // ==========================================================
@@ -246,24 +515,33 @@ export default function Page() {
   // ==========================================================
 
   const websiteSchema = {
-    "@context": "https://schema.org",
+    "@context":
+      "https://schema.org",
 
-    "@type": "WebSite",
+    "@type":
+      "WebSite",
 
-    "@id": `${SITE_URL}#website`,
+    "@id":
+      `${SITE_URL}#website`,
 
-    name: "Property Bouquet",
+    name:
+      "Property Bouquet",
 
-    url: SITE_URL,
+    url:
+      SITE_URL,
 
     publisher: {
-      "@type": "Organization",
+      "@type":
+        "Organization",
 
-      "@id": `${SITE_URL}#organization`,
+      "@id":
+        `${SITE_URL}#organization`,
 
-      name: "Property Bouquet",
+      name:
+        "Property Bouquet",
 
-      url: SITE_URL,
+      url:
+        SITE_URL,
     },
   };
 
@@ -280,7 +558,10 @@ export default function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(websiteSchema),
+          __html:
+            safeJsonLd(
+              websiteSchema
+            ),
         }}
       />
 
@@ -291,7 +572,10 @@ export default function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(collectionSchema),
+          __html:
+            safeJsonLd(
+              collectionSchema
+            ),
         }}
       />
 
@@ -302,7 +586,10 @@ export default function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(breadcrumbSchema),
+          __html:
+            safeJsonLd(
+              breadcrumbSchema
+            ),
         }}
       />
 

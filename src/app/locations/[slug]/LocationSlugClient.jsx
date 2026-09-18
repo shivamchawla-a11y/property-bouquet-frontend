@@ -659,13 +659,13 @@ const buildPublicLocationSlug = (location) => {
       <section
   className="
     relative
-    min-h-[780px]
+    min-h-[600px]
     overflow-hidden
     bg-[#061811]
-    pt-[120px]
-    pb-16
+    pt-[84px]
+    pb-6
     text-white
-    md:min-h-[850px]
+    md:min-h-[620px]
   "
 >
 
@@ -743,7 +743,7 @@ const buildPublicLocationSlug = (location) => {
               className="
                 absolute
                 right-[5%]
-                top-[18%]
+                top-[12%]
                 h-[420px]
                 w-[420px]
                 rounded-full
@@ -788,9 +788,9 @@ const buildPublicLocationSlug = (location) => {
               pointer-events-none
               absolute
               right-[3%]
-              top-[18%]
+              top-[12%]
               hidden
-              h-[560px]
+              h-[410px]
               w-[46%]
               overflow-hidden
               rounded-[42px]
@@ -798,8 +798,8 @@ const buildPublicLocationSlug = (location) => {
               border-white/10
               md:block
               lg:right-[5%]
-              lg:w-[43%]
-              xl:h-[610px]
+              lg:w-[40%]
+              xl:h-[450px]
             "
           >
 
@@ -917,7 +917,7 @@ const buildPublicLocationSlug = (location) => {
 
 <div
   className="
-    mb-8
+    mb-4
     flex
     flex-wrap
     items-center
@@ -1042,11 +1042,11 @@ const buildPublicLocationSlug = (location) => {
                 border
                 border-[#D4AF37]/35
                 bg-[#0B221B]/70
-                px-5
-                py-3
+                px-4
+                py-2
                 shadow-[0_10px_40px_rgba(0,0,0,0.2)]
                 backdrop-blur-xl
-                md:px-6
+                md:px-5
               "
             >
 
@@ -1079,8 +1079,8 @@ const buildPublicLocationSlug = (location) => {
               <div
                 className="
                   relative
-                  mt-8
-                  h-[250px]
+                  mt-5
+                  h-[190px]
                   w-full
                   overflow-hidden
                   rounded-[30px]
@@ -1156,14 +1156,14 @@ const buildPublicLocationSlug = (location) => {
                 LOCATION ICON
             ================================================== */}
 
-            <div className="mt-9 md:mt-12">
+            <div className="mt-4 md:mt-5">
 
               <div
                 className="
                   relative
                   flex
-                  h-[100px]
-                  w-[100px]
+                  h-[72px]
+                  w-[72px]
                   items-center
                   justify-center
                   rounded-[28px]
@@ -1171,8 +1171,8 @@ const buildPublicLocationSlug = (location) => {
                   border-[#D4AF37]/30
                   bg-white/[0.96]
                   shadow-[0_25px_70px_rgba(0,0,0,0.4)]
-                  md:h-[125px]
-                  md:w-[125px]
+                  md:h-[82px]
+                  md:w-[82px]
                   md:rounded-[32px]
                 "
               >
@@ -1196,8 +1196,8 @@ const buildPublicLocationSlug = (location) => {
                     relative
                     z-10
                     text-[#0B221B]
-                    md:h-[52px]
-                    md:w-[52px]
+                    md:h-[36px]
+                    md:w-[36px]
                   "
                 />
 
@@ -1211,19 +1211,19 @@ const buildPublicLocationSlug = (location) => {
 
             <h1
               className="
-                mt-9
+                mt-4
                 max-w-[850px]
                 font-playfair
-                text-[44px]
+                text-[40px]
                 font-semibold
                 leading-[1.02]
                 tracking-[-0.025em]
                 text-white
-                sm:text-[52px]
-                md:mt-10
-                md:text-[68px]
-                lg:text-[76px]
-                xl:text-[82px]
+                sm:text-[46px]
+                md:mt-5
+                md:text-[50px]
+                lg:text-[56px]
+                xl:text-[62px]
               "
             >
               Luxury Properties in{" "}
@@ -1238,11 +1238,11 @@ const buildPublicLocationSlug = (location) => {
 
             <div
               className="
-                mt-7
+                mt-4
                 flex
                 items-center
                 gap-3
-                md:mt-8
+                md:mt-4
               "
             >
 
@@ -1258,14 +1258,14 @@ const buildPublicLocationSlug = (location) => {
 
             <p
               className="
-                mt-7
-                max-w-[720px]
+                mt-4
+                max-w-[650px]
                 text-[16px]
                 leading-8
                 text-white/75
-                md:mt-8
-                md:text-[18px]
-                md:leading-9
+                md:mt-4
+                md:text-[16px]
+                md:leading-7
               "
             >
               Discover iconic luxury residences,
@@ -1284,11 +1284,11 @@ const buildPublicLocationSlug = (location) => {
 
             <div
               className="
-                mt-9
+                mt-4
                 grid
                 grid-cols-2
                 gap-3
-                md:mt-11
+                md:mt-5
                 md:grid-cols-3
                 md:gap-4
               "
@@ -1302,11 +1302,11 @@ const buildPublicLocationSlug = (location) => {
                   border
                   border-white/10
                   bg-white/[0.07]
-                  px-5
-                  py-5
+                  px-4
+                  py-3
                   backdrop-blur-xl
                   md:rounded-[26px]
-                  md:p-6
+                  md:p-5
                 "
               >
 
@@ -1344,11 +1344,11 @@ const buildPublicLocationSlug = (location) => {
                   border
                   border-white/10
                   bg-white/[0.07]
-                  px-5
-                  py-5
+                  px-4
+                  py-3
                   backdrop-blur-xl
                   md:rounded-[26px]
-                  md:p-6
+                  md:p-5
                 "
               >
 
@@ -1387,12 +1387,12 @@ const buildPublicLocationSlug = (location) => {
                   border
                   border-white/10
                   bg-white/[0.07]
-                  px-5
-                  py-5
+                  px-4
+                  py-4
                   backdrop-blur-xl
                   md:col-span-1
                   md:rounded-[26px]
-                  md:p-6
+                  md:p-5
                 "
               >
 
@@ -1430,12 +1430,12 @@ const buildPublicLocationSlug = (location) => {
 
             <div
               className="
-                mt-9
+                mt-4
                 flex
                 flex-wrap
                 gap-4
-                md:mt-11
-                md:gap-5
+                md:mt-5
+                md:gap-4
               "
             >
 
@@ -1443,7 +1443,7 @@ const buildPublicLocationSlug = (location) => {
                 href="#projects"
                 className="
                   inline-flex
-                  h-[56px]
+                  h-[50px]
                   items-center
                   justify-center
                   rounded-2xl
@@ -1458,8 +1458,8 @@ const buildPublicLocationSlug = (location) => {
                   transition-all
                   duration-300
                   hover:scale-[1.03]
-                  md:h-[58px]
-                  md:px-9
+                  md:h-[52px]
+                  md:px-7
                   md:text-[15px]
                 "
               >
@@ -1476,7 +1476,7 @@ const buildPublicLocationSlug = (location) => {
                 href="/contact"
                 className="
                   inline-flex
-                  h-[56px]
+                  h-[50px]
                   items-center
                   justify-center
                   rounded-2xl
@@ -1492,8 +1492,8 @@ const buildPublicLocationSlug = (location) => {
                   duration-300
                   hover:border-[#D4AF37]
                   hover:text-[#D4AF37]
-                  md:h-[58px]
-                  md:px-9
+                  md:h-[52px]
+                  md:px-7
                   md:text-[15px]
                 "
               >
@@ -1517,7 +1517,7 @@ const buildPublicLocationSlug = (location) => {
             left-0
             right-0
             z-[5]
-            h-24
+            h-16
             bg-gradient-to-t
             from-[#f7f7f7]
             to-transparent
@@ -1531,7 +1531,7 @@ const buildPublicLocationSlug = (location) => {
         <div
           className="
             absolute
-            bottom-10
+            bottom-4
             right-10
             z-20
             hidden
@@ -1581,287 +1581,6 @@ const buildPublicLocationSlug = (location) => {
         </div>
 
       </section>
-
-      {/* ======================================================
-          ABOUT LOCATION
-      ====================================================== */}
-
-      {locationDescription && (
-        <section
-          className="
-            relative
-            overflow-hidden
-            bg-white
-            py-20
-            md:py-24
-          "
-        >
-
-          <div
-            className="
-              absolute
-              right-0
-              top-0
-              h-[450px]
-              w-[450px]
-              rounded-full
-              bg-[#D4AF37]/8
-              blur-[120px]
-            "
-          />
-
-          <div
-            className="
-              relative
-              z-10
-              mx-auto
-              max-w-[1450px]
-              px-6
-            "
-          >
-
-            <div
-              className="
-                grid
-                items-start
-                gap-12
-                lg:grid-cols-[1.4fr_420px]
-                lg:gap-16
-              "
-            >
-
-              {/* LEFT */}
-
-              <div>
-
-                <span
-                  className="
-                    inline-flex
-                    items-center
-                    rounded-full
-                    bg-[#0B221B]
-                    px-5
-                    py-2
-                    text-[10px]
-                    uppercase
-                    tracking-[0.28em]
-                    text-[#D4AF37]
-                    md:text-[11px]
-                  "
-                >
-                  About The Location
-                </span>
-
-                <h2
-                  className="
-                    mt-7
-                    font-playfair
-                    text-4xl
-                    leading-tight
-                    text-[#0B221B]
-                    md:text-5xl
-                  "
-                >
-                  Luxury Real Estate in{" "}
-                  {locationName}
-                </h2>
-
-                <div className="mt-6 h-[2px] w-28 bg-[#D4AF37]" />
-
-                <div
-                  className="
-                    mt-9
-                    text-[16px]
-                    leading-[2]
-                    text-[#4d4d4d]
-                    md:mt-10
-                    md:text-[17px]
-                    md:leading-[2.05]
-                  "
-                >
-
-                  <p className="whitespace-pre-line">
-                    {locationDescription}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* RIGHT */}
-
-              <div>
-
-                <div
-                  className="
-                    rounded-[32px]
-                    border
-                    border-[#eadfcb]
-                    bg-white
-                    p-7
-                    shadow-[0_20px_70px_rgba(0,0,0,0.06)]
-                    md:p-8
-                    lg:sticky
-                    lg:top-28
-                  "
-                >
-
-                  <div className="flex items-center gap-3">
-
-                    <div
-                      className="
-                        flex
-                        h-14
-                        w-14
-                        items-center
-                        justify-center
-                        rounded-2xl
-                        bg-[#0B221B]
-                        text-[#D4AF37]
-                      "
-                    >
-                      <MapPin size={24} />
-                    </div>
-
-                    <div>
-
-                      <p
-                        className="
-                          text-[10px]
-                          uppercase
-                          tracking-[0.25em]
-                          text-[#B58B2D]
-                        "
-                      >
-                        Location Highlights
-                      </p>
-
-                      <h3
-                        className="
-                          mt-1
-                          text-xl
-                          font-semibold
-                          text-[#0B221B]
-                          md:text-2xl
-                        "
-                      >
-                        Why Invest in{" "}
-                        {locationName}
-                      </h3>
-
-                    </div>
-
-                  </div>
-
-                  <div className="mt-8 space-y-5">
-
-                    {[
-                      "Prime Residential Location",
-                      "Premium Real Estate Developments",
-                      "Strong Connectivity",
-                      "High Investment Potential",
-                      "Established Social Infrastructure",
-                      "Growing Real Estate Demand",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-start gap-4"
-                      >
-
-                        <div
-                          className="
-                            mt-1
-                            flex
-                            h-8
-                            w-8
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-[#D4AF37]/15
-                          "
-                        >
-
-                          <BadgeCheck
-                            size={16}
-                            className="text-[#B58B2D]"
-                          />
-
-                        </div>
-
-                        <p
-                          className="
-                            text-[15px]
-                            leading-7
-                            text-[#555]
-                          "
-                        >
-                          {item}
-                        </p>
-
-                      </div>
-                    ))}
-
-                  </div>
-
-                  <div
-                    className="
-                      mt-10
-                      rounded-2xl
-                      bg-gradient-to-r
-                      from-[#0B221B]
-                      to-[#123126]
-                      p-6
-                    "
-                  >
-
-                    <p
-                      className="
-                        text-[10px]
-                        uppercase
-                        tracking-[0.2em]
-                        text-[#D4AF37]
-                      "
-                    >
-                      Portfolio
-                    </p>
-
-                    <h4
-                      className="
-                        mt-2
-                        text-4xl
-                        font-bold
-                        text-white
-                      "
-                    >
-                      {properties.length}+
-                    </h4>
-
-                    <p
-                      className="
-                        mt-2
-                        text-sm
-                        leading-6
-                        text-white/70
-                      "
-                    >
-                      Signature luxury developments
-                      available in {locationName} through
-                      Property Bouquet.
-                    </p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-      )}
 
       {/* ======================================================
           PROJECTS
@@ -2583,6 +2302,288 @@ const buildPublicLocationSlug = (location) => {
         </div>
 
       </section>
+
+      {/* ======================================================
+          ABOUT LOCATION
+      ====================================================== */}
+
+      {locationDescription && (
+        <section
+          className="
+            relative
+            overflow-hidden
+            bg-white
+            py-20
+            md:py-24
+          "
+        >
+
+          <div
+            className="
+              absolute
+              right-0
+              top-0
+              h-[450px]
+              w-[450px]
+              rounded-full
+              bg-[#D4AF37]/8
+              blur-[120px]
+            "
+          />
+
+          <div
+            className="
+              relative
+              z-10
+              mx-auto
+              max-w-[1450px]
+              px-6
+            "
+          >
+
+            <div
+              className="
+                grid
+                items-start
+                gap-12
+                lg:grid-cols-[1.4fr_420px]
+                lg:gap-16
+              "
+            >
+
+              {/* LEFT */}
+
+              <div>
+
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    bg-[#0B221B]
+                    px-5
+                    py-2
+                    text-[10px]
+                    uppercase
+                    tracking-[0.28em]
+                    text-[#D4AF37]
+                    md:text-[11px]
+                  "
+                >
+                  About The Location
+                </span>
+
+                <h2
+                  className="
+                    mt-7
+                    font-playfair
+                    text-4xl
+                    leading-tight
+                    text-[#0B221B]
+                    md:text-5xl
+                  "
+                >
+                  Luxury Real Estate in{" "}
+                  {locationName}
+                </h2>
+
+                <div className="mt-6 h-[2px] w-28 bg-[#D4AF37]" />
+
+                <div
+                  className="
+                    mt-9
+                    text-[16px]
+                    leading-[2]
+                    text-[#4d4d4d]
+                    md:mt-10
+                    md:text-[17px]
+                    md:leading-[2.05]
+                  "
+                >
+
+                  <p className="whitespace-pre-line">
+                    {locationDescription}
+                  </p>
+
+                </div>
+
+              </div>
+
+              {/* RIGHT */}
+
+              <div>
+
+                <div
+                  className="
+                    rounded-[32px]
+                    border
+                    border-[#eadfcb]
+                    bg-white
+                    p-7
+                    shadow-[0_20px_70px_rgba(0,0,0,0.06)]
+                    md:p-8
+                    lg:sticky
+                    lg:top-28
+                  "
+                >
+
+                  <div className="flex items-center gap-3">
+
+                    <div
+                      className="
+                        flex
+                        h-14
+                        w-14
+                        items-center
+                        justify-center
+                        rounded-2xl
+                        bg-[#0B221B]
+                        text-[#D4AF37]
+                      "
+                    >
+                      <MapPin size={24} />
+                    </div>
+
+                    <div>
+
+                      <p
+                        className="
+                          text-[10px]
+                          uppercase
+                          tracking-[0.25em]
+                          text-[#B58B2D]
+                        "
+                      >
+                        Location Highlights
+                      </p>
+
+                      <h3
+                        className="
+                          mt-1
+                          text-xl
+                          font-semibold
+                          text-[#0B221B]
+                          md:text-2xl
+                        "
+                      >
+                        Why Invest in{" "}
+                        {locationName}
+                      </h3>
+
+                    </div>
+
+                  </div>
+
+                  <div className="mt-8 space-y-5">
+
+                    {[
+                      "Prime Residential Location",
+                      "Premium Real Estate Developments",
+                      "Strong Connectivity",
+                      "High Investment Potential",
+                      "Established Social Infrastructure",
+                      "Growing Real Estate Demand",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="flex items-start gap-4"
+                      >
+
+                        <div
+                          className="
+                            mt-1
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-[#D4AF37]/15
+                          "
+                        >
+
+                          <BadgeCheck
+                            size={16}
+                            className="text-[#B58B2D]"
+                          />
+
+                        </div>
+
+                        <p
+                          className="
+                            text-[15px]
+                            leading-7
+                            text-[#555]
+                          "
+                        >
+                          {item}
+                        </p>
+
+                      </div>
+                    ))}
+
+                  </div>
+
+                  <div
+                    className="
+                      mt-10
+                      rounded-2xl
+                      bg-gradient-to-r
+                      from-[#0B221B]
+                      to-[#123126]
+                      p-6
+                    "
+                  >
+
+                    <p
+                      className="
+                        text-[10px]
+                        uppercase
+                        tracking-[0.2em]
+                        text-[#D4AF37]
+                      "
+                    >
+                      Portfolio
+                    </p>
+
+                    <h4
+                      className="
+                        mt-2
+                        text-4xl
+                        font-bold
+                        text-white
+                      "
+                    >
+                      {properties.length}+
+                    </h4>
+
+                    <p
+                      className="
+                        mt-2
+                        text-sm
+                        leading-6
+                        text-white/70
+                      "
+                    >
+                      Signature luxury developments
+                      available in {locationName} through
+                      Property Bouquet.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
+
 
       {/* ======================================================
           MOBILE FILTER DRAWER
