@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   Calculator,
   CheckCircle2,
   Clock3,
@@ -11,13 +10,17 @@ import {
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[560px] overflow-hidden bg-[#03251d]">
-
+    <section
+      className="relative min-h-[560px] overflow-hidden bg-[#03251d]"
+      aria-labelledby="area-converter-heading"
+    >
       {/* ========================================================= */}
       {/* BACKGROUND IMAGE                                          */}
+      {/* Decorative background — intentionally not an img element */}
       {/* ========================================================= */}
 
       <div
+        aria-hidden="true"
         className="
           absolute
           inset-0
@@ -36,11 +39,13 @@ export default function HeroSection() {
       {/* IMAGE DARKENING                                            */}
       {/* ========================================================= */}
 
-      {/* Very light overall tint */}
-      <div className="absolute inset-0 bg-[#03251d]/15" />
-
-      {/* Strong dark area on LEFT, image stays visible on RIGHT */}
       <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[#03251d]/15"
+      />
+
+      <div
+        aria-hidden="true"
         className="
           absolute
           inset-0
@@ -52,8 +57,8 @@ export default function HeroSection() {
         "
       />
 
-      {/* Slight top darkening */}
       <div
+        aria-hidden="true"
         className="
           absolute
           inset-x-0
@@ -65,8 +70,8 @@ export default function HeroSection() {
         "
       />
 
-      {/* Bottom fade */}
       <div
+        aria-hidden="true"
         className="
           absolute
           inset-x-0
@@ -84,6 +89,7 @@ export default function HeroSection() {
       {/* ========================================================= */}
 
       <div
+        aria-hidden="true"
         className="
           absolute
           -top-32
@@ -98,6 +104,7 @@ export default function HeroSection() {
       />
 
       <div
+        aria-hidden="true"
         className="
           absolute
           bottom-[-180px]
@@ -121,9 +128,11 @@ export default function HeroSection() {
         {/* BREADCRUMB                                               */}
         {/* ======================================================= */}
 
-        <div className="pt-24 md:pt-28">
-
-          <div
+        <nav
+          className="pt-24 md:pt-28"
+          aria-label="Breadcrumb"
+        >
+          <ol
             className="
               flex
               items-center
@@ -133,44 +142,54 @@ export default function HeroSection() {
               text-white/65
             "
           >
+            <li>
+              <Link
+                href="/"
+                className="
+                  transition-colors
+                  duration-300
+                  hover:text-[#d4af37]
+                "
+              >
+                Home
+              </Link>
+            </li>
 
-            <Link
-              href="/"
-              className="
-                transition-colors
-                duration-300
-                hover:text-[#d4af37]
-              "
-            >
-              Home
-            </Link>
+            <li aria-hidden="true">
+              <span className="text-white/35">
+                ›
+              </span>
+            </li>
 
-            <span className="text-white/35">
-              ›
-            </span>
+            <li>
+              <Link
+                href="/tools"
+                className="
+                  transition-colors
+                  duration-300
+                  hover:text-[#d4af37]
+                "
+              >
+                Tools
+              </Link>
+            </li>
 
-            <Link
-              href="/"
-              className="
-                transition-colors
-                duration-300
-                hover:text-[#d4af37]
-              "
-            >
-              Tools
-            </Link>
+            <li aria-hidden="true">
+              <span className="text-white/35">
+                ›
+              </span>
+            </li>
 
-            <span className="text-white/35">
-              ›
-            </span>
-
-            <span className="text-white">
-              Area Converter
-            </span>
-
-          </div>
-
-        </div>
+            <li>
+              <span
+                className="text-white"
+                aria-current="page"
+              >
+                Area Converter
+              </span>
+            </li>
+          </ol>
+        </nav>
 
         {/* ======================================================= */}
         {/* HERO CONTENT                                             */}
@@ -186,7 +205,9 @@ export default function HeroSection() {
           "
         >
 
-          {/* SMALL GOLD LABEL */}
+          {/* ===================================================== */}
+          {/* SMALL GOLD LABEL                                      */}
+          {/* ===================================================== */}
 
           <p
             className="
@@ -202,9 +223,12 @@ export default function HeroSection() {
             Property Bouquet Tools
           </p>
 
-          {/* MAIN TITLE */}
+          {/* ===================================================== */}
+          {/* PRIMARY H1                                            */}
+          {/* ===================================================== */}
 
           <h1
+            id="area-converter-heading"
             className="
               font-serif
               text-[43px]
@@ -219,7 +243,9 @@ export default function HeroSection() {
             Area Converter
           </h1>
 
-          {/* GOLD SUBTITLE */}
+          {/* ===================================================== */}
+          {/* SECONDARY HEADING                                     */}
+          {/* ===================================================== */}
 
           <h2
             className="
@@ -232,10 +258,12 @@ export default function HeroSection() {
               md:text-[29px]
             "
           >
-            Convert Any Land or Property Area Instantly
+            Convert Land & Property Area Units Instantly
           </h2>
 
-          {/* DESCRIPTION */}
+          {/* ===================================================== */}
+          {/* INTRODUCTORY DESCRIPTION                              */}
+          {/* ===================================================== */}
 
           <p
             className="
@@ -248,9 +276,11 @@ export default function HeroSection() {
               md:leading-8
             "
           >
-            Quick, accurate and easy-to-use area unit converter
-            for real estate. Convert Square Feet, Square Yards,
-            Acres, Hectares and more.
+            Easily convert common real estate and land area
+            measurements including square feet, square yards,
+            square metres, acres, hectares and more. Use the
+            Property Bouquet area converter to quickly compare
+            property and land measurements across different units.
           </p>
 
           {/* ===================================================== */}
@@ -265,16 +295,16 @@ export default function HeroSection() {
               gap-3
               lg:hidden
             "
+            aria-label="Area converter features"
           >
-
             <TrustPill
               icon={<ShieldCheck size={15} />}
-              text="100% Accurate"
+              text="Reliable Conversions"
             />
 
             <TrustPill
               icon={<Calculator size={15} />}
-              text="All Units Covered"
+              text="Multiple Units"
             />
 
             <TrustPill
@@ -286,11 +316,8 @@ export default function HeroSection() {
               icon={<CheckCircle2 size={15} />}
               text="Real Estate Friendly"
             />
-
           </div>
-
         </div>
-
       </div>
 
       {/* ========================================================= */}
@@ -308,8 +335,8 @@ export default function HeroSection() {
           px-5
           lg:block
         "
+        aria-label="Area converter features"
       >
-
         <div
           className="
             mx-auto
@@ -325,37 +352,34 @@ export default function HeroSection() {
             backdrop-blur-xl
           "
         >
-
           <div className="grid grid-cols-4">
 
             <Feature
               icon={<ShieldCheck size={22} />}
-              title="100% Accurate"
-              text="Precision You Can Trust"
+              title="Reliable Conversions"
+              text="Designed for property measurements"
             />
 
             <Feature
               icon={<Calculator size={22} />}
-              title="All Units Covered"
-              text="All Area Units in One Place"
+              title="Multiple Units"
+              text="Common area units in one place"
             />
 
             <Feature
               icon={<Clock3 size={22} />}
               title="Instant Results"
-              text="Convert in Just One Click"
+              text="Convert measurements in seconds"
             />
 
             <Feature
               icon={<CheckCircle2 size={22} />}
               title="Real Estate Friendly"
-              text="Built for Buyers & Investors"
+              text="Useful for buyers & investors"
             />
 
           </div>
-
         </div>
-
       </div>
 
       {/* ========================================================= */}
@@ -363,6 +387,7 @@ export default function HeroSection() {
       {/* ========================================================= */}
 
       <div
+        aria-hidden="true"
         className="
           absolute
           bottom-0
@@ -375,11 +400,9 @@ export default function HeroSection() {
           to-transparent
         "
       />
-
     </section>
   );
 }
-
 
 /* =============================================================== */
 /* FEATURE                                                         */
@@ -398,10 +421,8 @@ function Feature({ icon, title, text }) {
         last:border-r-0
       "
     >
-
-      {/* ICON */}
-
       <div
+        aria-hidden="true"
         className="
           flex
           h-10
@@ -419,10 +440,7 @@ function Feature({ icon, title, text }) {
         {icon}
       </div>
 
-      {/* TEXT */}
-
       <div>
-
         <p
           className="
             text-[12px]
@@ -444,13 +462,10 @@ function Feature({ icon, title, text }) {
         >
           {text}
         </p>
-
       </div>
-
     </div>
   );
 }
-
 
 /* =============================================================== */
 /* MOBILE TRUST PILL                                               */
@@ -474,13 +489,14 @@ function TrustPill({ icon, text }) {
         backdrop-blur-md
       "
     >
-
-      <span className="text-[#d4af37]">
+      <span
+        aria-hidden="true"
+        className="text-[#d4af37]"
+      >
         {icon}
       </span>
 
-      {text}
-
+      <span>{text}</span>
     </div>
   );
 }
