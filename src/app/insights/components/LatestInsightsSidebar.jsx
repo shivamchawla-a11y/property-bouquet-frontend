@@ -45,12 +45,12 @@ export default function LatestInsightsSidebar({
         blur-3xl
         pointer-events-none
         "
+        aria-hidden="true"
       />
 
       {/* Header */}
 
       <div className="relative">
-
         <p
           className="
           uppercase
@@ -71,7 +71,6 @@ export default function LatestInsightsSidebar({
         >
           Latest Insights
         </h3>
-
       </div>
 
       {/* Divider */}
@@ -80,10 +79,8 @@ export default function LatestInsightsSidebar({
 
       {/* Articles */}
 
-      <div className="space-y-5"> 
-
+      <div className="space-y-5">
         {latest.map((item, index) => (
-
           <Link
             key={item.slug}
             href={`/insights/${item.slug}`}
@@ -98,9 +95,7 @@ export default function LatestInsightsSidebar({
             hover:shadow-md
             "
           >
-
             <div className="flex gap-4">
-
               <div
                 className="
                 relative
@@ -111,11 +106,12 @@ export default function LatestInsightsSidebar({
                 rounded-2xl
                 "
               >
-
                 <Image
                   src={item.featuredImage}
                   fill
-                  alt={item.title}
+                  alt={item.title || "Property Bouquet Insight"}
+                  sizes="105px"
+                  loading="lazy"
                   className="
                   object-cover
                   transition-transform
@@ -123,11 +119,9 @@ export default function LatestInsightsSidebar({
                   group-hover:scale-105
                   "
                 />
-
               </div>
 
               <div className="flex flex-col justify-between">
-
                 <span
                   className="
                   text-[11px]
@@ -157,21 +151,16 @@ export default function LatestInsightsSidebar({
                 <p className="mt-3 text-sm !text-[#777]">
                   {item.readTime} min read
                 </p>
-
               </div>
-
             </div>
-
           </Link>
-
         ))}
-
       </div>
 
       {/* Button */}
 
       <Link
-        href="/property-insights"
+        href="/insights"
         className="
         mt-8
         flex
