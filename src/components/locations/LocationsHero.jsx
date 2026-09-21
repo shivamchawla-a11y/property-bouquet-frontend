@@ -191,115 +191,106 @@ export default function LocationsHero({
   // -> properties-in-gurgaon
   // ============================================================
 
-  const buildPublicLocationSlug = (
-    location
-  ) => {
-    if (!location) {
-      return "";
-    }
+  function getLocationPreposition(locationName = "") {
+  const name = String(locationName).trim().toLowerCase();
 
-    const cleanSlug = (value = "") => {
-      return String(value)
-        .trim()
-        .toLowerCase()
-        .replace(/^\/+|\/+$/g, "")
-        .replace(
-          /^properties-in-/,
-          ""
-        )
-        .replace(
-          /^properties-on-/,
-          ""
-        )
-        .replace(/gurugram/g, "gurgaon")
-        .replace(/new-delhi/g, "delhi")
-        .replace(
-          /[^a-z0-9]+/g,
-          "-"
-        )
-        .replace(
-          /^-+|-+$/g,
-          ""
-        )
-        .replace(
-          /-+/g,
-          "-"
-        );
-    };
+  const onKeywords = [
+    "expressway",
+    "highway",
+    "road",
+    "street",
+    "avenue",
+    "boulevard",
+    "drive",
+    "marg",
+  ];
 
-    /*
-      Current location slug.
+  const shouldUseOn = onKeywords.some((keyword) =>
+    name.includes(keyword)
+  );
 
-      Prefer the backend slug if available.
-      Otherwise create one from the name.
-    */
-    const currentSlug = cleanSlug(
-      location?.slug ||
-        location?.locationSlug ||
-        location?.publicSlug ||
-        location?.name ||
-        ""
-    );
+  return shouldUseOn ? "on" : "in";
+}
 
-    if (!currentSlug) {
-      return "";
-    }
+function buildPublicLocationSlug(location) {
+  if (!location) return "";
 
-    /*
-      Root location.
-
-      For:
-
-      Gurgaon
-        -> Sector 56
-
-      rootLocation = Gurgaon
-    */
-    const rootLocation =
-      location?.__rootLocation;
-
-    const rootSlug = cleanSlug(
-      rootLocation?.slug ||
-        rootLocation?.locationSlug ||
-        rootLocation?.publicSlug ||
-        rootLocation?.name ||
-        ""
-    );
-
-    /*
-      Root location itself.
-
-      Gurgaon
-      ->
-      properties-in-gurgaon
-    */
-    if (
-      !rootSlug ||
-      currentSlug === rootSlug
-    ) {
-      return `properties-in-${currentSlug}`;
-    }
-
-    /*
-      Prevent duplication.
-
-      If backend gives:
-
-      sector-56-gurgaon
-
-      we don't want:
-
-      sector-56-gurgaon-gurgaon
-    */
-    const finalLocationSlug =
-      currentSlug.endsWith(
-        `-${rootSlug}`
-      )
-        ? currentSlug
-        : `${currentSlug}-${rootSlug}`;
-
-    return `properties-in-${finalLocationSlug}`;
+  const cleanSlug = (value = "") => {
+    return String(value)
+      .trim()
+      .toLowerCase()
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/[,_]+/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
   };
+
+  const currentName =
+    location?.name ||
+    location?.__name ||
+    location?.title ||
+    location?.slug ||
+    "";
+
+  const currentSlug = cleanSlug(
+    location?.slug ||
+      location?.__slug ||
+      currentName
+  );
+
+  if (!currentSlug) return "";
+
+  const rootLocation = location?.__rootLocation || null;
+
+  const rootName =
+    rootLocation?.name ||
+    rootLocation?.__name ||
+    rootLocation?.title ||
+    rootLocation?.slug ||
+    "";
+
+  const rootSlug = cleanSlug(
+    rootLocation?.slug ||
+      rootLocation?.__slug ||
+      rootName
+  );
+
+  /*
+   * ROOT LOCATION
+   *
+   * Gurgaon
+   * → properties-in-gurgaon
+   */
+  if (!rootSlug || currentSlug === rootSlug) {
+    const preposition = getLocationPreposition(
+      currentName
+    );
+
+    return `properties-${preposition}-${currentSlug}`;
+  }
+
+  /*
+   * CHILD LOCATION
+   *
+   * Sector 56 + Gurgaon
+   * → properties-in-sector-56-gurgaon
+   *
+   * Golf Course Road + Gurgaon
+   * → properties-on-golf-course-road-gurgaon
+   */
+
+  const finalSlug = currentSlug.endsWith(`-${rootSlug}`)
+    ? currentSlug
+    : `${currentSlug}-${rootSlug}`;
+
+  const preposition = getLocationPreposition(
+    currentName
+  );
+
+  return `properties-${preposition}-${finalSlug}`;
+}
 
   // ============================================================
   // LOCATION COUNTS

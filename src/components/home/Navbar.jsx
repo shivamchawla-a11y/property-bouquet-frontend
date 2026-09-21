@@ -576,7 +576,7 @@ export default function Navbar({
                   property
                     .coreDetails
                     ?.developerImage ||
-                  "/placeholder.png",
+                  "/placeholder.jpg",
 
                 propertyCount: 1,
               }
@@ -2327,7 +2327,7 @@ export default function Navbar({
                           }
                           onError={(e) => {
                             e.currentTarget.src =
-                              "/placeholder.png";
+                              "/placeholder.jpg";
                           }}
                           className="
                             w-12

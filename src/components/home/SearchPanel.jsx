@@ -144,7 +144,7 @@ export default function SearchPanel() {
                           .developerLogo ||
                         property.coreDetails
                           .developerImage ||
-                        "/placeholder.png",
+                        "/placeholder.jpg",
                     },
                   ];
                 })
@@ -1459,7 +1459,7 @@ export default function SearchPanel() {
                           }
                           onError={(e) => {
                             e.currentTarget.src =
-                              "/placeholder.png";
+                              "/placeholder.jpg";
                           }}
                           className="
                             w-12

@@ -175,7 +175,7 @@ function DeveloperLogo({ developer }) {
   const [imageError, setImageError] = useState(false);
   const [isWhiteLogo, setIsWhiteLogo] = useState(false);
 
-  const logo = developer?.logo || "/placeholder.png";
+  const logo = developer?.logo || "/placeholder.jpg";
 
   const signatureGlobal = isSignatureGlobal(developer);
   const breez = isBreez(developer);
@@ -593,14 +593,14 @@ function DeveloperLogo({ developer }) {
               setImageError(true);
 
               const fallback =
-                `${window.location.origin}/placeholder.png`;
+                `${window.location.origin}/placeholder.jpg`;
 
               if (
                 e.currentTarget.src !==
                 fallback
               ) {
                 e.currentTarget.src =
-                  "/placeholder.png";
+                  "/placeholder.jpg";
               }
             }}
             className="
