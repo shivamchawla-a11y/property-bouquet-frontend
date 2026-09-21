@@ -1,273 +1,234 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 
-import HeroSection from "@/components/locations/HeroSection";
-import StatsBar from "@/components/locations/StatsBar";
-import Filters from "@/components/locations/Filters";
-import LocationsGrid from "@/components/locations/LocationsGrid";
-import WhyExplore from "@/components/locations/WhyExplore";
-import AdvisorCTA from "@/components/locations/AdvisorCTA";
+import LocationsHero from "@/components/locations/LocationsHero";
+import LocationHierarchy from "@/components/locations/LocationHierarchy";
+import FeaturedLocationCorridors from "@/components/locations/FeaturedLocationCorridors";
+import LocationMarketSection from "@/components/locations/LocationMarketSection";
+import LocationInsights from "@/components/locations/LocationInsights";
+import LocationsCTA from "@/components/locations/LocationsCTA";
 
-export default function LocationsPage() {
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
+export const metadata = {
+  title:
+    "Explore Locations | Premium Properties Across Gurgaon & Delhi NCR | Property Bouquet",
 
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("latest");
+  description:
+    "Explore premium residential locations, neighbourhoods and investment corridors across Gurgaon and Delhi NCR. Discover properties, projects, developers and real estate insights by location.",
 
-  // =========================================================
-  // FETCH LOCATION TREE
-  // =========================================================
+  alternates: {
+    canonical: "/locations",
+  },
 
-  useEffect(() => {
-    let isMounted = true;
+  openGraph: {
+    title:
+      "Explore Locations | Property Bouquet",
 
-    const fetchLocations = async () => {
-      try {
-        setLoading(true);
+    description:
+      "Explore premium real estate locations, neighbourhoods and investment corridors across Gurgaon and Delhi NCR.",
 
-        const res = await fetch(
-          "/api/locations/tree"
-        );
+    url: "/locations",
 
-        if (!res.ok) {
-          throw new Error(
-            `Failed to fetch locations: ${res.status}`
-          );
-        }
+    type: "website",
+  },
+};
 
-        const data = await res.json();
+// ============================================================
+// GET LOCATION TREE
+// ============================================================
 
-        if (!isMounted) return;
+async function getLocations() {
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://propertybouquet.com";
 
-        if (data?.success) {
-          const tree =
-            Array.isArray(data?.locations)
-              ? data.locations
-              : Array.isArray(data?.tree)
-              ? data.tree
-              : Array.isArray(data?.data)
-              ? data.data
-              : [];
-
-          setLocations(tree);
-        } else {
-          setLocations([]);
-        }
-      } catch (error) {
-        console.error(
-          "Failed to fetch locations:",
-          error
-        );
-
-        if (isMounted) {
-          setLocations([]);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+    const response = await fetch(
+      `${baseUrl}/api/locations/tree`,
+      {
+        next: {
+          revalidate: 3600,
+        },
       }
-    };
+    );
 
-    fetchLocations();
+    if (!response.ok) {
+      return [];
+    }
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    const data = await response.json();
 
-  // =========================================================
-  // FLATTEN LOCATION TREE
-  // =========================================================
+    return Array.isArray(data?.data)
+      ? data.data
+      : [];
+  } catch (error) {
+    console.error(
+      "LOCATIONS PAGE FETCH ERROR:",
+      error
+    );
 
-  const flattenedLocations = useMemo(() => {
-    const result = [];
+    return [];
+  }
+}
 
-    const walk = (
-      items,
-      root = null,
-      level = 0
-    ) => {
-      if (!Array.isArray(items)) {
-        return;
-      }
+// ============================================================
+// FLATTEN LOCATION TREE
+// ============================================================
 
-      items.forEach((location) => {
-        const currentRoot =
-          root || location;
-
-        result.push({
-          ...location,
-          _rootLocation: currentRoot,
-          _level: level,
-        });
-
-        walk(
-          location?.children || [],
-          currentRoot,
-          level + 1
-        );
-      });
-    };
-
-    walk(locations);
-
+function flattenLocations(
+  nodes,
+  result = []
+) {
+  if (!Array.isArray(nodes)) {
     return result;
-  }, [locations]);
+  }
 
-  // =========================================================
-  // FILTER + SORT
-  // =========================================================
+  for (const node of nodes) {
+    if (!node) continue;
 
-  const filteredLocations = useMemo(() => {
-    let filtered = [
-      ...flattenedLocations,
-    ];
+    result.push(node);
 
-    // SEARCH
-    if (search.trim()) {
-      const searchValue =
-        search.trim().toLowerCase();
-
-      filtered = filtered.filter(
-        (location) =>
-          location?.name
-            ?.toLowerCase()
-            .includes(searchValue)
+    if (
+      Array.isArray(node.children) &&
+      node.children.length
+    ) {
+      flattenLocations(
+        node.children,
+        result
       );
     }
+  }
 
-    // SORT
-    switch (sort) {
-      case "az":
-        filtered.sort((a, b) =>
-          (a?.name || "").localeCompare(
-            b?.name || ""
-          )
+  return result;
+}
+
+// ============================================================
+// LOCATIONS PAGE
+// ============================================================
+
+export default async function LocationsPage() {
+  const locations =
+    await getLocations();
+
+  // ==========================================================
+  // ALL LOCATIONS
+  // ==========================================================
+
+  const allLocations =
+    flattenLocations(locations);
+
+  // ==========================================================
+  // FEATURED LOCATIONS
+  // ==========================================================
+  //
+  // These come directly from the existing hierarchy.
+  //
+  // No additional location entities/pages are created here.
+  //
+  // Terminal locations continue toward URLs such as:
+  //
+  // /locations/properties-in-sector-56-gurgaon
+  //
+  // ==========================================================
+
+  const featuredNames = [
+    "Dwarka Expressway",
+    "Golf Course Extension Road",
+    "Sohna",
+    "SPR",
+  ];
+
+  const featuredLocations =
+    featuredNames
+      .map((name) => {
+        const normalizedName =
+          name.toLowerCase();
+
+        return allLocations.find(
+          (location) =>
+            String(
+              location?.name || ""
+            ).toLowerCase() ===
+            normalizedName
         );
-        break;
-
-      case "za":
-        filtered.sort((a, b) =>
-          (b?.name || "").localeCompare(
-            a?.name || ""
-          )
-        );
-        break;
-
-      case "latest":
-      default:
-        break;
-    }
-
-    return filtered;
-  }, [
-    flattenedLocations,
-    search,
-    sort,
-  ]);
-
-  // =========================================================
-  // PAGE
-  // =========================================================
+      })
+      .filter(Boolean);
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-[#161616]">
+    <>
+      <Navbar />
 
-      {/* =====================================================
-          HERO
-      ===================================================== */}
-
-      <section
-        aria-labelledby="locations-page-heading"
-        className="relative"
+      <main
+        className="
+          relative
+          isolate
+        "
       >
-        <div className="absolute inset-x-0 top-0 z-50">
-          <Navbar />
+        {/* ==================================================
+            HERO
+
+            Higher stacking context is intentional.
+
+            The search suggestions extend beyond the hero
+            and must remain above LocationHierarchy.
+        ================================================== */}
+
+        <div
+          className="
+            relative
+            z-[50]
+          "
+        >
+          <LocationsHero
+            locations={locations}
+          />
         </div>
 
-        <HeroSection />
-      </section>
+        {/* ==================================================
+            LOCATION DIRECTORY
 
-      {/* =====================================================
-          LOCATION STATISTICS
-      ===================================================== */}
+            Lower stacking level ensures that the hero search
+            suggestions remain visible when they overflow.
+        ================================================== */}
 
-      <section
-        aria-label="Location statistics"
-      >
-        <StatsBar
-          locations={flattenedLocations}
-        />
-      </section>
-
-      {/* =====================================================
-          LOCATION SEARCH & FILTERS
-      ===================================================== */}
-
-      <section
-        aria-label="Search real estate locations"
-      >
-        <Filters
-          search={search}
-          setSearch={setSearch}
-          sort={sort}
-          setSort={setSort}
-        />
-      </section>
-
-      {/* =====================================================
-          LOCATION DIRECTORY
-      ===================================================== */}
-
-      <section
-        aria-labelledby="location-directory-heading"
-        className="scroll-mt-24"
-      >
-        <h2
-          id="location-directory-heading"
-          className="sr-only"
+        <div
+          className="
+            relative
+            z-0
+          "
         >
-          Real Estate Locations
-        </h2>
+          <LocationHierarchy
+            locations={locations}
+          />
 
-        <LocationsGrid
-          locations={filteredLocations}
-          loading={loading}
-        />
-      </section>
+          {/* ==================================================
+              FEATURED CORRIDORS
+          ================================================== */}
 
-      {/* =====================================================
-          WHY EXPLORE LOCATIONS
-      ===================================================== */}
+          <FeaturedLocationCorridors
+            locations={featuredLocations}
+          />
 
-      <section
-        aria-labelledby="why-explore-locations-heading"
-      >
-        <WhyExplore />
-      </section>
+          {/* ==================================================
+              MARKET CONTEXT
+          ================================================== */}
 
-      {/* =====================================================
-          ADVISOR CTA
-      ===================================================== */}
+          <LocationMarketSection />
 
-      <section
-        aria-label="Speak with a property advisor"
-      >
-        <AdvisorCTA />
-      </section>
+          {/* ==================================================
+              LOCATION INSIGHTS
+          ================================================== */}
 
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
+          <LocationInsights />
+
+          {/* ==================================================
+              FINAL CTA
+          ================================================== */}
+
+          <LocationsCTA />
+        </div>
+      </main>
 
       <Footer />
-
-    </main>
+    </>
   );
 }
