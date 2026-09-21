@@ -725,51 +725,124 @@ export default function LocationsHero({
           rounded-b-[36px]
         "
       >
-        {/* BACKGROUND IMAGE */}
+        {/* =========================================================
+    PREMIUM LOCATION BACKGROUND
+========================================================= */}
 
-        <img
-          src="/locations-hero.png"
-          alt=""
-          aria-hidden="true"
-          className="
-            absolute
-            inset-0
-            w-full
-            h-full
-            object-cover
-            opacity-[0.27]
-          "
-          onError={(event) => {
-            event.currentTarget.style.display =
-              "none";
-          }}
-        />
+{/* MAIN CITY IMAGE */}
+<img
+  src="/locations-hero.png"
+  alt=""
+  aria-hidden="true"
+  className="
+    absolute
+    inset-0
+    w-full
+    h-full
+    object-cover
+    object-[68%_42%]
+    opacity-[0.48]
+    scale-[1.035]
+  "
+  onError={(event) => {
+    event.currentTarget.style.display = "none";
+  }}
+/>
 
-        {/* DARK OVERLAY */}
+{/* LEFT DARK MASK
+    Keeps the typography extremely readable */}
+<div
+  className="
+    absolute
+    inset-0
+    bg-gradient-to-r
+    from-[#04130f]
+    via-[#061b16]/[0.91]
+    via-[62%]
+    to-[#071b16]/[0.30]
+  "
+/>
 
-        <div
-          className="
-            absolute
-            inset-0
-            bg-gradient-to-r
-            from-[#061713]
-            via-[#071b16]/95
-            to-[#071b16]/58
-          "
-        />
+{/* RIGHT IMAGE REVEAL
+    Gives the skyline more presence */}
+<div
+  className="
+    absolute
+    inset-0
+    bg-[radial-gradient(
+      ellipse_at_78%_45%,
+      rgba(200,157,88,0.13),
+      rgba(7,27,22,0.05)_30%,
+      rgba(7,27,22,0.42)_72%,
+      rgba(7,27,22,0.72)_100%
+    )]
+  "
+/>
 
-        {/* BOTTOM FADE */}
+{/* BOTTOM CINEMATIC FADE */}
+<div
+  className="
+    absolute
+    inset-x-0
+    bottom-0
+    h-[48%]
+    bg-gradient-to-t
+    from-[#071b16]
+    via-[#071b16]/[0.72]
+    to-transparent
+  "
+/>
 
-        <div
-          className="
-            absolute
-            inset-0
-            bg-gradient-to-t
-            from-[#071b16]
-            via-[#071b16]/15
-            to-[#071b16]/25
-          "
-        />
+{/* TOP CINEMATIC FADE */}
+<div
+  className="
+    absolute
+    inset-x-0
+    top-0
+    h-[30%]
+    bg-gradient-to-b
+    from-[#061713]/[0.72]
+    via-[#061713]/[0.25]
+    to-transparent
+  "
+/>
+
+{/* SOFT GOLD ATMOSPHERE */}
+<div
+  className="
+    absolute
+    right-[3%]
+    top-[12%]
+    w-[560px]
+    h-[460px]
+    rounded-full
+    bg-[#c89d58]/[0.075]
+    blur-[145px]
+  "
+/>
+
+{/* SOFT GREEN ATMOSPHERE */}
+<div
+  className="
+    absolute
+    right-[18%]
+    bottom-[-120px]
+    w-[520px]
+    h-[360px]
+    rounded-full
+    bg-[#2b7660]/[0.14]
+    blur-[135px]
+  "
+/>
+
+{/* VERY SUBTLE IMAGE VIGNETTE */}
+<div
+  className="
+    absolute
+    inset-0
+    shadow-[inset_0_0_180px_rgba(0,0,0,0.42)]
+  "
+/>
 
         {/* LARGE GOLD GLOW */}
 
