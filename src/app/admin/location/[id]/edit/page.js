@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+
 import {
   ArrowLeft,
   Save,
@@ -20,7 +21,7 @@ const API = "/api";
    EMPTY CONTENT
 ============================================================ */
 
-const emptyContent = {
+const createEmptyContent = () => ({
   hero: {
     eyebrow: "",
     title: "",
@@ -134,14 +135,18 @@ const emptyContent = {
     title: "",
     description: "",
   },
-};
+
+  sections: [],
+});
 
 /* ============================================================
-   HELPERS
+   TOKEN
 ============================================================ */
 
 const getToken = () => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
 
   return (
     localStorage.getItem("token") ||
@@ -150,6 +155,10 @@ const getToken = () => {
     null
   );
 };
+
+/* ============================================================
+   RESPONSE READER
+============================================================ */
 
 async function readResponse(res) {
   const contentType =
@@ -178,47 +187,98 @@ async function readResponse(res) {
 }
 
 /* ============================================================
-   NORMALIZE CONTENT
+   NORMALIZE
 ============================================================ */
 
 function normalizeContent(content) {
-  const source = content || {};
+  const base = createEmptyContent();
 
-  const hero = source.hero || {};
-  const about = source.about || {};
+  const source =
+    content &&
+    typeof content === "object"
+      ? content
+      : {};
+
+  const hero =
+    source.hero &&
+    typeof source.hero === "object"
+      ? source.hero
+      : {};
+
+  const about =
+    source.about &&
+    typeof source.about === "object"
+      ? source.about
+      : {};
+
   const connectivity =
-    source.connectivity || {};
-  const nearby = source.nearby || {};
+    source.connectivity &&
+    typeof source.connectivity ===
+      "object"
+      ? source.connectivity
+      : {};
+
+  const nearby =
+    source.nearby &&
+    typeof source.nearby === "object"
+      ? source.nearby
+      : {};
+
+  /* ----------------------------------------------------------
+     HERO ARRAYS
+  ---------------------------------------------------------- */
 
   const benefits = Array.isArray(
     hero.benefits
   )
-    ? [...hero.benefits]
+    ? hero.benefits
+        .slice(0, 4)
+        .map((item) =>
+          String(item ?? "")
+        )
     : [];
 
   while (benefits.length < 4) {
     benefits.push("");
   }
 
-  const mobileBenefits = Array.isArray(
-    hero.mobileBenefits
-  )
-    ? [...hero.mobileBenefits]
-    : [];
+  const mobileBenefits =
+    Array.isArray(
+      hero.mobileBenefits
+    )
+      ? hero.mobileBenefits
+          .slice(0, 4)
+          .map((item) =>
+            String(item ?? "")
+          )
+      : [];
 
-  while (mobileBenefits.length < 4) {
+  while (
+    mobileBenefits.length < 4
+  ) {
     mobileBenefits.push("");
   }
 
-  const highlights = Array.isArray(
-    about.highlights
-  )
-    ? about.highlights.map((item) => ({
-        title: item?.title || "",
-        description:
-          item?.description || "",
-      }))
-    : [];
+  /* ----------------------------------------------------------
+     ABOUT HIGHLIGHTS
+  ---------------------------------------------------------- */
+
+  const highlights =
+    Array.isArray(
+      about.highlights
+    )
+      ? about.highlights
+          .slice(0, 3)
+          .map((item) => ({
+            title: String(
+              item?.title ?? ""
+            ),
+
+            description: String(
+              item?.description ?? ""
+            ),
+          }))
+      : [];
 
   while (highlights.length < 3) {
     highlights.push({
@@ -227,75 +287,112 @@ function normalizeContent(content) {
     });
   }
 
+  /* ----------------------------------------------------------
+     MARKET INSIGHTS
+  ---------------------------------------------------------- */
+
   const marketInsights =
     Array.isArray(
       about.marketInsights
     )
-      ? about.marketInsights.map(
-          (item) => ({
-            title: item?.title || "",
-            description:
-              item?.description || "",
-          })
-        )
+      ? about.marketInsights
+          .slice(0, 3)
+          .map((item) => ({
+            title: String(
+              item?.title ?? ""
+            ),
+
+            description: String(
+              item?.description ?? ""
+            ),
+          }))
       : [];
 
-  while (marketInsights.length < 3) {
+  while (
+    marketInsights.length < 3
+  ) {
     marketInsights.push({
       title: "",
       description: "",
     });
   }
 
+  /* ----------------------------------------------------------
+     CONNECTIVITY
+  ---------------------------------------------------------- */
+
   const connectivityItems =
     Array.isArray(
       connectivity.items
     )
-      ? connectivity.items.map(
-          (item) => ({
-            title: item?.title || "",
-            subtitle:
-              item?.subtitle || "",
-          })
-        )
+      ? connectivity.items
+          .slice(0, 6)
+          .map((item) => ({
+            title: String(
+              item?.title ?? ""
+            ),
+
+            subtitle: String(
+              item?.subtitle ?? ""
+            ),
+          }))
       : [];
 
-  while (connectivityItems.length < 6) {
+  while (
+    connectivityItems.length < 6
+  ) {
     connectivityItems.push({
       title: "",
       subtitle: "",
     });
   }
 
+  /* ----------------------------------------------------------
+     RETURN
+  ---------------------------------------------------------- */
+
   return {
     hero: {
-      ...emptyContent.hero,
+      ...base.hero,
+
       ...hero,
-      benefits: benefits.slice(0, 4),
-      mobileBenefits:
-        mobileBenefits.slice(0, 4),
+
+      benefits,
+      mobileBenefits,
     },
 
     about: {
-      ...emptyContent.about,
+      ...base.about,
+
       ...about,
+
+      enabled:
+        about.enabled !== false,
+
       highlights,
+
       marketInsights,
     },
 
     connectivity: {
-      ...emptyContent.connectivity,
+      ...base.connectivity,
+
       ...connectivity,
-      items: connectivityItems.slice(
-        0,
-        6
-      ),
+
+      items: connectivityItems,
     },
 
     nearby: {
-      ...emptyContent.nearby,
+      ...base.nearby,
+
       ...nearby,
     },
+
+    sections: Array.isArray(
+      source.sections
+    )
+      ? source.sections
+      : [],
   };
 }
 
@@ -307,13 +404,16 @@ export default function LocationPageEditor() {
   const params = useParams();
   const router = useRouter();
 
-  const locationId = params?.id;
+  const locationId =
+    params?.id;
 
   const [location, setLocation] =
     useState(null);
 
   const [content, setContent] =
-    useState(emptyContent);
+    useState(
+      createEmptyContent()
+    );
 
   const [loading, setLoading] =
     useState(true);
@@ -331,19 +431,36 @@ export default function LocationPageEditor() {
     useState("");
 
   /* ==========================================================
-     LOAD
+     LOAD LOCATION
   ========================================================== */
 
   useEffect(() => {
-    if (!locationId) return;
+    if (!locationId) {
+      return;
+    }
 
-    const load = async () => {
+    let cancelled = false;
+
+    const loadLocation = async () => {
       try {
         setLoading(true);
         setError("");
 
         const res = await fetch(
-          `${API}/locations/by-id/${locationId}`
+          `${API}/locations/by-id/${locationId}?_=${Date.now()}`,
+          {
+            method: "GET",
+
+            cache: "no-store",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "Cache-Control":
+                "no-cache",
+            },
+          }
         );
 
         const data =
@@ -359,14 +476,25 @@ export default function LocationPageEditor() {
           );
         }
 
-        setLocation(data.location);
+        if (cancelled) {
+          return;
+        }
+
+        setLocation(
+          data.location || null
+        );
 
         setContent(
           normalizeContent(
-            data.location?.pageContent
+            data.location
+              ?.pageContent
           )
         );
       } catch (err) {
+        if (cancelled) {
+          return;
+        }
+
         console.error(
           "LOCATION PAGE LOAD ERROR:",
           err
@@ -377,22 +505,34 @@ export default function LocationPageEditor() {
             "Unable to load location."
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    load();
+    loadLocation();
+
+    return () => {
+      cancelled = true;
+    };
   }, [locationId]);
 
   /* ==========================================================
      IMAGE UPLOAD
   ========================================================== */
 
-  const uploadImage = async (file) => {
-    if (!file) return "";
+  const uploadImage = async (
+    file
+  ) => {
+    if (!file) {
+      return "";
+    }
 
     if (
-      !file.type?.startsWith("image/")
+      !file.type?.startsWith(
+        "image/"
+      )
     ) {
       alert(
         "Only image files are allowed."
@@ -401,7 +541,10 @@ export default function LocationPageEditor() {
       return "";
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
       alert(
         "Maximum image size is 5MB."
       );
@@ -412,14 +555,29 @@ export default function LocationPageEditor() {
     try {
       setUploading(true);
 
-      const formData = new FormData();
+      const formData =
+        new FormData();
 
-      formData.append("file", file);
+      formData.append(
+        "file",
+        file
+      );
+
+      const token =
+        getToken();
 
       const res = await fetch(
         "/api/upload-developer",
         {
           method: "POST",
+
+          headers: token
+            ? {
+                Authorization:
+                  `Bearer ${token}`,
+              }
+            : undefined,
+
           body: formData,
         }
       );
@@ -456,7 +614,7 @@ export default function LocationPageEditor() {
   };
 
   /* ==========================================================
-     UPDATE HELPERS
+     UPDATE HERO
   ========================================================== */
 
   const updateHero = (
@@ -468,10 +626,15 @@ export default function LocationPageEditor() {
 
       hero: {
         ...prev.hero,
+
         [key]: value,
       },
     }));
   };
+
+  /* ==========================================================
+     UPDATE ABOUT
+  ========================================================== */
 
   const updateAbout = (
     key,
@@ -482,10 +645,15 @@ export default function LocationPageEditor() {
 
       about: {
         ...prev.about,
+
         [key]: value,
       },
     }));
   };
+
+  /* ==========================================================
+     UPDATE CONNECTIVITY
+  ========================================================== */
 
   const updateConnectivity = (
     key,
@@ -496,10 +664,15 @@ export default function LocationPageEditor() {
 
       connectivity: {
         ...prev.connectivity,
+
         [key]: value,
       },
     }));
   };
+
+  /* ==========================================================
+     UPDATE NEARBY
+  ========================================================== */
 
   const updateNearby = (
     key,
@@ -510,13 +683,14 @@ export default function LocationPageEditor() {
 
       nearby: {
         ...prev.nearby,
+
         [key]: value,
       },
     }));
   };
 
   /* ==========================================================
-     ARRAY HELPERS
+     HERO ARRAYS
   ========================================================== */
 
   const updateHeroArray = (
@@ -526,7 +700,9 @@ export default function LocationPageEditor() {
   ) => {
     setContent((prev) => {
       const array = [
-        ...(prev.hero[arrayName] || []),
+        ...(prev.hero?.[
+          arrayName
+        ] || []),
       ];
 
       array[index] = value;
@@ -536,11 +712,16 @@ export default function LocationPageEditor() {
 
         hero: {
           ...prev.hero,
+
           [arrayName]: array,
         },
       };
     });
   };
+
+  /* ==========================================================
+     HIGHLIGHTS
+  ========================================================== */
 
   const updateHighlight = (
     index,
@@ -549,12 +730,14 @@ export default function LocationPageEditor() {
   ) => {
     setContent((prev) => {
       const highlights = [
-        ...(prev.about.highlights ||
-          []),
+        ...(prev.about
+          ?.highlights || []),
       ];
 
       highlights[index] = {
-        ...highlights[index],
+        ...(highlights[index] ||
+          {}),
+
         [key]: value,
       };
 
@@ -563,11 +746,16 @@ export default function LocationPageEditor() {
 
         about: {
           ...prev.about,
+
           highlights,
         },
       };
     });
   };
+
+  /* ==========================================================
+     MARKET INSIGHTS
+  ========================================================== */
 
   const updateMarketInsight = (
     index,
@@ -577,11 +765,12 @@ export default function LocationPageEditor() {
     setContent((prev) => {
       const items = [
         ...(prev.about
-          .marketInsights || []),
+          ?.marketInsights || []),
       ];
 
       items[index] = {
-        ...items[index],
+        ...(items[index] || {}),
+
         [key]: value,
       };
 
@@ -590,11 +779,16 @@ export default function LocationPageEditor() {
 
         about: {
           ...prev.about,
+
           marketInsights: items,
         },
       };
     });
   };
+
+  /* ==========================================================
+     CONNECTIVITY ITEMS
+  ========================================================== */
 
   const updateConnectivityItem = (
     index,
@@ -604,11 +798,12 @@ export default function LocationPageEditor() {
     setContent((prev) => {
       const items = [
         ...(prev.connectivity
-          .items || []),
+          ?.items || []),
       ];
 
       items[index] = {
-        ...items[index],
+        ...(items[index] || {}),
+
         [key]: value,
       };
 
@@ -617,6 +812,7 @@ export default function LocationPageEditor() {
 
         connectivity: {
           ...prev.connectivity,
+
           items,
         },
       };
@@ -635,7 +831,9 @@ export default function LocationPageEditor() {
 
     event.target.value = "";
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     const url =
       await uploadImage(file);
@@ -656,7 +854,9 @@ export default function LocationPageEditor() {
 
     event.target.value = "";
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     const url =
       await uploadImage(file);
@@ -676,7 +876,9 @@ export default function LocationPageEditor() {
 
       event.target.value = "";
 
-      if (!file) return;
+      if (!file) {
+        return;
+      }
 
       const url =
         await uploadImage(file);
@@ -694,12 +896,25 @@ export default function LocationPageEditor() {
   ========================================================== */
 
   const savePage = async () => {
+    if (!locationId) {
+      setError(
+        "Location id is missing."
+      );
+
+      return;
+    }
+
+    if (saving) {
+      return;
+    }
+
     try {
       setSaving(true);
       setError("");
       setSuccess("");
 
-      const token = getToken();
+      const token =
+        getToken();
 
       if (!token) {
         throw new Error(
@@ -707,13 +922,33 @@ export default function LocationPageEditor() {
         );
       }
 
+      // --------------------------------------------------------
+      // Create a clean snapshot of CURRENT state.
+      //
+      // This prevents accidental mutation/reference problems.
+      // --------------------------------------------------------
+
+      const payload =
+        JSON.parse(
+          JSON.stringify(
+            normalizeContent(
+              content
+            )
+          )
+        );
+
       const res = await fetch(
         `${API}/locations/page-content/${locationId}`,
         {
           method: "PATCH",
 
+          cache: "no-store",
+
           headers: {
             "Content-Type":
+              "application/json",
+
+            Accept:
               "application/json",
 
             Authorization:
@@ -721,7 +956,8 @@ export default function LocationPageEditor() {
           },
 
           body: JSON.stringify({
-            pageContent: content,
+            pageContent:
+              payload,
           }),
         }
       );
@@ -739,18 +975,32 @@ export default function LocationPageEditor() {
         );
       }
 
-      setLocation(
-        data.location ||
-          location
-      );
+      // --------------------------------------------------------
+      // IMPORTANT:
+      // Use the freshly returned document from MongoDB.
+      // --------------------------------------------------------
 
-      setContent(
-        normalizeContent(
-          data.location
-            ?.pageContent ||
-            content
-        )
-      );
+      const savedLocation =
+        data.location;
+
+      if (savedLocation) {
+        setLocation(
+          savedLocation
+        );
+
+        setContent(
+          normalizeContent(
+            savedLocation.pageContent
+          )
+        );
+      } else {
+        // Fallback if backend doesn't return location.
+        setContent(
+          normalizeContent(
+            payload
+          )
+        );
+      }
 
       setSuccess(
         "Location page content saved successfully."
@@ -793,7 +1043,14 @@ export default function LocationPageEditor() {
     );
   }
 
-  if (error && !location) {
+  /* ==========================================================
+     ERROR
+  ========================================================== */
+
+  if (
+    error &&
+    !location
+  ) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 p-6">
         <p className="text-sm text-red-600">
@@ -801,7 +1058,9 @@ export default function LocationPageEditor() {
         </p>
 
         <button
-          onClick={() => router.back()}
+          onClick={() =>
+            router.back()
+          }
           className="px-4 py-2 rounded-xl bg-[#0f3b2e] text-white text-sm"
         >
           Go Back
@@ -828,6 +1087,7 @@ export default function LocationPageEditor() {
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="flex items-start gap-3">
           <button
+            type="button"
             onClick={() =>
               router.back()
             }
@@ -862,17 +1122,21 @@ export default function LocationPageEditor() {
             <Link
               href={`/locations/${location.slug}`}
               target="_blank"
+              rel="noopener noreferrer"
               className="h-10 px-4 rounded-xl border border-gray-300 bg-white text-gray-700 flex items-center gap-2 text-sm font-semibold hover:bg-gray-50"
             >
               <Eye size={15} />
+
               View Page
             </Link>
           )}
 
           <button
+            type="button"
             onClick={savePage}
             disabled={
-              saving || uploading
+              saving ||
+              uploading
             }
             className="h-10 px-5 rounded-xl bg-[#0f3b2e] text-white flex items-center gap-2 text-sm font-semibold hover:bg-[#174b3b] disabled:opacity-60"
           >
@@ -891,6 +1155,10 @@ export default function LocationPageEditor() {
           </button>
         </div>
       </div>
+
+      {/* ======================================================
+          STATUS
+      ====================================================== */}
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -941,15 +1209,16 @@ export default function LocationPageEditor() {
                   value
                 )
               }
-              placeholder={`Luxury Properties in ${location?.name || ""}`}
+              placeholder={`Luxury Properties in ${
+                location?.name || ""
+              }`}
             />
           </div>
 
           <TextAreaField
             label="Hero Description"
             value={
-              content.hero
-                .description
+              content.hero.description
             }
             onChange={(value) =>
               updateHero(
@@ -964,8 +1233,7 @@ export default function LocationPageEditor() {
           <Field
             label="Location Label"
             value={
-              content.hero
-                .locationLabel
+              content.hero.locationLabel
             }
             onChange={(value) =>
               updateHero(
@@ -1002,8 +1270,7 @@ export default function LocationPageEditor() {
               <Field
                 label="Panel Title"
                 value={
-                  content.hero
-                    .whyTitle
+                  content.hero.whyTitle
                 }
                 onChange={(value) =>
                   updateHero(
@@ -1011,7 +1278,10 @@ export default function LocationPageEditor() {
                     value
                   )
                 }
-                placeholder={`Why ${location?.name || "This Location"}`}
+                placeholder={`Why ${
+                  location?.name ||
+                  "This Location"
+                }`}
               />
 
               <TextAreaField
@@ -1035,7 +1305,9 @@ export default function LocationPageEditor() {
                   (item, index) => (
                     <Field
                       key={index}
-                      label={`Benefit ${index + 1}`}
+                      label={`Benefit ${
+                        index + 1
+                      }`}
                       value={item}
                       onChange={(value) =>
                         updateHeroArray(
@@ -1060,7 +1332,9 @@ export default function LocationPageEditor() {
                   (item, index) => (
                     <Field
                       key={index}
-                      label={`Mobile Benefit ${index + 1}`}
+                      label={`Mobile Benefit ${
+                        index + 1
+                      }`}
                       value={item}
                       onChange={(value) =>
                         updateHeroArray(
@@ -1099,8 +1373,7 @@ export default function LocationPageEditor() {
                 <Field
                   label="Panel Footer Text"
                   value={
-                    content.hero
-                      .footerText
+                    content.hero.footerText
                   }
                   onChange={(value) =>
                     updateHero(
@@ -1123,8 +1396,7 @@ export default function LocationPageEditor() {
               <Field
                 label="Primary Button Text"
                 value={
-                  content.hero
-                    .primaryCtaText
+                  content.hero.primaryCtaText
                 }
                 onChange={(value) =>
                   updateHero(
@@ -1138,8 +1410,7 @@ export default function LocationPageEditor() {
               <Field
                 label="Primary Button Link"
                 value={
-                  content.hero
-                    .primaryCtaLink
+                  content.hero.primaryCtaLink
                 }
                 onChange={(value) =>
                   updateHero(
@@ -1207,6 +1478,7 @@ export default function LocationPageEditor() {
                 }
                 className="h-4 w-4 accent-[#0f3b2e]"
               />
+
               Enabled
             </label>
           }
@@ -1217,8 +1489,7 @@ export default function LocationPageEditor() {
             <Field
               label="Eyebrow"
               value={
-                content.about
-                  .eyebrow
+                content.about.eyebrow
               }
               onChange={(value) =>
                 updateAbout(
@@ -1240,7 +1511,9 @@ export default function LocationPageEditor() {
                   value
                 )
               }
-              placeholder={location?.name}
+              placeholder={
+                location?.name
+              }
             />
           </div>
 
@@ -1251,8 +1524,7 @@ export default function LocationPageEditor() {
 
             <RichTextEditor
               value={
-                content.about
-                  .content
+                content.about.content
               }
               onChange={(value) =>
                 updateAbout(
@@ -1286,8 +1558,7 @@ export default function LocationPageEditor() {
             </h3>
 
             <p className="text-xs text-gray-500 mt-1 mb-4">
-              Leave individual fields blank to retain
-              the existing default insight.
+              Leave individual fields blank to retain the existing default insight.
             </p>
 
             <div className="grid lg:grid-cols-3 gap-4">
@@ -1351,8 +1622,7 @@ export default function LocationPageEditor() {
               <Field
                 label="Market Eyebrow"
                 value={
-                  content.about
-                    .marketEyebrow
+                  content.about.marketEyebrow
                 }
                 onChange={(value) =>
                   updateAbout(
@@ -1366,8 +1636,7 @@ export default function LocationPageEditor() {
               <Field
                 label="Market Title"
                 value={
-                  content.about
-                    .marketTitle
+                  content.about.marketTitle
                 }
                 onChange={(value) =>
                   updateAbout(
@@ -1571,8 +1840,7 @@ export default function LocationPageEditor() {
             </h3>
 
             <p className="text-xs text-gray-500 mt-1 mb-4">
-              Icons remain unchanged. You can override the
-              title and subtitle of each card independently.
+              Icons remain unchanged. You can override the title and subtitle of each card independently.
             </p>
 
             <div className="grid lg:grid-cols-2 gap-4">
@@ -1741,10 +2009,7 @@ export default function LocationPageEditor() {
             <strong className="text-[#0f3b2e]">
               Dynamic nearby locations:
             </strong>{" "}
-            The actual nearby-location chips continue to come
-            from your existing property hierarchy and
-            location children. This editor only changes their
-            surrounding content.
+            The actual nearby-location chips continue to come from your existing property hierarchy and location children. This editor only changes their surrounding content.
           </div>
         </div>
       </section>
@@ -1755,9 +2020,11 @@ export default function LocationPageEditor() {
 
       <div className="flex justify-end pb-8">
         <button
+          type="button"
           onClick={savePage}
           disabled={
-            saving || uploading
+            saving ||
+            uploading
           }
           className="px-6 py-3 rounded-xl bg-[#0f3b2e] text-white flex items-center gap-2 text-sm font-semibold hover:bg-[#174b3b] disabled:opacity-60"
         >
@@ -1822,11 +2089,15 @@ function Field({
       </label>
 
       <input
-        value={value || ""}
+        value={value ?? ""}
         onChange={(e) =>
-          onChange(e.target.value)
+          onChange(
+            e.target.value
+          )
         }
-        placeholder={placeholder}
+        placeholder={
+          placeholder
+        }
         className="w-full h-11 rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/15"
       />
     </div>
@@ -1852,11 +2123,15 @@ function TextAreaField({
 
       <textarea
         rows={rows}
-        value={value || ""}
+        value={value ?? ""}
         onChange={(e) =>
-          onChange(e.target.value)
+          onChange(
+            e.target.value
+          )
         }
-        placeholder={placeholder}
+        placeholder={
+          placeholder
+        }
         className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none resize-y focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/15"
       />
     </div>
@@ -1883,8 +2158,7 @@ function ImageUpload({
           </p>
 
           <p className="text-xs text-gray-500 mt-1">
-            Leave empty to use the existing image.
-            Maximum 5MB.
+            Leave empty to use the existing image. Maximum 5MB.
           </p>
         </div>
 
@@ -1899,7 +2173,9 @@ function ImageUpload({
             type="file"
             hidden
             accept="image/*"
-            onChange={onUpload}
+            onChange={
+              onUpload
+            }
           />
         </label>
       </div>
@@ -1914,7 +2190,9 @@ function ImageUpload({
 
           <button
             type="button"
-            onClick={onRemove}
+            onClick={
+              onRemove
+            }
             className="mt-2 text-xs text-red-600 hover:underline"
           >
             Remove custom image

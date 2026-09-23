@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
+  ArrowUp,
   Building2,
   MapPin,
   TrendingUp,
@@ -23,6 +24,12 @@ export default function AboutLocation({
   pageContent,
 }) {
   const custom = pageContent?.about || {};
+
+  /* ============================================================
+     READ MORE STATE
+  ============================================================ */
+
+  const [isExpanded, setIsExpanded] = useState(false);
 
   /* ============================================================
      HELPER
@@ -321,8 +328,9 @@ export default function AboutLocation({
     defaultMarketInsights.map(
       (fallback, index) => {
         const customItem =
-          custom?.marketInsights?.[index] ||
-          {};
+          custom?.marketInsights?.[
+            index
+          ] || {};
 
         return {
           title: value(
@@ -341,18 +349,14 @@ export default function AboutLocation({
   /* ============================================================
      CLEAN RICH TEXT
      
-     IMPORTANT:
      ReactQuill can store:
        &nbsp;
        &#160;
+       &#xA0;
        actual NBSP characters
 
-     These are non-breaking spaces.
-
-     A long sequence of them can force a paragraph
-     to extend horizontally underneath the image.
-
-     We convert them into normal spaces before rendering.
+     Convert them into normal spaces so they cannot
+     create horizontal overflow.
   ============================================================ */
 
   const normalizedContent =
@@ -362,6 +366,10 @@ export default function AboutLocation({
           .replace(/&#160;/gi, " ")
           .replace(/&#xA0;/gi, " ")
           .replace(/\u00a0/g, " ")
+          .replace(
+            /<p>\s*<\/p>/gi,
+            ""
+          )
       : "";
 
   /* ============================================================
@@ -372,6 +380,23 @@ export default function AboutLocation({
     /<\/?[a-z][\s\S]*>/i.test(
       normalizedContent
     );
+
+  /* ============================================================
+     DETERMINE WHETHER READ MORE IS REQUIRED
+     
+     Short descriptions stay normal.
+     Longer descriptions get the collapsed preview.
+  ============================================================ */
+
+  const plainTextLength =
+    normalizedContent
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .length;
+
+  const needsReadMore =
+    plainTextLength > 420;
 
   /* ============================================================
      RENDER
@@ -408,15 +433,14 @@ export default function AboutLocation({
           {/* ==================================================
               MAIN GRID
 
-              IMPORTANT FIX:
-              minmax(0, ...) prevents long text from
-              expanding the first grid column underneath
-              the image.
+              The two columns are completely independent.
+              Long text can never expand underneath the image.
           ================================================== */}
 
           <div
             className="
               grid
+              w-full
               min-w-0
               items-start
               gap-10
@@ -427,15 +451,20 @@ export default function AboutLocation({
             "
           >
             {/* ==================================================
-                CONTENT
+                LEFT CONTENT COLUMN
             ================================================== */}
 
             <div
               className="
                 min-w-0
+                w-full
                 max-w-full
               "
             >
+              {/* ==================================================
+                  EYEBROW
+              ================================================== */}
+
               <div
                 className="
                   mb-4
@@ -453,15 +482,34 @@ export default function AboutLocation({
                   md:text-[11px]
                 "
               >
-                <span className="h-px w-8 shrink-0 bg-[#C89D58]" />
+                <span
+                  className="
+                    h-px
+                    w-8
+                    shrink-0
+                    bg-[#C89D58]
+                  "
+                />
 
-                <span className="min-w-0 break-words">
+                <span
+                  className="
+                    min-w-0
+                    max-w-full
+                    break-words
+                    [overflow-wrap:anywhere]
+                  "
+                >
                   {eyebrow}
                 </span>
               </div>
 
+              {/* ==================================================
+                  TITLE
+              ================================================== */}
+
               <h2
                 className="
+                  m-0
                   max-w-full
                   break-words
                   font-playfair
@@ -470,163 +518,286 @@ export default function AboutLocation({
                   leading-[1.08]
                   tracking-[-0.025em]
                   text-[#17342d]
+                  [overflow-wrap:anywhere]
                   sm:text-[40px]
                   md:text-[46px]
                   lg:text-[52px]
-                  [overflow-wrap:anywhere]
                 "
               >
                 {title}
               </h2>
 
-              <div className="mt-5 h-px w-20 bg-[#C89D58]" />
+              <div
+                className="
+                  mt-5
+                  h-px
+                  w-20
+                  bg-[#C89D58]
+                "
+              />
 
               {/* ==================================================
-                  RICH TEXT CONTENT
+                  DESCRIPTION WRAPPER
 
-                  IMPORTANT:
-                  overflow-wrap:anywhere is deliberately added
-                  so even malformed/very long editor content
-                  cannot cross into the image column.
+                  This is the important fix.
+
+                  When collapsed:
+                  - fixed maximum visual height
+                  - overflow hidden
+                  - gradient fade at bottom
+
+                  When expanded:
+                  - natural height
+                  - no clipping
+                  - stays entirely inside LEFT column
               ================================================== */}
 
-              {hasRichText ? (
-                <div
+              <div
+                className={`
+                  relative
+                  mt-6
+                  min-w-0
+                  w-full
+                  max-w-full
+                  ${
+                    !isExpanded &&
+                    needsReadMore
+                      ? "max-h-[178px] overflow-hidden"
+                      : "overflow-visible"
+                  }
+                `}
+              >
+                {/* ==================================================
+                    RICH TEXT
+                ================================================== */}
+
+                {hasRichText ? (
+                  <div
+                    className="
+                      min-w-0
+                      w-full
+                      max-w-full
+                      break-words
+                      text-[13px]
+                      leading-7
+                      text-[#47545a]
+                      [overflow-wrap:anywhere]
+                      [word-break:break-word]
+
+                      [&_*]:max-w-full
+                      [&_img]:h-auto
+                      [&_img]:max-w-full
+
+                      [&_p]:m-0
+                      [&_p]:mb-4
+                      [&_p:last-child]:mb-0
+                      [&_p]:break-words
+                      [&_p]:[overflow-wrap:anywhere]
+
+                      [&_strong]:font-semibold
+                      [&_strong]:text-[#263832]
+
+                      [&_b]:font-semibold
+                      [&_b]:text-[#263832]
+
+                      [&_em]:italic
+
+                      [&_a]:font-medium
+                      [&_a]:text-[#A47A2B]
+                      [&_a]:underline
+                      [&_a]:underline-offset-2
+
+                      [&_ul]:mb-4
+                      [&_ul]:ml-5
+                      [&_ul]:max-w-full
+                      [&_ul]:list-disc
+
+                      [&_ol]:mb-4
+                      [&_ol]:ml-5
+                      [&_ol]:max-w-full
+                      [&_ol]:list-decimal
+
+                      [&_li]:mb-1
+                      [&_li]:break-words
+                      [&_li]:[overflow-wrap:anywhere]
+
+                      [&_h1]:max-w-full
+                      [&_h2]:max-w-full
+                      [&_h3]:max-w-full
+                      [&_h4]:max-w-full
+                      [&_h5]:max-w-full
+                      [&_h6]:max-w-full
+
+                      [&_h3]:mb-3
+                      [&_h3]:mt-5
+                      [&_h3]:font-playfair
+                      [&_h3]:text-xl
+                      [&_h3]:font-semibold
+                      [&_h3]:text-[#17342d]
+
+                      [&_h4]:mb-2
+                      [&_h4]:mt-4
+                      [&_h4]:font-semibold
+                      [&_h4]:text-[#17342d]
+
+                      sm:text-[14px]
+                      sm:leading-7
+
+                      md:text-[15px]
+                    "
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        normalizedContent,
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="
+                      min-w-0
+                      w-full
+                      max-w-full
+                      space-y-4
+                      break-words
+                      text-[13px]
+                      leading-7
+                      text-[#47545a]
+                      [overflow-wrap:anywhere]
+                      [word-break:break-word]
+
+                      sm:text-[14px]
+                      sm:leading-7
+
+                      md:text-[15px]
+                    "
+                  >
+                    {normalizedContent
+                      .split(/\n\s*\n/)
+                      .map(
+                        (
+                          paragraph,
+                          index
+                        ) => (
+                          <p
+                            key={index}
+                            className="
+                              m-0
+                              max-w-full
+                              break-words
+                              [overflow-wrap:anywhere]
+                            "
+                          >
+                            {paragraph.trim()}
+                          </p>
+                        )
+                      )}
+                  </div>
+                )}
+
+                {/* ==================================================
+                    COLLAPSED FADE
+
+                    Gives the user a visual indication that
+                    more content exists below.
+                ================================================== */}
+
+                {!isExpanded &&
+                  needsReadMore && (
+                    <div
+                      className="
+                        pointer-events-none
+                        absolute
+                        inset-x-0
+                        bottom-0
+                        h-20
+                        bg-gradient-to-t
+                        from-[#f7f7f7]
+                        via-[#f7f7f7]/90
+                        to-transparent
+                      "
+                    />
+                  )}
+              </div>
+
+              {/* ==================================================
+                  READ MORE / READ LESS
+
+                  This is now attached directly to the
+                  description instead of linking down to
+                  the Real Estate Market section.
+              ================================================== */}
+
+              {needsReadMore && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsExpanded(
+                      (previous) =>
+                        !previous
+                    )
+                  }
+                  aria-expanded={isExpanded}
                   className="
-                    mt-6
-                    min-w-0
-                    max-w-full
-                    overflow-hidden
-                    break-words
-                    text-[13px]
-                    leading-7
-                    text-[#47545a]
-                    [overflow-wrap:anywhere]
-                    [word-break:break-word]
-                    [&_*]:max-w-full
-                    [&_p]:mb-4
-                    [&_p:last-child]:mb-0
-                    [&_p]:break-words
-                    [&_p]:[overflow-wrap:anywhere]
-                    [&_strong]:font-semibold
-                    [&_strong]:text-[#263832]
-                    [&_b]:font-semibold
-                    [&_b]:text-[#263832]
-                    [&_em]:italic
-                    [&_a]:font-medium
-                    [&_a]:text-[#A47A2B]
-                    [&_a]:underline
-                    [&_a]:underline-offset-2
-                    [&_ul]:mb-4
-                    [&_ul]:ml-5
-                    [&_ul]:max-w-full
-                    [&_ul]:list-disc
-                    [&_ol]:mb-4
-                    [&_ol]:ml-5
-                    [&_ol]:max-w-full
-                    [&_ol]:list-decimal
-                    [&_li]:mb-1
-                    [&_li]:break-words
-                    [&_li]:[overflow-wrap:anywhere]
-                    [&_h1]:max-w-full
-                    [&_h2]:max-w-full
-                    [&_h3]:max-w-full
-                    [&_h4]:max-w-full
-                    [&_h5]:max-w-full
-                    [&_h6]:max-w-full
-                    [&_h3]:mb-3
-                    [&_h3]:mt-5
-                    [&_h3]:font-playfair
-                    [&_h3]:text-xl
-                    [&_h3]:font-semibold
-                    [&_h3]:text-[#17342d]
-                    [&_h4]:mb-2
-                    [&_h4]:mt-4
-                    [&_h4]:font-semibold
-                    [&_h4]:text-[#17342d]
-                    sm:text-[14px]
-                    sm:leading-7
-                    md:text-[15px]
-                  "
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      normalizedContent,
-                  }}
-                />
-              ) : (
-                <div
-                  className="
-                    mt-6
-                    min-w-0
-                    max-w-full
-                    space-y-4
-                    break-words
-                    text-[13px]
-                    leading-7
-                    text-[#47545a]
-                    [overflow-wrap:anywhere]
-                    [word-break:break-word]
-                    sm:text-[14px]
-                    sm:leading-7
-                    md:text-[15px]
+                    mt-5
+                    inline-flex
+                    items-center
+                    gap-2
+                    border-0
+                    bg-transparent
+                    p-0
+                    text-[11px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.12em]
+                    text-[#17342d]
+                    transition-all
+                    duration-300
+                    hover:text-[#A47A2B]
+                    focus:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-[#C89D58]/50
+                    focus-visible:ring-offset-4
                   "
                 >
-                  {normalizedContent
-                    .split(/\n\s*\n/)
-                    .map(
-                      (
-                        paragraph,
-                        index
-                      ) => (
-                        <p
-                          key={index}
-                          className="
-                            max-w-full
-                            break-words
-                            [overflow-wrap:anywhere]
-                          "
-                        >
-                          {paragraph.trim()}
-                        </p>
-                      )
-                    )}
-                </div>
+                  <span>
+                    {isExpanded
+                      ? "Read Less"
+                      : "Read More"}
+                  </span>
+
+                  {isExpanded ? (
+                    <ArrowUp
+                      size={14}
+                      className="
+                        shrink-0
+                      "
+                    />
+                  ) : (
+                    <ArrowRight
+                      size={14}
+                      className="
+                        shrink-0
+                      "
+                    />
+                  )}
+                </button>
               )}
 
-              <a
-                href="#real-estate-market"
-                className="
-                  mt-7
-                  inline-flex
-                  max-w-full
-                  items-center
-                  gap-2
-                  break-words
-                  text-[11px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.12em]
-                  text-[#17342d]
-                  transition-colors
-                  duration-300
-                  hover:text-[#A47A2B]
-                "
-              >
-                <span>Read More</span>
+              {/* ==================================================
+                  IF CONTENT IS SHORT
 
-                <ArrowRight
-                  size={14}
-                  className="shrink-0"
-                />
-              </a>
+                  Keep the same visual rhythm even when
+                  Read More isn't necessary.
+              ================================================== */}
+
+              {!needsReadMore && (
+                <div className="h-1" />
+              )}
             </div>
 
             {/* ==================================================
-                IMAGE
+                RIGHT IMAGE COLUMN
 
-                IMPORTANT:
-                min-w-0 + w-full ensures image never
-                overlaps the content column.
+                Completely independent from the text column.
             ================================================== */}
 
             <div
@@ -634,6 +805,7 @@ export default function AboutLocation({
                 relative
                 min-w-0
                 w-full
+                max-w-full
                 self-start
               "
             >
@@ -643,6 +815,7 @@ export default function AboutLocation({
                     relative
                     w-full
                     min-w-0
+                    max-w-full
                     overflow-hidden
                     rounded-[28px]
                     border
@@ -657,6 +830,7 @@ export default function AboutLocation({
                       aspect-[4/3]
                       w-full
                       min-w-0
+                      max-w-full
                       overflow-hidden
                     "
                   >
@@ -676,6 +850,10 @@ export default function AboutLocation({
                     />
                   </div>
 
+                  {/* ==================================================
+                      IMAGE OVERLAY
+                  ================================================== */}
+
                   <div
                     className="
                       absolute
@@ -690,7 +868,14 @@ export default function AboutLocation({
                       pt-20
                     "
                   >
-                    <div className="flex min-w-0 items-center gap-2">
+                    <div
+                      className="
+                        flex
+                        min-w-0
+                        items-center
+                        gap-2
+                      "
+                    >
                       <MapPin
                         size={14}
                         className="
@@ -702,12 +887,14 @@ export default function AboutLocation({
                       <span
                         className="
                           min-w-0
+                          max-w-full
                           break-words
                           text-[9px]
                           font-semibold
                           uppercase
                           tracking-[0.16em]
                           text-white/75
+                          [overflow-wrap:anywhere]
                         "
                       >
                         Location Snapshot
@@ -738,6 +925,7 @@ export default function AboutLocation({
                     aspect-[4/3]
                     w-full
                     min-w-0
+                    max-w-full
                     items-center
                     justify-center
                     overflow-hidden
@@ -764,6 +952,7 @@ export default function AboutLocation({
               mt-10
               grid
               min-w-0
+              w-full
               gap-3
               sm:grid-cols-3
               lg:mt-14
@@ -810,6 +999,10 @@ export default function AboutLocation({
           lg:py-24
         "
       >
+        {/* ====================================================
+            DECORATIVE GLOW
+        ==================================================== */}
+
         <div
           className="
             pointer-events-none
@@ -852,7 +1045,16 @@ export default function AboutLocation({
             lg:px-10
           "
         >
-          <div className="min-w-0 max-w-[850px]">
+          {/* ==================================================
+              MARKET INTRO
+          ================================================== */}
+
+          <div
+            className="
+              min-w-0
+              max-w-[850px]
+            "
+          >
             <div
               className="
                 mb-4
@@ -869,9 +1071,23 @@ export default function AboutLocation({
                 md:text-[11px]
               "
             >
-              <span className="h-px w-8 shrink-0 bg-[#D4AF37]" />
+              <span
+                className="
+                  h-px
+                  w-8
+                  shrink-0
+                  bg-[#D4AF37]
+                "
+              />
 
-              <span className="min-w-0 break-words">
+              <span
+                className="
+                  min-w-0
+                  max-w-full
+                  break-words
+                  [overflow-wrap:anywhere]
+                "
+              >
                 {marketEyebrow}
               </span>
             </div>
@@ -959,7 +1175,13 @@ export default function AboutLocation({
               lg:mt-12
             "
           >
-            <div className="flex min-w-0 gap-4">
+            <div
+              className="
+                flex
+                min-w-0
+                gap-4
+              "
+            >
               <div
                 className="
                   flex
@@ -990,6 +1212,7 @@ export default function AboutLocation({
                     uppercase
                     tracking-[0.18em]
                     text-[#D4AF37]
+                    [overflow-wrap:anywhere]
                   "
                 >
                   {perspectiveEyebrow}
@@ -1033,6 +1256,7 @@ function SnapshotCard({
     <div
       className="
         min-w-0
+        w-full
         overflow-hidden
         rounded-[20px]
         border
@@ -1109,6 +1333,7 @@ function MarketInsight({
       className="
         relative
         min-w-0
+        w-full
         overflow-hidden
         rounded-[22px]
         border
@@ -1161,7 +1386,14 @@ function MarketInsight({
         {description}
       </p>
 
-      <div className="mt-5 h-px w-10 bg-[#D4AF37]" />
+      <div
+        className="
+          mt-5
+          h-px
+          w-10
+          bg-[#D4AF37]
+        "
+      />
     </div>
   );
 }
