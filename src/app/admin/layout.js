@@ -81,7 +81,6 @@ export default function AdminLayout({ children }) {
       name: "Location",
       path: "/admin/location",
       icon: MapPin,
-      roles: ["SuperAdmin"],
     },
 
     {
