@@ -25,15 +25,21 @@ export default function AboutLocation({
   const custom = pageContent?.about || {};
 
   /* ============================================================
-     HELPERS
+     HELPER
   ============================================================ */
 
   const value = (customValue, fallback) => {
-    return typeof customValue === "string" &&
+    return (
+      typeof customValue === "string" &&
       customValue.trim()
+    )
       ? customValue.trim()
       : fallback;
   };
+
+  /* ============================================================
+     IMAGE
+  ============================================================ */
 
   const resolveImage = () => {
     const customImage =
@@ -64,10 +70,11 @@ export default function AboutLocation({
     );
   };
 
-  const resolvedImage = resolveImage();
+  const resolvedImage =
+    resolveImage();
 
   /* ============================================================
-     PROPERTY SNAPSHOT DATA
+     PROPERTY TYPES
   ============================================================ */
 
   const propertyTypes = useMemo(() => {
@@ -82,18 +89,22 @@ export default function AboutLocation({
         property?.coreDetails?.propertyType,
       ];
 
-      values.forEach((value) => {
+      values.forEach((item) => {
         if (
-          typeof value === "string" &&
-          value.trim()
+          typeof item === "string" &&
+          item.trim()
         ) {
-          types.add(value.trim());
+          types.add(item.trim());
         }
       });
     });
 
     return Array.from(types);
   }, [properties]);
+
+  /* ============================================================
+     DEVELOPERS
+  ============================================================ */
 
   const developerNames = useMemo(() => {
     const developers = new Set();
@@ -107,12 +118,12 @@ export default function AboutLocation({
         property?.developerRef?.name,
       ];
 
-      values.forEach((value) => {
+      values.forEach((item) => {
         if (
-          typeof value === "string" &&
-          value.trim()
+          typeof item === "string" &&
+          item.trim()
         ) {
-          developers.add(value.trim());
+          developers.add(item.trim());
         }
       });
     });
@@ -120,13 +131,17 @@ export default function AboutLocation({
     return Array.from(developers);
   }, [properties]);
 
+  /* ============================================================
+     STARTING PRICES
+  ============================================================ */
+
   const startingPrices = useMemo(() => {
     return properties
-      .map(
-        (property) =>
-          Number(
-            property?.coreDetails?.startingPrice
-          )
+      .map((property) =>
+        Number(
+          property?.coreDetails
+            ?.startingPrice
+        )
       )
       .filter(
         (price) =>
@@ -134,6 +149,10 @@ export default function AboutLocation({
           price > 0
       );
   }, [properties]);
+
+  /* ============================================================
+     FORMAT PRICE
+  ============================================================ */
 
   const formatPrice = (price) => {
     if (!Number.isFinite(price)) {
@@ -166,10 +185,13 @@ export default function AboutLocation({
   const pricePositioning =
     startingPrices.length
       ? (() => {
-          const min =
-            Math.min(...startingPrices);
-          const max =
-            Math.max(...startingPrices);
+          const min = Math.min(
+            ...startingPrices
+          );
+
+          const max = Math.max(
+            ...startingPrices
+          );
 
           if (min === max) {
             return formatPrice(min);
@@ -214,20 +236,23 @@ export default function AboutLocation({
     "A Thriving Real Estate Destination"
   );
 
-  const marketDescription = value(
-    custom.marketDescription,
-    `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
-  );
+  const marketDescription =
+    value(
+      custom.marketDescription,
+      `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
+    );
 
-  const perspectiveEyebrow = value(
-    custom.perspectiveEyebrow,
-    "PROPERTY BOUQUET PERSPECTIVE"
-  );
+  const perspectiveEyebrow =
+    value(
+      custom.perspectiveEyebrow,
+      "PROPERTY BOUQUET PERSPECTIVE"
+    );
 
-  const perspectiveQuote = value(
-    custom.perspectiveQuote,
-    `${locationName} brings together connectivity, lifestyle convenience and a growing selection of residential opportunities, making it an address worth evaluating on both present-day livability and long-term potential.`
-  );
+  const perspectiveQuote =
+    value(
+      custom.perspectiveQuote,
+      `${locationName} brings together connectivity, lifestyle convenience and a growing selection of residential opportunities, making it an address worth evaluating on both present-day livability and long-term potential.`
+    );
 
   /* ============================================================
      DEFAULT HIGHLIGHTS
@@ -243,6 +268,7 @@ export default function AboutLocation({
               .join(", ")
           : "Premium residential developments",
     },
+
     {
       title: "Developer Presence",
       description:
@@ -252,6 +278,7 @@ export default function AboutLocation({
               .join(", ")
           : "Multiple established developers",
     },
+
     {
       title: "Price Positioning",
       description:
@@ -271,6 +298,7 @@ export default function AboutLocation({
             customItem.title,
             fallback.title
           ),
+
           description: value(
             customItem.description,
             fallback.description
@@ -289,11 +317,13 @@ export default function AboutLocation({
       description:
         "Strategic road networks and access to important destinations support convenient movement across the wider region.",
     },
+
     {
       title: "Development",
       description:
         "A growing pipeline of residential projects creates greater choice across formats, configurations and communities.",
     },
+
     {
       title: "Lifestyle",
       description:
@@ -314,6 +344,7 @@ export default function AboutLocation({
             customItem.title,
             fallback.title
           ),
+
           description: value(
             customItem.description,
             fallback.description
@@ -323,15 +354,24 @@ export default function AboutLocation({
     );
 
   /* ============================================================
-     DESCRIPTION PARAGRAPHS
+     RICH TEXT CONTENT
+     
+     IMPORTANT:
+     Admin RichTextEditor stores HTML such as:
+
+     <p>Dwarka&nbsp;Expressway...</p>
+
+     We render the stored HTML instead of displaying the tags.
   ============================================================ */
 
-  const paragraphs = content
-    .split(/\n\s*\n/)
-    .map((paragraph) =>
-      paragraph.trim()
-    )
-    .filter(Boolean);
+  const hasRichText =
+    /<\/?[a-z][\s\S]*>/i.test(
+      content
+    );
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
     <>
@@ -415,27 +455,94 @@ export default function AboutLocation({
 
               <div className="mt-5 h-px w-20 bg-[#C89D58]" />
 
-              <div
-                className="
-                  mt-6
-                  max-w-[780px]
-                  space-y-4
-                  text-[13px]
-                  leading-7
-                  text-[#47545a]
-                  sm:text-[14px]
-                  sm:leading-7
-                  md:text-[15px]
-                "
-              >
-                {paragraphs.map(
-                  (paragraph, index) => (
-                    <p key={index}>
-                      {paragraph}
-                    </p>
-                  )
-                )}
-              </div>
+              {/* ==================================================
+                  FIXED RICH TEXT CONTENT
+              ================================================== */}
+
+              {hasRichText ? (
+                <div
+                  className="
+                    mt-6
+                    max-w-[780px]
+                    text-[13px]
+                    leading-7
+                    text-[#47545a]
+
+                    [&_p]:mb-4
+                    [&_p:last-child]:mb-0
+
+                    [&_strong]:font-semibold
+                    [&_strong]:text-[#263832]
+
+                    [&_b]:font-semibold
+                    [&_b]:text-[#263832]
+
+                    [&_em]:italic
+
+                    [&_a]:font-medium
+                    [&_a]:text-[#A47A2B]
+                    [&_a]:underline
+                    [&_a]:underline-offset-2
+
+                    [&_ul]:mb-4
+                    [&_ul]:ml-5
+                    [&_ul]:list-disc
+
+                    [&_ol]:mb-4
+                    [&_ol]:ml-5
+                    [&_ol]:list-decimal
+
+                    [&_li]:mb-1
+
+                    [&_h3]:mb-3
+                    [&_h3]:mt-5
+                    [&_h3]:font-playfair
+                    [&_h3]:text-xl
+                    [&_h3]:font-semibold
+                    [&_h3]:text-[#17342d]
+
+                    [&_h4]:mb-2
+                    [&_h4]:mt-4
+                    [&_h4]:font-semibold
+                    [&_h4]:text-[#17342d]
+
+                    sm:text-[14px]
+                    sm:leading-7
+
+                    md:text-[15px]
+                  "
+                  dangerouslySetInnerHTML={{
+                    __html: content,
+                  }}
+                />
+              ) : (
+                <div
+                  className="
+                    mt-6
+                    max-w-[780px]
+                    space-y-4
+                    text-[13px]
+                    leading-7
+                    text-[#47545a]
+                    sm:text-[14px]
+                    sm:leading-7
+                    md:text-[15px]
+                  "
+                >
+                  {content
+                    .split(/\n\s*\n/)
+                    .map(
+                      (
+                        paragraph,
+                        index
+                      ) => (
+                        <p key={index}>
+                          {paragraph.trim()}
+                        </p>
+                      )
+                    )}
+                </div>
+              )}
 
               <a
                 href="#real-estate-market"
@@ -461,7 +568,7 @@ export default function AboutLocation({
             </div>
 
             {/* ==================================================
-                IMAGE + SNAPSHOT
+                IMAGE
             ================================================== */}
 
             <div className="relative">
@@ -654,11 +761,7 @@ export default function AboutLocation({
             lg:px-10
           "
         >
-          <div
-            className="
-              max-w-[850px]
-            "
-          >
+          <div className="max-w-[850px]">
             <div
               className="
                 mb-4
