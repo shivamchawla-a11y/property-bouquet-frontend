@@ -6,18 +6,19 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Save,
-  Plus,
-  Trash2,
   Upload,
   Eye,
-  ChevronUp,
-  ChevronDown,
   MapPin,
   Loader2,
 } from "lucide-react";
+
 import RichTextEditor from "@/app/admin/RichTextEditor";
 
 const API = "/api";
+
+/* ============================================================
+   EMPTY CONTENT
+============================================================ */
 
 const emptyContent = {
   hero: {
@@ -25,30 +26,119 @@ const emptyContent = {
     title: "",
     description: "",
     image: "",
-    buttonText: "",
-    buttonLink: "",
+
+    locationLabel: "",
+
+    whyTitle: "",
+    whyDescription: "",
+
+    benefits: ["", "", "", ""],
+
+    mobileBenefits: ["", "", "", ""],
+
+    primaryCtaText: "",
+    primaryCtaLink: "",
+
+    secondaryCtaText: "",
+    secondaryCtaLink: "",
+
+    footerEyebrow: "",
+    footerText: "",
   },
+
   about: {
     enabled: true,
-    eyebrow: "About The Location",
+
+    eyebrow: "",
     title: "",
     content: "",
-    highlights: [],
+    image: "",
+
+    highlights: [
+      {
+        title: "",
+        description: "",
+      },
+      {
+        title: "",
+        description: "",
+      },
+      {
+        title: "",
+        description: "",
+      },
+    ],
+
+    marketEyebrow: "",
+    marketTitle: "",
+    marketDescription: "",
+
+    marketInsights: [
+      {
+        title: "",
+        description: "",
+      },
+      {
+        title: "",
+        description: "",
+      },
+      {
+        title: "",
+        description: "",
+      },
+    ],
+
+    perspectiveEyebrow: "",
+    perspectiveQuote: "",
   },
-  sections: [],
+
+  connectivity: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    image: "",
+
+    items: [
+      {
+        title: "",
+        subtitle: "",
+      },
+      {
+        title: "",
+        subtitle: "",
+      },
+      {
+        title: "",
+        subtitle: "",
+      },
+      {
+        title: "",
+        subtitle: "",
+      },
+      {
+        title: "",
+        subtitle: "",
+      },
+      {
+        title: "",
+        subtitle: "",
+      },
+    ],
+
+    advantageEyebrow: "",
+    advantageTitle: "",
+  },
+
+  nearby: {
+    eyebrow: "",
+    title: "",
+    description: "",
+  },
 };
 
-const makeSection = () => ({
-  id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-  type: "richText",
-  enabled: true,
-  eyebrow: "",
-  title: "",
-  subtitle: "",
-  content: "",
-  image: "",
-  imagePosition: "right",
-});
+/* ============================================================
+   HELPERS
+============================================================ */
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
@@ -62,14 +152,22 @@ const getToken = () => {
 };
 
 async function readResponse(res) {
-  const contentType = res.headers.get("content-type") || "";
+  const contentType =
+    res.headers.get("content-type") || "";
+
   const text = await res.text();
 
-  if (contentType.toLowerCase().includes("application/json")) {
+  if (
+    contentType
+      .toLowerCase()
+      .includes("application/json")
+  ) {
     try {
       return JSON.parse(text);
     } catch {
-      throw new Error("The server returned invalid JSON.");
+      throw new Error(
+        "The server returned invalid JSON."
+      );
     }
   }
 
@@ -79,39 +177,131 @@ async function readResponse(res) {
   );
 }
 
+/* ============================================================
+   NORMALIZE CONTENT
+============================================================ */
+
 function normalizeContent(content) {
   const source = content || {};
+
+  const hero = source.hero || {};
+  const about = source.about || {};
+  const connectivity =
+    source.connectivity || {};
+  const nearby = source.nearby || {};
+
+  const benefits = Array.isArray(
+    hero.benefits
+  )
+    ? [...hero.benefits]
+    : [];
+
+  while (benefits.length < 4) {
+    benefits.push("");
+  }
+
+  const mobileBenefits = Array.isArray(
+    hero.mobileBenefits
+  )
+    ? [...hero.mobileBenefits]
+    : [];
+
+  while (mobileBenefits.length < 4) {
+    mobileBenefits.push("");
+  }
+
+  const highlights = Array.isArray(
+    about.highlights
+  )
+    ? about.highlights.map((item) => ({
+        title: item?.title || "",
+        description:
+          item?.description || "",
+      }))
+    : [];
+
+  while (highlights.length < 3) {
+    highlights.push({
+      title: "",
+      description: "",
+    });
+  }
+
+  const marketInsights =
+    Array.isArray(
+      about.marketInsights
+    )
+      ? about.marketInsights.map(
+          (item) => ({
+            title: item?.title || "",
+            description:
+              item?.description || "",
+          })
+        )
+      : [];
+
+  while (marketInsights.length < 3) {
+    marketInsights.push({
+      title: "",
+      description: "",
+    });
+  }
+
+  const connectivityItems =
+    Array.isArray(
+      connectivity.items
+    )
+      ? connectivity.items.map(
+          (item) => ({
+            title: item?.title || "",
+            subtitle:
+              item?.subtitle || "",
+          })
+        )
+      : [];
+
+  while (connectivityItems.length < 6) {
+    connectivityItems.push({
+      title: "",
+      subtitle: "",
+    });
+  }
 
   return {
     hero: {
       ...emptyContent.hero,
-      ...(source.hero || {}),
+      ...hero,
+      benefits: benefits.slice(0, 4),
+      mobileBenefits:
+        mobileBenefits.slice(0, 4),
     },
 
     about: {
       ...emptyContent.about,
-      ...(source.about || {}),
-      highlights: Array.isArray(source.about?.highlights)
-        ? source.about.highlights.map((item) => ({
-            title: item?.title || "",
-            description: item?.description || "",
-          }))
-        : [],
+      ...about,
+      highlights,
+      marketInsights,
     },
 
-    sections: Array.isArray(source.sections)
-      ? source.sections.map((section) => ({
-          ...makeSection(),
-          ...section,
-          id:
-            section?.id ||
-            `${Date.now()}-${Math.random()
-              .toString(36)
-              .slice(2, 9)}`,
-        }))
-      : [],
+    connectivity: {
+      ...emptyContent.connectivity,
+      ...connectivity,
+      items: connectivityItems.slice(
+        0,
+        6
+      ),
+    },
+
+    nearby: {
+      ...emptyContent.nearby,
+      ...nearby,
+    },
   };
 }
+
+/* ============================================================
+   COMPONENT
+============================================================ */
 
 export default function LocationPageEditor() {
   const params = useParams();
@@ -119,13 +309,30 @@ export default function LocationPageEditor() {
 
   const locationId = params?.id;
 
-  const [location, setLocation] = useState(null);
-  const [content, setContent] = useState(emptyContent);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [location, setLocation] =
+    useState(null);
+
+  const [content, setContent] =
+    useState(emptyContent);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [uploading, setUploading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [success, setSuccess] =
+    useState("");
+
+  /* ==========================================================
+     LOAD
+  ========================================================== */
 
   useEffect(() => {
     if (!locationId) return;
@@ -135,21 +342,40 @@ export default function LocationPageEditor() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${API}/locations/by-id/${locationId}`);
+        const res = await fetch(
+          `${API}/locations/by-id/${locationId}`
+        );
 
-        const data = await readResponse(res);
+        const data =
+          await readResponse(res);
 
-        if (!res.ok || !data?.success) {
+        if (
+          !res.ok ||
+          !data?.success
+        ) {
           throw new Error(
-            data?.message || "Unable to load location."
+            data?.message ||
+              "Unable to load location."
           );
         }
 
         setLocation(data.location);
-        setContent(normalizeContent(data.location?.pageContent));
+
+        setContent(
+          normalizeContent(
+            data.location?.pageContent
+          )
+        );
       } catch (err) {
-        console.error("LOCATION PAGE LOAD ERROR:", err);
-        setError(err?.message || "Unable to load location.");
+        console.error(
+          "LOCATION PAGE LOAD ERROR:",
+          err
+        );
+
+        setError(
+          err?.message ||
+            "Unable to load location."
+        );
       } finally {
         setLoading(false);
       }
@@ -158,16 +384,28 @@ export default function LocationPageEditor() {
     load();
   }, [locationId]);
 
+  /* ==========================================================
+     IMAGE UPLOAD
+  ========================================================== */
+
   const uploadImage = async (file) => {
     if (!file) return "";
 
-    if (!file.type?.startsWith("image/")) {
-      alert("Only image files are allowed.");
+    if (
+      !file.type?.startsWith("image/")
+    ) {
+      alert(
+        "Only image files are allowed."
+      );
+
       return "";
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Maximum image size is 5MB.");
+      alert(
+        "Maximum image size is 5MB."
+      );
+
       return "";
     }
 
@@ -175,32 +413,59 @@ export default function LocationPageEditor() {
       setUploading(true);
 
       const formData = new FormData();
+
       formData.append("file", file);
 
-      const res = await fetch("/api/upload-developer", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "/api/upload-developer",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      const data = await readResponse(res);
+      const data =
+        await readResponse(res);
 
-      if (!res.ok || !data?.url) {
-        throw new Error(data?.message || "Image upload failed.");
+      if (
+        !res.ok ||
+        !data?.url
+      ) {
+        throw new Error(
+          data?.message ||
+            "Image upload failed."
+        );
       }
 
       return data.url;
     } catch (err) {
-      console.error("LOCATION IMAGE UPLOAD ERROR:", err);
-      alert(err?.message || "Image upload failed.");
+      console.error(
+        "LOCATION IMAGE UPLOAD ERROR:",
+        err
+      );
+
+      alert(
+        err?.message ||
+          "Image upload failed."
+      );
+
       return "";
     } finally {
       setUploading(false);
     }
   };
 
-  const updateHero = (key, value) => {
+  /* ==========================================================
+     UPDATE HELPERS
+  ========================================================== */
+
+  const updateHero = (
+    key,
+    value
+  ) => {
     setContent((prev) => ({
       ...prev,
+
       hero: {
         ...prev.hero,
         [key]: value,
@@ -208,9 +473,13 @@ export default function LocationPageEditor() {
     }));
   };
 
-  const updateAbout = (key, value) => {
+  const updateAbout = (
+    key,
+    value
+  ) => {
     setContent((prev) => ({
       ...prev,
+
       about: {
         ...prev.about,
         [key]: value,
@@ -218,25 +487,71 @@ export default function LocationPageEditor() {
     }));
   };
 
-  const addHighlight = () => {
+  const updateConnectivity = (
+    key,
+    value
+  ) => {
     setContent((prev) => ({
       ...prev,
-      about: {
-        ...prev.about,
-        highlights: [
-          ...(prev.about.highlights || []),
-          {
-            title: "",
-            description: "",
-          },
-        ],
+
+      connectivity: {
+        ...prev.connectivity,
+        [key]: value,
       },
     }));
   };
 
-  const updateHighlight = (index, key, value) => {
+  const updateNearby = (
+    key,
+    value
+  ) => {
+    setContent((prev) => ({
+      ...prev,
+
+      nearby: {
+        ...prev.nearby,
+        [key]: value,
+      },
+    }));
+  };
+
+  /* ==========================================================
+     ARRAY HELPERS
+  ========================================================== */
+
+  const updateHeroArray = (
+    arrayName,
+    index,
+    value
+  ) => {
     setContent((prev) => {
-      const highlights = [...(prev.about.highlights || [])];
+      const array = [
+        ...(prev.hero[arrayName] || []),
+      ];
+
+      array[index] = value;
+
+      return {
+        ...prev,
+
+        hero: {
+          ...prev.hero,
+          [arrayName]: array,
+        },
+      };
+    });
+  };
+
+  const updateHighlight = (
+    index,
+    key,
+    value
+  ) => {
+    setContent((prev) => {
+      const highlights = [
+        ...(prev.about.highlights ||
+          []),
+      ];
 
       highlights[index] = {
         ...highlights[index],
@@ -245,6 +560,7 @@ export default function LocationPageEditor() {
 
       return {
         ...prev,
+
         about: {
           ...prev.about,
           highlights,
@@ -253,97 +569,129 @@ export default function LocationPageEditor() {
     });
   };
 
-  const deleteHighlight = (index) => {
-    setContent((prev) => ({
-      ...prev,
-      about: {
-        ...prev.about,
-        highlights: prev.about.highlights.filter(
-          (_, itemIndex) => itemIndex !== index
-        ),
-      },
-    }));
-  };
-
-  const addSection = () => {
-    setContent((prev) => ({
-      ...prev,
-      sections: [...prev.sections, makeSection()],
-    }));
-  };
-
-  const updateSection = (index, key, value) => {
+  const updateMarketInsight = (
+    index,
+    key,
+    value
+  ) => {
     setContent((prev) => {
-      const sections = [...prev.sections];
+      const items = [
+        ...(prev.about
+          .marketInsights || []),
+      ];
 
-      sections[index] = {
-        ...sections[index],
+      items[index] = {
+        ...items[index],
         [key]: value,
       };
 
       return {
         ...prev,
-        sections,
+
+        about: {
+          ...prev.about,
+          marketInsights: items,
+        },
       };
     });
   };
 
-  const deleteSection = (index) => {
-    if (!confirm("Delete this custom section?")) return;
-
-    setContent((prev) => ({
-      ...prev,
-      sections: prev.sections.filter(
-        (_, itemIndex) => itemIndex !== index
-      ),
-    }));
-  };
-
-  const moveSection = (index, direction) => {
+  const updateConnectivityItem = (
+    index,
+    key,
+    value
+  ) => {
     setContent((prev) => {
-      const sections = [...prev.sections];
-      const targetIndex = index + direction;
-
-      if (
-        targetIndex < 0 ||
-        targetIndex >= sections.length
-      ) {
-        return prev;
-      }
-
-      [sections[index], sections[targetIndex]] = [
-        sections[targetIndex],
-        sections[index],
+      const items = [
+        ...(prev.connectivity
+          .items || []),
       ];
+
+      items[index] = {
+        ...items[index],
+        [key]: value,
+      };
 
       return {
         ...prev,
-        sections,
+
+        connectivity: {
+          ...prev.connectivity,
+          items,
+        },
       };
     });
   };
 
-  const handleHeroImage = async (event) => {
-    const file = event.target.files?.[0];
+  /* ==========================================================
+     IMAGE HANDLERS
+  ========================================================== */
+
+  const handleHeroImage = async (
+    event
+  ) => {
+    const file =
+      event.target.files?.[0];
+
     event.target.value = "";
 
     if (!file) return;
 
-    const url = await uploadImage(file);
+    const url =
+      await uploadImage(file);
 
-    if (url) updateHero("image", url);
+    if (url) {
+      updateHero(
+        "image",
+        url
+      );
+    }
   };
 
-  const handleSectionImage = async (index, event) => {
-    const file = event.target.files?.[0];
+  const handleAboutImage = async (
+    event
+  ) => {
+    const file =
+      event.target.files?.[0];
+
     event.target.value = "";
 
     if (!file) return;
 
-    const url = await uploadImage(file);
+    const url =
+      await uploadImage(file);
 
-    if (url) updateSection(index, "image", url);
+    if (url) {
+      updateAbout(
+        "image",
+        url
+      );
+    }
   };
+
+  const handleConnectivityImage =
+    async (event) => {
+      const file =
+        event.target.files?.[0];
+
+      event.target.value = "";
+
+      if (!file) return;
+
+      const url =
+        await uploadImage(file);
+
+      if (url) {
+        updateConnectivity(
+          "image",
+          url
+        );
+      }
+    };
+
+  /* ==========================================================
+     SAVE
+  ========================================================== */
 
   const savePage = async () => {
     try {
@@ -363,44 +711,82 @@ export default function LocationPageEditor() {
         `${API}/locations/page-content/${locationId}`,
         {
           method: "PATCH",
+
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
+
           body: JSON.stringify({
             pageContent: content,
           }),
         }
       );
 
-      const data = await readResponse(res);
+      const data =
+        await readResponse(res);
 
-      if (!res.ok || !data?.success) {
+      if (
+        !res.ok ||
+        !data?.success
+      ) {
         throw new Error(
-          data?.message || "Unable to save location page."
+          data?.message ||
+            "Unable to save location page."
         );
       }
 
-      setLocation(data.location || location);
-      setContent(normalizeContent(data.location?.pageContent || content));
-      setSuccess("Location page content saved successfully.");
+      setLocation(
+        data.location ||
+          location
+      );
+
+      setContent(
+        normalizeContent(
+          data.location
+            ?.pageContent ||
+            content
+        )
+      );
+
+      setSuccess(
+        "Location page content saved successfully."
+      );
 
       window.setTimeout(() => {
         setSuccess("");
       }, 3000);
     } catch (err) {
-      console.error("SAVE LOCATION PAGE ERROR:", err);
-      setError(err?.message || "Unable to save location page.");
+      console.error(
+        "SAVE LOCATION PAGE ERROR:",
+        err
+      );
+
+      setError(
+        err?.message ||
+          "Unable to save location page."
+      );
     } finally {
       setSaving(false);
     }
   };
 
+  /* ==========================================================
+     LOADING
+  ========================================================== */
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center text-sm text-gray-600">
         <div className="flex items-center gap-2">
-          <Loader2 size={16} className="animate-spin" />
+          <Loader2
+            size={16}
+            className="animate-spin"
+          />
+
           Loading location page...
         </div>
       </div>
@@ -410,7 +796,10 @@ export default function LocationPageEditor() {
   if (error && !location) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 p-6">
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-600">
+          {error}
+        </p>
+
         <button
           onClick={() => router.back()}
           className="px-4 py-2 rounded-xl bg-[#0f3b2e] text-white text-sm"
@@ -421,25 +810,39 @@ export default function LocationPageEditor() {
     );
   }
 
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
   return (
     <div
       className="min-h-screen bg-[#f7f8f7] p-4 md:p-6 space-y-5"
-      style={{ color: "#111827" }}
+      style={{
+        color: "#111827",
+      }}
     >
-      {/* HEADER */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="flex items-start gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={() =>
+              router.back()
+            }
             className="mt-1 h-10 w-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50"
-            title="Back"
           >
             <ArrowLeft size={17} />
           </button>
 
           <div>
             <div className="flex items-center gap-2">
-              <MapPin size={19} className="text-[#0f3b2e]" />
+              <MapPin
+                size={19}
+                className="text-[#0f3b2e]"
+              />
+
               <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f3b2e]">
                 Edit Location Page
               </h1>
@@ -468,15 +871,23 @@ export default function LocationPageEditor() {
 
           <button
             onClick={savePage}
-            disabled={saving || uploading}
-            className="h-10 px-5 rounded-xl bg-[#0f3b2e] text-white flex items-center gap-2 text-sm font-semibold hover:bg-[#174b3b] disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={
+              saving || uploading
+            }
+            className="h-10 px-5 rounded-xl bg-[#0f3b2e] text-white flex items-center gap-2 text-sm font-semibold hover:bg-[#174b3b] disabled:opacity-60"
           >
             {saving ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2
+                size={15}
+                className="animate-spin"
+              />
             ) : (
               <Save size={15} />
             )}
-            {saving ? "Saving..." : "Save Page"}
+
+            {saving
+              ? "Saving..."
+              : "Save Page"}
           </button>
         </div>
       </div>
@@ -493,143 +904,343 @@ export default function LocationPageEditor() {
         </div>
       )}
 
-      {/* HERO */}
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-[#0f3b2e]">
-              Hero Section
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Controls the editable content displayed in the location hero.
-            </p>
-          </div>
-        </div>
+      {/* ======================================================
+          HERO
+      ====================================================== */}
 
-        <div className="p-5 space-y-5">
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <SectionHeader
+          title="Hero Section"
+          description="Optional overrides for the existing location hero."
+        />
+
+        <div className="p-5 space-y-6">
           <div className="grid lg:grid-cols-2 gap-5">
             <Field
               label="Eyebrow"
-              value={content.hero.eyebrow}
-              onChange={(value) => updateHero("eyebrow", value)}
-              placeholder="Luxury Real Estate Destination"
+              value={
+                content.hero.eyebrow
+              }
+              onChange={(value) =>
+                updateHero(
+                  "eyebrow",
+                  value
+                )
+              }
+              placeholder="A PREMIUM REAL ESTATE DESTINATION"
             />
 
             <Field
               label="Hero Title"
-              value={content.hero.title}
-              onChange={(value) => updateHero("title", value)}
+              value={
+                content.hero.title
+              }
+              onChange={(value) =>
+                updateHero(
+                  "title",
+                  value
+                )
+              }
               placeholder={`Luxury Properties in ${location?.name || ""}`}
             />
           </div>
 
           <TextAreaField
             label="Hero Description"
-            value={content.hero.description}
-            onChange={(value) => updateHero("description", value)}
-            placeholder="Write the description shown below the hero heading."
+            value={
+              content.hero
+                .description
+            }
+            onChange={(value) =>
+              updateHero(
+                "description",
+                value
+              )
+            }
+            placeholder="Leave blank to use the existing location-based description."
             rows={4}
           />
 
-          <div className="grid lg:grid-cols-2 gap-5">
-            <Field
-              label="Button Text"
-              value={content.hero.buttonText}
-              onChange={(value) => updateHero("buttonText", value)}
-              placeholder="Explore Properties"
-            />
+          <Field
+            label="Location Label"
+            value={
+              content.hero
+                .locationLabel
+            }
+            onChange={(value) =>
+              updateHero(
+                "locationLabel",
+                value
+              )
+            }
+            placeholder="Prime Location"
+          />
 
-            <Field
-              label="Button Link"
-              value={content.hero.buttonLink}
-              onChange={(value) => updateHero("buttonLink", value)}
-              placeholder="#projects"
-            />
+          <ImageUpload
+            label="Hero Image"
+            image={
+              content.hero.image
+            }
+            uploading={uploading}
+            onUpload={
+              handleHeroImage
+            }
+            onRemove={() =>
+              updateHero(
+                "image",
+                ""
+              )
+            }
+          />
+
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">
+              Hero Location Panel
+            </h3>
+
+            <div className="space-y-4">
+              <Field
+                label="Panel Title"
+                value={
+                  content.hero
+                    .whyTitle
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "whyTitle",
+                    value
+                  )
+                }
+                placeholder={`Why ${location?.name || "This Location"}`}
+              />
+
+              <TextAreaField
+                label="Panel Description"
+                value={
+                  content.hero
+                    .whyDescription
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "whyDescription",
+                    value
+                  )
+                }
+                placeholder="A carefully curated collection of premium residential and investment opportunities."
+                rows={3}
+              />
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {content.hero.benefits.map(
+                  (item, index) => (
+                    <Field
+                      key={index}
+                      label={`Benefit ${index + 1}`}
+                      value={item}
+                      onChange={(value) =>
+                        updateHeroArray(
+                          "benefits",
+                          index,
+                          value
+                        )
+                      }
+                      placeholder={[
+                        "Strategic connectivity & accessibility",
+                        "Premium residential developments",
+                        "Leading developer presence",
+                        "Curated investment opportunities",
+                      ][index]}
+                    />
+                  )
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {content.hero.mobileBenefits.map(
+                  (item, index) => (
+                    <Field
+                      key={index}
+                      label={`Mobile Benefit ${index + 1}`}
+                      value={item}
+                      onChange={(value) =>
+                        updateHeroArray(
+                          "mobileBenefits",
+                          index,
+                          value
+                        )
+                      }
+                      placeholder={[
+                        "Strategic Connectivity",
+                        "Premium Developments",
+                        "Leading Developers",
+                        "Curated Opportunities",
+                      ][index]}
+                    />
+                  )
+                )}
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-4">
+                <Field
+                  label="Panel Footer Eyebrow"
+                  value={
+                    content.hero
+                      .footerEyebrow
+                  }
+                  onChange={(value) =>
+                    updateHero(
+                      "footerEyebrow",
+                      value
+                    )
+                  }
+                  placeholder="Property Bouquet"
+                />
+
+                <Field
+                  label="Panel Footer Text"
+                  value={
+                    content.hero
+                      .footerText
+                  }
+                  onChange={(value) =>
+                    updateHero(
+                      "footerText",
+                      value
+                    )
+                  }
+                  placeholder="Premium properties, thoughtfully curated."
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-gray-800">
-                  Hero Image
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Upload a replacement image. Maximum 5MB.
-                </p>
-              </div>
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">
+              Hero Buttons
+            </h3>
 
-              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-sm font-semibold hover:bg-gray-100">
-                <Upload size={15} />
-                {uploading ? "Uploading..." : "Upload Image"}
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleHeroImage}
-                />
-              </label>
+            <div className="grid lg:grid-cols-2 gap-5">
+              <Field
+                label="Primary Button Text"
+                value={
+                  content.hero
+                    .primaryCtaText
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "primaryCtaText",
+                    value
+                  )
+                }
+                placeholder="Explore Properties"
+              />
+
+              <Field
+                label="Primary Button Link"
+                value={
+                  content.hero
+                    .primaryCtaLink
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "primaryCtaLink",
+                    value
+                  )
+                }
+                placeholder="#projects"
+              />
+
+              <Field
+                label="Secondary Button Text"
+                value={
+                  content.hero
+                    .secondaryCtaText
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "secondaryCtaText",
+                    value
+                  )
+                }
+                placeholder="Contact Advisor"
+              />
+
+              <Field
+                label="Secondary Button Link"
+                value={
+                  content.hero
+                    .secondaryCtaLink
+                }
+                onChange={(value) =>
+                  updateHero(
+                    "secondaryCtaLink",
+                    value
+                  )
+                }
+                placeholder="/contact"
+              />
             </div>
-
-            {content.hero.image && (
-              <div className="mt-4">
-                <img
-                  src={content.hero.image}
-                  alt=""
-                  className="h-44 w-full md:w-[420px] rounded-2xl object-cover border border-gray-200"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => updateHero("image", "")}
-                  className="mt-2 text-xs text-red-600 hover:underline"
-                >
-                  Remove custom hero image
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      {/* ABOUT */}
+      {/* ======================================================
+          ABOUT
+      ====================================================== */}
+
       <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-[#0f3b2e]">
-              About The Location
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Rich-text content displayed below the properties.
-            </p>
-          </div>
+        <SectionHeader
+          title="About The Location"
+          description="Override only the About content you want to change."
+          right={
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={
+                  content.about.enabled
+                }
+                onChange={(e) =>
+                  updateAbout(
+                    "enabled",
+                    e.target.checked
+                  )
+                }
+                className="h-4 w-4 accent-[#0f3b2e]"
+              />
+              Enabled
+            </label>
+          }
+        />
 
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={content.about.enabled}
-              onChange={(e) =>
-                updateAbout("enabled", e.target.checked)
-              }
-              className="h-4 w-4 accent-[#0f3b2e]"
-            />
-            Enabled
-          </label>
-        </div>
-
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-6">
           <div className="grid lg:grid-cols-2 gap-5">
             <Field
               label="Eyebrow"
-              value={content.about.eyebrow}
-              onChange={(value) => updateAbout("eyebrow", value)}
+              value={
+                content.about
+                  .eyebrow
+              }
+              onChange={(value) =>
+                updateAbout(
+                  "eyebrow",
+                  value
+                )
+              }
               placeholder="About The Location"
             />
 
             <Field
               label="Heading"
-              value={content.about.title}
-              onChange={(value) => updateAbout("title", value)}
-              placeholder={`Luxury Real Estate in ${location?.name || ""}`}
+              value={
+                content.about.title
+              }
+              onChange={(value) =>
+                updateAbout(
+                  "title",
+                  value
+                )
+              }
+              placeholder={location?.name}
             />
           </div>
 
@@ -639,312 +1250,564 @@ export default function LocationPageEditor() {
             </label>
 
             <RichTextEditor
-              value={content.about.content}
-              onChange={(value) => updateAbout("content", value)}
+              value={
+                content.about
+                  .content
+              }
+              onChange={(value) =>
+                updateAbout(
+                  "content",
+                  value
+                )
+              }
             />
           </div>
 
+          <ImageUpload
+            label="About Image"
+            image={
+              content.about.image
+            }
+            uploading={uploading}
+            onUpload={
+              handleAboutImage
+            }
+            onRemove={() =>
+              updateAbout(
+                "image",
+                ""
+              )
+            }
+          />
+
           <div className="border-t border-gray-200 pt-5">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-gray-800">
-                  Location Highlights
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  Optional highlight cards shown with the About section.
-                </p>
-              </div>
+            <h3 className="text-sm font-bold text-gray-800">
+              About Highlights
+            </h3>
 
-              <button
-                type="button"
-                onClick={addHighlight}
-                className="px-3 py-2 rounded-lg bg-[#0f3b2e] text-white text-xs font-semibold flex items-center gap-1.5"
-              >
-                <Plus size={13} />
-                Add Highlight
-              </button>
-            </div>
+            <p className="text-xs text-gray-500 mt-1 mb-4">
+              Leave individual fields blank to retain
+              the existing default insight.
+            </p>
 
-            <div className="space-y-3">
-              {content.about.highlights.length === 0 && (
-                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500">
-                  No custom highlights added. The public page can use its
-                  existing default highlights.
-                </div>
-              )}
+            <div className="grid lg:grid-cols-3 gap-4">
+              {content.about.highlights.map(
+                (item, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3"
+                  >
+                    <p className="text-xs font-bold text-[#0f3b2e]">
+                      Highlight{" "}
+                      {index + 1}
+                    </p>
 
-              {content.about.highlights.map((item, index) => (
-                <div
-                  key={index}
-                  className="rounded-xl border border-gray-200 bg-gray-50 p-4"
-                >
-                  <div className="grid lg:grid-cols-[1fr_1fr_auto] gap-3 items-start">
                     <Field
                       label="Title"
-                      value={item.title}
-                      onChange={(value) =>
-                        updateHighlight(index, "title", value)
+                      value={
+                        item.title
                       }
-                      placeholder="Strong Connectivity"
-                    />
-
-                    <Field
-                      label="Description"
-                      value={item.description}
                       onChange={(value) =>
-                        updateHighlight(index, "description", value)
-                      }
-                      placeholder="Excellent access to major corridors."
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => deleteHighlight(index)}
-                      className="mt-7 h-10 w-10 rounded-lg border border-red-200 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100"
-                      title="Delete highlight"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CUSTOM SECTIONS */}
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-[#0f3b2e]">
-              Custom Sections
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Add additional rich-text sections after About The Location.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={addSection}
-            className="px-4 py-2.5 rounded-xl bg-[#0f3b2e] text-white text-sm font-semibold flex items-center justify-center gap-2"
-          >
-            <Plus size={15} />
-            Add Section
-          </button>
-        </div>
-
-        <div className="p-5 space-y-5">
-          {content.sections.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-              <p className="text-sm font-semibold text-gray-700">
-                No custom sections yet
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Click “Add Section” to create an additional editable section.
-              </p>
-            </div>
-          )}
-
-          {content.sections.map((section, index) => (
-            <div
-              key={section.id || index}
-              className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden"
-            >
-              <div className="px-4 py-3 bg-white border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="h-8 w-8 rounded-lg bg-[#0f3b2e] text-white text-xs font-bold flex items-center justify-center">
-                    {index + 1}
-                  </span>
-
-                  <div>
-                    <p className="text-sm font-bold text-gray-800">
-                      {section.title || `Custom Section ${index + 1}`}
-                    </p>
-                    <p className="text-[11px] text-gray-500">
-                      Rich text section
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => moveSection(index, -1)}
-                    className="h-8 w-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center disabled:opacity-40"
-                    title="Move up"
-                  >
-                    <ChevronUp size={14} />
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={index === content.sections.length - 1}
-                    onClick={() => moveSection(index, 1)}
-                    className="h-8 w-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center disabled:opacity-40"
-                    title="Move down"
-                  >
-                    <ChevronDown size={14} />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => deleteSection(index)}
-                    className="h-8 w-8 rounded-lg border border-red-200 bg-red-50 text-red-600 flex items-center justify-center"
-                    title="Delete section"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-4 space-y-5">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={section.enabled}
-                      onChange={(e) =>
-                        updateSection(
+                        updateHighlight(
                           index,
-                          "enabled",
-                          e.target.checked
+                          "title",
+                          value
                         )
                       }
-                      className="h-4 w-4 accent-[#0f3b2e]"
+                      placeholder={[
+                        "Growing Demand",
+                        "Premium Developments",
+                        "Connectivity Advantage",
+                      ][index]}
                     />
-                    Section enabled
-                  </label>
 
-                  <select
-                    value={section.imagePosition || "right"}
-                    onChange={(e) =>
-                      updateSection(
-                        index,
-                        "imagePosition",
-                        e.target.value
-                      )
-                    }
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white"
-                  >
-                    <option value="left">Image left</option>
-                    <option value="right">Image right</option>
-                  </select>
-                </div>
-
-                <div className="grid lg:grid-cols-2 gap-5">
-                  <Field
-                    label="Eyebrow"
-                    value={section.eyebrow}
-                    onChange={(value) =>
-                      updateSection(index, "eyebrow", value)
-                    }
-                    placeholder="Connectivity & Lifestyle"
-                  />
-
-                  <Field
-                    label="Heading"
-                    value={section.title}
-                    onChange={(value) =>
-                      updateSection(index, "title", value)
-                    }
-                    placeholder="Why Gurgaon Continues To Grow"
-                  />
-                </div>
-
-                <Field
-                  label="Subtitle"
-                  value={section.subtitle}
-                  onChange={(value) =>
-                    updateSection(index, "subtitle", value)
-                  }
-                  placeholder="A short supporting line"
-                />
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Section Content
-                  </label>
-
-                  <RichTextEditor
-                    value={section.content}
-                    onChange={(value) =>
-                      updateSection(index, "content", value)
-                    }
-                  />
-                </div>
-
-                <div className="rounded-xl border border-gray-200 bg-white p-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">
-                        Section Image
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Optional. Maximum 5MB.
-                      </p>
-                    </div>
-
-                    <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs font-semibold hover:bg-gray-50">
-                      <Upload size={14} />
-                      Upload Image
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={(e) =>
-                          handleSectionImage(index, e)
-                        }
-                      />
-                    </label>
+                    <TextAreaField
+                      label="Description"
+                      value={
+                        item.description
+                      }
+                      onChange={(value) =>
+                        updateHighlight(
+                          index,
+                          "description",
+                          value
+                        )
+                      }
+                      placeholder="Existing default description"
+                      rows={3}
+                    />
                   </div>
+                )
+              )}
+            </div>
+          </div>
 
-                  {section.image && (
-                    <div className="mt-3">
-                      <img
-                        src={section.image}
-                        alt=""
-                        className="h-40 w-full md:w-[360px] rounded-xl object-cover border border-gray-200"
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">
+              Real Estate Market
+            </h3>
+
+            <div className="space-y-4">
+              <Field
+                label="Market Eyebrow"
+                value={
+                  content.about
+                    .marketEyebrow
+                }
+                onChange={(value) =>
+                  updateAbout(
+                    "marketEyebrow",
+                    value
+                  )
+                }
+                placeholder="Real Estate Market"
+              />
+
+              <Field
+                label="Market Title"
+                value={
+                  content.about
+                    .marketTitle
+                }
+                onChange={(value) =>
+                  updateAbout(
+                    "marketTitle",
+                    value
+                  )
+                }
+                placeholder="A Thriving Real Estate Destination"
+              />
+
+              <TextAreaField
+                label="Market Description"
+                value={
+                  content.about
+                    .marketDescription
+                }
+                onChange={(value) =>
+                  updateAbout(
+                    "marketDescription",
+                    value
+                  )
+                }
+                placeholder="Leave blank to use the existing market description."
+                rows={4}
+              />
+
+              <div className="grid lg:grid-cols-3 gap-4">
+                {content.about.marketInsights.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3"
+                    >
+                      <p className="text-xs font-bold text-[#0f3b2e]">
+                        Market Insight{" "}
+                        {index + 1}
+                      </p>
+
+                      <Field
+                        label="Title"
+                        value={
+                          item.title
+                        }
+                        onChange={(value) =>
+                          updateMarketInsight(
+                            index,
+                            "title",
+                            value
+                          )
+                        }
+                        placeholder={[
+                          "Growing Demand",
+                          "Premium Developments",
+                          "Connectivity Advantage",
+                        ][index]}
                       />
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateSection(index, "image", "")
+                      <TextAreaField
+                        label="Description"
+                        value={
+                          item.description
                         }
-                        className="mt-2 text-xs text-red-600 hover:underline"
-                      >
-                        Remove section image
-                      </button>
+                        onChange={(value) =>
+                          updateMarketInsight(
+                            index,
+                            "description",
+                            value
+                          )
+                        }
+                        placeholder="Existing default insight description"
+                        rows={3}
+                      />
                     </div>
-                  )}
-                </div>
+                  )
+                )}
               </div>
             </div>
-          ))}
+          </div>
+
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">
+              Market Perspective
+            </h3>
+
+            <div className="grid lg:grid-cols-2 gap-5">
+              <Field
+                label="Perspective Eyebrow"
+                value={
+                  content.about
+                    .perspectiveEyebrow
+                }
+                onChange={(value) =>
+                  updateAbout(
+                    "perspectiveEyebrow",
+                    value
+                  )
+                }
+                placeholder="Market Perspective"
+              />
+
+              <TextAreaField
+                label="Perspective Quote"
+                value={
+                  content.about
+                    .perspectiveQuote
+                }
+                onChange={(value) =>
+                  updateAbout(
+                    "perspectiveQuote",
+                    value
+                  )
+                }
+                placeholder="A well-connected address, shaped for modern living and long-term opportunity."
+                rows={3}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* BOTTOM SAVE */}
+      {/* ======================================================
+          CONNECTIVITY
+      ====================================================== */}
+
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <SectionHeader
+          title="Connectivity"
+          description="Override the existing connectivity section without changing its design."
+        />
+
+        <div className="p-5 space-y-6">
+          <div className="grid lg:grid-cols-2 gap-5">
+            <Field
+              label="Eyebrow"
+              value={
+                content.connectivity
+                  .eyebrow
+              }
+              onChange={(value) =>
+                updateConnectivity(
+                  "eyebrow",
+                  value
+                )
+              }
+              placeholder="CONNECTIVITY & KEY DESTINATIONS"
+            />
+
+            <Field
+              label="Heading"
+              value={
+                content.connectivity
+                  .title
+              }
+              onChange={(value) =>
+                updateConnectivity(
+                  "title",
+                  value
+                )
+              }
+              placeholder="Seamless Connectivity to Key Destinations"
+            />
+          </div>
+
+          <TextAreaField
+            label="Description"
+            value={
+              content.connectivity
+                .description
+            }
+            onChange={(value) =>
+              updateConnectivity(
+                "description",
+                value
+              )
+            }
+            placeholder="Leave blank to use the existing location-based connectivity description."
+            rows={5}
+          />
+
+          <ImageUpload
+            label="Connectivity Image"
+            image={
+              content.connectivity
+                .image
+            }
+            uploading={uploading}
+            onUpload={
+              handleConnectivityImage
+            }
+            onRemove={() =>
+              updateConnectivity(
+                "image",
+                ""
+              )
+            }
+          />
+
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800">
+              Connectivity Cards
+            </h3>
+
+            <p className="text-xs text-gray-500 mt-1 mb-4">
+              Icons remain unchanged. You can override the
+              title and subtitle of each card independently.
+            </p>
+
+            <div className="grid lg:grid-cols-2 gap-4">
+              {content.connectivity.items.map(
+                (item, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                  >
+                    <p className="text-xs font-bold text-[#0f3b2e] mb-3">
+                      Destination{" "}
+                      {index + 1}
+                    </p>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <Field
+                        label="Title"
+                        value={
+                          item.title
+                        }
+                        onChange={(value) =>
+                          updateConnectivityItem(
+                            index,
+                            "title",
+                            value
+                          )
+                        }
+                        placeholder={[
+                          "Major Airport",
+                          "Metro & Rail",
+                          "Key Road Network",
+                          "Business Districts",
+                          "Golf & Leisure",
+                          "Retail & Hospitality",
+                        ][index]}
+                      />
+
+                      <Field
+                        label="Subtitle"
+                        value={
+                          item.subtitle
+                        }
+                        onChange={(value) =>
+                          updateConnectivityItem(
+                            index,
+                            "subtitle",
+                            value
+                          )
+                        }
+                        placeholder={[
+                          "Air connectivity",
+                          "Public transport",
+                          "Major routes",
+                          "Commercial hubs",
+                          "Lifestyle destinations",
+                          "Shopping & dining",
+                        ][index]}
+                      />
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">
+              Location Advantage
+            </h3>
+
+            <div className="grid lg:grid-cols-2 gap-5">
+              <Field
+                label="Advantage Eyebrow"
+                value={
+                  content.connectivity
+                    .advantageEyebrow
+                }
+                onChange={(value) =>
+                  updateConnectivity(
+                    "advantageEyebrow",
+                    value
+                  )
+                }
+                placeholder="LOCATION ADVANTAGE"
+              />
+
+              <TextAreaField
+                label="Advantage Title"
+                value={
+                  content.connectivity
+                    .advantageTitle
+                }
+                onChange={(value) =>
+                  updateConnectivity(
+                    "advantageTitle",
+                    value
+                  )
+                }
+                placeholder="A well-connected address for a brighter tomorrow."
+                rows={3}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================
+          NEARBY
+      ====================================================== */}
+
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <SectionHeader
+          title="Nearby Locations"
+          description="Only the section copy is editable. Nearby locations themselves remain dynamically calculated."
+        />
+
+        <div className="p-5 space-y-5">
+          <div className="grid lg:grid-cols-2 gap-5">
+            <Field
+              label="Eyebrow"
+              value={
+                content.nearby
+                  .eyebrow
+              }
+              onChange={(value) =>
+                updateNearby(
+                  "eyebrow",
+                  value
+                )
+              }
+              placeholder="EXPLORE MORE"
+            />
+
+            <Field
+              label="Heading"
+              value={
+                content.nearby.title
+              }
+              onChange={(value) =>
+                updateNearby(
+                  "title",
+                  value
+                )
+              }
+              placeholder="Explore Nearby Locations"
+            />
+          </div>
+
+          <TextAreaField
+            label="Description"
+            value={
+              content.nearby
+                .description
+            }
+            onChange={(value) =>
+              updateNearby(
+                "description",
+                value
+              )
+            }
+            placeholder="Leave blank to use the existing location-based description."
+            rows={4}
+          />
+
+          <div className="rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 p-4 text-xs text-gray-600">
+            <strong className="text-[#0f3b2e]">
+              Dynamic nearby locations:
+            </strong>{" "}
+            The actual nearby-location chips continue to come
+            from your existing property hierarchy and
+            location children. This editor only changes their
+            surrounding content.
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================
+          SAVE
+      ====================================================== */}
+
       <div className="flex justify-end pb-8">
         <button
           onClick={savePage}
-          disabled={saving || uploading}
+          disabled={
+            saving || uploading
+          }
           className="px-6 py-3 rounded-xl bg-[#0f3b2e] text-white flex items-center gap-2 text-sm font-semibold hover:bg-[#174b3b] disabled:opacity-60"
         >
           {saving ? (
-            <Loader2 size={15} className="animate-spin" />
+            <Loader2
+              size={15}
+              className="animate-spin"
+            />
           ) : (
             <Save size={15} />
           )}
-          {saving ? "Saving..." : "Save Page Content"}
+
+          {saving
+            ? "Saving..."
+            : "Save Page Content"}
         </button>
       </div>
     </div>
   );
 }
+
+/* ============================================================
+   SECTION HEADER
+============================================================ */
+
+function SectionHeader({
+  title,
+  description,
+  right,
+}) {
+  return (
+    <div className="px-5 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h2 className="text-lg font-bold text-[#0f3b2e]">
+          {title}
+        </h2>
+
+        <p className="text-xs text-gray-500 mt-1">
+          {description}
+        </p>
+      </div>
+
+      {right}
+    </div>
+  );
+}
+
+/* ============================================================
+   FIELD
+============================================================ */
 
 function Field({
   label,
@@ -960,13 +1823,19 @@ function Field({
 
       <input
         value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
         placeholder={placeholder}
         className="w-full h-11 rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/15"
       />
     </div>
   );
 }
+
+/* ============================================================
+   TEXTAREA
+============================================================ */
 
 function TextAreaField({
   label,
@@ -984,10 +1853,74 @@ function TextAreaField({
       <textarea
         rows={rows}
         value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
         placeholder={placeholder}
         className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none resize-y focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/15"
       />
+    </div>
+  );
+}
+
+/* ============================================================
+   IMAGE UPLOAD
+============================================================ */
+
+function ImageUpload({
+  label,
+  image,
+  uploading,
+  onUpload,
+  onRemove,
+}) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-800">
+            {label}
+          </p>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Leave empty to use the existing image.
+            Maximum 5MB.
+          </p>
+        </div>
+
+        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-sm font-semibold hover:bg-gray-100">
+          <Upload size={15} />
+
+          {uploading
+            ? "Uploading..."
+            : "Upload Image"}
+
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={onUpload}
+          />
+        </label>
+      </div>
+
+      {image && (
+        <div className="mt-4">
+          <img
+            src={image}
+            alt=""
+            className="h-44 w-full md:w-[420px] rounded-2xl object-cover border border-gray-200"
+          />
+
+          <button
+            type="button"
+            onClick={onRemove}
+            className="mt-2 text-xs text-red-600 hover:underline"
+          >
+            Remove custom image
+          </button>
+        </div>
+      )}
     </div>
   );
 }

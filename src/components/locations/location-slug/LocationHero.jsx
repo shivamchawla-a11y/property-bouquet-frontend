@@ -18,13 +18,27 @@ export default function LocationHero({
   heroImage,
   properties = [],
   buildPublicLocationSlug,
+  pageContent,
 }) {
-  // ============================================================
-  // BUILD LOCATION HIERARCHY
-  // ============================================================
+  const custom =
+    pageContent?.hero || {};
+
+  const value = (
+    customValue,
+    fallback
+  ) => {
+    return typeof customValue ===
+      "string" &&
+      customValue.trim()
+      ? customValue.trim()
+      : fallback;
+  };
+
+  /* ============================================================
+     HIERARCHY
+  ============================================================ */
 
   const hierarchy = [];
-
   const visited = new Set();
 
   let current = location;
@@ -36,7 +50,10 @@ export default function LocationHero({
       current?.slug ||
       current?.name;
 
-    if (currentId && visited.has(currentId)) {
+    if (
+      currentId &&
+      visited.has(currentId)
+    ) {
       break;
     }
 
@@ -45,128 +62,238 @@ export default function LocationHero({
     }
 
     hierarchy.unshift(current);
-
     current = current?.parent;
   }
 
-  // ============================================================
-  // BASIC LOCATION DATA
-  // ============================================================
+  /* ============================================================
+     STATS
+  ============================================================ */
 
-  const projectCount = properties?.length || 0;
-
-  // ============================================================
-  // DEVELOPER COUNT
-  // ============================================================
+  const projectCount =
+    properties?.length || 0;
 
   const developerNames = new Set();
 
   properties.forEach((property) => {
     const developerName =
       property?.developerName ||
-      property?.coreDetails?.developerName ||
+      property?.coreDetails
+        ?.developerName ||
       property?.developer?.name ||
       property?.developerData?.name ||
       property?.developerRef?.name;
 
     if (developerName) {
       developerNames.add(
-        String(developerName).trim()
+        String(
+          developerName
+        ).trim()
       );
     }
   });
 
-  const developerCount = developerNames.size;
+  const developerCount =
+    developerNames.size;
 
-  // ============================================================
-  // CONFIGURATION DATA
-  // ============================================================
-
-  const configurationSet = new Set();
+  const configurationSet =
+    new Set();
 
   properties.forEach((property) => {
     const floorPlans =
-      property?.gatedContent?.floorPlans || [];
+      property?.gatedContent
+        ?.floorPlans || [];
 
     floorPlans.forEach((plan) => {
       if (plan?.unitType) {
         configurationSet.add(
-          String(plan.unitType).trim()
+          String(
+            plan.unitType
+          ).trim()
         );
       }
     });
 
     const unitConfigurations =
-      property?.unitConfigurations || [];
+      property?.unitConfigurations ||
+      [];
 
-    unitConfigurations.forEach((unit) => {
-      if (unit?.unitType) {
-        configurationSet.add(
-          String(unit.unitType).trim()
-        );
-      }
+    unitConfigurations.forEach(
+      (unit) => {
+        if (unit?.unitType) {
+          configurationSet.add(
+            String(
+              unit.unitType
+            ).trim()
+          );
+        }
 
-      if (unit?.bhk) {
-        configurationSet.add(
-          String(unit.bhk).trim()
-        );
+        if (unit?.bhk) {
+          configurationSet.add(
+            String(unit.bhk).trim()
+          );
+        }
       }
-    });
+    );
   });
 
   const configurationList =
-    Array.from(configurationSet)
+    Array.from(
+      configurationSet
+    )
       .filter(Boolean)
       .slice(0, 2);
 
   const configurationText =
-    configurationList.length > 0
-      ? configurationList.join(" & ")
+    configurationList.length
+      ? configurationList.join(
+          " & "
+        )
       : "Multiple";
 
-  // ============================================================
-  // LOCATION TYPE
-  // ============================================================
+  /* ============================================================
+     DEFAULT HERO CONTENT
+  ============================================================ */
 
-  const locationSlug = String(
-    location?.slug ||
-      location?.name ||
-      ""
-  ).toLowerCase();
+  const locationSlug =
+    String(
+      location?.slug ||
+        location?.name ||
+        ""
+    ).toLowerCase();
 
   const isGrowthCorridor =
-    locationSlug.includes("expressway") ||
-    locationSlug.includes("highway") ||
-    locationSlug.includes("road") ||
+    locationSlug.includes(
+      "expressway"
+    ) ||
+    locationSlug.includes(
+      "highway"
+    ) ||
+    locationSlug.includes(
+      "road"
+    ) ||
     locationSlug.includes("marg");
 
-  const eyebrow = isGrowthCorridor
-    ? "A PREMIUM GROWTH CORRIDOR"
-    : "A PREMIUM REAL ESTATE DESTINATION";
+  const defaultEyebrow =
+    isGrowthCorridor
+      ? "A PREMIUM GROWTH CORRIDOR"
+      : "A PREMIUM REAL ESTATE DESTINATION";
 
-  // ============================================================
-  // HERO SUBTITLE
-  // ============================================================
+  const defaultDescription =
+    isGrowthCorridor
+      ? `Modern residences, strategic connectivity, and a promising future in ${locationName}.`
+      : `Premium residences, landmark developments, and carefully curated real estate opportunities in ${locationName}.`;
 
-  const heroSubtitle = isGrowthCorridor
-    ? `Modern residences, strategic connectivity, and a promising future in ${locationName}.`
-    : `Premium residences, landmark developments, and carefully curated real estate opportunities in ${locationName}.`;
+  const eyebrow = value(
+    custom.eyebrow,
+    defaultEyebrow
+  );
 
-  // ============================================================
-  // IMAGE
-  // ============================================================
+  const title = value(
+    custom.title,
+    `Luxury Properties in ${locationName}`
+  );
+
+  const heroSubtitle = value(
+    custom.description,
+    defaultDescription
+  );
+
+  const locationLabel =
+    value(
+      custom.locationLabel,
+      "Prime Location"
+    );
+
+  const whyTitle = value(
+    custom.whyTitle,
+    `Why ${locationName}`
+  );
+
+  const whyDescription =
+    value(
+      custom.whyDescription,
+      "A carefully curated collection of premium residential and investment opportunities."
+    );
+
+  const benefitsDefaults = [
+    "Strategic connectivity & accessibility",
+    "Premium residential developments",
+    "Leading developer presence",
+    "Curated investment opportunities",
+  ];
+
+  const mobileDefaults = [
+    "Strategic Connectivity",
+    "Premium Developments",
+    "Leading Developers",
+    "Curated Opportunities",
+  ];
+
+  const benefits =
+    benefitsDefaults.map(
+      (fallback, index) =>
+        value(
+          custom?.benefits?.[index],
+          fallback
+        )
+    );
+
+  const mobileBenefits =
+    mobileDefaults.map(
+      (fallback, index) =>
+        value(
+          custom?.mobileBenefits?.[index],
+          fallback
+        )
+    );
+
+  const primaryCtaText =
+    value(
+      custom.primaryCtaText,
+      "Explore Properties"
+    );
+
+  const primaryCtaLink =
+    value(
+      custom.primaryCtaLink,
+      "#projects"
+    );
+
+  const secondaryCtaText =
+    value(
+      custom.secondaryCtaText,
+      "Contact Advisor"
+    );
+
+  const secondaryCtaLink =
+    value(
+      custom.secondaryCtaLink,
+      "/contact"
+    );
+
+  const footerEyebrow =
+    value(
+      custom.footerEyebrow,
+      "Property Bouquet"
+    );
+
+  const footerText =
+    value(
+      custom.footerText,
+      "Premium properties, thoughtfully curated."
+    );
+
+  /* ============================================================
+     IMAGE
+  ============================================================ */
 
   const finalHeroImage =
+    custom.image?.trim() ||
     heroImage ||
     locationImage ||
-    properties?.[0]?.media?.heroImageUrl ||
+    properties?.[0]?.media
+      ?.heroImageUrl ||
     "";
-
-  // ============================================================
-  // ============================================================
-  // RENDER
-  // ============================================================
-  // ============================================================
 
   return (
     <section
@@ -178,18 +305,8 @@ export default function LocationHero({
         text-white
       "
     >
-      {/* ======================================================
-          BACKGROUND IMAGE
-      ====================================================== */}
-
       {finalHeroImage ? (
-        <div
-          className="
-            absolute
-            inset-0
-            overflow-hidden
-          "
-        >
+        <div className="absolute inset-0 overflow-hidden">
           <img
             src={finalHeroImage}
             alt={`${locationName} real estate`}
@@ -205,7 +322,6 @@ export default function LocationHero({
             "
           />
 
-          {/* Main dark cinematic overlay */}
           <div
             className="
               absolute
@@ -218,7 +334,6 @@ export default function LocationHero({
             "
           />
 
-          {/* Top / bottom depth */}
           <div
             className="
               absolute
@@ -230,7 +345,6 @@ export default function LocationHero({
             "
           />
 
-          {/* Right-side atmospheric glow */}
           <div
             className="
               absolute
@@ -244,7 +358,6 @@ export default function LocationHero({
             "
           />
 
-          {/* Subtle image darkening */}
           <div
             className="
               absolute
@@ -258,10 +371,6 @@ export default function LocationHero({
         </div>
       ) : (
         <>
-          {/* ==================================================
-              FALLBACK BACKGROUND
-          ================================================== */}
-
           <div className="absolute inset-0 bg-[#061811]" />
 
           <div
@@ -292,10 +401,6 @@ export default function LocationHero({
         </>
       )}
 
-      {/* ======================================================
-          MAIN CONTAINER
-      ====================================================== */}
-
       <div
         className="
           relative
@@ -311,9 +416,7 @@ export default function LocationHero({
           xl:pb-10
         "
       >
-        {/* ====================================================
-            BREADCRUMB
-        ==================================================== */}
+        {/* BREADCRUMB */}
 
         <nav
           aria-label="Breadcrumb"
@@ -336,11 +439,7 @@ export default function LocationHero({
         >
           <Link
             href="/"
-            className="
-              transition-colors
-              duration-200
-              hover:text-[#D4AF37]
-            "
+            className="transition-colors duration-200 hover:text-[#D4AF37]"
           >
             Home
           </Link>
@@ -351,68 +450,55 @@ export default function LocationHero({
 
           <Link
             href="/locations"
-            className="
-              transition-colors
-              duration-200
-              hover:text-[#D4AF37]
-            "
+            className="transition-colors duration-200 hover:text-[#D4AF37]"
           >
             Locations
           </Link>
 
-          {hierarchy.map((item, index) => {
-            const itemName =
-              item?.name || "Location";
+          {hierarchy.map(
+            (item, index) => {
+              const itemName =
+                item?.name ||
+                "Location";
 
-            const isLast =
-              index === hierarchy.length - 1;
+              const isLast =
+                index ===
+                hierarchy.length - 1;
 
-            const itemKey =
-              item?._id?.toString?.() ||
-              item?.id?.toString?.() ||
-              item?.slug ||
-              `${itemName}-${index}`;
+              const itemKey =
+                item?._id?.toString?.() ||
+                item?.id?.toString?.() ||
+                item?.slug ||
+                `${itemName}-${index}`;
 
-            return (
-              <div
-                key={itemKey}
-                className="
-                  flex
-                  items-center
-                  gap-x-2
-                  md:gap-x-3
-                "
-              >
-                <span className="text-white/25">
-                  /
-                </span>
-
-                {isLast ? (
-                  <span className="font-semibold text-[#D4AF37]">
-                    {itemName}
+              return (
+                <div
+                  key={itemKey}
+                  className="flex items-center gap-x-2 md:gap-x-3"
+                >
+                  <span className="text-white/25">
+                    /
                   </span>
-                ) : (
-                  <Link
-                    href={`/locations/${buildPublicLocationSlug(
-                      item
-                    )}`}
-                    className="
-                      transition-colors
-                      duration-200
-                      hover:text-[#D4AF37]
-                    "
-                  >
-                    {itemName}
-                  </Link>
-                )}
-              </div>
-            );
-          })}
-        </nav>
 
-        {/* ====================================================
-            HERO GRID
-        ==================================================== */}
+                  {isLast ? (
+                    <span className="font-semibold text-[#D4AF37]">
+                      {itemName}
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/locations/${buildPublicLocationSlug(
+                        item
+                      )}`}
+                      className="transition-colors duration-200 hover:text-[#D4AF37]"
+                    >
+                      {itemName}
+                    </Link>
+                  )}
+                </div>
+              );
+            }
+          )}
+        </nav>
 
         <div
           className="
@@ -424,20 +510,12 @@ export default function LocationHero({
             xl:grid-cols-[minmax(0,1fr)_390px]
           "
         >
-          {/* ==================================================
-              LEFT CONTENT
-          ================================================== */}
-
           <div
             className="
               min-w-0
               max-w-[850px]
             "
           >
-            {/* =================================================
-                PREMIUM EYEBROW
-            ================================================= */}
-
             <div
               className="
                 mb-4
@@ -453,51 +531,21 @@ export default function LocationHero({
                 md:text-[11px]
               "
             >
-              <span
-                className="
-                  h-px
-                  w-7
-                  bg-[#D4AF37]
-                  sm:w-9
-                "
-              />
-
+              <span className="h-px w-7 bg-[#D4AF37] sm:w-9" />
               {eyebrow}
             </div>
 
-            {/* =================================================
-                LOCATION LABEL
-            ================================================= */}
-
-            <div
-              className="
-                mb-3
-                flex
-                items-center
-                gap-2
-                text-white/70
-              "
-            >
+            <div className="mb-3 flex items-center gap-2 text-white/70">
               <MapPin
                 size={15}
                 strokeWidth={1.7}
                 className="text-[#D4AF37]"
               />
 
-              <span
-                className="
-                  text-[11px]
-                  font-medium
-                  sm:text-xs
-                "
-              >
-                Prime Location
+              <span className="text-[11px] font-medium sm:text-xs">
+                {locationLabel}
               </span>
             </div>
-
-            {/* =================================================
-                H1
-            ================================================= */}
 
             <h1
               className="
@@ -514,47 +562,14 @@ export default function LocationHero({
                 xl:text-[64px]
               "
             >
-              Luxury Properties in{" "}
-              <span className="text-white">
-                {locationName}
-              </span>
+              {title}
             </h1>
 
-            {/* =================================================
-                GOLD DIVIDER
-            ================================================= */}
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-[2px] w-16 bg-[#D4AF37] sm:w-20 md:w-24" />
 
-            <div
-              className="
-                mt-4
-                flex
-                items-center
-                gap-3
-              "
-            >
-              <div
-                className="
-                  h-[2px]
-                  w-16
-                  bg-[#D4AF37]
-                  sm:w-20
-                  md:w-24
-                "
-              />
-
-              <div
-                className="
-                  h-1.5
-                  w-1.5
-                  rounded-full
-                  bg-[#D4AF37]
-                "
-              />
+              <div className="h-1.5 w-1.5 rounded-full bg-[#D4AF37]" />
             </div>
-
-            {/* =================================================
-                DESCRIPTION
-            ================================================= */}
 
             <p
               className="
@@ -570,10 +585,6 @@ export default function LocationHero({
             >
               {heroSubtitle}
             </p>
-
-            {/* =================================================
-                STATS
-            ================================================= */}
 
             <div
               className="
@@ -592,19 +603,11 @@ export default function LocationHero({
                 sm:grid-cols-4
               "
             >
-              {/* -----------------------------------------------
-                  PROJECTS
-              ----------------------------------------------- */}
-
               <HeroStat
                 icon={<Building2 size={14} />}
                 value={`${projectCount}+`}
                 label="Luxury Projects"
               />
-
-              {/* -----------------------------------------------
-                  CONFIGURATIONS
-              ----------------------------------------------- */}
 
               <HeroStat
                 icon={<Home size={14} />}
@@ -612,10 +615,6 @@ export default function LocationHero({
                 label="Configurations"
                 mobileTop
               />
-
-              {/* -----------------------------------------------
-                  DEVELOPERS
-              ----------------------------------------------- */}
 
               <HeroStat
                 icon={<ShieldCheck size={14} />}
@@ -627,10 +626,6 @@ export default function LocationHero({
                 label="Developers"
               />
 
-              {/* -----------------------------------------------
-                  MARKET
-              ----------------------------------------------- */}
-
               <HeroStat
                 icon={<TrendingUp size={14} />}
                 value="Premium"
@@ -639,21 +634,9 @@ export default function LocationHero({
               />
             </div>
 
-            {/* =================================================
-                CTA
-            ================================================= */}
-
-            <div
-              className="
-                mt-5
-                flex
-                flex-wrap
-                gap-3
-                sm:gap-4
-              "
-            >
+            <div className="mt-5 flex flex-wrap gap-3 sm:gap-4">
               <a
-                href="#projects"
+                href={primaryCtaLink}
                 className="
                   inline-flex
                   h-[48px]
@@ -678,7 +661,7 @@ export default function LocationHero({
                   sm:px-7
                 "
               >
-                Explore Properties
+                {primaryCtaText}
 
                 <ArrowRight
                   size={15}
@@ -687,7 +670,7 @@ export default function LocationHero({
               </a>
 
               <Link
-                href="/contact"
+                href={secondaryCtaLink}
                 className="
                   inline-flex
                   h-[48px]
@@ -713,21 +696,14 @@ export default function LocationHero({
                   sm:px-7
                 "
               >
-                Contact Advisor
+                {secondaryCtaText}
               </Link>
             </div>
           </div>
 
-          {/* ==================================================
-              DESKTOP LOCATION PANEL
-          ================================================== */}
+          {/* DESKTOP PANEL */}
 
-          <div
-            className="
-              hidden
-              lg:block
-            "
-          >
+          <div className="hidden lg:block">
             <div
               className="
                 relative
@@ -742,7 +718,6 @@ export default function LocationHero({
                 xl:p-6
               "
             >
-              {/* Decorative glow */}
               <div
                 className="
                   pointer-events-none
@@ -757,68 +732,18 @@ export default function LocationHero({
                 "
               />
 
-              {/* ==============================================
-                  IMAGE
-              ============================================== */}
-
               {finalHeroImage && (
-                <div
-                  className="
-                    relative
-                    h-[155px]
-                    overflow-hidden
-                    rounded-[17px]
-                    border
-                    border-white/10
-                  "
-                >
+                <div className="relative h-[155px] overflow-hidden rounded-[17px] border border-white/10">
                   <img
                     src={finalHeroImage}
                     alt=""
-                    className="
-                      h-full
-                      w-full
-                      object-cover
-                    "
+                    className="h-full w-full object-cover"
                   />
 
-                  <div
-                    className="
-                      absolute
-                      inset-0
-                      bg-gradient-to-t
-                      from-[#061811]/80
-                      via-transparent
-                      to-transparent
-                    "
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#061811]/80 via-transparent to-transparent" />
 
-                  <div
-                    className="
-                      absolute
-                      bottom-3
-                      left-3
-                      right-3
-                      flex
-                      items-center
-                      gap-2.5
-                    "
-                  >
-                    <div
-                      className="
-                        flex
-                        h-8
-                        w-8
-                        shrink-0
-                        items-center
-                        justify-center
-                        rounded-full
-                        border
-                        border-white/15
-                        bg-black/30
-                        backdrop-blur-md
-                      "
-                    >
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/30 backdrop-blur-md">
                       <MapPin
                         size={14}
                         className="text-[#D4AF37]"
@@ -826,25 +751,11 @@ export default function LocationHero({
                     </div>
 
                     <div>
-                      <p
-                        className="
-                          text-[8px]
-                          uppercase
-                          tracking-[0.18em]
-                          text-[#D4AF37]
-                        "
-                      >
+                      <p className="text-[8px] uppercase tracking-[0.18em] text-[#D4AF37]">
                         Location
                       </p>
 
-                      <p
-                        className="
-                          mt-0.5
-                          text-xs
-                          font-semibold
-                          text-white
-                        "
-                      >
+                      <p className="mt-0.5 text-xs font-semibold text-white">
                         {locationName}
                       </p>
                     </div>
@@ -852,143 +763,58 @@ export default function LocationHero({
                 </div>
               )}
 
-              {/* ==============================================
-                  PANEL TITLE
-              ============================================== */}
-
               <div className="relative mt-5">
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                  "
-                >
+                <div className="flex items-center gap-2">
                   <Trophy
                     size={14}
                     className="text-[#D4AF37]"
                   />
 
-                  <p
-                    className="
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.18em]
-                      text-[#D4AF37]
-                    "
-                  >
-                    Why {locationName}
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
+                    {whyTitle}
                   </p>
                 </div>
 
-                <p
-                  className="
-                    mt-2
-                    text-[12px]
-                    leading-5
-                    text-white/60
-                  "
-                >
-                  A carefully curated collection of
-                  premium residential and investment
-                  opportunities.
+                <p className="mt-2 text-[12px] leading-5 text-white/60">
+                  {whyDescription}
                 </p>
               </div>
 
-              {/* ==============================================
-                  BENEFITS
-              ============================================== */}
-
-              <div
-                className="
-                  relative
-                  mt-4
-                  space-y-2.5
-                "
-              >
-                <Benefit
-                  text="Strategic connectivity & accessibility"
-                />
-
-                <Benefit
-                  text="Premium residential developments"
-                />
-
-                <Benefit
-                  text="Leading developer presence"
-                />
-
-                <Benefit
-                  text="Curated investment opportunities"
-                />
+              <div className="relative mt-4 space-y-2.5">
+                {benefits.map(
+                  (benefit, index) => (
+                    <Benefit
+                      key={index}
+                      text={benefit}
+                    />
+                  )
+                )}
               </div>
 
-              {/* ==============================================
-                  PANEL FOOTER
-              ============================================== */}
-
-              <div
-                className="
-                  relative
-                  mt-5
-                  border-t
-                  border-white/10
-                  pt-4
-                "
-              >
-                <p
-                  className="
-                    text-[9px]
-                    uppercase
-                    tracking-[0.15em]
-                    text-white/35
-                  "
-                >
-                  Property Bouquet
+              <div className="relative mt-5 border-t border-white/10 pt-4">
+                <p className="text-[9px] uppercase tracking-[0.15em] text-white/35">
+                  {footerEyebrow}
                 </p>
 
-                <p
-                  className="
-                    mt-1
-                    text-[11px]
-                    text-white/70
-                  "
-                >
-                  Premium properties, thoughtfully
-                  curated.
+                <p className="mt-1 text-[11px] text-white/70">
+                  {footerText}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ====================================================
-            MOBILE LOCATION BENEFITS
-        ==================================================== */}
-
-        <div
-          className="
-            mt-6
-            grid
-            grid-cols-2
-            gap-2
-            lg:hidden
-          "
-        >
-          <MobileBenefit text="Strategic Connectivity" />
-
-          <MobileBenefit text="Premium Developments" />
-
-          <MobileBenefit text="Leading Developers" />
-
-          <MobileBenefit text="Curated Opportunities" />
+        <div className="mt-6 grid grid-cols-2 gap-2 lg:hidden">
+          {mobileBenefits.map(
+            (benefit, index) => (
+              <MobileBenefit
+                key={index}
+                text={benefit}
+              />
+            )
+          )}
         </div>
       </div>
-
-      {/* ======================================================
-          BOTTOM FADE
-      ====================================================== */}
 
       <div
         className="
@@ -1005,9 +831,9 @@ export default function LocationHero({
   );
 }
 
-/* =============================================================
+/* ============================================================
    HERO STAT
-============================================================= */
+============================================================ */
 
 function HeroStat({
   icon,
@@ -1021,95 +847,57 @@ function HeroStat({
         min-w-0
         px-3
         py-3
-        ${mobileTop ? "border-t border-white/10 sm:border-t-0" : ""}
+        ${
+          mobileTop
+            ? "border-t border-white/10 sm:border-t-0"
+            : ""
+        }
         sm:px-4
         sm:py-4
       `}
     >
-      <div
-        className="
-          flex
-          items-center
-          gap-2
-        "
-      >
+      <div className="flex items-center gap-2">
         <span className="shrink-0 text-[#D4AF37]">
           {icon}
         </span>
 
-        <p
-          className="
-            truncate
-            text-[14px]
-            font-semibold
-            text-white
-            sm:text-[16px]
-          "
-        >
+        <p className="truncate text-[14px] font-semibold text-white sm:text-[16px]">
           {value}
         </p>
       </div>
 
-      <p
-        className="
-          mt-1.5
-          truncate
-          text-[8px]
-          font-medium
-          uppercase
-          tracking-[0.12em]
-          text-white/45
-          sm:text-[9px]
-        "
-      >
+      <p className="mt-1.5 truncate text-[8px] font-medium uppercase tracking-[0.12em] text-white/45 sm:text-[9px]">
         {label}
       </p>
     </div>
   );
 }
 
-/* =============================================================
-   DESKTOP BENEFIT
-============================================================= */
+/* ============================================================
+   BENEFIT
+============================================================ */
 
 function Benefit({ text }) {
-  return (
-    <div
-      className="
-        flex
-        items-start
-        gap-2.5
-      "
-    >
-      <span
-        className="
-          mt-[5px]
-          h-1.5
-          w-1.5
-          shrink-0
-          rounded-full
-          bg-[#D4AF37]
-        "
-      />
+  if (!text) return null;
 
-      <span
-        className="
-          text-[11px]
-          leading-5
-          text-white/70
-        "
-      >
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#D4AF37]" />
+
+      <span className="text-[11px] leading-5 text-white/70">
         {text}
       </span>
     </div>
   );
 }
 
-/* =============================================================
+/* ============================================================
    MOBILE BENEFIT
-============================================================= */
+============================================================ */
 
 function MobileBenefit({ text }) {
+  if (!text) return null;
+
   return (
     <div
       className="

@@ -1,1008 +1,807 @@
 "use client";
 
+import { useMemo } from "react";
 import {
+  ArrowRight,
+  Building2,
   MapPin,
   TrendingUp,
-  Navigation,
-  BadgeCheck,
-  ArrowRight,
-  Landmark,
-  BarChart3,
-  Building2,
+  Users,
+  Quote,
 } from "lucide-react";
+
+/* ============================================================
+   ABOUT LOCATION
+============================================================ */
 
 export default function AboutLocation({
   location,
   locationName,
-  locationDescription,
+  locationDescription = "",
   properties = [],
   locationImage = "",
+  pageContent,
 }) {
-  // ============================================================
-  // RESOLVE LOCATION IMAGE
-  // ============================================================
+  const custom = pageContent?.about || {};
 
-  const resolvedLocationImage =
-    locationImage ||
-    location?.image ||
-    location?.imageUrl ||
-    properties?.[0]?.locationImage ||
-    properties?.[0]?.media?.locationImageUrl ||
-    properties?.[0]?.media?.heroImageUrl ||
-    properties?.[0]?.media?.images?.[0]?.url ||
-    "";
+  /* ============================================================
+     HELPERS
+  ============================================================ */
 
-  // ============================================================
-  // LOCATION DESCRIPTION
-  // ============================================================
-
-  const description =
-    locationDescription ||
-    `Explore ${locationName} through a curated view of its residential character, connectivity, infrastructure and evolving real estate landscape. Property Bouquet brings together premium developments and property opportunities for buyers and investors looking to understand this market with greater clarity.`;
-
-  const paragraphs = description
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  // ============================================================
-  // DEVELOPERS
-  // ============================================================
-
-  const developers = new Set();
-
-  properties.forEach((property) => {
-    const developer =
-      property?.developerName ||
-      property?.coreDetails?.developerName ||
-      property?.developer?.name ||
-      property?.developerData?.name ||
-      property?.developerRef?.name;
-
-    if (developer) {
-      developers.add(String(developer).trim());
-    }
-  });
-
-  // ============================================================
-  // PROPERTY TYPES
-  // ============================================================
-
-  const propertyTypes = new Set();
-
-  properties.forEach((property) => {
-    const type =
-      property?.categoryName ||
-      property?.coreDetails?.categoryName ||
-      property?.propertyType ||
-      property?.type;
-
-    if (type) {
-      propertyTypes.add(String(type).trim());
-    }
-  });
-
-  const propertyTypeText =
-    Array.from(propertyTypes)
-      .filter(Boolean)
-      .slice(0, 3)
-      .join(", ") || "Premium Residences";
-
-  // ============================================================
-  // PRICE RANGE
-  // ============================================================
-
-  const prices = properties
-    .map((property) => {
-      const value =
-        property?.coreDetails?.startingPrice ??
-        property?.startingPrice ??
-        property?.unitConfigurations?.[0]?.price;
-
-      const numericValue = Number(value);
-
-      return Number.isFinite(numericValue) &&
-        numericValue > 0
-        ? numericValue
-        : null;
-    })
-    .filter(Boolean);
-
-  const formatPrice = (value) => {
-    if (!value) return null;
-
-    const crore = value / 10000000;
-
-    if (crore >= 10) {
-      return `₹${crore.toFixed(0)} Cr+`;
-    }
-
-    return `₹${crore.toFixed(1)} Cr`;
+  const value = (customValue, fallback) => {
+    return typeof customValue === "string" &&
+      customValue.trim()
+      ? customValue.trim()
+      : fallback;
   };
 
-  const minPrice =
-    prices.length > 0
-      ? Math.min(...prices)
-      : null;
+  const resolveImage = () => {
+    const customImage =
+      typeof custom?.image === "string"
+        ? custom.image.trim()
+        : "";
 
-  const maxPrice =
-    prices.length > 0
-      ? Math.max(...prices)
-      : null;
+    if (customImage) {
+      return customImage;
+    }
 
-  const priceRange =
-    minPrice && maxPrice
-      ? minPrice === maxPrice
-        ? formatPrice(minPrice)
-        : `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}`
-      : "Premium Segment";
+    const candidates = [
+      locationImage,
+      location?.image,
+      location?.imageUrl,
+      properties?.[0]?.locationImage,
+      properties?.[0]?.media?.locationImageUrl,
+      properties?.[0]?.media?.heroImageUrl,
+      properties?.[0]?.media?.images?.[0]?.url,
+    ];
 
-  // ============================================================
-  // MARKET INSIGHTS
-  // ============================================================
+    return (
+      candidates.find(
+        (image) =>
+          typeof image === "string" &&
+          image.trim()
+      ) || ""
+    );
+  };
 
-  const marketInsights = [
+  const resolvedImage = resolveImage();
+
+  /* ============================================================
+     PROPERTY SNAPSHOT DATA
+  ============================================================ */
+
+  const propertyTypes = useMemo(() => {
+    const types = new Set();
+
+    properties.forEach((property) => {
+      const values = [
+        property?.categoryData?.categoryName,
+        property?.category?.name,
+        property?.propertyType,
+        property?.propertyCategory,
+        property?.coreDetails?.propertyType,
+      ];
+
+      values.forEach((value) => {
+        if (
+          typeof value === "string" &&
+          value.trim()
+        ) {
+          types.add(value.trim());
+        }
+      });
+    });
+
+    return Array.from(types);
+  }, [properties]);
+
+  const developerNames = useMemo(() => {
+    const developers = new Set();
+
+    properties.forEach((property) => {
+      const values = [
+        property?.developerName,
+        property?.coreDetails?.developerName,
+        property?.developer?.name,
+        property?.developerData?.name,
+        property?.developerRef?.name,
+      ];
+
+      values.forEach((value) => {
+        if (
+          typeof value === "string" &&
+          value.trim()
+        ) {
+          developers.add(value.trim());
+        }
+      });
+    });
+
+    return Array.from(developers);
+  }, [properties]);
+
+  const startingPrices = useMemo(() => {
+    return properties
+      .map(
+        (property) =>
+          Number(
+            property?.coreDetails?.startingPrice
+          )
+      )
+      .filter(
+        (price) =>
+          Number.isFinite(price) &&
+          price > 0
+      );
+  }, [properties]);
+
+  const formatPrice = (price) => {
+    if (!Number.isFinite(price)) {
+      return "";
+    }
+
+    if (price >= 10000000) {
+      const value =
+        price / 10000000;
+
+      return `₹${value
+        .toFixed(value >= 10 ? 0 : 1)
+        .replace(/\.0$/, "")} Cr`;
+    }
+
+    if (price >= 100000) {
+      const value =
+        price / 100000;
+
+      return `₹${value
+        .toFixed(value >= 10 ? 0 : 1)
+        .replace(/\.0$/, "")} L`;
+    }
+
+    return `₹${price.toLocaleString(
+      "en-IN"
+    )}`;
+  };
+
+  const pricePositioning =
+    startingPrices.length
+      ? (() => {
+          const min =
+            Math.min(...startingPrices);
+          const max =
+            Math.max(...startingPrices);
+
+          if (min === max) {
+            return formatPrice(min);
+          }
+
+          return `${formatPrice(
+            min
+          )} onwards`;
+        })()
+      : "Premium segment";
+
+  /* ============================================================
+     DEFAULT CONTENT
+  ============================================================ */
+
+  const defaultDescription =
+    locationDescription ||
+    `Explore the real estate landscape of ${locationName}, including premium residences, landmark developments, thoughtfully planned communities and property opportunities across different segments. ${locationName} offers buyers and investors an address to evaluate through the combined lens of connectivity, infrastructure, lifestyle convenience, development quality and long-term suitability. Property Bouquet brings together curated property opportunities to help you research the area, compare available projects and identify homes or investments aligned with your requirements.`;
+
+  const eyebrow = value(
+    custom.eyebrow,
+    "ABOUT THE LOCATION"
+  );
+
+  const title = value(
+    custom.title,
+    locationName
+  );
+
+  const content = value(
+    custom.content,
+    defaultDescription
+  );
+
+  const marketEyebrow = value(
+    custom.marketEyebrow,
+    "REAL ESTATE MARKET"
+  );
+
+  const marketTitle = value(
+    custom.marketTitle,
+    "A Thriving Real Estate Destination"
+  );
+
+  const marketDescription = value(
+    custom.marketDescription,
+    `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
+  );
+
+  const perspectiveEyebrow = value(
+    custom.perspectiveEyebrow,
+    "PROPERTY BOUQUET PERSPECTIVE"
+  );
+
+  const perspectiveQuote = value(
+    custom.perspectiveQuote,
+    `${locationName} brings together connectivity, lifestyle convenience and a growing selection of residential opportunities, making it an address worth evaluating on both present-day livability and long-term potential.`
+  );
+
+  /* ============================================================
+     DEFAULT HIGHLIGHTS
+  ============================================================ */
+
+  const defaultHighlights = [
     {
-      icon: <TrendingUp size={15} strokeWidth={1.7} />,
-      title: "Growing Demand",
+      title: "Property Types",
       description:
-        "Increasing interest across residential segments",
+        propertyTypes.length
+          ? propertyTypes
+              .slice(0, 3)
+              .join(", ")
+          : "Premium residential developments",
     },
     {
-      icon: <Building2 size={15} strokeWidth={1.7} />,
-      title: "Premium Developments",
+      title: "Developer Presence",
       description:
-        "Established and emerging residential communities",
+        developerNames.length
+          ? developerNames
+              .slice(0, 3)
+              .join(", ")
+          : "Multiple established developers",
     },
     {
-      icon: <Navigation size={15} strokeWidth={1.7} />,
-      title: "Connectivity Advantage",
+      title: "Price Positioning",
       description:
-        "Access shaped by roads, transit and infrastructure",
+        pricePositioning,
     },
   ];
 
+  const highlights =
+    defaultHighlights.map(
+      (fallback, index) => {
+        const customItem =
+          custom?.highlights?.[index] ||
+          {};
+
+        return {
+          title: value(
+            customItem.title,
+            fallback.title
+          ),
+          description: value(
+            customItem.description,
+            fallback.description
+          ),
+        };
+      }
+    );
+
+  /* ============================================================
+     DEFAULT MARKET INSIGHTS
+  ============================================================ */
+
+  const defaultMarketInsights = [
+    {
+      title: "Connectivity",
+      description:
+        "Strategic road networks and access to important destinations support convenient movement across the wider region.",
+    },
+    {
+      title: "Development",
+      description:
+        "A growing pipeline of residential projects creates greater choice across formats, configurations and communities.",
+    },
+    {
+      title: "Lifestyle",
+      description:
+        "Everyday amenities, retail, hospitality and social infrastructure contribute to a more complete residential experience.",
+    },
+  ];
+
+  const marketInsights =
+    defaultMarketInsights.map(
+      (fallback, index) => {
+        const customItem =
+          custom?.marketInsights?.[
+            index
+          ] || {};
+
+        return {
+          title: value(
+            customItem.title,
+            fallback.title
+          ),
+          description: value(
+            customItem.description,
+            fallback.description
+          ),
+        };
+      }
+    );
+
+  /* ============================================================
+     DESCRIPTION PARAGRAPHS
+  ============================================================ */
+
+  const paragraphs = content
+    .split(/\n\s*\n/)
+    .map((paragraph) =>
+      paragraph.trim()
+    )
+    .filter(Boolean);
+
   return (
     <>
-      {/* ========================================================
-          SECTION 1 — ABOUT THE LOCATION
-          ======================================================== */}
+      {/* ======================================================
+          ABOUT LOCATION
+      ====================================================== */}
 
       <section
         id="about-location"
-        aria-labelledby="about-location-heading"
         className="
           relative
           overflow-hidden
-          border-t
-          border-[#e8e1d7]
-          bg-[#f7f3ec]
-          py-9
-          sm:py-10
-          md:py-12
-          lg:py-14
+          bg-[#f7f7f7]
+          py-16
+          sm:py-20
+          lg:py-24
         "
       >
-        {/* ======================================================
-            SUBTLE DECORATIVE ELEMENT
-        ====================================================== */}
-
-        <div
-          aria-hidden="true"
-          className="
-            pointer-events-none
-            absolute
-            right-[-160px]
-            top-[-180px]
-            h-[420px]
-            w-[420px]
-            rounded-full
-            bg-[#D4AF37]/[0.035]
-            blur-[110px]
-          "
-        />
-
-        <div
-          aria-hidden="true"
-          className="
-            pointer-events-none
-            absolute
-            bottom-[-220px]
-            left-[-180px]
-            h-[400px]
-            w-[400px]
-            rounded-full
-            bg-[#17342d]/[0.025]
-            blur-[120px]
-          "
-        />
-
-        {/* ======================================================
-            MAIN CONTAINER
-        ====================================================== */}
-
         <div
           className="
-            relative
-            z-10
             mx-auto
+            w-full
             max-w-[1450px]
             px-5
             sm:px-6
-            lg:px-8
+            md:px-8
+            lg:px-10
           "
         >
-          {/* ====================================================
-              TOP EDITORIAL GRID
-          ==================================================== */}
-
           <div
             className="
               grid
-              items-start
-              gap-6
-              lg:grid-cols-[minmax(0,1fr)_225px_245px]
-              lg:gap-4
-              xl:grid-cols-[minmax(0,1fr)_245px_260px]
-              xl:gap-5
+              items-center
+              gap-10
+              lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.75fr)]
+              lg:gap-14
+              xl:gap-20
             "
           >
             {/* ==================================================
-                LEFT — LOCATION STORY
+                CONTENT
             ================================================== */}
 
-            <div
-              className="
-                min-w-0
-                lg:pr-4
-                xl:pr-7
-              "
-            >
-              {/* EYEBROW */}
-
+            <div className="min-w-0">
               <div
                 className="
+                  mb-4
                   flex
                   items-center
-                  gap-2
-                  text-[8px]
+                  gap-2.5
+                  text-[9px]
                   font-semibold
                   uppercase
                   tracking-[0.22em]
-                  text-[#8F7335]
-                  sm:text-[9px]
-                  md:text-[10px]
+                  text-[#A47A2B]
+                  sm:text-[10px]
+                  md:text-[11px]
                 "
               >
-                <span
-                  className="
-                    h-px
-                    w-7
-                    bg-[#C89D58]
-                    sm:w-9
-                  "
-                />
+                <span className="h-px w-8 bg-[#C89D58]" />
 
-                About The Location
+                {eyebrow}
               </div>
-
-              {/* ==================================================
-                  HEADING
-              ================================================== */}
 
               <h2
-                id="about-location-heading"
                 className="
-                  mt-2
-                  max-w-[720px]
+                  max-w-[800px]
                   font-playfair
-                  text-[28px]
-                  font-medium
+                  text-[34px]
+                  font-semibold
                   leading-[1.08]
-                  tracking-[-0.028em]
+                  tracking-[-0.025em]
                   text-[#17342d]
-                  sm:text-[32px]
-                  md:text-[36px]
-                  lg:text-[39px]
-                  xl:text-[42px]
+                  sm:text-[40px]
+                  md:text-[46px]
+                  lg:text-[52px]
                 "
               >
-                {locationName}
+                {title}
               </h2>
 
-              {/* GOLD ACCENT */}
+              <div className="mt-5 h-px w-20 bg-[#C89D58]" />
 
               <div
                 className="
-                  mt-3
-                  flex
-                  items-center
-                  gap-2
-                "
-              >
-                <div
-                  className="
-                    h-[2px]
-                    w-16
-                    bg-[#C89D58]
-                    sm:w-20
-                  "
-                />
-
-                <div
-                  className="
-                    h-1
-                    w-1
-                    rounded-full
-                    bg-[#C89D58]
-                  "
-                />
-              </div>
-
-              {/* ==================================================
-                  DESCRIPTION
-              ================================================== */}
-
-              <div
-                className="
-                  mt-4
-                  max-w-[720px]
-                  space-y-3
+                  mt-6
+                  max-w-[780px]
+                  space-y-4
+                  text-[13px]
+                  leading-7
+                  text-[#47545a]
+                  sm:text-[14px]
+                  sm:leading-7
+                  md:text-[15px]
                 "
               >
                 {paragraphs.map(
                   (paragraph, index) => (
-                    <p
-                      key={`location-description-${index}`}
-                      className="
-                        whitespace-pre-line
-                        text-[10.5px]
-                        leading-[1.75]
-                        text-[#59635e]
-                        sm:text-[11px]
-                        md:text-[12px]
-                        lg:text-[12.5px]
-                        lg:leading-[1.82]
-                      "
-                    >
+                    <p key={index}>
                       {paragraph}
                     </p>
                   )
                 )}
               </div>
 
-              {/* ==================================================
-                  READ MORE
-              ================================================== */}
-
               <a
                 href="#real-estate-market"
                 className="
-                  mt-4
+                  mt-7
                   inline-flex
                   items-center
                   gap-2
-                  rounded-[8px]
-                  bg-[#17342d]
-                  px-3.5
-                  py-2
-                  text-[8px]
+                  text-[11px]
                   font-semibold
                   uppercase
                   tracking-[0.12em]
-                  text-white
-                  shadow-[0_8px_22px_rgba(23,52,45,0.10)]
-                  transition-all
+                  text-[#17342d]
+                  transition-colors
                   duration-300
-                  hover:-translate-y-[1px]
-                  hover:bg-[#0f2922]
-                  sm:px-4
-                  sm:py-2.5
-                  sm:text-[9px]
+                  hover:text-[#A47A2B]
                 "
               >
                 Read More
 
-                <ArrowRight
-                  size={11}
-                  strokeWidth={1.8}
-                />
+                <ArrowRight size={14} />
               </a>
             </div>
 
             {/* ==================================================
-                CENTER — LOCATION IMAGE
+                IMAGE + SNAPSHOT
             ================================================== */}
 
-            <div
-              className="
-                relative
-                h-[190px]
-                overflow-hidden
-                rounded-[16px]
-                border
-                border-[#ddd4c6]
-                bg-[#17342d]
-                shadow-[0_12px_35px_rgba(23,52,45,0.08)]
-                sm:h-[205px]
-                md:h-[215px]
-                lg:h-[190px]
-                xl:h-[220px]
-              "
-            >
-              {resolvedLocationImage ? (
-                <>
-                  <img
-                    src={resolvedLocationImage}
-                    alt={`${locationName} real estate`}
-                    loading="lazy"
-                    className="
-                      h-full
-                      w-full
-                      object-cover
-                      object-center
-                      transition-transform
-                      duration-700
-                      hover:scale-[1.035]
-                    "
-                  />
-
-                  {/* IMAGE OVERLAY */}
+            <div className="relative">
+              {resolvedImage ? (
+                <div
+                  className="
+                    relative
+                    overflow-hidden
+                    rounded-[28px]
+                    border
+                    border-[#17342d]/10
+                    bg-white
+                    shadow-[0_24px_70px_rgba(23,52,45,0.12)]
+                  "
+                >
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img
+                      src={resolvedImage}
+                      alt={`${locationName} real estate`}
+                      className="
+                        h-full
+                        w-full
+                        object-cover
+                        transition-transform
+                        duration-700
+                        hover:scale-[1.03]
+                      "
+                    />
+                  </div>
 
                   <div
                     className="
                       absolute
-                      inset-0
+                      inset-x-0
+                      bottom-0
                       bg-gradient-to-t
-                      from-[#061811]/45
-                      via-transparent
-                      to-white/[0.03]
-                    "
-                  />
-
-                  {/* IMAGE BORDER */}
-
-                  <div
-                    aria-hidden="true"
-                    className="
-                      pointer-events-none
-                      absolute
-                      inset-3
-                      rounded-[11px]
-                      border
-                      border-white/15
-                    "
-                  />
-
-                  {/* IMAGE LABEL */}
-
-                  <div
-                    className="
-                      absolute
-                      bottom-3
-                      left-3
-                      right-3
-                      flex
-                      items-center
-                      gap-2
-                      rounded-[9px]
-                      border
-                      border-white/10
-                      bg-[#061811]/45
-                      px-3
-                      py-2
-                      backdrop-blur-md
+                      from-[#061811]/85
+                      via-[#061811]/35
+                      to-transparent
+                      px-5
+                      pb-5
+                      pt-20
                     "
                   >
-                    <MapPin
-                      size={12}
-                      className="shrink-0 text-[#D4AF37]"
-                    />
+                    <div className="flex items-center gap-2">
+                      <MapPin
+                        size={14}
+                        className="text-[#D4AF37]"
+                      />
 
-                    <div className="min-w-0">
-                      <p
+                      <span
                         className="
-                          text-[7px]
+                          text-[9px]
                           font-semibold
                           uppercase
-                          tracking-[0.18em]
-                          text-[#D4AF37]
+                          tracking-[0.16em]
+                          text-white/75
                         "
                       >
-                        Prime Location
-                      </p>
-
-                      <p
-                        className="
-                          mt-0.5
-                          truncate
-                          text-[9px]
-                          font-medium
-                          text-white
-                        "
-                      >
-                        {locationName}
-                      </p>
+                        Location Snapshot
+                      </span>
                     </div>
+
+                    <p
+                      className="
+                        mt-1
+                        font-playfair
+                        text-[22px]
+                        font-semibold
+                        text-white
+                      "
+                    >
+                      {locationName}
+                    </p>
                   </div>
-                </>
+                </div>
               ) : (
                 <div
                   className="
                     flex
-                    h-full
-                    w-full
+                    aspect-[4/3]
                     items-center
                     justify-center
-                    bg-gradient-to-br
-                    from-[#17342d]
-                    to-[#0b221b]
+                    rounded-[28px]
+                    bg-[#17342d]
+                    text-white/60
                   "
                 >
                   <MapPin
-                    size={36}
-                    strokeWidth={1.1}
-                    className="text-[#D4AF37]/70"
+                    size={28}
+                    className="text-[#D4AF37]"
                   />
                 </div>
               )}
             </div>
-
-            {/* ==================================================
-                RIGHT — LOCATION SNAPSHOT
-            ================================================== */}
-
-            <div
-              className="
-                overflow-hidden
-                rounded-[16px]
-                bg-[#17342d]
-                text-white
-                shadow-[0_12px_35px_rgba(15,59,46,0.12)]
-              "
-            >
-              {/* HEADER */}
-
-              <div
-                className="
-                  border-b
-                  border-white/10
-                  px-4
-                  py-3.5
-                  sm:px-5
-                  sm:py-4
-                "
-              >
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                  "
-                >
-                  <div
-                    className="
-                      flex
-                      h-6
-                      w-6
-                      items-center
-                      justify-center
-                      rounded-md
-                      bg-[#D4AF37]/10
-                    "
-                  >
-                    <MapPin
-                      size={12}
-                      className="text-[#D4AF37]"
-                    />
-                  </div>
-
-                  <p
-                    className="
-                      text-[8px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.17em]
-                      text-[#D4AF37]
-                      sm:text-[9px]
-                    "
-                  >
-                    Location Snapshot
-                  </p>
-                </div>
-              </div>
-
-              {/* SNAPSHOT ROWS */}
-
-              <div className="divide-y divide-white/10 px-4 sm:px-5">
-                <SnapshotRow
-                  label="Location"
-                  value={locationName}
-                />
-
-                <SnapshotRow
-                  label="Projects"
-                  value={`${properties.length || 0}+`}
-                />
-
-                <SnapshotRow
-                  label="Property Types"
-                  value={propertyTypeText}
-                />
-
-                <SnapshotRow
-                  label="Segment"
-                  value="Premium & Luxury"
-                />
-
-                <SnapshotRow
-                  label="Developers"
-                  value={
-                    developers.size
-                      ? `${developers.size}+`
-                      : "Multiple"
-                  }
-                />
-
-                <SnapshotRow
-                  label="Price Range"
-                  value={priceRange}
-                />
-              </div>
-            </div>
           </div>
 
           {/* ====================================================
-              SECTION DIVIDER
+              SNAPSHOT CARDS
           ==================================================== */}
 
           <div
             className="
-              mt-8
-              h-px
-              w-full
-              bg-[#e3dbcf]
-              md:mt-9
+              mt-10
+              grid
+              gap-3
+              sm:grid-cols-3
+              lg:mt-14
+              lg:gap-4
             "
-          />
+          >
+            {highlights.map(
+              (item, index) => (
+                <SnapshotCard
+                  key={index}
+                  icon={
+                    index === 0 ? (
+                      <Building2 size={16} />
+                    ) : index === 1 ? (
+                      <Users size={16} />
+                    ) : (
+                      <TrendingUp size={16} />
+                    )
+                  }
+                  title={item.title}
+                  description={
+                    item.description
+                  }
+                />
+              )
+            )}
+          </div>
         </div>
       </section>
 
-      {/* ========================================================
-          SECTION 2 — REAL ESTATE MARKET
-          ======================================================== */}
+      {/* ======================================================
+          REAL ESTATE MARKET
+      ====================================================== */}
 
       <section
         id="real-estate-market"
-        aria-labelledby="real-estate-market-heading"
         className="
           relative
           overflow-hidden
-          bg-[#f7f3ec]
-          pb-10
-          pt-8
-          sm:pb-11
-          sm:pt-9
-          md:pb-12
-          md:pt-10
-          lg:pb-14
-          lg:pt-11
+          bg-[#17342d]
+          py-16
+          text-white
+          sm:py-20
+          lg:py-24
         "
       >
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -right-32
+            -top-32
+            h-[420px]
+            w-[420px]
+            rounded-full
+            bg-[#D4AF37]/[0.07]
+            blur-[120px]
+          "
+        />
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -bottom-40
+            -left-32
+            h-[420px]
+            w-[420px]
+            rounded-full
+            bg-[#0B251E]
+            blur-[100px]
+          "
+        />
+
         <div
           className="
             relative
             z-10
             mx-auto
+            w-full
             max-w-[1450px]
             px-5
             sm:px-6
-            lg:px-8
+            md:px-8
+            lg:px-10
           "
         >
+          <div
+            className="
+              max-w-[850px]
+            "
+          >
+            <div
+              className="
+                mb-4
+                flex
+                items-center
+                gap-2.5
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.22em]
+                text-[#D4AF37]
+                sm:text-[10px]
+                md:text-[11px]
+              "
+            >
+              <span className="h-px w-8 bg-[#D4AF37]" />
+
+              {marketEyebrow}
+            </div>
+
+            <h2
+              className="
+                font-playfair
+                text-[32px]
+                font-semibold
+                leading-[1.1]
+                tracking-[-0.02em]
+                text-white
+                sm:text-[38px]
+                md:text-[44px]
+                lg:text-[50px]
+              "
+            >
+              {marketTitle}
+            </h2>
+
+            <p
+              className="
+                mt-5
+                max-w-[760px]
+                text-[13px]
+                leading-7
+                text-white/65
+                sm:text-[14px]
+                md:text-[15px]
+              "
+            >
+              {marketDescription}
+            </p>
+          </div>
+
           {/* ====================================================
-              MARKET GRID
+              MARKET INSIGHTS
           ==================================================== */}
 
           <div
             className="
+              mt-10
               grid
-              items-stretch
-              gap-5
-              lg:grid-cols-[minmax(0,1fr)_390px]
-              xl:grid-cols-[minmax(0,1fr)_430px]
-              lg:gap-7
+              gap-4
+              md:grid-cols-3
+              lg:mt-14
             "
           >
-            {/* ==================================================
-                LEFT — MARKET STORY
-            ================================================== */}
+            {marketInsights.map(
+              (item, index) => (
+                <MarketInsight
+                  key={index}
+                  index={index}
+                  title={item.title}
+                  description={
+                    item.description
+                  }
+                />
+              )
+            )}
+          </div>
 
-            <div className="min-w-0">
-              {/* EYEBROW */}
+          {/* ====================================================
+              PERSPECTIVE
+          ==================================================== */}
 
+          <div
+            className="
+              mt-10
+              rounded-[24px]
+              border
+              border-white/10
+              bg-white/[0.045]
+              p-6
+              backdrop-blur-xl
+              sm:p-8
+              lg:mt-12
+            "
+          >
+            <div className="flex gap-4">
               <div
                 className="
                   flex
+                  h-10
+                  w-10
+                  shrink-0
                   items-center
-                  gap-2
-                  text-[8px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.22em]
-                  text-[#8F7335]
-                  sm:text-[9px]
-                  md:text-[10px]
+                  justify-center
+                  rounded-full
+                  border
+                  border-[#D4AF37]/25
+                  bg-[#D4AF37]/10
                 "
               >
-                <span
-                  className="
-                    h-px
-                    w-7
-                    bg-[#C89D58]
-                    sm:w-9
-                  "
-                />
-
-                Real Estate Market
-              </div>
-
-              {/* H2 */}
-
-              <h2
-                id="real-estate-market-heading"
-                className="
-                  mt-2
-                  max-w-[620px]
-                  font-playfair
-                  text-[28px]
-                  font-medium
-                  leading-[1.08]
-                  tracking-[-0.028em]
-                  text-[#17342d]
-                  sm:text-[32px]
-                  md:text-[36px]
-                  lg:text-[39px]
-                "
-              >
-                A Thriving Real Estate
-                Destination
-              </h2>
-
-              {/* GOLD ACCENT */}
-
-              <div
-                className="
-                  mt-3
-                  flex
-                  items-center
-                  gap-2
-                "
-              >
-                <div
-                  className="
-                    h-[2px]
-                    w-16
-                    bg-[#C89D58]
-                    sm:w-20
-                  "
-                />
-
-                <div
-                  className="
-                    h-1
-                    w-1
-                    rounded-full
-                    bg-[#C89D58]
-                  "
+                <Quote
+                  size={16}
+                  className="text-[#D4AF37]"
                 />
               </div>
 
-              {/* MARKET DESCRIPTION */}
-
-              <p
-                className="
-                  mt-4
-                  max-w-[760px]
-                  text-[10.5px]
-                  leading-[1.75]
-                  text-[#59635e]
-                  sm:text-[11px]
-                  md:text-[12px]
-                  md:leading-[1.82]
-                  lg:text-[12.5px]
-                "
-              >
-                {locationName} continues to evolve as a
-                residential destination, shaped by
-                connectivity, infrastructure and the
-                development of new communities. The market
-                brings together established neighbourhoods,
-                premium residences and emerging
-                opportunities, giving homebuyers and
-                investors a broader range of property choices
-                to consider.
-              </p>
-
-              {/* ==================================================
-                  MARKET INSIGHTS
-              ================================================== */}
-
-              <div
-                className="
-                  mt-5
-                  grid
-                  gap-2.5
-                  sm:grid-cols-3
-                  sm:gap-3
-                  lg:max-w-[820px]
-                "
-              >
-                {marketInsights.map(
-                  (insight) => (
-                    <MarketInsight
-                      key={insight.title}
-                      icon={insight.icon}
-                      title={insight.title}
-                      description={
-                        insight.description
-                      }
-                    />
-                  )
-                )}
-              </div>
-            </div>
-
-            {/* ==================================================
-                RIGHT — EDITORIAL QUOTE
-            ================================================== */}
-
-            <div
-              className="
-                relative
-                flex
-                min-h-[210px]
-                flex-col
-                justify-between
-                overflow-hidden
-                rounded-[16px]
-                border
-                border-[#e2d9cb]
-                bg-[#fbf8f2]
-                p-5
-                sm:p-6
-                lg:min-h-full
-              "
-            >
-              {/* DECORATIVE QUOTE */}
-
-              <div
-                aria-hidden="true"
-                className="
-                  pointer-events-none
-                  absolute
-                  right-5
-                  top-0
-                  font-playfair
-                  text-[72px]
-                  leading-none
-                  text-[#D4AF37]/[0.16]
-                "
-              >
-                “
-              </div>
-
-              {/* TOP CONTENT */}
-
-              <div className="relative z-10">
-                <div
+              <div>
+                <p
                   className="
-                    flex
-                    items-center
-                    gap-2
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.18em]
+                    text-[#D4AF37]
                   "
                 >
-                  <span
-                    className="
-                      h-px
-                      w-5
-                      bg-[#C89D58]
-                    "
-                  />
+                  {perspectiveEyebrow}
+                </p>
 
-                  <p
-                    className="
-                      text-[8px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.18em]
-                      text-[#B58B2D]
-                    "
-                  >
-                    Market Perspective
-                  </p>
-                </div>
-
-                <blockquote
+                <p
                   className="
-                    mt-4
-                    max-w-[330px]
+                    mt-3
+                    max-w-[1050px]
                     font-playfair
-                    text-[21px]
-                    font-medium
-                    leading-[1.28]
-                    tracking-[-0.018em]
-                    text-[#17342d]
-                    sm:text-[23px]
-                    lg:text-[24px]
+                    text-[19px]
+                    leading-8
+                    text-white/90
+                    sm:text-[22px]
+                    sm:leading-9
                   "
                 >
-                  A well-connected address,
-                  shaped for modern living
-                  and long-term opportunity.
-                </blockquote>
-              </div>
-
-              {/* BOTTOM META */}
-
-              <div
-                className="
-                  relative
-                  z-10
-                  mt-6
-                  flex
-                  items-center
-                  justify-between
-                  border-t
-                  border-[#e5ddd1]
-                  pt-4
-                "
-              >
-                <div className="min-w-0">
-                  <p
-                    className="
-                      text-[7px]
-                      font-medium
-                      uppercase
-                      tracking-[0.17em]
-                      text-[#9a9b94]
-                    "
-                  >
-                    Location
-                  </p>
-
-                  <p
-                    className="
-                      mt-1
-                      truncate
-                      text-[10px]
-                      font-semibold
-                      text-[#17342d]
-                    "
-                  >
-                    {locationName}
-                  </p>
-                </div>
-
-                <div
-                  className="
-                    flex
-                    h-8
-                    w-8
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-[#17342d]
-                    shadow-[0_5px_15px_rgba(23,52,45,0.15)]
-                  "
-                >
-                  <ArrowRight
-                    size={13}
-                    strokeWidth={1.8}
-                    className="text-[#D4AF37]"
-                  />
-                </div>
+                  {perspectiveQuote}
+                </p>
               </div>
             </div>
           </div>
@@ -1012,59 +811,11 @@ export default function AboutLocation({
   );
 }
 
-/* =============================================================
-   SNAPSHOT ROW
-============================================================= */
+/* ============================================================
+   SNAPSHOT CARD
+============================================================ */
 
-function SnapshotRow({
-  label,
-  value,
-}) {
-  return (
-    <div
-      className="
-        flex
-        min-h-[34px]
-        items-center
-        justify-between
-        gap-3
-        py-2
-      "
-    >
-      <span
-        className="
-          shrink-0
-          text-[8px]
-          font-medium
-          text-white/45
-          sm:text-[9px]
-        "
-      >
-        {label}
-      </span>
-
-      <span
-        className="
-          max-w-[64%]
-          text-right
-          text-[8px]
-          font-medium
-          leading-[1.4]
-          text-white/80
-          sm:text-[9px]
-        "
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-/* =============================================================
-   MARKET INSIGHT CARD
-============================================================= */
-
-function MarketInsight({
+function SnapshotCard({
   icon,
   title,
   description,
@@ -1072,72 +823,120 @@ function MarketInsight({
   return (
     <div
       className="
-        flex
-        min-w-0
-        items-start
-        gap-3
-        rounded-[12px]
+        rounded-[20px]
         border
-        border-[#e3dbd0]
-        bg-white/65
-        px-3
-        py-3
+        border-[#17342d]/10
+        bg-white
+        p-5
+        shadow-[0_12px_35px_rgba(23,52,45,0.05)]
         transition-all
         duration-300
-        hover:-translate-y-[1px]
-        hover:border-[#d6c7b2]
-        hover:bg-white
-        sm:px-3.5
-        sm:py-3.5
+        hover:-translate-y-0.5
+        hover:shadow-[0_18px_45px_rgba(23,52,45,0.09)]
       "
     >
-      {/* ICON */}
-
       <div
         className="
           flex
-          h-8
-          w-8
-          shrink-0
+          h-9
+          w-9
           items-center
           justify-center
-          rounded-[9px]
+          rounded-full
           bg-[#17342d]
           text-[#D4AF37]
-          shadow-[0_5px_15px_rgba(23,52,45,0.08)]
         "
       >
         {icon}
       </div>
 
-      {/* CONTENT */}
+      <p
+        className="
+          mt-4
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.14em]
+          text-[#17342d]
+        "
+      >
+        {title}
+      </p>
 
-      <div className="min-w-0">
-        <p
-          className="
-            text-[9px]
-            font-semibold
-            leading-4
-            text-[#17342d]
-            sm:text-[10px]
-          "
-        >
-          {title}
-        </p>
+      <p
+        className="
+          mt-2
+          text-[12px]
+          leading-5
+          text-[#667078]
+        "
+      >
+        {description}
+      </p>
+    </div>
+  );
+}
 
-        <p
-          className="
-            mt-0.5
-            text-[8px]
-            leading-[1.45]
-            text-[#858b87]
-            sm:text-[9px]
-            sm:leading-4
-          "
-        >
-          {description}
-        </p>
-      </div>
+/* ============================================================
+   MARKET INSIGHT
+============================================================ */
+
+function MarketInsight({
+  index,
+  title,
+  description,
+}) {
+  return (
+    <div
+      className="
+        relative
+        overflow-hidden
+        rounded-[22px]
+        border
+        border-white/10
+        bg-white/[0.045]
+        p-6
+        backdrop-blur-xl
+      "
+    >
+      <span
+        className="
+          font-playfair
+          text-[32px]
+          font-semibold
+          text-[#D4AF37]/35
+        "
+      >
+        {String(index + 1).padStart(
+          2,
+          "0"
+        )}
+      </span>
+
+      <h3
+        className="
+          mt-5
+          font-playfair
+          text-[22px]
+          font-semibold
+          text-white
+        "
+      >
+        {title}
+      </h3>
+
+      <p
+        className="
+          mt-3
+          text-[12px]
+          leading-6
+          text-white/55
+        "
+      >
+        {description}
+      </p>
+
+      <div className="mt-5 h-px w-10 bg-[#D4AF37]" />
     </div>
   );
 }

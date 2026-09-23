@@ -716,15 +716,16 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <LocationHero
-        location={location}
-        locationName={locationName}
-        locationImage={locationImage}
-        heroImage={heroImage}
-        properties={properties}
-        buildPublicLocationSlug={
-          buildPublicLocationSlug
-        }
-      />
+  location={location}
+  locationName={locationName}
+  locationImage={locationImage}
+  heroImage={heroImage}
+  properties={properties}
+  buildPublicLocationSlug={
+    buildPublicLocationSlug
+  }
+  pageContent={location?.pageContent}
+/>
 
       {/* ======================================================
           PROJECTS
@@ -763,19 +764,20 @@ export default function LocationSlugClient({
           ABOUT LOCATION
       ====================================================== */}
 
-      {locationDescription && (
-        <AboutLocation
-          location={location}
-          locationName={locationName}
-          locationDescription={
-            locationDescription
-          }
-          properties={properties}
-          locationImage={
-            locationImage
-          }
-        />
-      )}
+      {location?.pageContent?.about?.enabled !== false && (
+  <AboutLocation
+    location={location}
+    locationName={locationName}
+    locationDescription={
+      locationDescription
+    }
+    properties={properties}
+    locationImage={locationImage}
+    pageContent={
+      location?.pageContent
+    }
+  />
+)}
 
       {/* ======================================================
           REAL ESTATE TYPES
@@ -800,12 +802,13 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <LocationConnectivity
-        location={location}
-        locationName={locationName}
-        locationImage={
-          locationImage
-        }
-      />
+  location={location}
+  locationName={locationName}
+  locationImage={locationImage}
+  pageContent={
+    location?.pageContent
+  }
+/>
 
       {/* ======================================================
           SCHOOLS / HOSPITALS / LIFESTYLE
@@ -831,13 +834,16 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <NearbyLocations
-        location={location}
-        locationName={locationName}
-        properties={properties}
-        buildPublicLocationSlug={
-          buildPublicLocationSlug
-        }
-      />
+  location={location}
+  locationName={locationName}
+  properties={properties}
+  buildPublicLocationSlug={
+    buildPublicLocationSlug
+  }
+  pageContent={
+    location?.pageContent
+  }
+/>
 
       {/* ======================================================
           FAQ
