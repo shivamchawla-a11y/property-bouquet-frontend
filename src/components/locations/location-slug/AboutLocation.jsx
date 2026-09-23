@@ -29,10 +29,8 @@ export default function AboutLocation({
   ============================================================ */
 
   const value = (customValue, fallback) => {
-    return (
-      typeof customValue === "string" &&
+    return typeof customValue === "string" &&
       customValue.trim()
-    )
       ? customValue.trim()
       : fallback;
   };
@@ -70,8 +68,7 @@ export default function AboutLocation({
     );
   };
 
-  const resolvedImage =
-    resolveImage();
+  const resolvedImage = resolveImage();
 
   /* ============================================================
      PROPERTY TYPES
@@ -139,8 +136,7 @@ export default function AboutLocation({
     return properties
       .map((property) =>
         Number(
-          property?.coreDetails
-            ?.startingPrice
+          property?.coreDetails?.startingPrice
         )
       )
       .filter(
@@ -160,8 +156,7 @@ export default function AboutLocation({
     }
 
     if (price >= 10000000) {
-      const value =
-        price / 10000000;
+      const value = price / 10000000;
 
       return `₹${value
         .toFixed(value >= 10 ? 0 : 1)
@@ -169,8 +164,7 @@ export default function AboutLocation({
     }
 
     if (price >= 100000) {
-      const value =
-        price / 100000;
+      const value = price / 100000;
 
       return `₹${value
         .toFixed(value >= 10 ? 0 : 1)
@@ -236,23 +230,20 @@ export default function AboutLocation({
     "A Thriving Real Estate Destination"
   );
 
-  const marketDescription =
-    value(
-      custom.marketDescription,
-      `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
-    );
+  const marketDescription = value(
+    custom.marketDescription,
+    `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
+  );
 
-  const perspectiveEyebrow =
-    value(
-      custom.perspectiveEyebrow,
-      "PROPERTY BOUQUET PERSPECTIVE"
-    );
+  const perspectiveEyebrow = value(
+    custom.perspectiveEyebrow,
+    "PROPERTY BOUQUET PERSPECTIVE"
+  );
 
-  const perspectiveQuote =
-    value(
-      custom.perspectiveQuote,
-      `${locationName} brings together connectivity, lifestyle convenience and a growing selection of residential opportunities, making it an address worth evaluating on both present-day livability and long-term potential.`
-    );
+  const perspectiveQuote = value(
+    custom.perspectiveQuote,
+    `${locationName} brings together connectivity, lifestyle convenience and a growing selection of residential opportunities, making it an address worth evaluating on both present-day livability and long-term potential.`
+  );
 
   /* ============================================================
      DEFAULT HIGHLIGHTS
@@ -268,7 +259,6 @@ export default function AboutLocation({
               .join(", ")
           : "Premium residential developments",
     },
-
     {
       title: "Developer Presence",
       description:
@@ -278,11 +268,9 @@ export default function AboutLocation({
               .join(", ")
           : "Multiple established developers",
     },
-
     {
       title: "Price Positioning",
-      description:
-        pricePositioning,
+      description: pricePositioning,
     },
   ];
 
@@ -317,13 +305,11 @@ export default function AboutLocation({
       description:
         "Strategic road networks and access to important destinations support convenient movement across the wider region.",
     },
-
     {
       title: "Development",
       description:
         "A growing pipeline of residential projects creates greater choice across formats, configurations and communities.",
     },
-
     {
       title: "Lifestyle",
       description:
@@ -335,9 +321,8 @@ export default function AboutLocation({
     defaultMarketInsights.map(
       (fallback, index) => {
         const customItem =
-          custom?.marketInsights?.[
-            index
-          ] || {};
+          custom?.marketInsights?.[index] ||
+          {};
 
         return {
           title: value(
@@ -354,19 +339,38 @@ export default function AboutLocation({
     );
 
   /* ============================================================
-     RICH TEXT CONTENT
+     CLEAN RICH TEXT
      
      IMPORTANT:
-     Admin RichTextEditor stores HTML such as:
+     ReactQuill can store:
+       &nbsp;
+       &#160;
+       actual NBSP characters
 
-     <p>Dwarka&nbsp;Expressway...</p>
+     These are non-breaking spaces.
 
-     We render the stored HTML instead of displaying the tags.
+     A long sequence of them can force a paragraph
+     to extend horizontally underneath the image.
+
+     We convert them into normal spaces before rendering.
+  ============================================================ */
+
+  const normalizedContent =
+    typeof content === "string"
+      ? content
+          .replace(/&nbsp;/gi, " ")
+          .replace(/&#160;/gi, " ")
+          .replace(/&#xA0;/gi, " ")
+          .replace(/\u00a0/g, " ")
+      : "";
+
+  /* ============================================================
+     RICH TEXT DETECTION
   ============================================================ */
 
   const hasRichText =
     /<\/?[a-z][\s\S]*>/i.test(
-      content
+      normalizedContent
     );
 
   /* ============================================================
@@ -401,25 +405,43 @@ export default function AboutLocation({
             lg:px-10
           "
         >
+          {/* ==================================================
+              MAIN GRID
+
+              IMPORTANT FIX:
+              minmax(0, ...) prevents long text from
+              expanding the first grid column underneath
+              the image.
+          ================================================== */}
+
           <div
             className="
               grid
-              items-center
+              min-w-0
+              items-start
               gap-10
-              lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.75fr)]
-              lg:gap-14
-              xl:gap-20
+              lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.75fr)]
+              lg:gap-12
+              xl:gap-16
+              2xl:gap-20
             "
           >
             {/* ==================================================
                 CONTENT
             ================================================== */}
 
-            <div className="min-w-0">
+            <div
+              className="
+                min-w-0
+                max-w-full
+              "
+            >
               <div
                 className="
                   mb-4
                   flex
+                  min-w-0
+                  max-w-full
                   items-center
                   gap-2.5
                   text-[9px]
@@ -431,14 +453,17 @@ export default function AboutLocation({
                   md:text-[11px]
                 "
               >
-                <span className="h-px w-8 bg-[#C89D58]" />
+                <span className="h-px w-8 shrink-0 bg-[#C89D58]" />
 
-                {eyebrow}
+                <span className="min-w-0 break-words">
+                  {eyebrow}
+                </span>
               </div>
 
               <h2
                 className="
-                  max-w-[800px]
+                  max-w-full
+                  break-words
                   font-playfair
                   text-[34px]
                   font-semibold
@@ -448,6 +473,7 @@ export default function AboutLocation({
                   sm:text-[40px]
                   md:text-[46px]
                   lg:text-[52px]
+                  [overflow-wrap:anywhere]
                 "
               >
                 {title}
@@ -456,87 +482,110 @@ export default function AboutLocation({
               <div className="mt-5 h-px w-20 bg-[#C89D58]" />
 
               {/* ==================================================
-                  FIXED RICH TEXT CONTENT
+                  RICH TEXT CONTENT
+
+                  IMPORTANT:
+                  overflow-wrap:anywhere is deliberately added
+                  so even malformed/very long editor content
+                  cannot cross into the image column.
               ================================================== */}
 
               {hasRichText ? (
                 <div
                   className="
                     mt-6
-                    max-w-[780px]
+                    min-w-0
+                    max-w-full
+                    overflow-hidden
+                    break-words
                     text-[13px]
                     leading-7
                     text-[#47545a]
-
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
+                    [&_*]:max-w-full
                     [&_p]:mb-4
                     [&_p:last-child]:mb-0
-
+                    [&_p]:break-words
+                    [&_p]:[overflow-wrap:anywhere]
                     [&_strong]:font-semibold
                     [&_strong]:text-[#263832]
-
                     [&_b]:font-semibold
                     [&_b]:text-[#263832]
-
                     [&_em]:italic
-
                     [&_a]:font-medium
                     [&_a]:text-[#A47A2B]
                     [&_a]:underline
                     [&_a]:underline-offset-2
-
                     [&_ul]:mb-4
                     [&_ul]:ml-5
+                    [&_ul]:max-w-full
                     [&_ul]:list-disc
-
                     [&_ol]:mb-4
                     [&_ol]:ml-5
+                    [&_ol]:max-w-full
                     [&_ol]:list-decimal
-
                     [&_li]:mb-1
-
+                    [&_li]:break-words
+                    [&_li]:[overflow-wrap:anywhere]
+                    [&_h1]:max-w-full
+                    [&_h2]:max-w-full
+                    [&_h3]:max-w-full
+                    [&_h4]:max-w-full
+                    [&_h5]:max-w-full
+                    [&_h6]:max-w-full
                     [&_h3]:mb-3
                     [&_h3]:mt-5
                     [&_h3]:font-playfair
                     [&_h3]:text-xl
                     [&_h3]:font-semibold
                     [&_h3]:text-[#17342d]
-
                     [&_h4]:mb-2
                     [&_h4]:mt-4
                     [&_h4]:font-semibold
                     [&_h4]:text-[#17342d]
-
                     sm:text-[14px]
                     sm:leading-7
-
                     md:text-[15px]
                   "
                   dangerouslySetInnerHTML={{
-                    __html: content,
+                    __html:
+                      normalizedContent,
                   }}
                 />
               ) : (
                 <div
                   className="
                     mt-6
-                    max-w-[780px]
+                    min-w-0
+                    max-w-full
                     space-y-4
+                    break-words
                     text-[13px]
                     leading-7
                     text-[#47545a]
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
                     sm:text-[14px]
                     sm:leading-7
                     md:text-[15px]
                   "
                 >
-                  {content
+                  {normalizedContent
                     .split(/\n\s*\n/)
                     .map(
                       (
                         paragraph,
                         index
                       ) => (
-                        <p key={index}>
+                        <p
+                          key={index}
+                          className="
+                            max-w-full
+                            break-words
+                            [overflow-wrap:anywhere]
+                          "
+                        >
                           {paragraph.trim()}
                         </p>
                       )
@@ -549,8 +598,10 @@ export default function AboutLocation({
                 className="
                   mt-7
                   inline-flex
+                  max-w-full
                   items-center
                   gap-2
+                  break-words
                   text-[11px]
                   font-semibold
                   uppercase
@@ -561,21 +612,37 @@ export default function AboutLocation({
                   hover:text-[#A47A2B]
                 "
               >
-                Read More
+                <span>Read More</span>
 
-                <ArrowRight size={14} />
+                <ArrowRight
+                  size={14}
+                  className="shrink-0"
+                />
               </a>
             </div>
 
             {/* ==================================================
                 IMAGE
+
+                IMPORTANT:
+                min-w-0 + w-full ensures image never
+                overlaps the content column.
             ================================================== */}
 
-            <div className="relative">
+            <div
+              className="
+                relative
+                min-w-0
+                w-full
+                self-start
+              "
+            >
               {resolvedImage ? (
                 <div
                   className="
                     relative
+                    w-full
+                    min-w-0
                     overflow-hidden
                     rounded-[28px]
                     border
@@ -584,13 +651,23 @@ export default function AboutLocation({
                     shadow-[0_24px_70px_rgba(23,52,45,0.12)]
                   "
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div
+                    className="
+                      relative
+                      aspect-[4/3]
+                      w-full
+                      min-w-0
+                      overflow-hidden
+                    "
+                  >
                     <img
                       src={resolvedImage}
                       alt={`${locationName} real estate`}
                       className="
+                        block
                         h-full
                         w-full
+                        max-w-full
                         object-cover
                         transition-transform
                         duration-700
@@ -605,22 +682,27 @@ export default function AboutLocation({
                       inset-x-0
                       bottom-0
                       bg-gradient-to-t
-                      from-[#061811]/85
-                      via-[#061811]/35
+                      from-[#061811]/90
+                      via-[#061811]/45
                       to-transparent
                       px-5
                       pb-5
                       pt-20
                     "
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
                       <MapPin
                         size={14}
-                        className="text-[#D4AF37]"
+                        className="
+                          shrink-0
+                          text-[#D4AF37]
+                        "
                       />
 
                       <span
                         className="
+                          min-w-0
+                          break-words
                           text-[9px]
                           font-semibold
                           uppercase
@@ -635,10 +717,14 @@ export default function AboutLocation({
                     <p
                       className="
                         mt-1
+                        max-w-full
+                        break-words
                         font-playfair
                         text-[22px]
                         font-semibold
+                        leading-tight
                         text-white
+                        [overflow-wrap:anywhere]
                       "
                     >
                       {locationName}
@@ -650,8 +736,11 @@ export default function AboutLocation({
                   className="
                     flex
                     aspect-[4/3]
+                    w-full
+                    min-w-0
                     items-center
                     justify-center
+                    overflow-hidden
                     rounded-[28px]
                     bg-[#17342d]
                     text-white/60
@@ -674,6 +763,7 @@ export default function AboutLocation({
             className="
               mt-10
               grid
+              min-w-0
               gap-3
               sm:grid-cols-3
               lg:mt-14
@@ -755,17 +845,19 @@ export default function AboutLocation({
             mx-auto
             w-full
             max-w-[1450px]
+            min-w-0
             px-5
             sm:px-6
             md:px-8
             lg:px-10
           "
         >
-          <div className="max-w-[850px]">
+          <div className="min-w-0 max-w-[850px]">
             <div
               className="
                 mb-4
                 flex
+                min-w-0
                 items-center
                 gap-2.5
                 text-[9px]
@@ -777,19 +869,24 @@ export default function AboutLocation({
                 md:text-[11px]
               "
             >
-              <span className="h-px w-8 bg-[#D4AF37]" />
+              <span className="h-px w-8 shrink-0 bg-[#D4AF37]" />
 
-              {marketEyebrow}
+              <span className="min-w-0 break-words">
+                {marketEyebrow}
+              </span>
             </div>
 
             <h2
               className="
+                max-w-full
+                break-words
                 font-playfair
                 text-[32px]
                 font-semibold
                 leading-[1.1]
                 tracking-[-0.02em]
                 text-white
+                [overflow-wrap:anywhere]
                 sm:text-[38px]
                 md:text-[44px]
                 lg:text-[50px]
@@ -802,9 +899,11 @@ export default function AboutLocation({
               className="
                 mt-5
                 max-w-[760px]
+                break-words
                 text-[13px]
                 leading-7
                 text-white/65
+                [overflow-wrap:anywhere]
                 sm:text-[14px]
                 md:text-[15px]
               "
@@ -821,6 +920,7 @@ export default function AboutLocation({
             className="
               mt-10
               grid
+              min-w-0
               gap-4
               md:grid-cols-3
               lg:mt-14
@@ -847,6 +947,8 @@ export default function AboutLocation({
           <div
             className="
               mt-10
+              min-w-0
+              overflow-hidden
               rounded-[24px]
               border
               border-white/10
@@ -857,7 +959,7 @@ export default function AboutLocation({
               lg:mt-12
             "
           >
-            <div className="flex gap-4">
+            <div className="flex min-w-0 gap-4">
               <div
                 className="
                   flex
@@ -878,9 +980,11 @@ export default function AboutLocation({
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <p
                   className="
+                    max-w-full
+                    break-words
                     text-[9px]
                     font-semibold
                     uppercase
@@ -895,10 +999,12 @@ export default function AboutLocation({
                   className="
                     mt-3
                     max-w-[1050px]
+                    break-words
                     font-playfair
                     text-[19px]
                     leading-8
                     text-white/90
+                    [overflow-wrap:anywhere]
                     sm:text-[22px]
                     sm:leading-9
                   "
@@ -926,6 +1032,8 @@ function SnapshotCard({
   return (
     <div
       className="
+        min-w-0
+        overflow-hidden
         rounded-[20px]
         border
         border-[#17342d]/10
@@ -943,6 +1051,7 @@ function SnapshotCard({
           flex
           h-9
           w-9
+          shrink-0
           items-center
           justify-center
           rounded-full
@@ -956,11 +1065,14 @@ function SnapshotCard({
       <p
         className="
           mt-4
+          max-w-full
+          break-words
           text-[10px]
           font-semibold
           uppercase
           tracking-[0.14em]
           text-[#17342d]
+          [overflow-wrap:anywhere]
         "
       >
         {title}
@@ -969,9 +1081,12 @@ function SnapshotCard({
       <p
         className="
           mt-2
+          max-w-full
+          break-words
           text-[12px]
           leading-5
           text-[#667078]
+          [overflow-wrap:anywhere]
         "
       >
         {description}
@@ -993,6 +1108,7 @@ function MarketInsight({
     <div
       className="
         relative
+        min-w-0
         overflow-hidden
         rounded-[22px]
         border
@@ -1019,10 +1135,13 @@ function MarketInsight({
       <h3
         className="
           mt-5
+          max-w-full
+          break-words
           font-playfair
           text-[22px]
           font-semibold
           text-white
+          [overflow-wrap:anywhere]
         "
       >
         {title}
@@ -1031,9 +1150,12 @@ function MarketInsight({
       <p
         className="
           mt-3
+          max-w-full
+          break-words
           text-[12px]
           leading-6
           text-white/55
+          [overflow-wrap:anywhere]
         "
       >
         {description}
