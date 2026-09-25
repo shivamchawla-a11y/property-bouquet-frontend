@@ -18,7 +18,5 @@ export default function robots() {
     ],
 
     sitemap: "https://propertybouquet.com/sitemap.xml",
-
-    host: "https://propertybouquet.com",
   };
 }

@@ -10,7 +10,26 @@ import { buildPropertySchema } from "@/lib/propertySchema";
 import { buildLandingPageSEO } from "@/lib/landingPageSeo";
 import { buildLandingPageSchema } from "@/lib/landingPageSchema";
 
+// ======================================================
+// API
+// ======================================================
+
 const API = "https://propertybouquet.com";
+
+// ======================================================
+// CACHE / ISR SETTINGS
+// ======================================================
+//
+// 3600 seconds = 1 hour
+//
+// This replaces the previous 300-second / 5-minute
+// revalidation period.
+//
+// Property, landing-page and developer data can therefore
+// be reused instead of repeatedly requesting the backend.
+// ======================================================
+
+const REVALIDATE_SECONDS = 3600;
 
 // ======================================================
 // DEVELOPER PUBLIC SLUG
@@ -130,34 +149,18 @@ function getBackendDeveloperSlugCandidates(developerSlug) {
     `${baseSlug}-developers`,
   ];
 
-  return [
-    ...new Set(
-      candidates.filter(Boolean)
-    ),
-  ];
+  return [...new Set(candidates.filter(Boolean))];
 }
 
 // ======================================================
 // PROPERTY
 // ======================================================
 //
-// IMPORTANT PERFORMANCE:
-//
-// React cache() allows generateMetadata() and Page()
-// to reuse the same property request during the
+// React cache() prevents duplicate execution during the
 // same server render.
 //
-// Previously:
-//
-// generateMetadata()
-//      ↓
-// fetch property
-//
-// Page()
-//      ↓
-// fetch property AGAIN
-//
-// Now the request can be shared.
+// Next.js fetch revalidation keeps the fetched response
+// cached for 1 hour.
 // ======================================================
 
 const getProperty = cache(async function getProperty(slug) {
@@ -167,12 +170,10 @@ const getProperty = cache(async function getProperty(slug) {
     }
 
     const res = await fetch(
-      `${API}/api/properties/slug/${encodeURIComponent(
-        slug
-      )}`,
+      `${API}/api/properties/slug/${encodeURIComponent(slug)}`,
       {
         next: {
-          revalidate: 300,
+          revalidate: REVALIDATE_SECONDS,
         },
       }
     );
@@ -185,10 +186,7 @@ const getProperty = cache(async function getProperty(slug) {
 
     return data?.data || null;
   } catch (err) {
-    console.error(
-      "Property fetch error:",
-      err
-    );
+    console.error("Property fetch error:", err);
 
     return null;
   }
@@ -198,7 +196,7 @@ const getProperty = cache(async function getProperty(slug) {
 // LANDING PAGE
 // ======================================================
 //
-// Same caching optimization as property.
+// Cached for 1 hour.
 // ======================================================
 
 const getLandingPage = cache(
@@ -209,12 +207,10 @@ const getLandingPage = cache(
       }
 
       const res = await fetch(
-        `${API}/api/landing-pages/slug/${encodeURIComponent(
-          slug
-        )}`,
+        `${API}/api/landing-pages/slug/${encodeURIComponent(slug)}`,
         {
           next: {
-            revalidate: 300,
+            revalidate: REVALIDATE_SECONDS,
           },
         }
       );
@@ -227,10 +223,7 @@ const getLandingPage = cache(
 
       return data?.data || null;
     } catch (err) {
-      console.error(
-        "Landing page fetch error:",
-        err
-      );
+      console.error("Landing page fetch error:", err);
 
       return null;
     }
@@ -241,26 +234,9 @@ const getLandingPage = cache(
 // DEVELOPER DATA
 // ======================================================
 //
-// PERFORMANCE:
+// Developer candidate requests remain parallel.
 //
-// Developer candidates are requested IN PARALLEL
-// instead of one-by-one.
-//
-// Old:
-//
-// candidate 1 → wait
-// candidate 2 → wait
-// candidate 3 → wait
-// candidate 4 → wait
-//
-// New:
-//
-// candidate 1 ┐
-// candidate 2 ├── all at the same time
-// candidate 3 │
-// candidate 4 ┘
-//              ↓
-//          first valid
+// The returned developer data is now cached for 1 hour.
 // ======================================================
 
 const getDeveloperData = cache(
@@ -284,9 +260,7 @@ const getDeveloperData = cache(
         typeof developerRef === "object"
       ) {
         if (developerRef.slug) {
-          possibleSlugs.push(
-            developerRef.slug
-          );
+          possibleSlugs.push(developerRef.slug);
         }
 
         if (developerRef.name) {
@@ -295,10 +269,7 @@ const getDeveloperData = cache(
               .toLowerCase()
               .trim()
               .replace(/[^a-z0-9]+/g, "-")
-              .replace(
-                /^-+|-+$/g,
-                ""
-              )
+              .replace(/^-+|-+$/g, "")
           );
         }
       }
@@ -313,17 +284,12 @@ const getDeveloperData = cache(
             .toLowerCase()
             .trim()
             .replace(/[^a-z0-9]+/g, "-")
-            .replace(
-              /^-+|-+$/g,
-              ""
-            )
+            .replace(/^-+|-+$/g, "")
         );
       }
 
       const uniqueSlugs = [
-        ...new Set(
-          possibleSlugs.filter(Boolean)
-        ),
+        ...new Set(possibleSlugs.filter(Boolean)),
       ];
 
       if (!uniqueSlugs.length) {
@@ -336,11 +302,10 @@ const getDeveloperData = cache(
 
       const allCandidates = [
         ...new Set(
-          uniqueSlugs.flatMap(
-            (possibleSlug) =>
-              getBackendDeveloperSlugCandidates(
-                possibleSlug
-              )
+          uniqueSlugs.flatMap((possibleSlug) =>
+            getBackendDeveloperSlugCandidates(
+              possibleSlug
+            )
           )
         ),
       ];
@@ -354,57 +319,52 @@ const getDeveloperData = cache(
       // --------------------------------------------------
 
       const responses = await Promise.all(
-        allCandidates.map(
-          async (candidate) => {
-            try {
-              const res = await fetch(
-                `${API}/api/developers/${encodeURIComponent(
-                  candidate
-                )}`,
-                {
-                  next: {
-                    revalidate: 300,
-                  },
-                }
-              );
-
-              if (!res.ok) {
-                return null;
+        allCandidates.map(async (candidate) => {
+          try {
+            const res = await fetch(
+              `${API}/api/developers/${encodeURIComponent(
+                candidate
+              )}`,
+              {
+                next: {
+                  revalidate: REVALIDATE_SECONDS,
+                },
               }
+            );
 
-              const data =
-                await res.json();
-
-              if (!data?.developer) {
-                return null;
-              }
-
-              return {
-                candidate,
-                data,
-              };
-            } catch (error) {
-              console.error(
-                "Developer candidate fetch error:",
-                candidate,
-                error
-              );
-
+            if (!res.ok) {
               return null;
             }
+
+            const data = await res.json();
+
+            if (!data?.developer) {
+              return null;
+            }
+
+            return {
+              candidate,
+              data,
+            };
+          } catch (error) {
+            console.error(
+              "Developer candidate fetch error:",
+              candidate,
+              error
+            );
+
+            return null;
           }
-        )
+        })
       );
 
       // --------------------------------------------------
       // 4. FIND FIRST VALID DEVELOPER
       // --------------------------------------------------
 
-      const successfulResponse =
-        responses.find(
-          (item) =>
-            item?.data?.developer
-        );
+      const successfulResponse = responses.find(
+        (item) => item?.data?.developer
+      );
 
       if (!successfulResponse) {
         console.error(
@@ -416,17 +376,17 @@ const getDeveloperData = cache(
       }
 
       const developer =
-        successfulResponse.data
-          .developer;
+        successfulResponse.data.developer;
 
-      const properties =
-        Array.isArray(
-          successfulResponse.data
-            ?.properties
-        )
-          ? successfulResponse.data
-              .properties
-          : [];
+      const properties = Array.isArray(
+        successfulResponse.data?.properties
+      )
+        ? successfulResponse.data.properties
+        : [];
+
+      // --------------------------------------------------
+      // 5. BUILD BACKEND DEVELOPER SLUG
+      // --------------------------------------------------
 
       const backendDeveloperSlug =
         developer?.slug ||
@@ -434,7 +394,7 @@ const getDeveloperData = cache(
         "";
 
       // --------------------------------------------------
-      // 5. BUILD CANONICAL PUBLIC SLUG
+      // 6. BUILD PUBLIC DEVELOPER SLUG
       // --------------------------------------------------
 
       const actualBackendSlug =
@@ -449,14 +409,13 @@ const getDeveloperData = cache(
         );
 
       // --------------------------------------------------
-      // 6. RETURN DATA
+      // 7. RETURN
       // --------------------------------------------------
 
       return {
         developer,
         properties,
-        backendSlug:
-          actualBackendSlug,
+        backendSlug: actualBackendSlug,
         publicSlug,
       };
     } catch (err) {
@@ -481,12 +440,6 @@ export async function generateMetadata({
 
   // ------------------------------------------------------
   // PROPERTY + LANDING PAGE
-  // ------------------------------------------------------
-  //
-  // Run both lookups concurrently.
-  //
-  // This is particularly useful when the requested slug
-  // is a landing page rather than a property.
   // ------------------------------------------------------
 
   const [
@@ -544,13 +497,6 @@ export default async function Page({
   // ------------------------------------------------------
   // PROPERTY + LANDING PAGE
   // ------------------------------------------------------
-  //
-  // Both requests run concurrently.
-  //
-  // Because getProperty() and getLandingPage() are
-  // wrapped with React cache(), the request made by
-  // generateMetadata() can be reused when applicable.
-  // ------------------------------------------------------
 
   const [
     property,
@@ -571,11 +517,8 @@ export default async function Page({
 
     const developerData =
       await getDeveloperData(
-        property?.coreDetails
-          ?.developerName,
-
-        property?.coreDetails
-          ?.developerRef
+        property?.coreDetails?.developerName,
+        property?.coreDetails?.developerRef
       );
 
     // --------------------------------------------------
