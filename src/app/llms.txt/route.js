@@ -11,6 +11,8 @@
 // Canonical domain:
 // https://propertybouquet.com
 //
+// ============================================================
+//
 // INCLUDED:
 // - Main website
 // - Properties directory
@@ -38,6 +40,7 @@
 //
 // IMPORTANT:
 // - Uses the SAME API architecture as sitemap.js.
+// - Properties use /api/properties/seo-list.
 // - Insights are fetched from /api/news.
 // - /api/news results are exposed as the "insights" array.
 // - Insight URLs use /insights/{slug}.
@@ -54,6 +57,18 @@ const BASE_URL =
 const REVALIDATE_TIME = 3600;
 
 // ============================================================
+// NEXT.JS ROUTE REVALIDATION
+// ============================================================
+//
+// Regenerate llms.txt at most once per hour.
+//
+// This works together with the cached API fetches below and
+// the Cache-Control header returned at the end of the route.
+// ============================================================
+
+export const revalidate = 3600;
+
+// ============================================================
 // FETCH OPTIONS
 // ============================================================
 
@@ -66,9 +81,6 @@ const FETCH_OPTIONS = {
 // ============================================================
 // SAFE FETCH
 // ============================================================
-//
-// This follows the same response handling used by the
-// production sitemap.
 //
 // Supported API response formats:
 //
@@ -103,6 +115,7 @@ const FETCH_OPTIONS = {
 // {
 //   news: []
 // }
+//
 // ============================================================
 
 async function safeFetch(url) {
@@ -120,13 +133,18 @@ async function safeFetch(url) {
       return [];
     }
 
-    const json = await response.json();
+    const json =
+      await response.json();
 
     // ----------------------------------------------------------
     // Standard API response
     // ----------------------------------------------------------
 
-    if (Array.isArray(json?.data)) {
+    if (
+      Array.isArray(
+        json?.data
+      )
+    ) {
       return json.data;
     }
 
@@ -134,7 +152,9 @@ async function safeFetch(url) {
     // Direct array
     // ----------------------------------------------------------
 
-    if (Array.isArray(json)) {
+    if (
+      Array.isArray(json)
+    ) {
       return json;
     }
 
@@ -142,7 +162,11 @@ async function safeFetch(url) {
     // Properties
     // ----------------------------------------------------------
 
-    if (Array.isArray(json?.properties)) {
+    if (
+      Array.isArray(
+        json?.properties
+      )
+    ) {
       return json.properties;
     }
 
@@ -150,7 +174,11 @@ async function safeFetch(url) {
     // Developers
     // ----------------------------------------------------------
 
-    if (Array.isArray(json?.developers)) {
+    if (
+      Array.isArray(
+        json?.developers
+      )
+    ) {
       return json.developers;
     }
 
@@ -158,7 +186,11 @@ async function safeFetch(url) {
     // Articles
     // ----------------------------------------------------------
 
-    if (Array.isArray(json?.articles)) {
+    if (
+      Array.isArray(
+        json?.articles
+      )
+    ) {
       return json.articles;
     }
 
@@ -166,7 +198,11 @@ async function safeFetch(url) {
     // News
     // ----------------------------------------------------------
 
-    if (Array.isArray(json?.news)) {
+    if (
+      Array.isArray(
+        json?.news
+      )
+    ) {
       return json.news;
     }
 
@@ -194,7 +230,8 @@ function safeSlug(slug) {
     return null;
   }
 
-  const value = String(slug).trim();
+  const value =
+    String(slug).trim();
 
   if (!value) {
     return null;
@@ -203,37 +240,6 @@ function safeSlug(slug) {
   return value;
 }
 
-// ============================================================
-// PUBLIC DEVELOPER SLUG BUILDER
-// ============================================================
-//
-// This MUST stay synchronized with the public developer
-// page architecture.
-//
-// Backend slug:
-// m3m
-//
-// Public slug:
-// m3m-developer-projects
-//
-// Backend slug:
-// signature-global
-//
-// Public slug:
-// signature-global-developer-projects
-//
-// Backend slug:
-// spiti-developer
-//
-// Public slug:
-// spiti-developer-projects
-//
-// Backend slug:
-// ats-infrastructure-ltd
-//
-// Public slug:
-// ats-infrastructure-ltd-developer-projects
-// ============================================================
 // ============================================================
 // PUBLIC DEVELOPER SLUG BUILDER
 // ============================================================
@@ -263,6 +269,7 @@ function safeSlug(slug) {
 // Backend slug:
 // parsvnath-developers-projects
 // → unchanged
+//
 // ============================================================
 
 function buildPublicDeveloperSlug(
@@ -272,10 +279,14 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  const cleanSlug = String(developerSlug)
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
+  const cleanSlug =
+    String(developerSlug)
+      .trim()
+      .toLowerCase()
+      .replace(
+        /^\/+|\/+$/g,
+        ""
+      );
 
   if (!cleanSlug) {
     return "";
@@ -285,6 +296,7 @@ function buildPublicDeveloperSlug(
   // Already canonical:
   // example-developer-projects
   // ----------------------------------------------------------
+
   if (
     cleanSlug.endsWith(
       "-developer-projects"
@@ -300,6 +312,7 @@ function buildPublicDeveloperSlug(
   // Backend slug already ends with:
   // example-developer
   // ----------------------------------------------------------
+
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -312,6 +325,7 @@ function buildPublicDeveloperSlug(
   // Backend slug already ends with:
   // example-developers
   // ----------------------------------------------------------
+
   if (
     cleanSlug.endsWith(
       "-developers"
@@ -324,6 +338,7 @@ function buildPublicDeveloperSlug(
   // Normal backend slug:
   // example
   // ----------------------------------------------------------
+
   return `${cleanSlug}-developer-projects`;
 }
 
@@ -337,12 +352,18 @@ function isActive(item) {
   }
 
   // Explicitly deleted
-  if (item.isDeleted === true) {
+
+  if (
+    item.isDeleted === true
+  ) {
     return false;
   }
 
   // Explicitly inactive
-  if (item.isActive === false) {
+
+  if (
+    item.isActive === false
+  ) {
     return false;
   }
 
@@ -353,20 +374,29 @@ function isActive(item) {
 // PUBLISHED PROPERTY CHECK
 // ============================================================
 
-function isPublishedProperty(property) {
+function isPublishedProperty(
+  property
+) {
   if (!property) {
     return false;
   }
 
-  if (property.status !== "published") {
+  if (
+    property.status !==
+    "published"
+  ) {
     return false;
   }
 
-  if (property.isDeleted === true) {
+  if (
+    property.isDeleted === true
+  ) {
     return false;
   }
 
-  if (property.isActive === false) {
+  if (
+    property.isActive === false
+  ) {
     return false;
   }
 
@@ -396,15 +426,19 @@ function isPublishedProperty(property) {
 // Used for:
 // - Knowledge
 // - Insights / News
+//
 // ============================================================
 
-function isPublishedContent(item) {
+function isPublishedContent(
+  item
+) {
   if (!isActive(item)) {
     return false;
   }
 
   if (
-    item.status !== undefined &&
+    item.status !==
+      undefined &&
     item.status !== null &&
     item.status !== "published"
   ) {
@@ -418,9 +452,12 @@ function isPublishedContent(item) {
 // PROPERTY TITLE
 // ============================================================
 
-function getPropertyTitle(property) {
+function getPropertyTitle(
+  property
+) {
   return (
-    property?.coreDetails?.title ||
+    property?.coreDetails
+      ?.title ||
     property?.title ||
     property?.name ||
     "Property"
@@ -431,7 +468,9 @@ function getPropertyTitle(property) {
 // PROPERTY LOCATION
 // ============================================================
 
-function getPropertyLocation(property) {
+function getPropertyLocation(
+  property
+) {
   return (
     property?.locationData
       ?.locationName ||
@@ -446,7 +485,9 @@ function getPropertyLocation(property) {
 // PROPERTY DEVELOPER
 // ============================================================
 
-function getPropertyDeveloper(property) {
+function getPropertyDeveloper(
+  property
+) {
   return (
     property?.coreDetails
       ?.developerRef?.name ||
@@ -462,7 +503,9 @@ function getPropertyDeveloper(property) {
 // DEVELOPER NAME
 // ============================================================
 
-function getDeveloperName(developer) {
+function getDeveloperName(
+  developer
+) {
   return (
     developer?.name ||
     developer?.developerName ||
@@ -473,13 +516,6 @@ function getDeveloperName(developer) {
 
 // ============================================================
 // CONTENT TITLE
-// ============================================================
-//
-// Insights/news articles may expose their title through
-// different fields depending on the CMS response.
-//
-// We check the most likely fields without changing the
-// underlying article URL.
 // ============================================================
 
 function getContentTitle(
@@ -518,7 +554,9 @@ function getContentDescription(
 // CONTENT SLUG
 // ============================================================
 
-function getContentSlug(article) {
+function getContentSlug(
+  article
+) {
   return safeSlug(
     article?.slug ||
       article?.seoEngine?.slug
@@ -536,11 +574,15 @@ export async function GET() {
   //
   // IMPORTANT:
   //
-  // Insights are fetched from /api/news.
+  // Properties now use the lightweight SEO endpoint:
   //
-  // This exactly matches your production sitemap.js:
+  // /api/properties/seo-list
   //
-  // safeFetch(`${API}/news`)
+  // This avoids loading the full
+  // /api/properties?all=true response into the Next.js
+  // data cache.
+  //
+  // Insights continue to use /api/news.
   //
   // ==========================================================
 
@@ -553,9 +595,15 @@ export async function GET() {
     // --------------------------------------------------------
     // PROPERTIES
     // --------------------------------------------------------
+    //
+    // LIGHTWEIGHT SEO ENDPOINT
+    //
+    // Returns only published, active, non-deleted SEO fields.
+    //
+    // --------------------------------------------------------
 
     safeFetch(
-      `${API}/properties?all=true`
+      `${API}/properties/seo-list`
     ),
 
     // --------------------------------------------------------
@@ -577,8 +625,6 @@ export async function GET() {
     // --------------------------------------------------------
     // INSIGHTS / NEWS
     // --------------------------------------------------------
-    //
-    // THIS IS THE IMPORTANT FIX.
     //
     // Your sitemap uses /api/news.
     // Therefore llms.txt uses /api/news too.
@@ -606,21 +652,23 @@ export async function GET() {
                 property?.slug
               )
           )
-          .sort((a, b) => {
-            const titleA =
-              getPropertyTitle(
-                a
-              ).toLowerCase();
+          .sort(
+            (a, b) => {
+              const titleA =
+                getPropertyTitle(
+                  a
+                ).toLowerCase();
 
-            const titleB =
-              getPropertyTitle(
-                b
-              ).toLowerCase();
+              const titleB =
+                getPropertyTitle(
+                  b
+                ).toLowerCase();
 
-            return titleA.localeCompare(
-              titleB
-            );
-          })
+              return titleA.localeCompare(
+                titleB
+              );
+            }
+          )
       : [];
 
   // ==========================================================
@@ -642,21 +690,23 @@ export async function GET() {
                     ?.developerSlug
               )
           )
-          .sort((a, b) => {
-            const nameA =
-              getDeveloperName(
-                a
-              ).toLowerCase();
+          .sort(
+            (a, b) => {
+              const nameA =
+                getDeveloperName(
+                  a
+                ).toLowerCase();
 
-            const nameB =
-              getDeveloperName(
-                b
-              ).toLowerCase();
+              const nameB =
+                getDeveloperName(
+                  b
+                ).toLowerCase();
 
-            return nameA.localeCompare(
-              nameB
-            );
-          })
+              return nameA.localeCompare(
+                nameB
+              );
+            }
+          )
       : [];
 
   // ==========================================================
@@ -677,39 +727,29 @@ export async function GET() {
                 article
               )
           )
-          .sort((a, b) => {
-            const titleA =
-              getContentTitle(
-                a,
-                "Knowledge Article"
-              ).toLowerCase();
+          .sort(
+            (a, b) => {
+              const titleA =
+                getContentTitle(
+                  a,
+                  "Knowledge Article"
+                ).toLowerCase();
 
-            const titleB =
-              getContentTitle(
-                b,
-                "Knowledge Article"
-              ).toLowerCase();
+              const titleB =
+                getContentTitle(
+                  b,
+                  "Knowledge Article"
+                ).toLowerCase();
 
-            return titleA.localeCompare(
-              titleB
-            );
-          })
+              return titleA.localeCompare(
+                titleB
+              );
+            }
+          )
       : [];
 
   // ==========================================================
   // PUBLISHED INSIGHTS / NEWS
-  // ==========================================================
-  //
-  // THIS NOW USES THE EXACT SAME DATA SOURCE AS sitemap.js.
-  //
-  // /api/news
-  //      ↓
-  // insights[]
-  //      ↓
-  // article.slug
-  //      ↓
-  // /insights/{slug}
-  //
   // ==========================================================
 
   const publishedInsights =
@@ -724,23 +764,25 @@ export async function GET() {
                 article
               )
           )
-          .sort((a, b) => {
-            const titleA =
-              getContentTitle(
-                a,
-                "Property Insight"
-              ).toLowerCase();
+          .sort(
+            (a, b) => {
+              const titleA =
+                getContentTitle(
+                  a,
+                  "Property Insight"
+                ).toLowerCase();
 
-            const titleB =
-              getContentTitle(
-                b,
-                "Property Insight"
-              ).toLowerCase();
+              const titleB =
+                getContentTitle(
+                  b,
+                  "Property Insight"
+                ).toLowerCase();
 
-            return titleA.localeCompare(
-              titleB
-            );
-          })
+              return titleA.localeCompare(
+                titleB
+              );
+            }
+          )
       : [];
 
   // ==========================================================
@@ -914,12 +956,9 @@ export async function GET() {
             developer?.backendSlug ||
             developer?.developerSlug ||
             developer?.data?.slug ||
-            developer?.data
-              ?.backendSlug ||
-            developer?.data
-              ?.developerSlug ||
-            developer?.developer
-              ?.slug
+            developer?.data?.backendSlug ||
+            developer?.data?.developerSlug ||
+            developer?.developer?.slug
         );
 
       if (!backendDeveloperSlug) {
@@ -1004,17 +1043,6 @@ export async function GET() {
 
   // ==========================================================
   // PROPERTY INSIGHTS
-  // ==========================================================
-  //
-  // These are individual articles such as:
-  //
-  // /insights/why-investing-in-luxury-real-estate-in-gurgaon-is-the-smartest-decision-in-2026
-  //
-  // They are sourced from:
-  //
-  // /api/news
-  //
-  // exactly like sitemap.js.
   // ==========================================================
 
   if (
