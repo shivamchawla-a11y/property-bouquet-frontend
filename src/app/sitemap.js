@@ -71,7 +71,6 @@ const BASE_URL =
 
 const REVALIDATE_TIME = 3600;
 
-
 // ============================================================
 // FETCH OPTIONS
 // ============================================================
@@ -81,7 +80,6 @@ const FETCH_OPTIONS = {
     revalidate: REVALIDATE_TIME,
   },
 };
-
 
 // ============================================================
 // SAFE FETCH
@@ -104,7 +102,6 @@ async function safeFetch(url) {
 
     const json = await response.json();
 
-
     // --------------------------------------------------------
     // Standard API response
     // --------------------------------------------------------
@@ -112,7 +109,6 @@ async function safeFetch(url) {
     if (Array.isArray(json?.data)) {
       return json.data;
     }
-
 
     // --------------------------------------------------------
     // Direct array
@@ -122,7 +118,6 @@ async function safeFetch(url) {
       return json;
     }
 
-
     // --------------------------------------------------------
     // Properties
     // --------------------------------------------------------
@@ -130,7 +125,6 @@ async function safeFetch(url) {
     if (Array.isArray(json?.properties)) {
       return json.properties;
     }
-
 
     // --------------------------------------------------------
     // Developers
@@ -140,7 +134,6 @@ async function safeFetch(url) {
       return json.developers;
     }
 
-
     // --------------------------------------------------------
     // Locations
     // --------------------------------------------------------
@@ -148,7 +141,6 @@ async function safeFetch(url) {
     if (Array.isArray(json?.locations)) {
       return json.locations;
     }
-
 
     // --------------------------------------------------------
     // Articles
@@ -158,7 +150,6 @@ async function safeFetch(url) {
       return json.articles;
     }
 
-
     // --------------------------------------------------------
     // News
     // --------------------------------------------------------
@@ -166,7 +157,6 @@ async function safeFetch(url) {
     if (Array.isArray(json?.news)) {
       return json.news;
     }
-
 
     // --------------------------------------------------------
     // Unexpected response
@@ -186,7 +176,6 @@ async function safeFetch(url) {
     return [];
   }
 }
-
 
 // ============================================================
 // VALID DATE
@@ -208,7 +197,6 @@ function getValidDate(...values) {
   return undefined;
 }
 
-
 // ============================================================
 // ACTIVE DOCUMENT CHECK
 // ============================================================
@@ -229,7 +217,6 @@ function isActive(item) {
   return true;
 }
 
-
 // ============================================================
 // PUBLISHED CONTENT CHECK
 // ============================================================
@@ -249,7 +236,6 @@ function isPublishedContent(item) {
 
   return true;
 }
-
 
 // ============================================================
 // CANONICAL URL NORMALIZER
@@ -277,7 +263,6 @@ function normalizeUrl(path) {
     return null;
   }
 
-
   // ==========================================================
   // ABSOLUTE URL
   // ==========================================================
@@ -285,7 +270,6 @@ function normalizeUrl(path) {
   if (/^https?:\/\//i.test(value)) {
     try {
       const parsed = new URL(value);
-
 
       // ------------------------------------------------------
       // Only allow our own domain
@@ -300,13 +284,11 @@ function normalizeUrl(path) {
         return null;
       }
 
-
       // ------------------------------------------------------
       // Force HTTPS
       // ------------------------------------------------------
 
       parsed.protocol = "https:";
-
 
       // ------------------------------------------------------
       // Force non-www
@@ -315,20 +297,17 @@ function normalizeUrl(path) {
       parsed.hostname =
         "propertybouquet.com";
 
-
       // ------------------------------------------------------
       // Remove query parameters
       // ------------------------------------------------------
 
       parsed.search = "";
 
-
       // ------------------------------------------------------
       // Remove hash
       // ------------------------------------------------------
 
       parsed.hash = "";
-
 
       // ------------------------------------------------------
       // Normalize pathname
@@ -353,7 +332,6 @@ function normalizeUrl(path) {
     }
   }
 
-
   // ==========================================================
   // RELATIVE URL
   // ==========================================================
@@ -362,20 +340,17 @@ function normalizeUrl(path) {
     value = `/${value}`;
   }
 
-
   // ----------------------------------------------------------
   // Remove query string
   // ----------------------------------------------------------
 
   value = value.split("?")[0];
 
-
   // ----------------------------------------------------------
   // Remove hash
   // ----------------------------------------------------------
 
   value = value.split("#")[0];
-
 
   // ----------------------------------------------------------
   // Remove trailing slash except homepage
@@ -391,7 +366,6 @@ function normalizeUrl(path) {
 
   return `${BASE_URL}${value}`;
 }
-
 
 // ============================================================
 // ADD URL
@@ -412,7 +386,6 @@ function addUrl(
     return;
   }
 
-
   // ----------------------------------------------------------
   // Prevent duplicates
   // ----------------------------------------------------------
@@ -421,13 +394,11 @@ function addUrl(
     return;
   }
 
-
   const entry = {
     url,
     changeFrequency,
     priority,
   };
-
 
   // ----------------------------------------------------------
   // Valid last modified date
@@ -441,10 +412,8 @@ function addUrl(
       validLastModified;
   }
 
-
   sitemap.set(url, entry);
 }
-
 
 // ============================================================
 // SAFE SLUG
@@ -467,7 +436,6 @@ function safeSlug(slug) {
   );
 }
 
-
 // ============================================================
 // SLUGIFY
 // ============================================================
@@ -479,7 +447,6 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
 
 // ============================================================
 // LOCATION PREPOSITION
@@ -521,7 +488,6 @@ function getLocationPreposition(location) {
   const value =
     `${name} ${slug}`;
 
-
   const onKeywords = [
     "expressway",
     "express way",
@@ -534,7 +500,6 @@ function getLocationPreposition(location) {
     "marg",
   ];
 
-
   return onKeywords.some(
     (keyword) =>
       value.includes(keyword)
@@ -542,7 +507,6 @@ function getLocationPreposition(location) {
     ? "on"
     : "in";
 }
-
 
 // ============================================================
 // GET LOCATION ID
@@ -561,7 +525,6 @@ function getLocationId(location) {
   );
 }
 
-
 // ============================================================
 // GET PARENT ID
 // ============================================================
@@ -579,7 +542,6 @@ function getParentId(location) {
   );
 }
 
-
 // ============================================================
 // FIND LOCATION BY ID
 // ============================================================
@@ -595,12 +557,10 @@ function findLocationById(
   const targetId =
     String(id);
 
-
   for (const location of locations) {
     if (!location) {
       continue;
     }
-
 
     const currentId =
       getLocationId(location);
@@ -615,7 +575,6 @@ function findLocationById(
 
   return null;
 }
-
 
 // ============================================================
 // GET ROOT LOCATION
@@ -648,7 +607,6 @@ function getRootLocation(
   const visited =
     new Set();
 
-
   while (root?.parent) {
     const parentId =
       getParentId(root);
@@ -656,7 +614,6 @@ function getRootLocation(
     if (!parentId) {
       break;
     }
-
 
     // Prevent circular parent relationships
     if (
@@ -666,7 +623,6 @@ function getRootLocation(
     }
 
     visited.add(parentId);
-
 
     const parent =
       findLocationById(
@@ -684,7 +640,6 @@ function getRootLocation(
 
   return root;
 }
-
 
 // ============================================================
 // BUILD PUBLIC LOCATION SLUG
@@ -723,7 +678,6 @@ function buildPublicLocationSlug(
     return "";
   }
 
-
   const currentPart =
     slugify(
       location.slug ||
@@ -731,18 +685,15 @@ function buildPublicLocationSlug(
         ""
     );
 
-
   if (!currentPart) {
     return "";
   }
-
 
   const root =
     getRootLocation(
       location,
       locations
     );
-
 
   const rootPart =
     slugify(
@@ -751,12 +702,10 @@ function buildPublicLocationSlug(
         ""
     );
 
-
   const preposition =
     getLocationPreposition(
       location
     );
-
 
   if (
     rootPart &&
@@ -765,10 +714,8 @@ function buildPublicLocationSlug(
     return `properties-${preposition}-${currentPart}-${rootPart}`;
   }
 
-
   return `properties-${preposition}-${currentPart}`;
 }
-
 
 // ============================================================
 // PUBLIC DEVELOPER SLUG BUILDER
@@ -803,7 +750,6 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-
   const cleanSlug =
     String(developerSlug)
       .trim()
@@ -813,11 +759,9 @@ function buildPublicDeveloperSlug(
         ""
       );
 
-
   if (!cleanSlug) {
     return "";
   }
-
 
   // ==========================================================
   // ALREADY CANONICAL
@@ -834,7 +778,6 @@ function buildPublicDeveloperSlug(
     return cleanSlug;
   }
 
-
   // ==========================================================
   // BACKEND SLUG ENDS WITH "-developer"
   // ==========================================================
@@ -846,7 +789,6 @@ function buildPublicDeveloperSlug(
   ) {
     return `${cleanSlug}-projects`;
   }
-
 
   // ==========================================================
   // BACKEND SLUG ENDS WITH "-developers"
@@ -860,14 +802,12 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-
   // ==========================================================
   // NORMAL BACKEND SLUG
   // ==========================================================
 
   return `${cleanSlug}-developer-projects`;
 }
-
 
 // ============================================================
 // MAIN SITEMAP
@@ -876,7 +816,6 @@ function buildPublicDeveloperSlug(
 export default async function sitemap() {
   const sitemap =
     new Map();
-
 
   // ==========================================================
   // STATIC PUBLIC PAGES
@@ -891,7 +830,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/properties",
@@ -900,7 +838,6 @@ export default async function sitemap() {
       changeFrequency: "daily",
     }
   );
-
 
   addUrl(
     sitemap,
@@ -911,7 +848,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/locations",
@@ -920,7 +856,6 @@ export default async function sitemap() {
       changeFrequency: "weekly",
     }
   );
-
 
   addUrl(
     sitemap,
@@ -931,7 +866,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/insights",
@@ -940,7 +874,6 @@ export default async function sitemap() {
       changeFrequency: "weekly",
     }
   );
-
 
   addUrl(
     sitemap,
@@ -951,7 +884,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/contact",
@@ -960,7 +892,6 @@ export default async function sitemap() {
       changeFrequency: "monthly",
     }
   );
-
 
   // ==========================================================
   // HUMAN-FACING SITEMAP
@@ -975,7 +906,6 @@ export default async function sitemap() {
     }
   );
 
-
   // ==========================================================
   // LEGAL PAGES
   // ==========================================================
@@ -989,7 +919,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/disclaimer",
@@ -999,7 +928,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/terms-of-use",
@@ -1008,7 +936,6 @@ export default async function sitemap() {
       changeFrequency: "yearly",
     }
   );
-
 
   // ==========================================================
   // PUBLIC SEO TOOLS
@@ -1023,7 +950,6 @@ export default async function sitemap() {
     }
   );
 
-
   addUrl(
     sitemap,
     "/tools/area-converter",
@@ -1032,7 +958,6 @@ export default async function sitemap() {
       changeFrequency: "monthly",
     }
   );
-
 
   // ==========================================================
   // FETCH DYNAMIC DATA
@@ -1045,8 +970,21 @@ export default async function sitemap() {
     knowledgeArticles,
     insights,
   ] = await Promise.all([
+    // ========================================================
+    // IMPORTANT SEO OPTIMIZATION
+    // ========================================================
+    //
+    // DO NOT use:
+    // /properties?all=true
+    //
+    // That endpoint returns the full property documents and
+    // creates a very large Next.js data-cache payload.
+    //
+    // The dedicated SEO endpoint returns only the fields
+    // required by the sitemap.
+    //
     safeFetch(
-      `${API}/properties?all=true`
+      `${API}/properties/seo-list`
     ),
 
     safeFetch(
@@ -1066,7 +1004,6 @@ export default async function sitemap() {
     ),
   ]);
 
-
   // ==========================================================
   // PROPERTY PAGES
   // ==========================================================
@@ -1077,17 +1014,14 @@ export default async function sitemap() {
         return;
       }
 
-
       const slug =
         safeSlug(
           property.slug
         );
 
-
       if (!slug) {
         return;
       }
-
 
       // ------------------------------------------------------
       // Published only
@@ -1100,7 +1034,6 @@ export default async function sitemap() {
         return;
       }
 
-
       // ------------------------------------------------------
       // Deleted excluded
       // ------------------------------------------------------
@@ -1110,7 +1043,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       // ------------------------------------------------------
       // Inactive excluded
@@ -1122,7 +1054,6 @@ export default async function sitemap() {
         return;
       }
 
-
       // ------------------------------------------------------
       // Trash excluded
       // ------------------------------------------------------
@@ -1133,7 +1064,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       addUrl(
         sitemap,
@@ -1154,7 +1084,6 @@ export default async function sitemap() {
     }
   );
 
-
   // ==========================================================
   // DEVELOPER PAGES
   // ==========================================================
@@ -1164,7 +1093,6 @@ export default async function sitemap() {
       if (!developer) {
         return;
       }
-
 
       // ------------------------------------------------------
       // Extract backend developer slug
@@ -1180,17 +1108,14 @@ export default async function sitemap() {
         developer.developer?.slug ||
         "";
 
-
       const publicDeveloperSlug =
         buildPublicDeveloperSlug(
           backendDeveloperSlug
         );
 
-
       if (!publicDeveloperSlug) {
         return;
       }
-
 
       // ------------------------------------------------------
       // Deleted excluded
@@ -1202,7 +1127,6 @@ export default async function sitemap() {
         return;
       }
 
-
       // ------------------------------------------------------
       // Inactive excluded
       // ------------------------------------------------------
@@ -1212,7 +1136,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       addUrl(
         sitemap,
@@ -1234,7 +1157,6 @@ export default async function sitemap() {
       );
     }
   );
-
 
   // ==========================================================
   // LOCATION PAGES
@@ -1258,7 +1180,6 @@ export default async function sitemap() {
         return;
       }
 
-
       // ------------------------------------------------------
       // Deleted excluded
       // ------------------------------------------------------
@@ -1268,7 +1189,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       // ------------------------------------------------------
       // Inactive excluded
@@ -1280,18 +1200,15 @@ export default async function sitemap() {
         return;
       }
 
-
       const publicLocationSlug =
         buildPublicLocationSlug(
           location,
           locations
         );
 
-
       if (!publicLocationSlug) {
         return;
       }
-
 
       addUrl(
         sitemap,
@@ -1314,7 +1231,6 @@ export default async function sitemap() {
     }
   );
 
-
   // ==========================================================
   // KNOWLEDGE ARTICLES
   // ==========================================================
@@ -1325,17 +1241,14 @@ export default async function sitemap() {
         return;
       }
 
-
       const slug =
         safeSlug(
           article.slug
         );
 
-
       if (!slug) {
         return;
       }
-
 
       if (
         !isPublishedContent(
@@ -1344,7 +1257,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       addUrl(
         sitemap,
@@ -1365,7 +1277,6 @@ export default async function sitemap() {
     }
   );
 
-
   // ==========================================================
   // PROPERTY INSIGHTS / NEWS
   // ==========================================================
@@ -1376,17 +1287,14 @@ export default async function sitemap() {
         return;
       }
 
-
       const slug =
         safeSlug(
           article.slug
         );
 
-
       if (!slug) {
         return;
       }
-
 
       if (
         !isPublishedContent(
@@ -1395,7 +1303,6 @@ export default async function sitemap() {
       ) {
         return;
       }
-
 
       addUrl(
         sitemap,
@@ -1416,7 +1323,6 @@ export default async function sitemap() {
     }
   );
 
-
   // ==========================================================
   // FINAL SORT
   // ==========================================================
@@ -1424,7 +1330,6 @@ export default async function sitemap() {
   const sortedUrls =
     [...sitemap.values()]
       .sort((a, b) => {
-
         // ----------------------------------------------------
         // Homepage first
         // ----------------------------------------------------
@@ -1436,14 +1341,12 @@ export default async function sitemap() {
           return -1;
         }
 
-
         if (
           b.url ===
           `${BASE_URL}/`
         ) {
           return 1;
         }
-
 
         // ----------------------------------------------------
         // Higher priority first
@@ -1459,7 +1362,6 @@ export default async function sitemap() {
           );
         }
 
-
         // ----------------------------------------------------
         // Alphabetical
         // ----------------------------------------------------
@@ -1469,20 +1371,17 @@ export default async function sitemap() {
         );
       });
 
-
   // ==========================================================
   // DIAGNOSTICS
   // ==========================================================
 
   console.log(
     `✅ Property Bouquet sitemap generated successfully: ${sortedUrls.length} URLs`
-  );
-
+``  );
 
   console.log(
     `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Locations: ${locations.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
   );
-
 
   // ==========================================================
   // RETURN
