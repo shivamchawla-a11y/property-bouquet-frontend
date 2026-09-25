@@ -24,43 +24,6 @@
 // - Duplicate URLs
 // - Non-canonical URLs
 //
-// LOCATION URL ARCHITECTURE:
-//
-// Sector 56
-// → /locations/properties-in-sector-56-gurgaon
-//
-// Golf Course Road
-// → /locations/properties-on-golf-course-road-gurgaon
-//
-// Dwarka Expressway
-// → /locations/properties-on-dwarka-expressway-gurgaon
-//
-// Gurgaon
-// → /locations/properties-in-gurgaon
-//
-// Greater Kailash
-// → /locations/properties-in-greater-kailash-delhi
-//
-// Farukhnagar
-// → /locations/properties-in-farukhnagar-gurgaon
-//
-// Developer URL architecture:
-//
-// m3m
-// → /developers/m3m-developer-projects
-//
-// signature-global
-// → /developers/signature-global-developer-projects
-//
-// spiti-developer
-// → /developers/spiti-developer-projects
-//
-// ats-infrastructure-ltd
-// → /developers/ats-infrastructure-ltd-developer-projects
-//
-// parsvnath-developers
-// → /developers/parsvnath-developers-projects
-//
 // ============================================================
 
 const API =
@@ -102,65 +65,48 @@ async function safeFetch(url) {
 
     const json = await response.json();
 
-    // --------------------------------------------------------
-    // Standard API response
-    // --------------------------------------------------------
+    // Standard API response:
+    // { data: [] }
 
     if (Array.isArray(json?.data)) {
       return json.data;
     }
 
-    // --------------------------------------------------------
     // Direct array
-    // --------------------------------------------------------
 
     if (Array.isArray(json)) {
       return json;
     }
 
-    // --------------------------------------------------------
     // Properties
-    // --------------------------------------------------------
 
     if (Array.isArray(json?.properties)) {
       return json.properties;
     }
 
-    // --------------------------------------------------------
     // Developers
-    // --------------------------------------------------------
 
     if (Array.isArray(json?.developers)) {
       return json.developers;
     }
 
-    // --------------------------------------------------------
     // Locations
-    // --------------------------------------------------------
 
     if (Array.isArray(json?.locations)) {
       return json.locations;
     }
 
-    // --------------------------------------------------------
     // Articles
-    // --------------------------------------------------------
 
     if (Array.isArray(json?.articles)) {
       return json.articles;
     }
 
-    // --------------------------------------------------------
     // News
-    // --------------------------------------------------------
 
     if (Array.isArray(json?.news)) {
       return json.news;
     }
-
-    // --------------------------------------------------------
-    // Unexpected response
-    // --------------------------------------------------------
 
     console.warn(
       `⚠️ Sitemap API returned an unexpected data format: ${url}`
@@ -238,18 +184,43 @@ function isPublishedContent(item) {
 }
 
 // ============================================================
-// CANONICAL URL NORMALIZER
+// PUBLISHED PROPERTY CHECK
 // ============================================================
-//
-// Guarantees sitemap URLs:
-//
-// - HTTPS
-// - non-www
-// - no query strings
-// - no hash fragments
-// - no unnecessary trailing slash
-// - propertybouquet.com only
-//
+
+function isPublishedProperty(property) {
+  if (!property) {
+    return false;
+  }
+
+  if (property.status !== "published") {
+    return false;
+  }
+
+  if (property.isDeleted === true) {
+    return false;
+  }
+
+  if (property.isActive === false) {
+    return false;
+  }
+
+  if (
+    property.deletedFromStatus === "trash"
+  ) {
+    return false;
+  }
+
+  if (
+    property.deletedFromStatus === "inactive"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+// ============================================================
+// CANONICAL URL NORMALIZER
 // ============================================================
 
 function normalizeUrl(path) {
@@ -263,55 +234,29 @@ function normalizeUrl(path) {
     return null;
   }
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // ABSOLUTE URL
-  // ==========================================================
+  // ----------------------------------------------------------
 
   if (/^https?:\/\//i.test(value)) {
     try {
       const parsed = new URL(value);
 
-      // ------------------------------------------------------
-      // Only allow our own domain
-      // ------------------------------------------------------
+      const hostname =
+        parsed.hostname.toLowerCase();
 
       if (
-        parsed.hostname !==
-          "propertybouquet.com" &&
-        parsed.hostname !==
-          "www.propertybouquet.com"
+        hostname !== "propertybouquet.com" &&
+        hostname !== "www.propertybouquet.com"
       ) {
         return null;
       }
 
-      // ------------------------------------------------------
-      // Force HTTPS
-      // ------------------------------------------------------
-
       parsed.protocol = "https:";
-
-      // ------------------------------------------------------
-      // Force non-www
-      // ------------------------------------------------------
-
-      parsed.hostname =
-        "propertybouquet.com";
-
-      // ------------------------------------------------------
-      // Remove query parameters
-      // ------------------------------------------------------
+      parsed.hostname = "propertybouquet.com";
 
       parsed.search = "";
-
-      // ------------------------------------------------------
-      // Remove hash
-      // ------------------------------------------------------
-
       parsed.hash = "";
-
-      // ------------------------------------------------------
-      // Normalize pathname
-      // ------------------------------------------------------
 
       let pathname =
         parsed.pathname || "/";
@@ -332,29 +277,16 @@ function normalizeUrl(path) {
     }
   }
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // RELATIVE URL
-  // ==========================================================
+  // ----------------------------------------------------------
 
   if (!value.startsWith("/")) {
     value = `/${value}`;
   }
 
-  // ----------------------------------------------------------
-  // Remove query string
-  // ----------------------------------------------------------
-
   value = value.split("?")[0];
-
-  // ----------------------------------------------------------
-  // Remove hash
-  // ----------------------------------------------------------
-
   value = value.split("#")[0];
-
-  // ----------------------------------------------------------
-  // Remove trailing slash except homepage
-  // ----------------------------------------------------------
 
   if (
     value !== "/" &&
@@ -365,54 +297,6 @@ function normalizeUrl(path) {
   }
 
   return `${BASE_URL}${value}`;
-}
-
-// ============================================================
-// ADD URL
-// ============================================================
-
-function addUrl(
-  sitemap,
-  path,
-  {
-    lastModified,
-    changeFrequency = "weekly",
-    priority = 0.7,
-  } = {}
-) {
-  const url = normalizeUrl(path);
-
-  if (!url) {
-    return;
-  }
-
-  // ----------------------------------------------------------
-  // Prevent duplicates
-  // ----------------------------------------------------------
-
-  if (sitemap.has(url)) {
-    return;
-  }
-
-  const entry = {
-    url,
-    changeFrequency,
-    priority,
-  };
-
-  // ----------------------------------------------------------
-  // Valid last modified date
-  // ----------------------------------------------------------
-
-  const validLastModified =
-    getValidDate(lastModified);
-
-  if (validLastModified) {
-    entry.lastModified =
-      validLastModified;
-  }
-
-  sitemap.set(url, entry);
 }
 
 // ============================================================
@@ -431,9 +315,7 @@ function safeSlug(slug) {
     return null;
   }
 
-  return encodeURIComponent(
-    value
-  );
+  return encodeURIComponent(value);
 }
 
 // ============================================================
@@ -450,28 +332,6 @@ function slugify(value) {
 
 // ============================================================
 // LOCATION PREPOSITION
-// ============================================================
-//
-// Roads / expressways / highways / streets / avenues etc.
-// use "on".
-//
-// Sectors / cities / localities etc.
-// use "in".
-//
-// Examples:
-//
-// Golf Course Road
-// → on
-//
-// Dwarka Expressway
-// → on
-//
-// Sector 56
-// → in
-//
-// Gurgaon
-// → in
-//
 // ============================================================
 
 function getLocationPreposition(location) {
@@ -509,7 +369,7 @@ function getLocationPreposition(location) {
 }
 
 // ============================================================
-// GET LOCATION ID
+// LOCATION ID
 // ============================================================
 
 function getLocationId(location) {
@@ -520,13 +380,12 @@ function getLocationId(location) {
   return (
     location?._id?.toString?.() ||
     location?.id?.toString?.() ||
-    location?.toString?.() ||
     ""
   );
 }
 
 // ============================================================
-// GET PARENT ID
+// PARENT ID
 // ============================================================
 
 function getParentId(location) {
@@ -579,19 +438,6 @@ function findLocationById(
 // ============================================================
 // GET ROOT LOCATION
 // ============================================================
-//
-// Example:
-//
-// Sector 56
-// → Gurgaon
-//
-// Golf Course Road
-// → Gurgaon
-//
-// Greater Kailash
-// → Delhi
-//
-// ============================================================
 
 function getRootLocation(
   location,
@@ -615,7 +461,6 @@ function getRootLocation(
       break;
     }
 
-    // Prevent circular parent relationships
     if (
       visited.has(parentId)
     ) {
@@ -645,27 +490,19 @@ function getRootLocation(
 // BUILD PUBLIC LOCATION SLUG
 // ============================================================
 //
-// Current location + root location.
-//
-// Examples:
-//
 // Sector 56
-// parent Gurgaon
-//
 // → properties-in-sector-56-gurgaon
 //
 // Golf Course Road
-// parent Gurgaon
-//
 // → properties-on-golf-course-road-gurgaon
 //
-// Gurgaon
+// Dwarka Expressway
+// → properties-on-dwarka-expressway-gurgaon
 //
+// Gurgaon
 // → properties-in-gurgaon
 //
 // Greater Kailash
-// parent Delhi
-//
 // → properties-in-greater-kailash-delhi
 //
 // ============================================================
@@ -721,8 +558,6 @@ function buildPublicLocationSlug(
 // PUBLIC DEVELOPER SLUG BUILDER
 // ============================================================
 //
-// Correct architecture:
-//
 // m3m
 // → m3m-developer-projects
 //
@@ -732,15 +567,10 @@ function buildPublicLocationSlug(
 // spiti-developer
 // → spiti-developer-projects
 //
-// spiti-developers
-// → spiti-developers-projects
+// parsvnath-developers
+// → parsvnath-developers-projects
 //
-// spiti-developer-projects
-// → unchanged
-//
-// spiti-developers-projects
-// → unchanged
-//
+// Already canonical slugs remain unchanged.
 // ============================================================
 
 function buildPublicDeveloperSlug(
@@ -763,10 +593,6 @@ function buildPublicDeveloperSlug(
     return "";
   }
 
-  // ==========================================================
-  // ALREADY CANONICAL
-  // ==========================================================
-
   if (
     cleanSlug.endsWith(
       "-developer-projects"
@@ -778,10 +604,6 @@ function buildPublicDeveloperSlug(
     return cleanSlug;
   }
 
-  // ==========================================================
-  // BACKEND SLUG ENDS WITH "-developer"
-  // ==========================================================
-
   if (
     cleanSlug.endsWith(
       "-developer"
@@ -789,10 +611,6 @@ function buildPublicDeveloperSlug(
   ) {
     return `${cleanSlug}-projects`;
   }
-
-  // ==========================================================
-  // BACKEND SLUG ENDS WITH "-developers"
-  // ==========================================================
 
   if (
     cleanSlug.endsWith(
@@ -802,11 +620,68 @@ function buildPublicDeveloperSlug(
     return `${cleanSlug}-projects`;
   }
 
-  // ==========================================================
-  // NORMAL BACKEND SLUG
-  // ==========================================================
-
   return `${cleanSlug}-developer-projects`;
+}
+
+// ============================================================
+// ADD SITEMAP ENTRY
+// ============================================================
+//
+// IMPORTANT:
+//
+// Next.js sitemap metadata expects an array of plain objects.
+//
+// We deliberately create a fresh object here with only:
+//
+// - url
+// - lastModified
+// - changeFrequency
+// - priority
+//
+// No Map objects, Sets, nested custom objects, or invalid values
+// are returned to Next.js.
+// ============================================================
+
+function addSitemapEntry(
+  entries,
+  seen,
+  path,
+  {
+    lastModified,
+    changeFrequency = "weekly",
+    priority = 0.7,
+  } = {}
+) {
+  const url =
+    normalizeUrl(path);
+
+  if (!url) {
+    return;
+  }
+
+  if (seen.has(url)) {
+    return;
+  }
+
+  seen.add(url);
+
+  const entry = {
+    url,
+    changeFrequency,
+    priority,
+  };
+
+  const validLastModified =
+    getValidDate(
+      lastModified
+    );
+
+  if (validLastModified) {
+    entry.lastModified =
+      validLastModified;
+  }
+
+  entries.push(entry);
 }
 
 // ============================================================
@@ -814,15 +689,20 @@ function buildPublicDeveloperSlug(
 // ============================================================
 
 export default async function sitemap() {
-  const sitemap =
-    new Map();
+  // ==========================================================
+  // FINAL SITEMAP ENTRIES
+  // ==========================================================
+
+  const entries = [];
+  const seen = new Set();
 
   // ==========================================================
   // STATIC PUBLIC PAGES
   // ==========================================================
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/",
     {
       priority: 1.0,
@@ -830,8 +710,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/properties",
     {
       priority: 0.95,
@@ -839,8 +720,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/developers",
     {
       priority: 0.90,
@@ -848,8 +730,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/locations",
     {
       priority: 0.90,
@@ -857,8 +740,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/knowledge",
     {
       priority: 0.82,
@@ -866,8 +750,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/insights",
     {
       priority: 0.82,
@@ -875,8 +760,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/about",
     {
       priority: 0.70,
@@ -884,8 +770,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/contact",
     {
       priority: 0.70,
@@ -897,8 +784,9 @@ export default async function sitemap() {
   // HUMAN-FACING SITEMAP
   // ==========================================================
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/sitemap",
     {
       priority: 0.60,
@@ -910,8 +798,9 @@ export default async function sitemap() {
   // LEGAL PAGES
   // ==========================================================
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/privacy-policy",
     {
       priority: 0.50,
@@ -919,8 +808,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/disclaimer",
     {
       priority: 0.50,
@@ -928,8 +818,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/terms-of-use",
     {
       priority: 0.50,
@@ -941,8 +832,9 @@ export default async function sitemap() {
   // PUBLIC SEO TOOLS
   // ==========================================================
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/tools/roi-calculator",
     {
       priority: 0.85,
@@ -950,8 +842,9 @@ export default async function sitemap() {
     }
   );
 
-  addUrl(
-    sitemap,
+  addSitemapEntry(
+    entries,
+    seen,
     "/tools/area-converter",
     {
       priority: 0.85,
@@ -962,6 +855,21 @@ export default async function sitemap() {
   // ==========================================================
   // FETCH DYNAMIC DATA
   // ==========================================================
+  //
+  // IMPORTANT:
+  //
+  // Properties use the lightweight SEO endpoint.
+  //
+  // /api/properties/seo-list
+  //
+  // This replaces:
+  //
+  // /api/properties?all=true
+  //
+  // and prevents the large property response from entering
+  // the Next.js data cache.
+  //
+  // ==========================================================
 
   const [
     properties,
@@ -970,19 +878,6 @@ export default async function sitemap() {
     knowledgeArticles,
     insights,
   ] = await Promise.all([
-    // ========================================================
-    // IMPORTANT SEO OPTIMIZATION
-    // ========================================================
-    //
-    // DO NOT use:
-    // /properties?all=true
-    //
-    // That endpoint returns the full property documents and
-    // creates a very large Next.js data-cache payload.
-    //
-    // The dedicated SEO endpoint returns only the fields
-    // required by the sitemap.
-    //
     safeFetch(
       `${API}/properties/seo-list`
     ),
@@ -1008,155 +903,111 @@ export default async function sitemap() {
   // PROPERTY PAGES
   // ==========================================================
 
-  properties.forEach(
-    (property) => {
-      if (!property) {
-        return;
-      }
-
-      const slug =
-        safeSlug(
-          property.slug
-        );
-
-      if (!slug) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Published only
-      // ------------------------------------------------------
-
-      if (
-        property.status !==
-        "published"
-      ) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Deleted excluded
-      // ------------------------------------------------------
-
-      if (
-        property.isDeleted === true
-      ) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Inactive excluded
-      // ------------------------------------------------------
-
-      if (
-        property.isActive === false
-      ) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Trash excluded
-      // ------------------------------------------------------
-
-      if (
-        property.deletedFromStatus ===
-        "trash"
-      ) {
-        return;
-      }
-
-      addUrl(
-        sitemap,
-        `/${slug}`,
-        {
-          lastModified:
-            getValidDate(
-              property.updatedAt,
-              property.createdAt
-            ),
-
-          priority: 0.95,
-
-          changeFrequency:
-            "weekly",
+  if (Array.isArray(properties)) {
+    properties.forEach(
+      (property) => {
+        if (
+          !isPublishedProperty(
+            property
+          )
+        ) {
+          return;
         }
-      );
-    }
-  );
+
+        const slug =
+          safeSlug(
+            property?.slug
+          );
+
+        if (!slug) {
+          return;
+        }
+
+        addSitemapEntry(
+          entries,
+          seen,
+          `/${slug}`,
+          {
+            lastModified:
+              getValidDate(
+                property?.updatedAt,
+                property?.createdAt
+              ),
+
+            priority: 0.95,
+
+            changeFrequency:
+              "weekly",
+          }
+        );
+      }
+    );
+  }
 
   // ==========================================================
   // DEVELOPER PAGES
   // ==========================================================
 
-  developers.forEach(
-    (developer) => {
-      if (!developer) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Extract backend developer slug
-      // ------------------------------------------------------
-
-      const backendDeveloperSlug =
-        developer.slug ||
-        developer.backendSlug ||
-        developer.developerSlug ||
-        developer.data?.slug ||
-        developer.data?.backendSlug ||
-        developer.data?.developerSlug ||
-        developer.developer?.slug ||
-        "";
-
-      const publicDeveloperSlug =
-        buildPublicDeveloperSlug(
-          backendDeveloperSlug
-        );
-
-      if (!publicDeveloperSlug) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Deleted excluded
-      // ------------------------------------------------------
-
-      if (
-        developer.isDeleted === true
-      ) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Inactive excluded
-      // ------------------------------------------------------
-
-      if (
-        developer.isActive === false
-      ) {
-        return;
-      }
-
-      addUrl(
-        sitemap,
-        `/developers/${encodeURIComponent(
-          publicDeveloperSlug
-        )}`,
-        {
-          lastModified:
-            getValidDate(
-              developer.updatedAt,
-              developer.createdAt
-            ),
-
-          priority: 0.82,
-
-          changeFrequency:
-            "monthly",
+  if (Array.isArray(developers)) {
+    developers.forEach(
+      (developer) => {
+        if (!developer) {
+          return;
         }
-      );
-    }
-  );
+
+        if (
+          developer.isDeleted === true
+        ) {
+          return;
+        }
+
+        if (
+          developer.isActive === false
+        ) {
+          return;
+        }
+
+        const backendDeveloperSlug =
+          developer?.slug ||
+          developer?.backendSlug ||
+          developer?.developerSlug ||
+          developer?.data?.slug ||
+          developer?.data?.backendSlug ||
+          developer?.data?.developerSlug ||
+          developer?.developer?.slug ||
+          "";
+
+        const publicDeveloperSlug =
+          buildPublicDeveloperSlug(
+            backendDeveloperSlug
+          );
+
+        if (!publicDeveloperSlug) {
+          return;
+        }
+
+        addSitemapEntry(
+          entries,
+          seen,
+          `/developers/${encodeURIComponent(
+            publicDeveloperSlug
+          )}`,
+          {
+            lastModified:
+              getValidDate(
+                developer?.updatedAt,
+                developer?.createdAt
+              ),
+
+            priority: 0.82,
+
+            changeFrequency:
+              "monthly",
+          }
+        );
+      }
+    );
+  }
 
   // ==========================================================
   // LOCATION PAGES
@@ -1164,228 +1015,288 @@ export default async function sitemap() {
   //
   // ONLY canonical public location URLs are added.
   //
-  // Legacy URLs such as:
-  //
-  // /locations/sector-56
-  // /locations/gurgaon
-  // /locations/golf-course-road
-  //
-  // are intentionally NOT added.
-  //
   // ==========================================================
 
-  locations.forEach(
-    (location) => {
-      if (!location) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Deleted excluded
-      // ------------------------------------------------------
-
-      if (
-        location.isDeleted === true
-      ) {
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Inactive excluded
-      // ------------------------------------------------------
-
-      if (
-        location.isActive === false
-      ) {
-        return;
-      }
-
-      const publicLocationSlug =
-        buildPublicLocationSlug(
-          location,
-          locations
-        );
-
-      if (!publicLocationSlug) {
-        return;
-      }
-
-      addUrl(
-        sitemap,
-        `/locations/${encodeURIComponent(
-          publicLocationSlug
-        )}`,
-        {
-          lastModified:
-            getValidDate(
-              location.updatedAt,
-              location.createdAt
-            ),
-
-          priority: 0.88,
-
-          changeFrequency:
-            "weekly",
+  if (Array.isArray(locations)) {
+    locations.forEach(
+      (location) => {
+        if (!location) {
+          return;
         }
-      );
-    }
-  );
+
+        if (
+          location.isDeleted === true
+        ) {
+          return;
+        }
+
+        if (
+          location.isActive === false
+        ) {
+          return;
+        }
+
+        const publicLocationSlug =
+          buildPublicLocationSlug(
+            location,
+            locations
+          );
+
+        if (!publicLocationSlug) {
+          return;
+        }
+
+        addSitemapEntry(
+          entries,
+          seen,
+          `/locations/${encodeURIComponent(
+            publicLocationSlug
+          )}`,
+          {
+            lastModified:
+              getValidDate(
+                location?.updatedAt,
+                location?.createdAt
+              ),
+
+            priority: 0.88,
+
+            changeFrequency:
+              "weekly",
+          }
+        );
+      }
+    );
+  }
 
   // ==========================================================
   // KNOWLEDGE ARTICLES
   // ==========================================================
 
-  knowledgeArticles.forEach(
-    (article) => {
-      if (!article) {
-        return;
-      }
-
-      const slug =
-        safeSlug(
-          article.slug
-        );
-
-      if (!slug) {
-        return;
-      }
-
-      if (
-        !isPublishedContent(
-          article
-        )
-      ) {
-        return;
-      }
-
-      addUrl(
-        sitemap,
-        `/knowledge/${slug}`,
-        {
-          lastModified:
-            getValidDate(
-              article.updatedAt,
-              article.createdAt
-            ),
-
-          priority: 0.78,
-
-          changeFrequency:
-            "monthly",
+  if (
+    Array.isArray(
+      knowledgeArticles
+    )
+  ) {
+    knowledgeArticles.forEach(
+      (article) => {
+        if (
+          !isPublishedContent(
+            article
+          )
+        ) {
+          return;
         }
-      );
-    }
-  );
+
+        const slug =
+          safeSlug(
+            article?.slug
+          );
+
+        if (!slug) {
+          return;
+        }
+
+        addSitemapEntry(
+          entries,
+          seen,
+          `/knowledge/${slug}`,
+          {
+            lastModified:
+              getValidDate(
+                article?.updatedAt,
+                article?.createdAt
+              ),
+
+            priority: 0.78,
+
+            changeFrequency:
+              "monthly",
+          }
+        );
+      }
+    );
+  }
 
   // ==========================================================
   // PROPERTY INSIGHTS / NEWS
   // ==========================================================
 
-  insights.forEach(
-    (article) => {
-      if (!article) {
-        return;
-      }
-
-      const slug =
-        safeSlug(
-          article.slug
-        );
-
-      if (!slug) {
-        return;
-      }
-
-      if (
-        !isPublishedContent(
-          article
-        )
-      ) {
-        return;
-      }
-
-      addUrl(
-        sitemap,
-        `/insights/${slug}`,
-        {
-          lastModified:
-            getValidDate(
-              article.updatedAt,
-              article.createdAt
-            ),
-
-          priority: 0.78,
-
-          changeFrequency:
-            "weekly",
+  if (
+    Array.isArray(insights)
+  ) {
+    insights.forEach(
+      (article) => {
+        if (
+          !isPublishedContent(
+            article
+          )
+        ) {
+          return;
         }
-      );
-    }
-  );
+
+        const slug =
+          safeSlug(
+            article?.slug
+          );
+
+        if (!slug) {
+          return;
+        }
+
+        addSitemapEntry(
+          entries,
+          seen,
+          `/insights/${slug}`,
+          {
+            lastModified:
+              getValidDate(
+                article?.updatedAt,
+                article?.createdAt
+              ),
+
+            priority: 0.78,
+
+            changeFrequency:
+              "weekly",
+          }
+        );
+      }
+    );
+  }
 
   // ==========================================================
   // FINAL SORT
   // ==========================================================
 
-  const sortedUrls =
-    [...sitemap.values()]
-      .sort((a, b) => {
-        // ----------------------------------------------------
-        // Homepage first
-        // ----------------------------------------------------
+  entries.sort(
+    (a, b) => {
+      // Homepage first
 
-        if (
-          a.url ===
-          `${BASE_URL}/`
-        ) {
-          return -1;
-        }
+      if (
+        a.url ===
+        `${BASE_URL}/`
+      ) {
+        return -1;
+      }
 
-        if (
-          b.url ===
-          `${BASE_URL}/`
-        ) {
-          return 1;
-        }
+      if (
+        b.url ===
+        `${BASE_URL}/`
+      ) {
+        return 1;
+      }
 
-        // ----------------------------------------------------
-        // Higher priority first
-        // ----------------------------------------------------
+      // Higher priority first
 
-        if (
-          a.priority !==
-          b.priority
-        ) {
-          return (
-            b.priority -
-            a.priority
-          );
-        }
-
-        // ----------------------------------------------------
-        // Alphabetical
-        // ----------------------------------------------------
-
-        return a.url.localeCompare(
-          b.url
+      if (
+        a.priority !==
+        b.priority
+      ) {
+        return (
+          b.priority -
+          a.priority
         );
-      });
+      }
+
+      // Alphabetical
+
+      return a.url.localeCompare(
+        b.url
+      );
+    }
+  );
+
+  // ==========================================================
+  // FINAL SAFETY CHECK
+  // ==========================================================
+  //
+  // Make absolutely sure Next.js receives only valid sitemap
+  // objects.
+  //
+  // ==========================================================
+
+  const finalEntries =
+    entries.filter(
+      (entry) => {
+        if (!entry) {
+          return false;
+        }
+
+        if (
+          typeof entry.url !==
+          "string"
+        ) {
+          return false;
+        }
+
+        if (
+          entry.lastModified !==
+            undefined &&
+          !(entry.lastModified instanceof Date)
+        ) {
+          return false;
+        }
+
+        if (
+          entry.priority !==
+            undefined &&
+          typeof entry.priority !==
+            "number"
+        ) {
+          return false;
+        }
+
+        if (
+          entry.changeFrequency !==
+            undefined &&
+          typeof entry.changeFrequency !==
+            "string"
+        ) {
+          return false;
+        }
+
+        return true;
+      }
+    );
 
   // ==========================================================
   // DIAGNOSTICS
   // ==========================================================
 
   console.log(
-    `✅ Property Bouquet sitemap generated successfully: ${sortedUrls.length} URLs`
-``  );
+    `✅ Property Bouquet sitemap generated successfully: ${finalEntries.length} URLs`
+  );
 
   console.log(
-    `📊 Sitemap breakdown → Properties: ${properties.length}, Developers: ${developers.length}, Locations: ${locations.length}, Knowledge: ${knowledgeArticles.length}, Insights: ${insights.length}`
+    `📊 Sitemap breakdown → Properties: ${
+      Array.isArray(properties)
+        ? properties.length
+        : 0
+    }, Developers: ${
+      Array.isArray(developers)
+        ? developers.length
+        : 0
+    }, Locations: ${
+      Array.isArray(locations)
+        ? locations.length
+        : 0
+    }, Knowledge: ${
+      Array.isArray(
+        knowledgeArticles
+      )
+        ? knowledgeArticles.length
+        : 0
+    }, Insights: ${
+      Array.isArray(insights)
+        ? insights.length
+        : 0
+    }`
   );
 
   // ==========================================================
   // RETURN
   // ==========================================================
 
-  return sortedUrls;
+  return finalEntries;
 }
