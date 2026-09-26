@@ -35,6 +35,51 @@ export default function LocationHero({
   };
 
   /* ============================================================
+     LOCATION PREPOSITION
+  ============================================================
+
+     Roads / expressways / highways etc.
+     → "on"
+
+     Sectors / cities / localities etc.
+     → "in"
+  ============================================================ */
+
+  function getLocationPreposition(location) {
+    const name = String(
+      location?.name || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const slug = String(
+      location?.slug || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const value = `${name} ${slug}`;
+
+    const onKeywords = [
+      "expressway",
+      "express way",
+      "highway",
+      "road",
+      "street",
+      "avenue",
+      "boulevard",
+      "drive",
+      "marg",
+    ];
+
+    return onKeywords.some((keyword) =>
+      value.includes(keyword)
+    )
+      ? "on"
+      : "in";
+  }
+
+  /* ============================================================
      HIERARCHY
   ============================================================ */
 
@@ -188,9 +233,28 @@ export default function LocationHero({
     defaultEyebrow
   );
 
+  /* ============================================================
+     DEFAULT H1 PREPOSITION
+
+     Gurgaon
+     → Luxury Properties in Gurgaon
+
+     Golf Course Road
+     → Luxury Properties on Golf Course Road
+
+     Dwarka Expressway
+     → Luxury Properties on Dwarka Expressway
+
+     Sector 56
+     → Luxury Properties in Sector 56
+  ============================================================ */
+
+  const titlePreposition =
+    getLocationPreposition(location);
+
   const title = value(
     custom.title,
-    `Luxury Properties in ${locationName}`
+    `Luxury Properties ${titlePreposition} ${locationName}`
   );
 
   const heroSubtitle = value(
