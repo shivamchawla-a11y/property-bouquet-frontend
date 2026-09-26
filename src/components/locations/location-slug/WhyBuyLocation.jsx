@@ -11,45 +11,112 @@ import {
 
 export default function WhyBuyLocation({
   locationName,
+  pageContent,
 }) {
-  const reasons = [
+  // ============================================================
+  // ADMIN CUSTOM CONTENT
+  // ============================================================
+
+  const customContent =
+    pageContent?.whyBuy || {};
+
+  const customEyebrow =
+    customContent?.eyebrow?.trim() ||
+    "WHY BUY?";
+
+  const customTitle =
+    customContent?.title?.trim() ||
+    `Why Consider Buying in ${locationName}?`;
+
+  const customDescription =
+    customContent?.description?.trim() ||
+    `Choosing a property is about more than the individual home. Buyers often evaluate the surrounding location, connectivity, infrastructure, residential demand, quality of development, lifestyle ecosystem and the potential suitability of the address for their long-term objectives. These factors can help provide a broader framework when assessing opportunities in ${locationName}.`;
+
+  // ============================================================
+  // DEFAULT REASONS
+  // ============================================================
+
+  const defaultReasons = [
     {
       title: "Strategic Location",
       description:
         "A well-positioned address can improve everyday convenience and broaden access to important destinations.",
-      icon: <MapPinned size={15} />,
     },
     {
       title: "Infrastructure Growth",
       description:
         "Infrastructure development can influence accessibility, activity and the long-term character of a locality.",
-      icon: <TrendingUp size={15} />,
     },
     {
       title: "Residential Demand",
       description:
         "Demand from homebuyers can support the development of diverse residential communities and amenities.",
-      icon: <Home size={15} />,
     },
     {
       title: "Reputed Developers",
       description:
         "Established developers can bring planned communities, professional execution and differentiated project offerings.",
-      icon: <ShieldCheck size={15} />,
     },
     {
       title: "Lifestyle Ecosystem",
       description:
         "A growing combination of retail, education, healthcare and leisure can enhance everyday liveability.",
-      icon: <Sparkles size={15} />,
     },
     {
       title: "Long-Term Potential",
       description:
         "Buyers can evaluate infrastructure, supply, demand and future development while considering long-term ownership.",
-      icon: <Clock3 size={15} />,
     },
   ];
+
+  // ============================================================
+  // ADMIN REASONS
+  // ============================================================
+
+  const customReasons = Array.isArray(
+    customContent?.reasons
+  )
+    ? customContent.reasons
+        .map((reason) => ({
+          title:
+            typeof reason?.title === "string"
+              ? reason.title.trim()
+              : "",
+          description:
+            typeof reason?.description === "string"
+              ? reason.description.trim()
+              : "",
+        }))
+        .filter(
+          (reason) =>
+            reason.title || reason.description
+        )
+    : [];
+
+  const reasons =
+    customReasons.length > 0
+      ? customReasons
+      : defaultReasons;
+
+  // ============================================================
+  // ICONS
+  //
+  // Icons are intentionally controlled by position rather
+  // than the admin editor. This keeps the CMS simple.
+  // ============================================================
+
+  const icons = [
+    <MapPinned key="map" size={15} />,
+    <TrendingUp key="trend" size={15} />,
+    <Home key="home" size={15} />,
+    <ShieldCheck key="shield" size={15} />,
+    <Sparkles key="sparkles" size={15} />,
+    <Clock3 key="clock" size={15} />,
+  ];
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <section
@@ -76,7 +143,13 @@ export default function WhyBuyLocation({
           lg:px-8
         "
       >
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
+
         <div className="max-w-[800px]">
+          {/* EYEBROW */}
+
           <div
             className="
               flex
@@ -93,8 +166,10 @@ export default function WhyBuyLocation({
           >
             <span className="h-px w-7 bg-[#C89D58]" />
 
-            WHY BUY?
+            {customEyebrow}
           </div>
+
+          {/* TITLE */}
 
           <h2
             id="why-buy-heading"
@@ -111,11 +186,12 @@ export default function WhyBuyLocation({
               lg:text-[39px]
             "
           >
-            Why Consider Buying
-            in {locationName}?
+            {customTitle}
           </h2>
 
           <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+
+          {/* DESCRIPTION */}
 
           <p
             className="
@@ -128,17 +204,13 @@ export default function WhyBuyLocation({
               md:text-[12px]
             "
           >
-            Choosing a property is about more than the
-            individual home. Buyers often evaluate the
-            surrounding location, connectivity,
-            infrastructure, residential demand, quality of
-            development, lifestyle ecosystem and the
-            potential suitability of the address for their
-            long-term objectives. These factors can help
-            provide a broader framework when assessing
-            opportunities in {locationName}.
+            {customDescription}
           </p>
         </div>
+
+        {/* ======================================================
+            REASONS
+        ====================================================== */}
 
         <div
           className="
@@ -151,9 +223,9 @@ export default function WhyBuyLocation({
             lg:gap-3
           "
         >
-          {reasons.map((reason) => (
+          {reasons.map((reason, index) => (
             <article
-              key={reason.title}
+              key={`${reason.title || "reason"}-${index}`}
               className="
                 rounded-[12px]
                 border
@@ -168,6 +240,8 @@ export default function WhyBuyLocation({
                 hover:shadow-[0_14px_35px_rgba(23,52,45,0.06)]
               "
             >
+              {/* ICON */}
+
               <div
                 className="
                   mx-auto
@@ -183,8 +257,12 @@ export default function WhyBuyLocation({
                   text-[#B58B2D]
                 "
               >
-                {reason.icon}
+                {icons[index] || (
+                  <Sparkles size={15} />
+                )}
               </div>
+
+              {/* TITLE */}
 
               <h3
                 className="
@@ -197,6 +275,8 @@ export default function WhyBuyLocation({
               >
                 {reason.title}
               </h3>
+
+              {/* DESCRIPTION */}
 
               <p
                 className="

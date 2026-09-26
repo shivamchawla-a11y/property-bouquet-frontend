@@ -63,6 +63,19 @@ export default function LocationSlugClient({
     location?.name || "Prime Location";
 
   // ============================================================
+  // PAGE CONTENT
+  //
+  // All editable location-page copy lives here.
+  //
+  // Every section below receives this same object so that
+  // individual components can decide which custom values
+  // should override their existing defaults.
+  // ============================================================
+
+  const pageContent =
+    location?.pageContent || {};
+
+  // ============================================================
   // PUBLIC LOCATION URL HELPERS
   // ============================================================
 
@@ -716,19 +729,24 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <LocationHero
-  location={location}
-  locationName={locationName}
-  locationImage={locationImage}
-  heroImage={heroImage}
-  properties={properties}
-  buildPublicLocationSlug={
-    buildPublicLocationSlug
-  }
-  pageContent={location?.pageContent}
-/>
+        location={location}
+        locationName={locationName}
+        locationImage={locationImage}
+        heroImage={heroImage}
+        properties={properties}
+        buildPublicLocationSlug={
+          buildPublicLocationSlug
+        }
+        pageContent={pageContent}
+      />
 
       {/* ======================================================
           PROJECTS
+
+          IMPORTANT:
+          Projects remain dynamic.
+
+          They are NOT controlled by pageContent.
       ====================================================== */}
 
       <LocationProjects
@@ -764,20 +782,19 @@ export default function LocationSlugClient({
           ABOUT LOCATION
       ====================================================== */}
 
-      {location?.pageContent?.about?.enabled !== false && (
-  <AboutLocation
-    location={location}
-    locationName={locationName}
-    locationDescription={
-      locationDescription
-    }
-    properties={properties}
-    locationImage={locationImage}
-    pageContent={
-      location?.pageContent
-    }
-  />
-)}
+      {pageContent?.about?.enabled !==
+        false && (
+        <AboutLocation
+          location={location}
+          locationName={locationName}
+          locationDescription={
+            locationDescription
+          }
+          properties={properties}
+          locationImage={locationImage}
+          pageContent={pageContent}
+        />
+      )}
 
       {/* ======================================================
           REAL ESTATE TYPES
@@ -786,6 +803,7 @@ export default function LocationSlugClient({
       <LocationRealEstateTypes
         locationName={locationName}
         properties={properties}
+        pageContent={pageContent}
       />
 
       {/* ======================================================
@@ -795,6 +813,7 @@ export default function LocationSlugClient({
       <LocationPropertyPrices
         locationName={locationName}
         properties={properties}
+        pageContent={pageContent}
       />
 
       {/* ======================================================
@@ -802,13 +821,11 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <LocationConnectivity
-  location={location}
-  locationName={locationName}
-  locationImage={locationImage}
-  pageContent={
-    location?.pageContent
-  }
-/>
+        location={location}
+        locationName={locationName}
+        locationImage={locationImage}
+        pageContent={pageContent}
+      />
 
       {/* ======================================================
           SCHOOLS / HOSPITALS / LIFESTYLE
@@ -816,9 +833,8 @@ export default function LocationSlugClient({
 
       <LocationLifestyle
         locationName={locationName}
-        locationImage={
-          locationImage
-        }
+        locationImage={locationImage}
+        pageContent={pageContent}
       />
 
       {/* ======================================================
@@ -827,6 +843,7 @@ export default function LocationSlugClient({
 
       <WhyBuyLocation
         locationName={locationName}
+        pageContent={pageContent}
       />
 
       {/* ======================================================
@@ -834,16 +851,14 @@ export default function LocationSlugClient({
       ====================================================== */}
 
       <NearbyLocations
-  location={location}
-  locationName={locationName}
-  properties={properties}
-  buildPublicLocationSlug={
-    buildPublicLocationSlug
-  }
-  pageContent={
-    location?.pageContent
-  }
-/>
+        location={location}
+        locationName={locationName}
+        properties={properties}
+        buildPublicLocationSlug={
+          buildPublicLocationSlug
+        }
+        pageContent={pageContent}
+      />
 
       {/* ======================================================
           FAQ
@@ -852,6 +867,7 @@ export default function LocationSlugClient({
       <LocationFAQ
         locationName={locationName}
         properties={properties}
+        pageContent={pageContent}
       />
 
       {/* ======================================================
@@ -861,9 +877,8 @@ export default function LocationSlugClient({
       <LocationAdvisorCTA
         locationName={locationName}
         properties={properties}
-        locationImage={
-          locationImage
-        }
+        locationImage={locationImage}
+        pageContent={pageContent}
       />
 
       {/* ======================================================

@@ -10,13 +10,41 @@ import {
 export default function LocationLifestyle({
   locationName,
   locationImage = "",
+  pageContent,
 }) {
-  const lifestyleGroups = [
+  // ============================================================
+  // CUSTOM PAGE CONTENT
+  // ============================================================
+
+  const customContent = pageContent?.lifestyle || {};
+
+  const customEyebrow =
+    typeof customContent.eyebrow === "string" &&
+    customContent.eyebrow.trim()
+      ? customContent.eyebrow.trim()
+      : "SCHOOLS, HOSPITALS & LIFESTYLE";
+
+  const customTitle =
+    typeof customContent.title === "string" &&
+    customContent.title.trim()
+      ? customContent.title.trim()
+      : `Everyday Convenience Around ${locationName}`;
+
+  const customDescription =
+    typeof customContent.description === "string" &&
+    customContent.description.trim()
+      ? customContent.description.trim()
+      : `A location becomes more than an address when the everyday essentials of modern living are within practical reach. For residents of ${locationName}, schools, healthcare, retail, dining and leisure infrastructure form an important part of the broader residential experience. Buyers can consider these factors alongside the individual project's specifications, amenities and connectivity.`;
+
+  // ============================================================
+  // DEFAULT GROUPS
+  // ============================================================
+
+  const defaultGroups = [
     {
       title: "Top Schools & Universities",
       description:
         "Educational options are an important consideration for families evaluating a long-term residential address.",
-      icon: <GraduationCap size={16} />,
       items: [
         "Schools and educational institutions",
         "Higher education options",
@@ -28,7 +56,6 @@ export default function LocationLifestyle({
       title: "Leading Healthcare",
       description:
         "Access to healthcare infrastructure contributes to everyday convenience and residential liveability.",
-      icon: <HeartPulse size={16} />,
       items: [
         "Hospitals and medical centres",
         "Specialist healthcare",
@@ -40,7 +67,6 @@ export default function LocationLifestyle({
       title: "Shopping & Entertainment",
       description:
         "Retail, dining and leisure destinations add to the lifestyle experience surrounding a residential community.",
-      icon: <ShoppingBag size={16} />,
       items: [
         "Shopping destinations",
         "Restaurants and cafes",
@@ -49,6 +75,66 @@ export default function LocationLifestyle({
       ],
     },
   ];
+
+  // ============================================================
+  // CUSTOM GROUPS
+  //
+  // Only use the admin groups when there is actual content.
+  // This prevents an empty editor from making the public section
+  // appear blank.
+  // ============================================================
+
+  const hasCustomGroups =
+    Array.isArray(customContent.groups) &&
+    customContent.groups.some(
+      (group) =>
+        typeof group?.title === "string" &&
+        group.title.trim()
+    );
+
+  const lifestyleGroups = (
+    hasCustomGroups
+      ? customContent.groups
+      : defaultGroups
+  ).map((group, index) => {
+    const fallback = defaultGroups[index] || defaultGroups[0];
+
+    const items = Array.isArray(group?.items)
+      ? group.items
+          .filter(
+            (item) =>
+              typeof item === "string" &&
+              item.trim()
+          )
+          .map((item) => item.trim())
+      : [];
+
+    return {
+      title:
+        typeof group?.title === "string" &&
+        group.title.trim()
+          ? group.title.trim()
+          : fallback.title,
+
+      description:
+        typeof group?.description === "string" &&
+        group.description.trim()
+          ? group.description.trim()
+          : fallback.description,
+
+      items:
+        items.length > 0
+          ? items
+          : fallback.items,
+
+      icon:
+        index === 0
+          ? GraduationCap
+          : index === 1
+            ? HeartPulse
+            : ShoppingBag,
+    };
+  });
 
   return (
     <section
@@ -105,7 +191,7 @@ export default function LocationLifestyle({
             >
               <span className="h-px w-7 bg-[#C89D58]" />
 
-              SCHOOLS, HOSPITALS & LIFESTYLE
+              {customEyebrow}
             </div>
 
             <h2
@@ -113,6 +199,7 @@ export default function LocationLifestyle({
               className="
                 mt-2
                 max-w-[720px]
+                whitespace-pre-line
                 font-playfair
                 text-[27px]
                 font-medium
@@ -124,8 +211,7 @@ export default function LocationLifestyle({
                 lg:text-[39px]
               "
             >
-              Everyday Convenience
-              Around {locationName}
+              {customTitle}
             </h2>
 
             <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
@@ -141,15 +227,7 @@ export default function LocationLifestyle({
                 md:text-[12px]
               "
             >
-              A location becomes more than an address when
-              the everyday essentials of modern living are
-              within practical reach. For residents of{" "}
-              {locationName}, schools, healthcare, retail,
-              dining and leisure infrastructure form an
-              important part of the broader residential
-              experience. Buyers can consider these factors
-              alongside the individual project's
-              specifications, amenities and connectivity.
+              {customDescription}
             </p>
 
             <div
@@ -160,104 +238,112 @@ export default function LocationLifestyle({
                 md:grid-cols-3
               "
             >
-              {lifestyleGroups.map((group) => (
-                <article
-                  key={group.title}
-                  className="
-                    rounded-[14px]
-                    border
-                    border-[#e2dbd0]
-                    bg-white
-                    p-4
-                  "
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div
+              {lifestyleGroups.map(
+                (group, index) => {
+                  const Icon = group.icon;
+
+                  return (
+                    <article
+                      key={`${group.title}-${index}`}
                       className="
-                        flex
-                        h-8
-                        w-8
-                        shrink-0
-                        items-center
-                        justify-center
-                        rounded-lg
-                        bg-[#17342d]
-                        text-[#D4AF37]
+                        rounded-[14px]
+                        border
+                        border-[#e2dbd0]
+                        bg-white
+                        p-4
                       "
                     >
-                      {group.icon}
-                    </div>
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-[#17342d]
+                            text-[#D4AF37]
+                          "
+                        >
+                          <Icon size={16} />
+                        </div>
 
-                    <h3
-                      className="
-                        text-[10px]
-                        font-semibold
-                        leading-4
-                        text-[#17342d]
-                      "
-                    >
-                      {group.title}
-                    </h3>
-                  </div>
+                        <h3
+                          className="
+                            text-[10px]
+                            font-semibold
+                            leading-4
+                            text-[#17342d]
+                          "
+                        >
+                          {group.title}
+                        </h3>
+                      </div>
 
-                  <p
-                    className="
-                      mt-3
-                      text-[8.5px]
-                      leading-[1.65]
-                      text-[#727872]
-                    "
-                  >
-                    {group.description}
-                  </p>
-
-                  <ul className="mt-3 space-y-1.5">
-                    {group.items.map((item) => (
-                      <li
-                        key={item}
+                      <p
                         className="
-                          flex
-                          items-start
-                          gap-2
-                          text-[8px]
-                          leading-4
-                          text-[#656d68]
+                          mt-3
+                          text-[8.5px]
+                          leading-[1.65]
+                          text-[#727872]
                         "
                       >
-                        <span
-                          className="
-                            mt-[5px]
-                            h-1
-                            w-1
-                            shrink-0
-                            rounded-full
-                            bg-[#C89D58]
-                          "
-                        />
+                        {group.description}
+                      </p>
 
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+                      <ul className="mt-3 space-y-1.5">
+                        {group.items.map(
+                          (item, itemIndex) => (
+                            <li
+                              key={`${item}-${itemIndex}`}
+                              className="
+                                flex
+                                items-start
+                                gap-2
+                                text-[8px]
+                                leading-4
+                                text-[#656d68]
+                              "
+                            >
+                              <span
+                                className="
+                                  mt-[5px]
+                                  h-1
+                                  w-1
+                                  shrink-0
+                                  rounded-full
+                                  bg-[#C89D58]
+                                "
+                              />
 
-                  <a
-                    href="#projects"
-                    className="
-                      mt-3
-                      inline-flex
-                      items-center
-                      gap-1
-                      text-[8px]
-                      font-semibold
-                      text-[#17342d]
-                    "
-                  >
-                    Explore Properties
+                              {item}
+                            </li>
+                          )
+                        )}
+                      </ul>
 
-                    <ArrowRight size={10} />
-                  </a>
-                </article>
-              ))}
+                      <a
+                        href="#projects"
+                        className="
+                          mt-3
+                          inline-flex
+                          items-center
+                          gap-1
+                          text-[8px]
+                          font-semibold
+                          text-[#17342d]
+                        "
+                      >
+                        Explore Properties
+
+                        <ArrowRight size={10} />
+                      </a>
+                    </article>
+                  );
+                }
+              )}
             </div>
           </div>
 
@@ -334,6 +420,7 @@ export default function LocationLifestyle({
                 "
               >
                 Everything you
+                <br />
                 need, closer home.
               </h3>
             </div>

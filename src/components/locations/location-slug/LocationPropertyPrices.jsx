@@ -11,7 +11,79 @@ import {
 export default function LocationPropertyPrices({
   locationName,
   properties = [],
+  pageContent,
 }) {
+  // ============================================================
+  // ADMIN CUSTOM CONTENT
+  // ============================================================
+
+  const customContent =
+    pageContent?.propertyPrices || {};
+
+  const customEyebrow =
+    customContent?.eyebrow?.trim() ||
+    "PROPERTY PRICES";
+
+  const customTitle =
+    customContent?.title?.trim() ||
+    `Property Prices in ${locationName}`;
+
+  const customDescription =
+    customContent?.description?.trim() ||
+    `Property values in ${locationName} vary according to property type, configuration, project positioning, development stage, specifications and the location within the wider area. The table below provides a convenient overview of the properties currently represented in the Property Bouquet collection. Prices should be treated as indicative and verified with an advisor before making a purchase decision.`;
+
+  const customCtaText =
+    customContent?.ctaText?.trim() ||
+    "Get a Price Expert";
+
+  const customCtaLink =
+    customContent?.ctaLink?.trim() ||
+    "/contact";
+
+  const customFactorsTitle =
+    customContent?.factorsTitle?.trim() ||
+    "What Influences Property Prices?";
+
+  const customCurrentPricingTitle =
+    customContent?.currentPricingTitle?.trim() ||
+    "Need current pricing?";
+
+  const customCurrentPricingDescription =
+    customContent?.currentPricingDescription?.trim() ||
+    "Project pricing can change based on inventory, construction stage and applicable charges.";
+
+  // ============================================================
+  // PRICE FACTORS
+  // ============================================================
+
+  const defaultFactors = [
+    "Project location and accessibility",
+    "Developer reputation",
+    "Configuration and carpet area",
+    "Floor and view",
+    "Construction status",
+    "Amenities and specifications",
+    "Development potential",
+    "Overall market demand",
+  ];
+
+  const customFactors = Array.isArray(
+    customContent?.factors
+  )
+    ? customContent.factors
+        .map((item) =>
+          typeof item === "string"
+            ? item.trim()
+            : ""
+        )
+        .filter(Boolean)
+    : [];
+
+  const priceFactors =
+    customFactors.length > 0
+      ? customFactors
+      : defaultFactors;
+
   // ============================================================
   // FORMAT PRICE
   // ============================================================
@@ -164,6 +236,8 @@ export default function LocationPropertyPrices({
           "
         >
           <div className="max-w-[760px]">
+            {/* EYEBROW */}
+
             <div
               className="
                 flex
@@ -180,8 +254,10 @@ export default function LocationPropertyPrices({
             >
               <span className="h-px w-7 bg-[#C89D58]" />
 
-              PROPERTY PRICES
+              {customEyebrow}
             </div>
+
+            {/* TITLE */}
 
             <h2
               id="property-prices-heading"
@@ -198,11 +274,12 @@ export default function LocationPropertyPrices({
                 lg:text-[39px]
               "
             >
-              Property Prices in{" "}
-              {locationName}
+              {customTitle}
             </h2>
 
             <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+
+            {/* DESCRIPTION */}
 
             <p
               className="
@@ -215,21 +292,16 @@ export default function LocationPropertyPrices({
                 md:text-[12px]
               "
             >
-              Property values in {locationName} vary
-              according to property type, configuration,
-              project positioning, development stage,
-              specifications and the location within the
-              wider area. The table below provides a
-              convenient overview of the properties
-              currently represented in the Property Bouquet
-              collection. Prices should be treated as
-              indicative and verified with an advisor before
-              making a purchase decision.
+              {customDescription}
             </p>
           </div>
 
+          {/* ====================================================
+              CTA
+          ==================================================== */}
+
           <Link
-            href="/contact"
+            href={customCtaLink}
             className="
               inline-flex
               shrink-0
@@ -250,7 +322,7 @@ export default function LocationPropertyPrices({
               md:mb-1
             "
           >
-            Get a Price Expert
+            {customCtaText}
 
             <ArrowRight size={12} />
           </Link>
@@ -269,7 +341,9 @@ export default function LocationPropertyPrices({
             xl:grid-cols-[minmax(0,1fr)_280px]
           "
         >
-          {/* TABLE */}
+          {/* ====================================================
+              TABLE
+          ==================================================== */}
 
           <div
             className="
@@ -371,7 +445,9 @@ export default function LocationPropertyPrices({
             </div>
           </div>
 
-          {/* PRICE FACTORS */}
+          {/* ====================================================
+              PRICE FACTORS
+          ==================================================== */}
 
           <div
             className="
@@ -395,47 +471,44 @@ export default function LocationPropertyPrices({
                   text-[#17342d]
                 "
               >
-                What Influences Property Prices?
+                {customFactorsTitle}
               </h3>
             </div>
 
             <ul className="mt-4 space-y-2.5">
-              {[
-                "Project location and accessibility",
-                "Developer reputation",
-                "Configuration and carpet area",
-                "Floor and view",
-                "Construction status",
-                "Amenities and specifications",
-                "Development potential",
-                "Overall market demand",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="
-                    flex
-                    items-start
-                    gap-2
-                    text-[9px]
-                    leading-[1.5]
-                    text-[#68716d]
-                  "
-                >
-                  <span
+              {priceFactors.map(
+                (item, index) => (
+                  <li
+                    key={`${item}-${index}`}
                     className="
-                      mt-1
-                      h-1.5
-                      w-1.5
-                      shrink-0
-                      rounded-full
-                      bg-[#C89D58]
+                      flex
+                      items-start
+                      gap-2
+                      text-[9px]
+                      leading-[1.5]
+                      text-[#68716d]
                     "
-                  />
+                  >
+                    <span
+                      className="
+                        mt-1
+                        h-1.5
+                        w-1.5
+                        shrink-0
+                        rounded-full
+                        bg-[#C89D58]
+                      "
+                    />
 
-                  {item}
-                </li>
-              ))}
+                    {item}
+                  </li>
+                )
+              )}
             </ul>
+
+            {/* ==================================================
+                CURRENT PRICING NOTE
+            ================================================== */}
 
             <div
               className="
@@ -458,7 +531,7 @@ export default function LocationPropertyPrices({
                     text-[#17342d]
                   "
                 >
-                  Need current pricing?
+                  {customCurrentPricingTitle}
                 </p>
               </div>
 
@@ -470,9 +543,7 @@ export default function LocationPropertyPrices({
                   text-[#727872]
                 "
               >
-                Project pricing can change based on
-                inventory, construction stage and
-                applicable charges.
+                {customCurrentPricingDescription}
               </p>
             </div>
           </div>

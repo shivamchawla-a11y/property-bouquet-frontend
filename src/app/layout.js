@@ -9,7 +9,7 @@ import {
 } from "next/font/google";
 
 import FloatingContact from "@/components/common/FloatingContact";
-import ConditionalTimedLeadPopup from "@/components/common/ConditionalTimedLeadPopup";
+// import ConditionalTimedLeadPopup from "@/components/common/ConditionalTimedLeadPopup";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -193,7 +193,7 @@ export default function RootLayout({ children }) {
             /reset-password
         ================================================== */}
 
-        <ConditionalTimedLeadPopup />
+        {/* <ConditionalTimedLeadPopup /> */}
 
         {/* ==================================================
             FLOATING WHATSAPP + CALL BUTTONS

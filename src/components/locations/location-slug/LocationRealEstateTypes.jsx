@@ -14,7 +14,25 @@ import {
 export default function LocationRealEstateTypes({
   locationName,
   properties = [],
+  pageContent,
 }) {
+  // ============================================================
+  // LOCATION PAGE CONTENT
+  // ============================================================
+
+  const customContent = pageContent?.realEstateTypes || {};
+
+  const customEyebrow =
+    customContent?.eyebrow?.trim() || "REAL ESTATE TYPES";
+
+  const customTitle =
+    customContent?.title?.trim() ||
+    "Find a Home That Fits Your Lifestyle";
+
+  const customDescription =
+    customContent?.description?.trim() ||
+    `Whether you are looking for a premium apartment, an independent floor, residential land or a commercial opportunity, the real estate landscape in ${locationName} offers different formats for different lifestyles, ownership objectives and investment requirements. Explore the available property categories and identify the format that best matches your needs.`;
+
   // ============================================================
   // BUILD PROPERTY TYPE DATA FROM AVAILABLE PROPERTIES
   // ============================================================
@@ -50,6 +68,17 @@ export default function LocationRealEstateTypes({
   ).slice(0, 4);
 
   // ============================================================
+  // ICONS
+  // ============================================================
+
+  const icons = [
+    <Building2 key="building" size={17} />,
+    <Home key="home" size={17} />,
+    <Trees key="trees" size={17} />,
+    <BriefcaseBusiness key="briefcase" size={17} />,
+  ];
+
+  // ============================================================
   // FALLBACK TYPES
   // ============================================================
 
@@ -80,24 +109,71 @@ export default function LocationRealEstateTypes({
     },
   ];
 
-  const icons = [
-    <Building2 key="building" size={17} />,
-    <Home key="home" size={17} />,
-    <Trees key="trees" size={17} />,
-    <BriefcaseBusiness key="briefcase" size={17} />,
-  ];
+  // ============================================================
+  // ADMIN-CUSTOMIZED CARDS
+  //
+  // If cards have been added through the admin editor,
+  // use those cards.
+  //
+  // Property counts are still taken dynamically from the
+  // actual properties whenever the title matches a discovered
+  // property type.
+  // ============================================================
+
+  const customCards = Array.isArray(customContent?.cards)
+    ? customContent.cards
+        .filter(
+          (card) =>
+            card &&
+            String(card.title || "").trim()
+        )
+        .map((card, index) => {
+          const title = String(card.title).trim();
+
+          const matchingType = discoveredTypes.find(
+            ([name]) =>
+              String(name).trim().toLowerCase() ===
+              title.toLowerCase()
+          );
+
+          return {
+            title,
+            description:
+              String(card.description || "").trim() ||
+              `Explore ${title.toLowerCase()} opportunities available across ${locationName}, including curated projects listed through Property Bouquet.`,
+            count: matchingType?.[1],
+            icon:
+              icons[index] || (
+                <Building2 size={17} />
+              ),
+          };
+        })
+    : [];
+
+  // ============================================================
+  // FINAL CARD DATA
+  //
+  // Priority:
+  //
+  // 1. Admin customized cards
+  // 2. Dynamically discovered property types
+  // 3. Static fallback cards
+  // ============================================================
 
   const typeCards =
-    discoveredTypes.length > 0
+    customCards.length > 0
+      ? customCards
+      : discoveredTypes.length > 0
       ? discoveredTypes.map(
           ([name, count], index) => ({
             title: name,
             description:
               `Explore ${name.toLowerCase()} opportunities available across ${locationName}, including curated projects listed through Property Bouquet.`,
             count,
-            icon: icons[index] || (
-              <Building2 size={17} />
-            ),
+            icon:
+              icons[index] || (
+                <Building2 size={17} />
+              ),
           })
         )
       : fallbackTypes;
@@ -168,7 +244,7 @@ export default function LocationRealEstateTypes({
           >
             <span className="h-px w-7 bg-[#C89D58]" />
 
-            REAL ESTATE TYPES
+            {customEyebrow}
           </div>
 
           <h2
@@ -186,8 +262,7 @@ export default function LocationRealEstateTypes({
               lg:text-[39px]
             "
           >
-            Find a Home That Fits
-            Your Lifestyle
+            {customTitle}
           </h2>
 
           <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
@@ -203,15 +278,7 @@ export default function LocationRealEstateTypes({
               md:text-[12px]
             "
           >
-            Whether you are looking for a premium
-            apartment, an independent floor, residential
-            land or a commercial opportunity, the real
-            estate landscape in {locationName} offers
-            different formats for different lifestyles,
-            ownership objectives and investment
-            requirements. Explore the available property
-            categories and identify the format that best
-            matches your needs.
+            {customDescription}
           </p>
         </div>
 
@@ -246,7 +313,9 @@ export default function LocationRealEstateTypes({
                 hover:shadow-[0_18px_45px_rgba(23,52,45,0.08)]
               "
             >
-              {/* VISUAL HEADER */}
+              {/* ==================================================
+                  VISUAL HEADER
+              ================================================== */}
 
               <div
                 className="
@@ -290,13 +359,39 @@ export default function LocationRealEstateTypes({
                   {item.icon}
                 </div>
 
-                <Sparkles
-                  size={14}
-                  className="relative text-[#D4AF37]/70"
-                />
+                <div className="relative flex items-center gap-2">
+                  {item.count !== undefined && (
+                    <span
+                      className="
+                        rounded-full
+                        border
+                        border-[#D4AF37]/20
+                        bg-[#D4AF37]/10
+                        px-2
+                        py-1
+                        text-[8px]
+                        font-semibold
+                        tracking-[0.08em]
+                        text-[#E5C978]
+                      "
+                    >
+                      {item.count}{" "}
+                      {item.count === 1
+                        ? "PROPERTY"
+                        : "PROPERTIES"}
+                    </span>
+                  )}
+
+                  <Sparkles
+                    size={14}
+                    className="text-[#D4AF37]/70"
+                  />
+                </div>
               </div>
 
-              {/* CONTENT */}
+              {/* ==================================================
+                  CONTENT
+              ================================================== */}
 
               <div className="p-4">
                 <h3

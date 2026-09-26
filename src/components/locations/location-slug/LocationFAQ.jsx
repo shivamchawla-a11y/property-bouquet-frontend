@@ -10,11 +10,32 @@ import {
 export default function LocationFAQ({
   locationName,
   properties = [],
+  pageContent,
 }) {
-  const [openIndex, setOpenIndex] =
-    useState(0);
+  // ============================================================
+  // ADMIN CUSTOM CONTENT
+  // ============================================================
 
-  const faqs = [
+  const customContent =
+    pageContent?.faq || {};
+
+  const customEyebrow =
+    customContent?.eyebrow?.trim() ||
+    "PROPERTY BUYER QUESTIONS";
+
+  const customTitle =
+    customContent?.title?.trim() ||
+    `Common Questions About ${locationName}`;
+
+  const customDescription =
+    customContent?.description?.trim() ||
+    `Find answers to common questions buyers and investors may have when researching property opportunities in ${locationName}. For project-specific pricing, inventory, documentation and availability, speak with a Property Bouquet advisor.`;
+
+  // ============================================================
+  // DEFAULT FAQS
+  // ============================================================
+
+  const defaultFaqs = [
     {
       question: `What types of properties are available in ${locationName}?`,
       answer:
@@ -57,6 +78,54 @@ export default function LocationFAQ({
     },
   ];
 
+  // ============================================================
+  // ADMIN FAQ ITEMS
+  // ============================================================
+
+  const customFaqs = Array.isArray(
+    customContent?.items
+  )
+    ? customContent.items
+        .map((item) => ({
+          question:
+            typeof item?.question === "string"
+              ? item.question.trim()
+              : "",
+
+          answer:
+            typeof item?.answer === "string"
+              ? item.answer.trim()
+              : "",
+        }))
+        .filter(
+          (item) =>
+            item.question || item.answer
+        )
+    : [];
+
+  // ============================================================
+  // FINAL FAQ DATA
+  //
+  // Admin content takes priority.
+  // If no valid admin FAQs exist, use the default FAQs.
+  // ============================================================
+
+  const faqs =
+    customFaqs.length > 0
+      ? customFaqs
+      : defaultFaqs;
+
+  // ============================================================
+  // OPEN FAQ
+  // ============================================================
+
+  const [openIndex, setOpenIndex] =
+    useState(0);
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
     <section
       id="faqs"
@@ -82,7 +151,13 @@ export default function LocationFAQ({
           lg:px-8
         "
       >
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
+
         <div className="max-w-[850px]">
+          {/* EYEBROW */}
+
           <div
             className="
               flex
@@ -99,8 +174,10 @@ export default function LocationFAQ({
           >
             <span className="h-px w-7 bg-[#C89D58]" />
 
-            PROPERTY BUYER QUESTIONS
+            {customEyebrow}
           </div>
+
+          {/* TITLE */}
 
           <h2
             id="faq-heading"
@@ -117,11 +194,12 @@ export default function LocationFAQ({
               lg:text-[39px]
             "
           >
-            Common Questions About{" "}
-            {locationName}
+            {customTitle}
           </h2>
 
           <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+
+          {/* DESCRIPTION */}
 
           <p
             className="
@@ -134,18 +212,13 @@ export default function LocationFAQ({
               md:text-[12px]
             "
           >
-            Find answers to common questions buyers and
-            investors may have when researching property
-            opportunities in {locationName}. For project-
-            specific pricing, inventory, documentation and
-            availability, speak with a Property Bouquet
-            advisor.
+            {customDescription}
           </p>
         </div>
 
-        {/* ====================================================
+        {/* ======================================================
             FAQ GRID
-        ==================================================== */}
+        ====================================================== */}
 
         <div
           className="
@@ -161,12 +234,14 @@ export default function LocationFAQ({
 
             return (
               <div
-                key={faq.question}
+                key={`${faq.question || "faq"}-${index}`}
                 className="
                   border-b
                   border-[#e8e1d7]
                 "
               >
+                {/* QUESTION */}
+
                 <button
                   type="button"
                   onClick={() =>
@@ -175,6 +250,7 @@ export default function LocationFAQ({
                     )
                   }
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                   className="
                     flex
                     w-full
@@ -219,8 +295,13 @@ export default function LocationFAQ({
                   </span>
                 </button>
 
+                {/* ANSWER */}
+
                 {isOpen && (
-                  <div className="pb-4 pr-10">
+                  <div
+                    id={`faq-answer-${index}`}
+                    className="pb-4 pr-10"
+                  >
                     <p
                       className="
                         text-[9px]

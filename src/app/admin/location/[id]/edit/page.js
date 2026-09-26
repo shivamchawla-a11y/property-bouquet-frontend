@@ -27,68 +27,38 @@ const createEmptyContent = () => ({
     title: "",
     description: "",
     image: "",
-
     locationLabel: "",
-
     whyTitle: "",
     whyDescription: "",
-
     benefits: ["", "", "", ""],
-
     mobileBenefits: ["", "", "", ""],
-
     primaryCtaText: "",
     primaryCtaLink: "",
-
     secondaryCtaText: "",
     secondaryCtaLink: "",
-
     footerEyebrow: "",
     footerText: "",
   },
 
   about: {
     enabled: true,
-
     eyebrow: "",
     title: "",
     content: "",
     image: "",
-
     highlights: [
-      {
-        title: "",
-        description: "",
-      },
-      {
-        title: "",
-        description: "",
-      },
-      {
-        title: "",
-        description: "",
-      },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
     ],
-
     marketEyebrow: "",
     marketTitle: "",
     marketDescription: "",
-
     marketInsights: [
-      {
-        title: "",
-        description: "",
-      },
-      {
-        title: "",
-        description: "",
-      },
-      {
-        title: "",
-        description: "",
-      },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
     ],
-
     perspectiveEyebrow: "",
     perspectiveQuote: "",
   },
@@ -98,34 +68,14 @@ const createEmptyContent = () => ({
     title: "",
     description: "",
     image: "",
-
     items: [
-      {
-        title: "",
-        subtitle: "",
-      },
-      {
-        title: "",
-        subtitle: "",
-      },
-      {
-        title: "",
-        subtitle: "",
-      },
-      {
-        title: "",
-        subtitle: "",
-      },
-      {
-        title: "",
-        subtitle: "",
-      },
-      {
-        title: "",
-        subtitle: "",
-      },
+      { title: "", subtitle: "" },
+      { title: "", subtitle: "" },
+      { title: "", subtitle: "" },
+      { title: "", subtitle: "" },
+      { title: "", subtitle: "" },
+      { title: "", subtitle: "" },
     ],
-
     advantageEyebrow: "",
     advantageTitle: "",
   },
@@ -134,6 +84,112 @@ const createEmptyContent = () => ({
     eyebrow: "",
     title: "",
     description: "",
+  },
+
+  // ==========================================================
+  // REAL ESTATE TYPES
+  // ==========================================================
+
+  realEstateTypes: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    cards: [
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+    ],
+  },
+
+  // ==========================================================
+  // PROPERTY PRICES
+  // ==========================================================
+
+  propertyPrices: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    ctaText: "",
+    ctaLink: "",
+    factorsTitle: "",
+    factors: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ],
+    currentPricingTitle: "",
+    currentPricingDescription: "",
+  },
+
+  // ==========================================================
+  // LIFESTYLE
+  // ==========================================================
+
+  lifestyle: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    groups: [
+      {
+        title: "",
+        description: "",
+        items: ["", "", "", ""],
+      },
+      {
+        title: "",
+        description: "",
+        items: ["", "", "", ""],
+      },
+      {
+        title: "",
+        description: "",
+        items: ["", "", "", ""],
+      },
+    ],
+  },
+
+  // ==========================================================
+  // WHY BUY
+  // ==========================================================
+
+  whyBuy: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    reasons: [
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+      { title: "", description: "" },
+    ],
+  },
+
+  // ==========================================================
+  // FAQ
+  // ==========================================================
+
+  faq: {
+    eyebrow: "",
+    title: "",
+    description: "",
+    items: [
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+      { question: "", answer: "" },
+    ],
   },
 
   sections: [],
@@ -190,208 +246,198 @@ async function readResponse(res) {
    NORMALIZE
 ============================================================ */
 
-function normalizeContent(content) {
+function normalizeContent(source) {
   const base = createEmptyContent();
+  const input = source && typeof source === "object" ? source : {};
 
-  const source =
-    content &&
-    typeof content === "object"
-      ? content
-      : {};
-
-  const hero =
-    source.hero &&
-    typeof source.hero === "object"
-      ? source.hero
-      : {};
-
-  const about =
-    source.about &&
-    typeof source.about === "object"
-      ? source.about
-      : {};
-
+  const hero = input.hero && typeof input.hero === "object" ? input.hero : {};
+  const about = input.about && typeof input.about === "object" ? input.about : {};
   const connectivity =
-    source.connectivity &&
-    typeof source.connectivity ===
-      "object"
-      ? source.connectivity
+    input.connectivity && typeof input.connectivity === "object"
+      ? input.connectivity
       : {};
-
   const nearby =
-    source.nearby &&
-    typeof source.nearby === "object"
-      ? source.nearby
+    input.nearby && typeof input.nearby === "object" ? input.nearby : {};
+
+  const realEstateTypes =
+    input.realEstateTypes && typeof input.realEstateTypes === "object"
+      ? input.realEstateTypes
       : {};
 
-  /* ----------------------------------------------------------
-     HERO ARRAYS
-  ---------------------------------------------------------- */
+  const propertyPrices =
+    input.propertyPrices && typeof input.propertyPrices === "object"
+      ? input.propertyPrices
+      : {};
 
-  const benefits = Array.isArray(
-    hero.benefits
-  )
-    ? hero.benefits
-        .slice(0, 4)
-        .map((item) =>
-          String(item ?? "")
-        )
-    : [];
+  const lifestyle =
+    input.lifestyle && typeof input.lifestyle === "object"
+      ? input.lifestyle
+      : {};
 
-  while (benefits.length < 4) {
-    benefits.push("");
-  }
+  const whyBuy =
+    input.whyBuy && typeof input.whyBuy === "object"
+      ? input.whyBuy
+      : {};
 
-  const mobileBenefits =
-    Array.isArray(
-      hero.mobileBenefits
-    )
-      ? hero.mobileBenefits
-          .slice(0, 4)
-          .map((item) =>
-            String(item ?? "")
-          )
-      : [];
-
-  while (
-    mobileBenefits.length < 4
-  ) {
-    mobileBenefits.push("");
-  }
-
-  /* ----------------------------------------------------------
-     ABOUT HIGHLIGHTS
-  ---------------------------------------------------------- */
-
-  const highlights =
-    Array.isArray(
-      about.highlights
-    )
-      ? about.highlights
-          .slice(0, 3)
-          .map((item) => ({
-            title: String(
-              item?.title ?? ""
-            ),
-
-            description: String(
-              item?.description ?? ""
-            ),
-          }))
-      : [];
-
-  while (highlights.length < 3) {
-    highlights.push({
-      title: "",
-      description: "",
-    });
-  }
-
-  /* ----------------------------------------------------------
-     MARKET INSIGHTS
-  ---------------------------------------------------------- */
-
-  const marketInsights =
-    Array.isArray(
-      about.marketInsights
-    )
-      ? about.marketInsights
-          .slice(0, 3)
-          .map((item) => ({
-            title: String(
-              item?.title ?? ""
-            ),
-
-            description: String(
-              item?.description ?? ""
-            ),
-          }))
-      : [];
-
-  while (
-    marketInsights.length < 3
-  ) {
-    marketInsights.push({
-      title: "",
-      description: "",
-    });
-  }
-
-  /* ----------------------------------------------------------
-     CONNECTIVITY
-  ---------------------------------------------------------- */
-
-  const connectivityItems =
-    Array.isArray(
-      connectivity.items
-    )
-      ? connectivity.items
-          .slice(0, 6)
-          .map((item) => ({
-            title: String(
-              item?.title ?? ""
-            ),
-
-            subtitle: String(
-              item?.subtitle ?? ""
-            ),
-          }))
-      : [];
-
-  while (
-    connectivityItems.length < 6
-  ) {
-    connectivityItems.push({
-      title: "",
-      subtitle: "",
-    });
-  }
-
-  /* ----------------------------------------------------------
-     RETURN
-  ---------------------------------------------------------- */
+  const faq =
+    input.faq && typeof input.faq === "object" ? input.faq : {};
 
   return {
+    id: input.id || base.id,
+
+    // ============================================================
+    // HERO
+    // ============================================================
+
     hero: {
       ...base.hero,
-
       ...hero,
 
-      benefits,
-      mobileBenefits,
+      benefits: Array.isArray(hero.benefits)
+        ? hero.benefits
+        : base.hero.benefits,
+
+      mobileBenefits: Array.isArray(hero.mobileBenefits)
+        ? hero.mobileBenefits
+        : base.hero.mobileBenefits,
     },
+
+    // ============================================================
+    // ABOUT
+    // ============================================================
 
     about: {
       ...base.about,
-
       ...about,
 
-      enabled:
-        about.enabled !== false,
+      enabled: about.enabled !== false,
 
-      highlights,
+      highlights: Array.isArray(about.highlights)
+        ? about.highlights.map((item) => ({
+            title: item?.title || "",
+            description: item?.description || "",
+          }))
+        : base.about.highlights,
 
-      marketInsights,
+      marketInsights: Array.isArray(about.marketInsights)
+        ? about.marketInsights.map((item) => ({
+            title: item?.title || "",
+            description: item?.description || "",
+          }))
+        : base.about.marketInsights,
     },
+
+    // ============================================================
+    // CONNECTIVITY
+    // ============================================================
 
     connectivity: {
       ...base.connectivity,
-
       ...connectivity,
 
-      items: connectivityItems,
+      items: Array.isArray(connectivity.items)
+        ? connectivity.items.map((item) => ({
+            title: item?.title || "",
+            subtitle: item?.subtitle || "",
+          }))
+        : base.connectivity.items,
     },
+
+    // ============================================================
+    // NEARBY
+    // ============================================================
 
     nearby: {
       ...base.nearby,
-
       ...nearby,
     },
 
-    sections: Array.isArray(
-      source.sections
-    )
-      ? source.sections
+    // ============================================================
+    // REAL ESTATE TYPES
+    // ============================================================
+
+    realEstateTypes: {
+      ...base.realEstateTypes,
+      ...realEstateTypes,
+
+      cards: Array.isArray(realEstateTypes.cards)
+        ? realEstateTypes.cards.map((item) => ({
+            title: item?.title || "",
+            description: item?.description || "",
+          }))
+        : base.realEstateTypes.cards,
+    },
+
+    // ============================================================
+    // PROPERTY PRICES
+    // ============================================================
+
+    propertyPrices: {
+      ...base.propertyPrices,
+      ...propertyPrices,
+
+      factors: Array.isArray(propertyPrices.factors)
+        ? propertyPrices.factors.map((item) => item || "")
+        : base.propertyPrices.factors,
+    },
+
+    // ============================================================
+    // LIFESTYLE
+    // ============================================================
+
+    lifestyle: {
+      ...base.lifestyle,
+      ...lifestyle,
+
+      groups: Array.isArray(lifestyle.groups)
+        ? lifestyle.groups.map((group) => ({
+            title: group?.title || "",
+            description: group?.description || "",
+            items: Array.isArray(group?.items)
+              ? group.items.map((item) => item || "")
+              : [],
+          }))
+        : base.lifestyle.groups,
+    },
+
+    // ============================================================
+    // WHY BUY
+    // ============================================================
+
+    whyBuy: {
+      ...base.whyBuy,
+      ...whyBuy,
+
+      reasons: Array.isArray(whyBuy.reasons)
+        ? whyBuy.reasons.map((item) => ({
+            title: item?.title || "",
+            description: item?.description || "",
+          }))
+        : base.whyBuy.reasons,
+    },
+
+    // ============================================================
+    // FAQ
+    // ============================================================
+
+    faq: {
+      ...base.faq,
+      ...faq,
+
+      items: Array.isArray(faq.items)
+        ? faq.items.map((item) => ({
+            question: item?.question || "",
+            answer: item?.answer || "",
+          }))
+        : base.faq.items,
+    },
+
+    // ============================================================
+    // CUSTOM SECTIONS
+    // ============================================================
+
+    sections: Array.isArray(input.sections)
+      ? input.sections
       : [],
   };
 }
@@ -2014,6 +2060,988 @@ export default function LocationPageEditor() {
         </div>
       </section>
 
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <SectionHeader
+    eyebrow="REAL ESTATE TYPES"
+    title="Real Estate Types"
+    description="Control the editorial heading, description and card copy. Property availability itself remains dynamic."
+  />
+
+  <div className="mt-5 grid gap-4">
+    <Field
+      label="Eyebrow"
+      value={content.realEstateTypes.eyebrow}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          realEstateTypes: {
+            ...prev.realEstateTypes,
+            eyebrow: value,
+          },
+        }))
+      }
+    />
+
+    <Field
+      label="Title"
+      value={content.realEstateTypes.title}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          realEstateTypes: {
+            ...prev.realEstateTypes,
+            title: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Description"
+      value={content.realEstateTypes.description}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          realEstateTypes: {
+            ...prev.realEstateTypes,
+            description: value,
+          },
+        }))
+      }
+    />
+
+    <div className="mt-2">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#17342d]">
+          Type Cards
+        </h3>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {content.realEstateTypes.cards.map((card, index) => (
+          <div
+            key={index}
+            className="
+              rounded-2xl
+              border
+              border-[#e4ddd2]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#17342d]">
+                Card {index + 1}
+              </span>
+
+              {content.realEstateTypes.cards.length > 1 && (
+                <ArrayRemoveButton
+                  onClick={() =>
+                    setContent((prev) => ({
+                      ...prev,
+                      realEstateTypes: {
+                        ...prev.realEstateTypes,
+                        cards:
+                          prev.realEstateTypes.cards.filter(
+                            (_, i) => i !== index
+                          ),
+                      },
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <Field
+              label="Card Title"
+              value={card.title}
+              onChange={(value) =>
+                setContent((prev) => ({
+                  ...prev,
+                  realEstateTypes: {
+                    ...prev.realEstateTypes,
+                    cards: prev.realEstateTypes.cards.map(
+                      (item, i) =>
+                        i === index
+                          ? {
+                              ...item,
+                              title: value,
+                            }
+                          : item
+                    ),
+                  },
+                }))
+              }
+            />
+
+            <div className="mt-3">
+              <TextAreaField
+                label="Card Description"
+                value={card.description}
+                onChange={(value) =>
+                  setContent((prev) => ({
+                    ...prev,
+                    realEstateTypes: {
+                      ...prev.realEstateTypes,
+                      cards:
+                        prev.realEstateTypes.cards.map(
+                          (item, i) =>
+                            i === index
+                              ? {
+                                  ...item,
+                                  description: value,
+                                }
+                              : item
+                        ),
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4">
+        <SmallAddButton
+          onClick={() =>
+            setContent((prev) => ({
+              ...prev,
+              realEstateTypes: {
+                ...prev.realEstateTypes,
+                cards: [
+                  ...prev.realEstateTypes.cards,
+                  {
+                    title: "",
+                    description: "",
+                  },
+                ],
+              },
+            }))
+          }
+        >
+          Add Type Card
+        </SmallAddButton>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <SectionHeader
+    eyebrow="PROPERTY PRICES"
+    title="Property Prices"
+    description="The project pricing table remains database-driven. These fields control the editorial content around it."
+  />
+
+  <div className="mt-5 grid gap-4">
+    <Field
+      label="Eyebrow"
+      value={content.propertyPrices.eyebrow}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            eyebrow: value,
+          },
+        }))
+      }
+    />
+
+    <Field
+      label="Title"
+      value={content.propertyPrices.title}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            title: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Description"
+      value={content.propertyPrices.description}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            description: value,
+          },
+        }))
+      }
+    />
+
+    <div className="grid gap-4 md:grid-cols-2">
+      <Field
+        label="CTA Text"
+        value={content.propertyPrices.ctaText}
+        onChange={(value) =>
+          setContent((prev) => ({
+            ...prev,
+            propertyPrices: {
+              ...prev.propertyPrices,
+              ctaText: value,
+            },
+          }))
+        }
+      />
+
+      <Field
+        label="CTA Link"
+        value={content.propertyPrices.ctaLink}
+        onChange={(value) =>
+          setContent((prev) => ({
+            ...prev,
+            propertyPrices: {
+              ...prev.propertyPrices,
+              ctaLink: value,
+            },
+          }))
+        }
+      />
+    </div>
+
+    <Field
+      label="Price Factors Heading"
+      value={content.propertyPrices.factorsTitle}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            factorsTitle: value,
+          },
+        }))
+      }
+    />
+
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#17342d]">
+          Price Factors
+        </h3>
+      </div>
+
+      <div className="space-y-3">
+        {content.propertyPrices.factors.map(
+          (factor, index) => (
+            <div
+              key={index}
+              className="flex gap-3"
+            >
+              <input
+                value={factor}
+                onChange={(e) =>
+                  setContent((prev) => ({
+                    ...prev,
+                    propertyPrices: {
+                      ...prev.propertyPrices,
+                      factors:
+                        prev.propertyPrices.factors.map(
+                          (item, i) =>
+                            i === index
+                              ? e.target.value
+                              : item
+                        ),
+                    },
+                  }))
+                }
+                className="
+                  min-w-0
+                  flex-1
+                  rounded-xl
+                  border
+                  border-[#ddd5c8]
+                  bg-white
+                  px-3
+                  py-2.5
+                  text-sm
+                  text-[#17342d]
+                  outline-none
+                  focus:border-[#C89D58]
+                "
+                placeholder={`Price factor ${index + 1}`}
+              />
+
+              <ArrayRemoveButton
+                onClick={() =>
+                  setContent((prev) => ({
+                    ...prev,
+                    propertyPrices: {
+                      ...prev.propertyPrices,
+                      factors:
+                        prev.propertyPrices.factors.filter(
+                          (_, i) => i !== index
+                        ),
+                    },
+                  }))
+                }
+              />
+            </div>
+          ))}
+      </div>
+
+      <div className="mt-3">
+        <SmallAddButton
+          onClick={() =>
+            setContent((prev) => ({
+              ...prev,
+              propertyPrices: {
+                ...prev.propertyPrices,
+                factors: [
+                  ...prev.propertyPrices.factors,
+                  "",
+                ],
+              },
+            }))
+          }
+        >
+          Add Price Factor
+        </SmallAddButton>
+      </div>
+    </div>
+
+    <Field
+      label="Current Pricing Heading"
+      value={content.propertyPrices.currentPricingTitle}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            currentPricingTitle: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Current Pricing Description"
+      value={content.propertyPrices.currentPricingDescription}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          propertyPrices: {
+            ...prev.propertyPrices,
+            currentPricingDescription: value,
+          },
+        }))
+      }
+    />
+  </div>
+</section>
+
+<section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <SectionHeader
+    eyebrow="LIFESTYLE"
+    title="Lifestyle"
+    description="Manage the schools, healthcare, shopping and lifestyle editorial content for this location."
+  />
+
+  <div className="mt-5 grid gap-4">
+    <Field
+      label="Eyebrow"
+      value={content.lifestyle.eyebrow}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          lifestyle: {
+            ...prev.lifestyle,
+            eyebrow: value,
+          },
+        }))
+      }
+    />
+
+    <Field
+      label="Title"
+      value={content.lifestyle.title}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          lifestyle: {
+            ...prev.lifestyle,
+            title: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Description"
+      value={content.lifestyle.description}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          lifestyle: {
+            ...prev.lifestyle,
+            description: value,
+          },
+        }))
+      }
+    />
+
+    <div className="grid gap-4">
+      {content.lifestyle.groups.map(
+        (group, index) => (
+          <div
+            key={index}
+            className="
+              rounded-2xl
+              border
+              border-[#e4ddd2]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#17342d]">
+                Lifestyle Group {index + 1}
+              </h3>
+
+              {content.lifestyle.groups.length > 1 && (
+                <ArrayRemoveButton
+                  onClick={() =>
+                    setContent((prev) => ({
+                      ...prev,
+                      lifestyle: {
+                        ...prev.lifestyle,
+                        groups:
+                          prev.lifestyle.groups.filter(
+                            (_, i) => i !== index
+                          ),
+                      },
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <Field
+              label="Group Title"
+              value={group.title}
+              onChange={(value) =>
+                setContent((prev) => ({
+                  ...prev,
+                  lifestyle: {
+                    ...prev.lifestyle,
+                    groups:
+                      prev.lifestyle.groups.map(
+                        (item, i) =>
+                          i === index
+                            ? {
+                                ...item,
+                                title: value,
+                              }
+                            : item
+                      ),
+                  },
+                }))
+              }
+            />
+
+            <div className="mt-3">
+              <TextAreaField
+                label="Group Description"
+                value={group.description}
+                onChange={(value) =>
+                  setContent((prev) => ({
+                    ...prev,
+                    lifestyle: {
+                      ...prev.lifestyle,
+                      groups:
+                        prev.lifestyle.groups.map(
+                          (item, i) =>
+                            i === index
+                              ? {
+                                  ...item,
+                                  description:
+                                    value,
+                                }
+                              : item
+                        ),
+                    },
+                  }))
+                }
+              />
+            </div>
+
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-semibold text-[#17342d]">
+                Items
+              </p>
+
+              <div className="space-y-2">
+                {group.items.map(
+                  (item, itemIndex) => (
+                    <div
+                      key={itemIndex}
+                      className="flex gap-2"
+                    >
+                      <input
+                        value={item}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            lifestyle: {
+                              ...prev.lifestyle,
+                              groups:
+                                prev.lifestyle.groups.map(
+                                  (groupItem, i) =>
+                                    i === index
+                                      ? {
+                                          ...groupItem,
+                                          items:
+                                            groupItem.items.map(
+                                              (
+                                                value,
+                                                j
+                                              ) =>
+                                                j ===
+                                                itemIndex
+                                                  ? e
+                                                      .target
+                                                      .value
+                                                  : value
+                                            ),
+                                        }
+                                      : groupItem
+                                ),
+                            },
+                          }))
+                        }
+                        className="
+                          min-w-0
+                          flex-1
+                          rounded-xl
+                          border
+                          border-[#ddd5c8]
+                          bg-white
+                          px-3
+                          py-2.5
+                          text-sm
+                          text-[#17342d]
+                          outline-none
+                          focus:border-[#C89D58]
+                        "
+                        placeholder={`Item ${itemIndex + 1}`}
+                      />
+
+                      <ArrayRemoveButton
+                        onClick={() =>
+                          setContent((prev) => ({
+                            ...prev,
+                            lifestyle: {
+                              ...prev.lifestyle,
+                              groups:
+                                prev.lifestyle.groups.map(
+                                  (groupItem, i) =>
+                                    i === index
+                                      ? {
+                                          ...groupItem,
+                                          items:
+                                            groupItem.items.filter(
+                                              (_, j) =>
+                                                j !==
+                                                itemIndex
+                                            ),
+                                        }
+                                      : groupItem
+                                ),
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              <div className="mt-3">
+                <SmallAddButton
+                  onClick={() =>
+                    setContent((prev) => ({
+                      ...prev,
+                      lifestyle: {
+                        ...prev.lifestyle,
+                        groups:
+                          prev.lifestyle.groups.map(
+                            (groupItem, i) =>
+                              i === index
+                                ? {
+                                    ...groupItem,
+                                    items: [
+                                      ...groupItem.items,
+                                      "",
+                                    ],
+                                  }
+                                : groupItem
+                          ),
+                      },
+                    }))
+                  }
+                >
+                  Add Item
+                </SmallAddButton>
+              </div>
+            </div>
+          </div>
+        )
+      )}
+    </div>
+
+    <SmallAddButton
+      onClick={() =>
+        setContent((prev) => ({
+          ...prev,
+          lifestyle: {
+            ...prev.lifestyle,
+            groups: [
+              ...prev.lifestyle.groups,
+              {
+                title: "",
+                description: "",
+                items: ["", "", "", ""],
+              },
+            ],
+          },
+        }))
+      }
+    >
+      Add Lifestyle Group
+    </SmallAddButton>
+  </div>
+</section>
+
+<section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <SectionHeader
+    eyebrow="WHY BUY"
+    title="Why Buy"
+    description="Control the six location-specific reasons displayed in the Why Buy section."
+  />
+
+  <div className="mt-5 grid gap-4">
+    <Field
+      label="Eyebrow"
+      value={content.whyBuy.eyebrow}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          whyBuy: {
+            ...prev.whyBuy,
+            eyebrow: value,
+          },
+        }))
+      }
+    />
+
+    <Field
+      label="Title"
+      value={content.whyBuy.title}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          whyBuy: {
+            ...prev.whyBuy,
+            title: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Description"
+      value={content.whyBuy.description}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          whyBuy: {
+            ...prev.whyBuy,
+            description: value,
+          },
+        }))
+      }
+    />
+
+    <div className="grid gap-4 lg:grid-cols-2">
+      {content.whyBuy.reasons.map(
+        (reason, index) => (
+          <div
+            key={index}
+            className="
+              rounded-2xl
+              border
+              border-[#e4ddd2]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#17342d]">
+                Reason {index + 1}
+              </h3>
+
+              {content.whyBuy.reasons.length > 1 && (
+                <ArrayRemoveButton
+                  onClick={() =>
+                    setContent((prev) => ({
+                      ...prev,
+                      whyBuy: {
+                        ...prev.whyBuy,
+                        reasons:
+                          prev.whyBuy.reasons.filter(
+                            (_, i) => i !== index
+                          ),
+                      },
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <Field
+              label="Title"
+              value={reason.title}
+              onChange={(value) =>
+                setContent((prev) => ({
+                  ...prev,
+                  whyBuy: {
+                    ...prev.whyBuy,
+                    reasons:
+                      prev.whyBuy.reasons.map(
+                        (item, i) =>
+                          i === index
+                            ? {
+                                ...item,
+                                title: value,
+                              }
+                            : item
+                      ),
+                  },
+                }))
+              }
+            />
+
+            <div className="mt-3">
+              <TextAreaField
+                label="Description"
+                value={reason.description}
+                onChange={(value) =>
+                  setContent((prev) => ({
+                    ...prev,
+                    whyBuy: {
+                      ...prev.whyBuy,
+                      reasons:
+                        prev.whyBuy.reasons.map(
+                          (item, i) =>
+                            i === index
+                              ? {
+                                  ...item,
+                                  description:
+                                    value,
+                                }
+                              : item
+                        ),
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        )
+      )}
+    </div>
+
+    <SmallAddButton
+      onClick={() =>
+        setContent((prev) => ({
+          ...prev,
+          whyBuy: {
+            ...prev.whyBuy,
+            reasons: [
+              ...prev.whyBuy.reasons,
+              {
+                title: "",
+                description: "",
+              },
+            ],
+          },
+        }))
+      }
+    >
+      Add Reason
+    </SmallAddButton>
+  </div>
+</section>
+
+<section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <SectionHeader
+    eyebrow="FAQ"
+    title="Frequently Asked Questions"
+    description="Create location-specific questions and answers. Property count remains dynamic in the default FAQ."
+  />
+
+  <div className="mt-5 grid gap-4">
+    <Field
+      label="Eyebrow"
+      value={content.faq.eyebrow}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          faq: {
+            ...prev.faq,
+            eyebrow: value,
+          },
+        }))
+      }
+    />
+
+    <Field
+      label="Title"
+      value={content.faq.title}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          faq: {
+            ...prev.faq,
+            title: value,
+          },
+        }))
+      }
+    />
+
+    <TextAreaField
+      label="Description"
+      value={content.faq.description}
+      onChange={(value) =>
+        setContent((prev) => ({
+          ...prev,
+          faq: {
+            ...prev.faq,
+            description: value,
+          },
+        }))
+      }
+    />
+
+    <div className="grid gap-4">
+      {content.faq.items.map(
+        (item, index) => (
+          <div
+            key={index}
+            className="
+              rounded-2xl
+              border
+              border-[#e4ddd2]
+              bg-[#fbfaf7]
+              p-4
+            "
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#17342d]">
+                Question {index + 1}
+              </h3>
+
+              {content.faq.items.length > 1 && (
+                <ArrayRemoveButton
+                  onClick={() =>
+                    setContent((prev) => ({
+                      ...prev,
+                      faq: {
+                        ...prev.faq,
+                        items:
+                          prev.faq.items.filter(
+                            (_, i) => i !== index
+                          ),
+                      },
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <Field
+              label="Question"
+              value={item.question}
+              onChange={(value) =>
+                setContent((prev) => ({
+                  ...prev,
+                  faq: {
+                    ...prev.faq,
+                    items:
+                      prev.faq.items.map(
+                        (faq, i) =>
+                          i === index
+                            ? {
+                                ...faq,
+                                question: value,
+                              }
+                            : faq
+                      ),
+                  },
+                }))
+              }
+            />
+
+            <div className="mt-3">
+              <TextAreaField
+                label="Answer"
+                value={item.answer}
+                onChange={(value) =>
+                  setContent((prev) => ({
+                    ...prev,
+                    faq: {
+                      ...prev.faq,
+                      items:
+                        prev.faq.items.map(
+                          (faq, i) =>
+                            i === index
+                              ? {
+                                  ...faq,
+                                  answer: value,
+                                }
+                              : faq
+                        ),
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        )
+      )}
+    </div>
+
+    <SmallAddButton
+      onClick={() =>
+        setContent((prev) => ({
+          ...prev,
+          faq: {
+            ...prev.faq,
+            items: [
+              ...prev.faq.items,
+              {
+                question: "",
+                answer: "",
+              },
+            ],
+          },
+        }))
+      }
+    >
+      Add FAQ
+    </SmallAddButton>
+  </div>
+</section>
+
+
+
       {/* ======================================================
           SAVE
       ====================================================== */}
@@ -2051,23 +3079,36 @@ export default function LocationPageEditor() {
 ============================================================ */
 
 function SectionHeader({
+  eyebrow,
   title,
   description,
   right,
 }) {
   return (
-    <div className="px-5 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div>
-        <h2 className="text-lg font-bold text-[#0f3b2e]">
+    <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="min-w-0">
+        {eyebrow && (
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#C89D58]">
+            {eyebrow}
+          </p>
+        )}
+
+        <h2 className="text-xl font-semibold tracking-tight text-[#17342d]">
           {title}
         </h2>
 
-        <p className="text-xs text-gray-500 mt-1">
-          {description}
-        </p>
+        {description && (
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
+            {description}
+          </p>
+        )}
       </div>
 
-      {right}
+      {right && (
+        <div className="shrink-0">
+          {right}
+        </div>
+      )}
     </div>
   );
 }
@@ -2200,5 +3241,56 @@ function ImageUpload({
         </div>
       )}
     </div>
+  );
+}
+
+function ArrayRemoveButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        rounded-lg
+        border
+        border-red-200
+        bg-red-50
+        px-3
+        py-2
+        text-[11px]
+        font-semibold
+        text-red-600
+        transition
+        hover:bg-red-100
+      "
+    >
+      Remove
+    </button>
+  );
+}
+
+function SmallAddButton({ children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        inline-flex
+        items-center
+        justify-center
+        rounded-lg
+        border
+        border-[#d8c49a]
+        bg-[#faf7ef]
+        px-3
+        py-2
+        text-[11px]
+        font-semibold
+        text-[#17342d]
+        transition
+        hover:bg-[#f2ead9]
+      "
+    >
+      + {children}
+    </button>
   );
 }
