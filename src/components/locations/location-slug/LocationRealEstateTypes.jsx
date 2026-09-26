@@ -9,6 +9,7 @@ import {
   BriefcaseBusiness,
   ArrowRight,
   Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function LocationRealEstateTypes({
@@ -57,25 +58,24 @@ export default function LocationRealEstateTypes({
       typeMap.set(normalized, 0);
     }
 
-    typeMap.set(
-      normalized,
-      typeMap.get(normalized) + 1
-    );
+    typeMap.set(normalized, typeMap.get(normalized) + 1);
   });
 
-  const discoveredTypes = Array.from(
-    typeMap.entries()
-  ).slice(0, 4);
+  const discoveredTypes = Array.from(typeMap.entries()).slice(0, 4);
 
   // ============================================================
   // ICONS
   // ============================================================
 
   const icons = [
-    <Building2 key="building" size={17} />,
-    <Home key="home" size={17} />,
-    <Trees key="trees" size={17} />,
-    <BriefcaseBusiness key="briefcase" size={17} />,
+    <Building2 key="building" size={20} strokeWidth={1.7} />,
+    <Home key="home" size={20} strokeWidth={1.7} />,
+    <Trees key="trees" size={20} strokeWidth={1.7} />,
+    <BriefcaseBusiness
+      key="briefcase"
+      size={20}
+      strokeWidth={1.7}
+    />,
   ];
 
   // ============================================================
@@ -87,37 +87,30 @@ export default function LocationRealEstateTypes({
       title: "Luxury Apartments",
       description:
         "Premium residences designed around contemporary living, refined amenities and thoughtfully planned community environments.",
-      icon: <Building2 size={17} />,
+      icon: <Building2 size={20} strokeWidth={1.7} />,
     },
     {
       title: "Independent Floors",
       description:
         "Spacious floor residences offering greater privacy, generous layouts and a more independent residential experience.",
-      icon: <Home size={17} />,
+      icon: <Home size={20} strokeWidth={1.7} />,
     },
     {
       title: "Plots & Land",
       description:
         "Residential land opportunities for buyers seeking flexibility in planning, construction and long-term ownership.",
-      icon: <Trees size={17} />,
+      icon: <Trees size={20} strokeWidth={1.7} />,
     },
     {
       title: "Commercial Spaces",
       description:
         "Commercial opportunities suited to businesses, investors and buyers evaluating property for income-generating purposes.",
-      icon: <BriefcaseBusiness size={17} />,
+      icon: <BriefcaseBusiness size={20} strokeWidth={1.7} />,
     },
   ];
 
   // ============================================================
   // ADMIN-CUSTOMIZED CARDS
-  //
-  // If cards have been added through the admin editor,
-  // use those cards.
-  //
-  // Property counts are still taken dynamically from the
-  // actual properties whenever the title matches a discovered
-  // property type.
   // ============================================================
 
   const customCards = Array.isArray(customContent?.cards)
@@ -144,7 +137,10 @@ export default function LocationRealEstateTypes({
             count: matchingType?.[1],
             icon:
               icons[index] || (
-                <Building2 size={17} />
+                <Building2
+                  size={20}
+                  strokeWidth={1.7}
+                />
               ),
           };
         })
@@ -153,11 +149,10 @@ export default function LocationRealEstateTypes({
   // ============================================================
   // FINAL CARD DATA
   //
-  // Priority:
-  //
-  // 1. Admin customized cards
-  // 2. Dynamically discovered property types
-  // 3. Static fallback cards
+  // PRIORITY:
+  // 1. ADMIN CUSTOMIZED CARDS
+  // 2. DYNAMICALLY DISCOVERED PROPERTY TYPES
+  // 3. STATIC FALLBACK CARDS
   // ============================================================
 
   const typeCards =
@@ -172,7 +167,10 @@ export default function LocationRealEstateTypes({
             count,
             icon:
               icons[index] || (
-                <Building2 size={17} />
+                <Building2
+                  size={20}
+                  strokeWidth={1.7}
+                />
               ),
           })
         )
@@ -191,26 +189,64 @@ export default function LocationRealEstateTypes({
         overflow-hidden
         border-t
         border-[#ebe5dc]
-        bg-white
-        py-10
-        sm:py-12
-        md:py-14
-        lg:py-16
+        bg-[#fcfbf8]
+        py-14
+        sm:py-16
+        md:py-18
+        lg:py-20
       "
     >
+      {/* ========================================================
+          BACKGROUND DETAILS
+      ======================================================== */}
+
       <div
         className="
           pointer-events-none
           absolute
           left-[-180px]
           top-[-180px]
-          h-[420px]
-          w-[420px]
+          h-[460px]
+          w-[460px]
           rounded-full
-          bg-[#D4AF37]/[0.025]
-          blur-[110px]
+          bg-[#D4AF37]/[0.035]
+          blur-[120px]
         "
       />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          bottom-[-220px]
+          right-[-180px]
+          h-[480px]
+          w-[480px]
+          rounded-full
+          bg-[#17342d]/[0.025]
+          blur-[130px]
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-1/2
+          h-[1px]
+          w-[75%]
+          -translate-x-1/2
+          bg-gradient-to-r
+          from-transparent
+          via-[#D4AF37]/10
+          to-transparent
+        "
+      />
+
+      {/* ========================================================
+          MAIN CONTAINER
+      ======================================================== */}
 
       <div
         className="
@@ -219,63 +255,79 @@ export default function LocationRealEstateTypes({
           mx-auto
           max-w-[1450px]
           px-5
-          sm:px-6
-          lg:px-8
+          sm:px-7
+          lg:px-10
+          xl:px-12
         "
       >
         {/* ======================================================
-            HEADING
+            SECTION HEADER
         ====================================================== */}
 
-        <div className="max-w-[760px]">
+        <div className="max-w-[860px]">
+          {/* Eyebrow */}
+
           <div
             className="
               flex
               items-center
-              gap-2
-              text-[8px]
+              gap-2.5
+              text-[10px]
               font-semibold
               uppercase
-              tracking-[0.22em]
+              tracking-[0.24em]
               text-[#8F7335]
-              sm:text-[9px]
-              md:text-[10px]
+              sm:text-[11px]
             "
           >
-            <span className="h-px w-7 bg-[#C89D58]" />
+            <span className="h-px w-8 bg-[#C89D58]" />
 
-            {customEyebrow}
+            <span>{customEyebrow}</span>
+
+            <span className="hidden h-px w-5 bg-[#C89D58]/40 sm:block" />
           </div>
+
+          {/* Heading */}
 
           <h2
             id="real-estate-types-heading"
             className="
-              mt-2
+              mt-3
+              max-w-[820px]
               font-playfair
-              text-[27px]
+              text-[34px]
               font-medium
               leading-[1.08]
-              tracking-[-0.025em]
+              tracking-[-0.03em]
               text-[#17342d]
-              sm:text-[31px]
-              md:text-[35px]
-              lg:text-[39px]
+              sm:text-[39px]
+              md:text-[44px]
+              lg:text-[48px]
+              xl:text-[50px]
             "
           >
             {customTitle}
           </h2>
 
-          <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+          {/* Gold divider */}
+
+          <div className="mt-5 flex items-center gap-2">
+            <div className="h-[2px] w-14 bg-[#C89D58]" />
+            <div className="h-[2px] w-2 bg-[#D4AF37]/40" />
+          </div>
+
+          {/* Description */}
 
           <p
             className="
-              mt-4
-              max-w-[720px]
-              text-[10.5px]
+              mt-5
+              max-w-[820px]
+              text-[13px]
               leading-[1.8]
               text-[#59635e]
-              sm:text-[11px]
-              md:text-[12px]
+              sm:text-[13.5px]
+              md:text-[14px]
+              lg:text-[14.5px]
             "
           >
             {customDescription}
@@ -283,17 +335,19 @@ export default function LocationRealEstateTypes({
         </div>
 
         {/* ======================================================
-            CARDS
+            PROPERTY TYPE CARDS
         ====================================================== */}
 
         <div
           className="
-            mt-6
+            mt-9
             grid
-            gap-3
+            gap-5
+            sm:mt-10
             sm:grid-cols-2
             lg:grid-cols-4
-            lg:gap-4
+            lg:gap-5
+            xl:gap-6
           "
         >
           {typeCards.map((item, index) => (
@@ -301,65 +355,118 @@ export default function LocationRealEstateTypes({
               key={`${item.title}-${index}`}
               className="
                 group
+                relative
                 overflow-hidden
-                rounded-[15px]
+                rounded-[22px]
                 border
-                border-[#e8e1d7]
-                bg-[#fbfaf7]
+                border-[#e5ded4]
+                bg-white
+                shadow-[0_8px_30px_rgba(23,52,45,0.035)]
                 transition-all
-                duration-300
-                hover:-translate-y-1
-                hover:border-[#d7c29a]
-                hover:shadow-[0_18px_45px_rgba(23,52,45,0.08)]
+                duration-500
+                hover:-translate-y-1.5
+                hover:border-[#d6c092]
+                hover:shadow-[0_22px_55px_rgba(23,52,45,0.10)]
               "
             >
               {/* ==================================================
-                  VISUAL HEADER
+                  TOP DECORATIVE PANEL
               ================================================== */}
 
               <div
                 className="
                   relative
-                  flex
-                  h-[82px]
-                  items-end
-                  justify-between
+                  h-[112px]
                   overflow-hidden
                   bg-[#17342d]
-                  px-4
-                  py-4
+                  px-5
+                  py-5
+                  sm:h-[118px]
                 "
               >
+                {/* Decorative circles */}
+
                 <div
                   className="
+                    pointer-events-none
                     absolute
-                    right-[-20px]
-                    top-[-25px]
-                    h-24
-                    w-24
+                    right-[-30px]
+                    top-[-38px]
+                    h-[125px]
+                    w-[125px]
                     rounded-full
                     border
                     border-[#D4AF37]/10
+                    transition-transform
+                    duration-700
+                    group-hover:scale-110
                   "
                 />
 
                 <div
                   className="
+                    pointer-events-none
+                    absolute
+                    right-[8px]
+                    top-[-15px]
+                    h-[72px]
+                    w-[72px]
+                    rounded-full
+                    border
+                    border-[#D4AF37]/[0.07]
+                  "
+                />
+
+                <div
+                  className="
+                    pointer-events-none
+                    absolute
+                    bottom-[-35px]
+                    left-[25%]
+                    h-[80px]
+                    w-[80px]
+                    rounded-full
+                    bg-[#D4AF37]/[0.035]
+                    blur-[20px]
+                  "
+                />
+
+                {/* Category icon */}
+
+                <div
+                  className="
                     relative
                     flex
-                    h-9
-                    w-9
+                    h-11
+                    w-11
                     items-center
                     justify-center
-                    rounded-xl
+                    rounded-[14px]
+                    border
+                    border-[#E5C978]/30
                     bg-[#D4AF37]
                     text-[#17342d]
+                    shadow-[0_8px_25px_rgba(0,0,0,0.12)]
+                    transition-transform
+                    duration-500
+                    group-hover:scale-105
                   "
                 >
                   {item.icon}
                 </div>
 
-                <div className="relative flex items-center gap-2">
+                {/* Top right meta */}
+
+                <div
+                  className="
+                    absolute
+                    right-5
+                    top-5
+                    flex
+                    items-center
+                    gap-2
+                  "
+                >
                   {item.count !== undefined && (
                     <span
                       className="
@@ -367,12 +474,13 @@ export default function LocationRealEstateTypes({
                         border
                         border-[#D4AF37]/20
                         bg-[#D4AF37]/10
-                        px-2
-                        py-1
-                        text-[8px]
+                        px-2.5
+                        py-1.5
+                        text-[9px]
                         font-semibold
                         tracking-[0.08em]
                         text-[#E5C978]
+                        sm:text-[9.5px]
                       "
                     >
                       {item.count}{" "}
@@ -383,63 +491,222 @@ export default function LocationRealEstateTypes({
                   )}
 
                   <Sparkles
-                    size={14}
-                    className="text-[#D4AF37]/70"
+                    size={15}
+                    strokeWidth={1.6}
+                    className="
+                      text-[#D4AF37]/70
+                      transition-transform
+                      duration-500
+                      group-hover:rotate-12
+                    "
                   />
                 </div>
+
+                {/* Bottom gold line */}
+
+                <div
+                  className="
+                    absolute
+                    bottom-0
+                    left-0
+                    h-[2px]
+                    w-0
+                    bg-[#D4AF37]
+                    transition-all
+                    duration-500
+                    group-hover:w-full
+                  "
+                />
               </div>
 
               {/* ==================================================
-                  CONTENT
+                  CARD CONTENT
               ================================================== */}
 
-              <div className="p-4">
+              <div className="p-5 sm:p-6">
+                {/* Category number */}
+
+                <div className="mb-3 flex items-center justify-between">
+                  <span
+                    className="
+                      text-[9px]
+                      font-semibold
+                      tracking-[0.18em]
+                      text-[#A18A5A]
+                    "
+                  >
+                    0{index + 1}
+                  </span>
+
+                  <span
+                    className="
+                      h-px
+                      flex-1
+                      mx-3
+                      bg-[#eee8df]
+                    "
+                  />
+
+                  <CheckCircle2
+                    size={14}
+                    strokeWidth={1.7}
+                    className="
+                      text-[#C89D58]/55
+                      transition-colors
+                      duration-300
+                      group-hover:text-[#C89D58]
+                    "
+                  />
+                </div>
+
+                {/* Title */}
+
                 <h3
                   className="
                     font-playfair
-                    text-[18px]
-                    leading-tight
+                    text-[21px]
+                    font-medium
+                    leading-[1.18]
+                    tracking-[-0.015em]
                     text-[#17342d]
+                    sm:text-[22px]
                   "
                 >
                   {item.title}
                 </h3>
 
+                {/* Description */}
+
                 <p
                   className="
-                    mt-2
-                    min-h-[58px]
-                    text-[9.5px]
-                    leading-[1.65]
+                    mt-3
+                    min-h-[76px]
+                    text-[12px]
+                    leading-[1.75]
                     text-[#68716d]
-                    sm:text-[10px]
+                    sm:text-[12.5px]
                   "
                 >
                   {item.description}
                 </p>
 
+                {/* CTA */}
+
                 <Link
                   href="#projects"
                   className="
-                    mt-3
+                    mt-5
                     inline-flex
                     items-center
-                    gap-1.5
-                    text-[9px]
+                    gap-2
+                    text-[11px]
                     font-semibold
+                    tracking-[0.01em]
                     text-[#17342d]
-                    transition-colors
-                    hover:text-[#B58B2D]
+                    transition-all
+                    duration-300
+                    group-hover:gap-2.5
+                    group-hover:text-[#B58B2D]
                   "
                 >
-                  Explore{" "}
-                  {item.title}
+                  <span>Explore {item.title}</span>
 
-                  <ArrowRight size={11} />
+                  <span
+                    className="
+                      flex
+                      h-7
+                      w-7
+                      items-center
+                      justify-center
+                      rounded-full
+                      border
+                      border-[#d9c9a7]
+                      transition-all
+                      duration-300
+                      group-hover:border-[#C89D58]
+                      group-hover:bg-[#C89D58]
+                      group-hover:text-white
+                    "
+                  >
+                    <ArrowRight
+                      size={13}
+                      strokeWidth={1.8}
+                    />
+                  </span>
                 </Link>
               </div>
+
+              {/* Bottom subtle accent */}
+
+              <div
+                className="
+                  absolute
+                  bottom-0
+                  left-5
+                  right-5
+                  h-px
+                  bg-gradient-to-r
+                  from-transparent
+                  via-[#C89D58]/20
+                  to-transparent
+                "
+              />
             </article>
           ))}
+        </div>
+
+        {/* ======================================================
+            BOTTOM SUPPORTING LINE
+        ====================================================== */}
+
+        <div
+          className="
+            mt-8
+            flex
+            items-center
+            gap-3
+            border-t
+            border-[#ebe5dc]
+            pt-5
+            sm:mt-10
+            sm:pt-6
+          "
+        >
+          <div
+            className="
+              flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-[#17342d]
+              text-[#D4AF37]
+            "
+          >
+            <Sparkles
+              size={14}
+              strokeWidth={1.6}
+            />
+          </div>
+
+          <p
+            className="
+              text-[10.5px]
+              leading-[1.6]
+              text-[#747b77]
+              sm:text-[11px]
+              md:text-[11.5px]
+            "
+          >
+            Explore curated property opportunities in{" "}
+            <span className="font-semibold text-[#17342d]">
+              {locationName}
+            </span>{" "}
+            and discover a format aligned with your lifestyle,
+            ownership goals and investment requirements.
+          </p>
         </div>
       </div>
     </section>

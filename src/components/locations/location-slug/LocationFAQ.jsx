@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-import {
-  Plus,
-  Minus,
-} from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
 export default function LocationFAQ({
   locationName,
@@ -16,20 +12,25 @@ export default function LocationFAQ({
   // ADMIN CUSTOM CONTENT
   // ============================================================
 
-  const customContent =
-    pageContent?.faq || {};
+  const customContent = pageContent?.faq || {};
 
   const customEyebrow =
-    customContent?.eyebrow?.trim() ||
-    "PROPERTY BUYER QUESTIONS";
+    typeof customContent?.eyebrow === "string" &&
+    customContent.eyebrow.trim()
+      ? customContent.eyebrow.trim()
+      : "PROPERTY BUYER QUESTIONS";
 
   const customTitle =
-    customContent?.title?.trim() ||
-    `Common Questions About ${locationName}`;
+    typeof customContent?.title === "string" &&
+    customContent.title.trim()
+      ? customContent.title.trim()
+      : `Common Questions About ${locationName}`;
 
   const customDescription =
-    customContent?.description?.trim() ||
-    `Find answers to common questions buyers and investors may have when researching property opportunities in ${locationName}. For project-specific pricing, inventory, documentation and availability, speak with a Property Bouquet advisor.`;
+    typeof customContent?.description === "string" &&
+    customContent.description.trim()
+      ? customContent.description.trim()
+      : `Explore answers to common questions about buying property in ${locationName}, including property types, pricing, investment considerations and how to compare available projects.`;
 
   // ============================================================
   // DEFAULT FAQS
@@ -38,43 +39,46 @@ export default function LocationFAQ({
   const defaultFaqs = [
     {
       question: `What types of properties are available in ${locationName}?`,
-      answer:
-        `${locationName} can offer different residential and, depending on the local market, commercial property formats. The Property Bouquet collection may include apartments, independent floors, plots or other property categories depending on current inventory. Buyers should review each project's configuration, specifications, location and applicable terms individually.`,
+      answer: `${locationName} may offer a range of residential and, depending on the local market, commercial property formats. Available inventory can include apartments, independent floors, plots and other configurations. Options vary by project, so buyers should review each property's configuration, specifications, location and applicable terms.`,
     },
+
     {
       question: `What is the property price range in ${locationName}?`,
-      answer:
-        `Property prices in ${locationName} vary according to the project, developer, configuration, size, specifications, location within the area and development stage. Property Bouquet displays available project information where pricing has been provided, while current inventory and final commercial terms should be confirmed with an advisor.`,
+      answer: `Property prices in ${locationName} vary based on the project, developer, property type, configuration, size, specifications, location and stage of development. Pricing displayed on Property Bouquet reflects the information available for listed projects, while current inventory and final commercial terms should be confirmed with the respective advisor.`,
     },
+
     {
-      question: `What should I consider before buying a property in ${locationName}?`,
-      answer:
-        `Buyers can evaluate connectivity, surrounding infrastructure, project approvals and documentation, developer track record, construction status, amenities, configuration, maintenance considerations and the property's suitability for their intended use. A location should be assessed together with the individual project's fundamentals.`,
+      question: `What should I consider before buying property in ${locationName}?`,
+      answer: `Buyers can consider connectivity, surrounding infrastructure, project approvals and documentation, developer credentials, construction status, amenities, configuration, maintenance requirements and the property's suitability for their intended use. The location should always be evaluated together with the fundamentals of the individual project.`,
     },
+
     {
       question: `Is ${locationName} suitable for end-use homebuyers?`,
-      answer:
-        `Suitability depends on an individual's lifestyle, commute, family requirements, preferred property type and budget. Buyers considering ${locationName} can evaluate residential communities alongside nearby education, healthcare, retail, leisure and connectivity infrastructure before making a decision.`,
+      answer: `Suitability depends on an individual's lifestyle, commute, family requirements, preferred property type and budget. Buyers exploring ${locationName} can also consider access to education, healthcare, retail, leisure destinations and major transport corridors when selecting a home.`,
     },
+
     {
       question: `Is ${locationName} suitable for property investment?`,
-      answer:
-        `Investment suitability depends on factors such as entry price, rental or end-user demand, supply, infrastructure development, project quality, liquidity and the buyer's investment horizon. Past market performance does not guarantee future returns, so each opportunity should be evaluated on its own merits.`,
+      answer: `Investment considerations can include entry price, rental and end-user demand, available supply, infrastructure development, project quality, liquidity and the intended investment horizon. Market conditions can change over time, so each property should be evaluated against the buyer's individual objectives and risk considerations.`,
     },
+
     {
       question: `How can I find the right property in ${locationName}?`,
-      answer:
-        `Start by defining your preferred property type, configuration, budget and intended use. You can then compare available projects, locations, developers, amenities and pricing before speaking with a Property Bouquet advisor about current inventory and suitability.`,
+      answer: `Start by defining your preferred property type, configuration, budget and intended use. You can then compare projects, developers, locations, amenities and available pricing before discussing current inventory and suitability with a Property Bouquet advisor.`,
     },
+
     {
       question: `How many properties are currently listed in ${locationName}?`,
-      answer:
-        `The Property Bouquet collection currently contains ${properties.length || 0} project${properties.length === 1 ? "" : "s"} associated with this location page. Inventory can change as projects are added, updated, sold or become unavailable.`,
+      answer: `The Property Bouquet collection currently contains ${
+        properties.length || 0
+      } project${
+        properties.length === 1 ? "" : "s"
+      } associated with this location page. Inventory can change as projects are added, updated, sold or become unavailable.`,
     },
+
     {
       question: `Can Property Bouquet help me compare properties in ${locationName}?`,
-      answer:
-        `Yes. Property Bouquet can help buyers understand the differences between available projects, configurations, locations and pricing information so they can shortlist properties that match their stated requirements.`,
+      answer: `Yes. Property Bouquet can help buyers understand differences between available projects, configurations, locations, developers and pricing information, making it easier to create a shortlist based on their stated requirements.`,
     },
   ];
 
@@ -82,9 +86,7 @@ export default function LocationFAQ({
   // ADMIN FAQ ITEMS
   // ============================================================
 
-  const customFaqs = Array.isArray(
-    customContent?.items
-  )
+  const customFaqs = Array.isArray(customContent?.items)
     ? customContent.items
         .map((item) => ({
           question:
@@ -99,15 +101,13 @@ export default function LocationFAQ({
         }))
         .filter(
           (item) =>
-            item.question || item.answer
+            item.question &&
+            item.answer
         )
     : [];
 
   // ============================================================
   // FINAL FAQ DATA
-  //
-  // Admin content takes priority.
-  // If no valid admin FAQs exist, use the default FAQs.
   // ============================================================
 
   const faqs =
@@ -119,8 +119,7 @@ export default function LocationFAQ({
   // OPEN FAQ
   // ============================================================
 
-  const [openIndex, setOpenIndex] =
-    useState(0);
+  const [openIndex, setOpenIndex] = useState(0);
 
   // ============================================================
   // RENDER
@@ -136,45 +135,53 @@ export default function LocationFAQ({
         border-t
         border-[#e8e1d7]
         bg-white
-        py-10
-        sm:py-12
-        md:py-14
-        lg:py-16
+        py-16
+        sm:py-18
+        md:py-20
+        lg:py-24
       "
     >
       <div
         className="
           mx-auto
-          max-w-[1450px]
+          max-w-[1380px]
           px-5
-          sm:px-6
-          lg:px-8
+          sm:px-7
+          lg:px-10
         "
       >
         {/* ======================================================
             HEADER
         ====================================================== */}
 
-        <div className="max-w-[850px]">
+        <div
+          className="
+            mx-auto
+            max-w-[900px]
+            text-center
+          "
+        >
           {/* EYEBROW */}
 
           <div
             className="
               flex
               items-center
-              gap-2
-              text-[8px]
+              justify-center
+              gap-3
+              text-[10px]
               font-semibold
               uppercase
-              tracking-[0.22em]
+              tracking-[0.24em]
               text-[#8F7335]
-              sm:text-[9px]
-              md:text-[10px]
+              sm:text-[11px]
             "
           >
-            <span className="h-px w-7 bg-[#C89D58]" />
+            <span className="h-px w-8 bg-[#C89D58]" />
 
-            {customEyebrow}
+            <span>{customEyebrow}</span>
+
+            <span className="h-px w-8 bg-[#C89D58]" />
           </div>
 
           {/* TITLE */}
@@ -182,34 +189,45 @@ export default function LocationFAQ({
           <h2
             id="faq-heading"
             className="
-              mt-2
+              mt-4
               font-playfair
-              text-[27px]
+              text-[34px]
               font-medium
               leading-[1.08]
               tracking-[-0.025em]
               text-[#17342d]
-              sm:text-[31px]
-              md:text-[35px]
-              lg:text-[39px]
+              sm:text-[39px]
+              md:text-[44px]
+              lg:text-[48px]
             "
           >
             {customTitle}
           </h2>
 
-          <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+          {/* GOLD ACCENT */}
+
+          <div
+            className="
+              mx-auto
+              mt-5
+              h-[2px]
+              w-16
+              bg-[#C89D58]
+            "
+          />
 
           {/* DESCRIPTION */}
 
           <p
             className="
-              mt-4
-              max-w-[800px]
-              text-[10.5px]
-              leading-[1.8]
-              text-[#59635e]
-              sm:text-[11px]
-              md:text-[12px]
+              mx-auto
+              mt-5
+              max-w-[760px]
+              text-[13px]
+              leading-[1.85]
+              text-[#626963]
+              sm:text-[14px]
+              md:text-[15px]
             "
           >
             {customDescription}
@@ -222,25 +240,30 @@ export default function LocationFAQ({
 
         <div
           className="
-            mt-6
+            mx-auto
+            mt-12
             grid
-            gap-x-8
+            max-w-[1160px]
+            gap-x-14
             md:grid-cols-2
+            lg:gap-x-20
           "
         >
           {faqs.map((faq, index) => {
-            const isOpen =
-              openIndex === index;
+            const isOpen = openIndex === index;
 
             return (
               <div
                 key={`${faq.question || "faq"}-${index}`}
                 className="
+                  group
                   border-b
-                  border-[#e8e1d7]
+                  border-[#ded7cc]
                 "
               >
-                {/* QUESTION */}
+                {/* ==================================================
+                    QUESTION
+                ================================================== */}
 
                 <button
                   type="button"
@@ -256,66 +279,134 @@ export default function LocationFAQ({
                     w-full
                     items-center
                     justify-between
-                    gap-5
-                    py-4
+                    gap-7
+                    py-6
                     text-left
+                    transition-all
+                    duration-200
                   "
                 >
+                  {/* QUESTION TEXT */}
+
                   <span
-                    className="
-                      text-[9.5px]
-                      font-medium
-                      leading-5
-                      text-[#17342d]
-                      sm:text-[10px]
-                    "
+                    className={`
+                      max-w-[calc(100%-50px)]
+                      text-[14px]
+                      font-semibold
+                      leading-[1.55]
+                      transition-colors
+                      duration-200
+                      sm:text-[15px]
+                      md:text-[16px]
+                      ${
+                        isOpen
+                          ? "text-[#8F7335]"
+                          : "text-[#17342d] group-hover:text-[#8F7335]"
+                      }
+                    `}
                   >
                     {faq.question}
                   </span>
 
+                  {/* PLUS / MINUS */}
+
                   <span
-                    className="
+                    className={`
                       flex
-                      h-6
-                      w-6
+                      h-9
+                      w-9
                       shrink-0
                       items-center
                       justify-center
                       rounded-full
                       border
-                      border-[#ddd4c6]
-                      text-[#8F7335]
-                    "
+                      transition-all
+                      duration-300
+                      ${
+                        isOpen
+                          ? "border-[#C89D58] bg-[#C89D58] text-white"
+                          : "border-[#d8d0c3] bg-[#faf8f4] text-[#8F7335] group-hover:border-[#C89D58] group-hover:bg-[#fffaf1]"
+                      }
+                    `}
                   >
                     {isOpen ? (
-                      <Minus size={11} />
+                      <Minus
+                        size={15}
+                        strokeWidth={1.8}
+                      />
                     ) : (
-                      <Plus size={11} />
+                      <Plus
+                        size={15}
+                        strokeWidth={1.8}
+                      />
                     )}
                   </span>
                 </button>
 
-                {/* ANSWER */}
+                {/* ==================================================
+                    ANSWER
+                ================================================== */}
 
-                {isOpen && (
-                  <div
-                    id={`faq-answer-${index}`}
-                    className="pb-4 pr-10"
+                <div
+                  id={`faq-answer-${index}`}
+                  hidden={!isOpen}
+                  className="
+                    max-w-[680px]
+                    pb-6
+                    pr-10
+                  "
+                >
+                  <p
+                    className="
+                      text-[12.5px]
+                      leading-[1.9]
+                      text-[#69716c]
+                      sm:text-[13px]
+                      md:text-[14px]
+                    "
                   >
-                    <p
-                      className="
-                        text-[9px]
-                        leading-[1.8]
-                        text-[#727872]
-                      "
-                    >
-                      {faq.answer}
-                    </p>
-                  </div>
-                )}
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
             );
           })}
+        </div>
+
+        {/* ======================================================
+            BOTTOM TRUST NOTE
+        ====================================================== */}
+
+        <div
+          className="
+            mx-auto
+            mt-12
+            flex
+            max-w-[1160px]
+            items-center
+            justify-center
+            gap-3
+            border-t
+            border-[#eee8df]
+            pt-7
+            text-center
+          "
+        >
+          <span className="h-px w-6 bg-[#C89D58]" />
+
+          <p
+            className="
+              text-[10px]
+              leading-5
+              text-[#8a908b]
+              sm:text-[11px]
+            "
+          >
+            Property information, availability and pricing may change.
+            Please verify current project details before making a decision.
+          </p>
+
+          <span className="h-px w-6 bg-[#C89D58]" />
         </div>
       </div>
     </section>

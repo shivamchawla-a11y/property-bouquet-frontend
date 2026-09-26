@@ -17,20 +17,25 @@ export default function WhyBuyLocation({
   // ADMIN CUSTOM CONTENT
   // ============================================================
 
-  const customContent =
-    pageContent?.whyBuy || {};
+  const customContent = pageContent?.whyBuy || {};
 
   const customEyebrow =
-    customContent?.eyebrow?.trim() ||
-    "WHY BUY?";
+    typeof customContent?.eyebrow === "string" &&
+    customContent.eyebrow.trim()
+      ? customContent.eyebrow.trim()
+      : "WHY BUY?";
 
   const customTitle =
-    customContent?.title?.trim() ||
-    `Why Consider Buying in ${locationName}?`;
+    typeof customContent?.title === "string" &&
+    customContent.title.trim()
+      ? customContent.title.trim()
+      : `Why Consider Buying in ${locationName}?`;
 
   const customDescription =
-    customContent?.description?.trim() ||
-    `Choosing a property is about more than the individual home. Buyers often evaluate the surrounding location, connectivity, infrastructure, residential demand, quality of development, lifestyle ecosystem and the potential suitability of the address for their long-term objectives. These factors can help provide a broader framework when assessing opportunities in ${locationName}.`;
+    typeof customContent?.description === "string" &&
+    customContent.description.trim()
+      ? customContent.description.trim()
+      : `Choosing a property is about more than the individual home. Buyers often evaluate the surrounding location, connectivity, infrastructure, residential demand, quality of development, lifestyle ecosystem and the potential suitability of the address for their long-term objectives. These factors can help provide a broader framework when assessing opportunities in ${locationName}.`;
 
   // ============================================================
   // DEFAULT REASONS
@@ -82,6 +87,7 @@ export default function WhyBuyLocation({
             typeof reason?.title === "string"
               ? reason.title.trim()
               : "",
+
           description:
             typeof reason?.description === "string"
               ? reason.description.trim()
@@ -89,7 +95,8 @@ export default function WhyBuyLocation({
         }))
         .filter(
           (reason) =>
-            reason.title || reason.description
+            reason.title &&
+            reason.description
         )
     : [];
 
@@ -101,17 +108,16 @@ export default function WhyBuyLocation({
   // ============================================================
   // ICONS
   //
-  // Icons are intentionally controlled by position rather
-  // than the admin editor. This keeps the CMS simple.
+  // Icons remain frontend-controlled by position.
   // ============================================================
 
   const icons = [
-    <MapPinned key="map" size={15} />,
-    <TrendingUp key="trend" size={15} />,
-    <Home key="home" size={15} />,
-    <ShieldCheck key="shield" size={15} />,
-    <Sparkles key="sparkles" size={15} />,
-    <Clock3 key="clock" size={15} />,
+    MapPinned,
+    TrendingUp,
+    Home,
+    ShieldCheck,
+    Sparkles,
+    Clock3,
   ];
 
   // ============================================================
@@ -128,45 +134,44 @@ export default function WhyBuyLocation({
         border-t
         border-[#e8e1d7]
         bg-white
-        py-10
-        sm:py-12
-        md:py-14
-        lg:py-16
+        py-16
+        sm:py-18
+        md:py-20
+        lg:py-24
       "
     >
       <div
         className="
           mx-auto
-          max-w-[1450px]
+          max-w-[1380px]
           px-5
-          sm:px-6
-          lg:px-8
+          sm:px-7
+          lg:px-10
         "
       >
         {/* ======================================================
             HEADER
         ====================================================== */}
 
-        <div className="max-w-[800px]">
+        <div className="max-w-[900px]">
           {/* EYEBROW */}
 
           <div
             className="
               flex
               items-center
-              gap-2
-              text-[8px]
+              gap-3
+              text-[10px]
               font-semibold
               uppercase
-              tracking-[0.22em]
+              tracking-[0.24em]
               text-[#8F7335]
-              sm:text-[9px]
-              md:text-[10px]
+              sm:text-[11px]
             "
           >
-            <span className="h-px w-7 bg-[#C89D58]" />
+            <span className="h-px w-8 bg-[#C89D58]" />
 
-            {customEyebrow}
+            <span>{customEyebrow}</span>
           </div>
 
           {/* TITLE */}
@@ -174,34 +179,37 @@ export default function WhyBuyLocation({
           <h2
             id="why-buy-heading"
             className="
-              mt-2
+              mt-4
+              max-w-[850px]
               font-playfair
-              text-[27px]
+              text-[34px]
               font-medium
               leading-[1.08]
               tracking-[-0.025em]
               text-[#17342d]
-              sm:text-[31px]
-              md:text-[35px]
-              lg:text-[39px]
+              sm:text-[39px]
+              md:text-[44px]
+              lg:text-[48px]
             "
           >
             {customTitle}
           </h2>
 
-          <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+          {/* GOLD ACCENT */}
+
+          <div className="mt-5 h-[2px] w-16 bg-[#C89D58]" />
 
           {/* DESCRIPTION */}
 
           <p
             className="
-              mt-4
-              max-w-[820px]
-              text-[10.5px]
-              leading-[1.8]
+              mt-5
+              max-w-[850px]
+              text-[13px]
+              leading-[1.85]
               text-[#59635e]
-              sm:text-[11px]
-              md:text-[12px]
+              sm:text-[14px]
+              md:text-[15px]
             "
           >
             {customDescription}
@@ -214,82 +222,176 @@ export default function WhyBuyLocation({
 
         <div
           className="
-            mt-6
+            mt-10
             grid
-            grid-cols-2
-            gap-2
-            sm:grid-cols-3
-            lg:grid-cols-6
-            lg:gap-3
+            grid-cols-1
+            gap-4
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-6
           "
         >
-          {reasons.map((reason, index) => (
-            <article
-              key={`${reason.title || "reason"}-${index}`}
-              className="
-                rounded-[12px]
-                border
-                border-[#e5ded4]
-                bg-[#fbfaf7]
-                px-3
-                py-4
-                text-center
-                transition-all
-                duration-300
-                hover:-translate-y-1
-                hover:shadow-[0_14px_35px_rgba(23,52,45,0.06)]
-              "
-            >
-              {/* ICON */}
+          {reasons.map((reason, index) => {
+            const Icon =
+              icons[index] || Sparkles;
 
-              <div
+            return (
+              <article
+                key={`${reason.title || "reason"}-${index}`}
                 className="
-                  mx-auto
+                  group
+                  relative
                   flex
-                  h-8
-                  w-8
-                  items-center
-                  justify-center
-                  rounded-full
+                  h-full
+                  min-h-[235px]
+                  flex-col
+                  rounded-[20px]
                   border
-                  border-[#D4AF37]/40
-                  bg-[#f7f3ec]
-                  text-[#B58B2D]
+                  border-[#e2dbd0]
+                  bg-[#fbfaf7]
+                  p-6
+                  transition-all
+                  duration-300
+                  hover:-translate-y-1
+                  hover:border-[#d2c4af]
+                  hover:bg-white
+                  hover:shadow-[0_18px_45px_rgba(23,52,45,0.08)]
                 "
               >
-                {icons[index] || (
-                  <Sparkles size={15} />
-                )}
-              </div>
+                {/* TOP ACCENT */}
 
-              {/* TITLE */}
+                <div
+                  className="
+                    absolute
+                    left-6
+                    top-0
+                    h-[2px]
+                    w-10
+                    bg-[#C89D58]
+                    opacity-70
+                    transition-all
+                    duration-300
+                    group-hover:w-16
+                  "
+                />
 
-              <h3
-                className="
-                  mt-3
-                  text-[9px]
-                  font-semibold
-                  leading-4
-                  text-[#17342d]
-                "
-              >
-                {reason.title}
-              </h3>
+                {/* ICON */}
 
-              {/* DESCRIPTION */}
+                <div
+                  className="
+                    flex
+                    h-11
+                    w-11
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-[13px]
+                    border
+                    border-[#D4AF37]/35
+                    bg-[#f5f0e7]
+                    text-[#A9822E]
+                    transition-all
+                    duration-300
+                    group-hover:border-[#C89D58]/50
+                    group-hover:bg-[#17342d]
+                    group-hover:text-[#D4AF37]
+                  "
+                >
+                  <Icon
+                    size={20}
+                    strokeWidth={1.6}
+                  />
+                </div>
 
-              <p
-                className="
-                  mt-1
-                  text-[7.8px]
-                  leading-[1.55]
-                  text-[#858b87]
-                "
-              >
-                {reason.description}
-              </p>
-            </article>
-          ))}
+                {/* NUMBER */}
+
+                <span
+                  className="
+                    absolute
+                    right-5
+                    top-5
+                    text-[10px]
+                    font-semibold
+                    tracking-[0.12em]
+                    text-[#b7afa3]
+                  "
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+
+                {/* TITLE */}
+
+                <h3
+                  className="
+                    mt-6
+                    text-[15px]
+                    font-semibold
+                    leading-[1.35]
+                    text-[#17342d]
+                    sm:text-[16px]
+                  "
+                >
+                  {reason.title}
+                </h3>
+
+                {/* DESCRIPTION */}
+
+                <p
+                  className="
+                    mt-3
+                    text-[12px]
+                    leading-[1.75]
+                    text-[#6d746f]
+                    sm:text-[13px]
+                  "
+                >
+                  {reason.description}
+                </p>
+
+                {/* BOTTOM DETAIL */}
+
+                <div
+                  className="
+                    mt-auto
+                    pt-6
+                  "
+                >
+                  <div
+                    className="
+                      h-px
+                      w-full
+                      bg-[#e9e3da]
+                    "
+                  />
+
+                  <div
+                    className="
+                      mt-4
+                      flex
+                      items-center
+                      gap-2
+                      text-[10px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.12em]
+                      text-[#8F7335]
+                    "
+                  >
+                    <span
+                      className="
+                        h-1.5
+                        w-1.5
+                        rounded-full
+                        bg-[#C89D58]
+                      "
+                    />
+
+                    Location Factor
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -10,6 +10,13 @@ import {
 
 const API = "/api";
 
+const FALLBACK_IMAGE =
+  "https://placehold.co/900x1100/f3f0e9/777777?text=Location";
+
+/* ============================================================
+   LOCATION PREPOSITION
+============================================================ */
+
 function getLocationPreposition(location) {
   const value = `${location?.name || ""} ${
     location?.slug || ""
@@ -19,6 +26,7 @@ function getLocationPreposition(location) {
 
   const onKeywords = [
     "expressway",
+    "express-way",
     "express way",
     "highway",
     "road",
@@ -36,6 +44,10 @@ function getLocationPreposition(location) {
     : "in";
 }
 
+/* ============================================================
+   SLUGIFY
+============================================================ */
+
 function slugify(value = "") {
   return String(value)
     .trim()
@@ -44,8 +56,102 @@ function slugify(value = "") {
     .replace(/^-+|-+$/g, "");
 }
 
+/* ============================================================
+   GET ROOT LOCATION
+============================================================ */
+
+function getRootLocation(location) {
+  if (!location) return null;
+
+  let current = location;
+  const visited = new Set();
+
+  while (current?.parent) {
+    const parentId =
+      current.parent?._id?.toString?.() ||
+      current.parent?.toString?.();
+
+    /*
+      Prevent infinite loops if malformed hierarchy exists.
+    */
+    if (parentId && visited.has(parentId)) {
+      break;
+    }
+
+    if (parentId) {
+      visited.add(parentId);
+    }
+
+    /*
+      Parent hierarchy is available as an object.
+    */
+    if (
+      typeof current.parent === "object" &&
+      current.parent !== null
+    ) {
+      current = current.parent;
+      continue;
+    }
+
+    /*
+      Parent is only an ObjectId/string.
+      We cannot walk further from here.
+    */
+    break;
+  }
+
+  return current;
+}
+
+/* ============================================================
+   BUILD PUBLIC LOCATION SLUG
+============================================================ */
+
 function buildPublicLocationSlug(location) {
   if (!location) return "";
+
+  /*
+    ----------------------------------------------------------
+    1. PREFER CANONICAL PUBLIC SLUG
+    ----------------------------------------------------------
+
+    If the backend already provides publicSlug, always use it.
+
+    Example:
+      publicSlug:
+      properties-in-sector-56-gurgaon
+
+    This prevents frontend-generated URLs from drifting away
+    from the backend routing logic.
+  */
+
+  if (
+    typeof location.publicSlug === "string" &&
+    location.publicSlug.trim()
+  ) {
+    let publicSlug = location.publicSlug.trim();
+
+    /*
+      In case API returns:
+      /locations/properties-in-gurgaon
+
+      normalize it to:
+      properties-in-gurgaon
+    */
+    publicSlug = publicSlug
+      .replace(/^\/+/, "")
+      .replace(/^locations\//, "");
+
+    if (publicSlug) {
+      return publicSlug;
+    }
+  }
+
+  /*
+    ----------------------------------------------------------
+    2. FALLBACK — BUILD FROM CURRENT + ROOT
+    ----------------------------------------------------------
+  */
 
   const currentPart = slugify(
     location.slug || location.name || ""
@@ -53,30 +159,7 @@ function buildPublicLocationSlug(location) {
 
   if (!currentPart) return "";
 
-  let root = location;
-  const visited = new Set();
-
-  while (root?.parent) {
-    const parentId =
-      root.parent?._id?.toString?.() ||
-      root.parent?.toString?.();
-
-    if (!parentId || visited.has(parentId)) break;
-
-    visited.add(parentId);
-
-    /*
-      LocationsHierarchy normally provides nested objects.
-      This component therefore expects the hierarchy data
-      to already contain the parent chain.
-    */
-
-    if (typeof root.parent === "object") {
-      root = root.parent;
-    } else {
-      break;
-    }
-  }
+  const root = getRootLocation(location);
 
   const rootPart = slugify(
     root?.slug || root?.name || ""
@@ -85,25 +168,61 @@ function buildPublicLocationSlug(location) {
   const preposition =
     getLocationPreposition(location);
 
+  /*
+    Root location itself.
+
+    Gurgaon
+    =>
+    properties-in-gurgaon
+  */
   if (
-    rootPart &&
-    rootPart !== currentPart
+    !rootPart ||
+    rootPart === currentPart
   ) {
-    return `properties-${preposition}-${currentPart}-${rootPart}`;
+    return `properties-${preposition}-${currentPart}`;
   }
 
-  return `properties-${preposition}-${currentPart}`;
+  /*
+    Child location.
+
+    Sector 56 + Gurgaon
+    =>
+    properties-in-sector-56-gurgaon
+  */
+
+  return `properties-${preposition}-${currentPart}-${rootPart}`;
 }
+
+/* ============================================================
+   PUBLIC LOCATION URL
+============================================================ */
+
+function getPublicLocationUrl(location) {
+  const publicSlug =
+    buildPublicLocationSlug(location);
+
+  if (!publicSlug) return "#";
+
+  return `/locations/${publicSlug}`;
+}
+
+/* ============================================================
+   IMAGE
+============================================================ */
 
 function getImage(location) {
   if (!location?.image) {
-    return "https://placehold.co/900x1100/f3f0e9/777777?text=Location";
+    return FALLBACK_IMAGE;
   }
 
   return location.image.startsWith("http")
     ? location.image
     : `${API}${location.image}`;
 }
+
+/* ============================================================
+   FEATURED LOCATION CORRIDORS
+============================================================ */
 
 export default function FeaturedLocationCorridors({
   locations = [],
@@ -153,10 +272,13 @@ export default function FeaturedLocationCorridors({
 
             if (!publicSlug) return null;
 
+            const publicUrl =
+              `/locations/${publicSlug}`;
+
             return (
               <Link
-                key={location._id}
-                href={`/locations/${publicSlug}`}
+                key={location._id || location.slug || index}
+                href={publicUrl}
                 className="group block"
               >
                 <motion.article
@@ -188,7 +310,7 @@ export default function FeaturedLocationCorridors({
                     loading="lazy"
                     onError={(event) => {
                       event.currentTarget.src =
-                        "https://placehold.co/900x1100/f3f0e9/777777?text=Location";
+                        FALLBACK_IMAGE;
                     }}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.07]"
                   />

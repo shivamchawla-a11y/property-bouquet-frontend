@@ -52,6 +52,7 @@ export default function LocationLifestyle({
         "Family-oriented neighbourhoods",
       ],
     },
+
     {
       title: "Leading Healthcare",
       description:
@@ -63,6 +64,7 @@ export default function LocationLifestyle({
         "Emergency care access",
       ],
     },
+
     {
       title: "Shopping & Entertainment",
       description:
@@ -79,9 +81,7 @@ export default function LocationLifestyle({
   // ============================================================
   // CUSTOM GROUPS
   //
-  // Only use the admin groups when there is actual content.
-  // This prevents an empty editor from making the public section
-  // appear blank.
+  // Use admin groups only when actual content exists.
   // ============================================================
 
   const hasCustomGroups =
@@ -97,7 +97,8 @@ export default function LocationLifestyle({
       ? customContent.groups
       : defaultGroups
   ).map((group, index) => {
-    const fallback = defaultGroups[index] || defaultGroups[0];
+    const fallback =
+      defaultGroups[index] || defaultGroups[0];
 
     const items = Array.isArray(group?.items)
       ? group.items
@@ -136,6 +137,10 @@ export default function LocationLifestyle({
     };
   });
 
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
     <section
       id="lifestyle"
@@ -146,95 +151,107 @@ export default function LocationLifestyle({
         border-t
         border-[#e8e1d7]
         bg-[#f7f3ec]
-        py-10
-        sm:py-12
-        md:py-14
-        lg:py-16
+        py-16
+        sm:py-18
+        md:py-20
+        lg:py-24
       "
     >
       <div
         className="
           mx-auto
-          max-w-[1450px]
+          max-w-[1380px]
           px-5
-          sm:px-6
-          lg:px-8
+          sm:px-7
+          lg:px-10
         "
       >
         <div
           className="
             grid
             items-stretch
-            gap-5
-            lg:grid-cols-[minmax(0,1fr)_250px]
-            xl:grid-cols-[minmax(0,1fr)_280px]
+            gap-8
+            lg:grid-cols-[minmax(0,1fr)_340px]
+            xl:grid-cols-[minmax(0,1fr)_380px]
+            xl:gap-10
           "
         >
           {/* ====================================================
-              CONTENT
+              LEFT CONTENT
           ==================================================== */}
 
           <div>
+            {/* EYEBROW */}
+
             <div
               className="
                 flex
                 items-center
-                gap-2
-                text-[8px]
+                gap-3
+                text-[10px]
                 font-semibold
                 uppercase
-                tracking-[0.22em]
+                tracking-[0.24em]
                 text-[#8F7335]
-                sm:text-[9px]
-                md:text-[10px]
+                sm:text-[11px]
               "
             >
-              <span className="h-px w-7 bg-[#C89D58]" />
+              <span className="h-px w-8 bg-[#C89D58]" />
 
-              {customEyebrow}
+              <span>{customEyebrow}</span>
             </div>
+
+            {/* TITLE */}
 
             <h2
               id="lifestyle-heading"
               className="
-                mt-2
-                max-w-[720px]
+                mt-4
+                max-w-[800px]
                 whitespace-pre-line
                 font-playfair
-                text-[27px]
+                text-[34px]
                 font-medium
                 leading-[1.08]
                 tracking-[-0.025em]
                 text-[#17342d]
-                sm:text-[31px]
-                md:text-[35px]
-                lg:text-[39px]
+                sm:text-[39px]
+                md:text-[44px]
+                lg:text-[48px]
               "
             >
               {customTitle}
             </h2>
 
-            <div className="mt-3 h-[2px] w-16 bg-[#C89D58]" />
+            {/* GOLD ACCENT */}
+
+            <div className="mt-5 h-[2px] w-16 bg-[#C89D58]" />
+
+            {/* DESCRIPTION */}
 
             <p
               className="
-                mt-4
-                max-w-[820px]
-                text-[10.5px]
-                leading-[1.8]
+                mt-5
+                max-w-[850px]
+                text-[13px]
+                leading-[1.85]
                 text-[#59635e]
-                sm:text-[11px]
-                md:text-[12px]
+                sm:text-[14px]
+                md:text-[15px]
               "
             >
               {customDescription}
             </p>
 
+            {/* ==================================================
+                LIFESTYLE CARDS
+            ================================================== */}
+
             <div
               className="
-                mt-5
+                mt-9
                 grid
-                gap-3
+                gap-5
                 md:grid-cols-3
               "
             >
@@ -246,54 +263,97 @@ export default function LocationLifestyle({
                     <article
                       key={`${group.title}-${index}`}
                       className="
-                        rounded-[14px]
+                        group
+                        flex
+                        h-full
+                        flex-col
+                        rounded-[20px]
                         border
-                        border-[#e2dbd0]
+                        border-[#e1d9cd]
                         bg-white
-                        p-4
+                        p-5
+                        shadow-[0_10px_35px_rgba(23,52,45,0.04)]
+                        transition-all
+                        duration-300
+                        hover:-translate-y-1
+                        hover:border-[#d2c4af]
+                        hover:shadow-[0_18px_45px_rgba(23,52,45,0.08)]
+                        sm:p-6
                       "
                     >
-                      <div className="flex items-center gap-2.5">
+                      {/* CARD HEADER */}
+
+                      <div className="flex items-start gap-4">
                         <div
                           className="
                             flex
-                            h-8
-                            w-8
+                            h-11
+                            w-11
                             shrink-0
                             items-center
                             justify-center
-                            rounded-lg
+                            rounded-[13px]
                             bg-[#17342d]
                             text-[#D4AF37]
+                            shadow-[0_6px_18px_rgba(23,52,45,0.12)]
+                            transition-transform
+                            duration-300
+                            group-hover:scale-105
                           "
                         >
-                          <Icon size={16} />
+                          <Icon
+                            size={21}
+                            strokeWidth={1.6}
+                          />
                         </div>
 
                         <h3
                           className="
-                            text-[10px]
+                            pt-1
+                            text-[15px]
                             font-semibold
-                            leading-4
+                            leading-[1.35]
                             text-[#17342d]
+                            sm:text-[16px]
                           "
                         >
                           {group.title}
                         </h3>
                       </div>
 
+                      {/* CARD DESCRIPTION */}
+
                       <p
                         className="
-                          mt-3
-                          text-[8.5px]
-                          leading-[1.65]
-                          text-[#727872]
+                          mt-5
+                          text-[12px]
+                          leading-[1.75]
+                          text-[#6d746f]
+                          sm:text-[13px]
                         "
                       >
                         {group.description}
                       </p>
 
-                      <ul className="mt-3 space-y-1.5">
+                      {/* DIVIDER */}
+
+                      <div
+                        className="
+                          mt-5
+                          h-px
+                          w-full
+                          bg-[#eee8df]
+                        "
+                      />
+
+                      {/* ITEMS */}
+
+                      <ul
+                        className="
+                          mt-5
+                          space-y-3
+                        "
+                      >
                         {group.items.map(
                           (item, itemIndex) => (
                             <li
@@ -301,44 +361,63 @@ export default function LocationLifestyle({
                               className="
                                 flex
                                 items-start
-                                gap-2
-                                text-[8px]
-                                leading-4
-                                text-[#656d68]
+                                gap-3
+                                text-[11.5px]
+                                leading-[1.55]
+                                text-[#59635e]
+                                sm:text-[12px]
                               "
                             >
                               <span
                                 className="
-                                  mt-[5px]
-                                  h-1
-                                  w-1
+                                  mt-[7px]
+                                  h-[5px]
+                                  w-[5px]
                                   shrink-0
                                   rounded-full
                                   bg-[#C89D58]
                                 "
                               />
 
-                              {item}
+                              <span>{item}</span>
                             </li>
                           )
                         )}
                       </ul>
 
+                      {/* CTA */}
+
                       <a
                         href="#projects"
                         className="
-                          mt-3
+                          mt-auto
                           inline-flex
                           items-center
-                          gap-1
-                          text-[8px]
+                          gap-2
+                          pt-7
+                          text-[11px]
                           font-semibold
+                          tracking-[0.01em]
                           text-[#17342d]
+                          transition-colors
+                          duration-200
+                          hover:text-[#8F7335]
+                          sm:text-[12px]
                         "
                       >
-                        Explore Properties
+                        <span>
+                          Explore Properties
+                        </span>
 
-                        <ArrowRight size={10} />
+                        <ArrowRight
+                          size={14}
+                          strokeWidth={1.7}
+                          className="
+                            transition-transform
+                            duration-200
+                            group-hover:translate-x-1
+                          "
+                        />
                       </a>
                     </article>
                   );
@@ -348,18 +427,21 @@ export default function LocationLifestyle({
           </div>
 
           {/* ====================================================
-              IMAGE
+              IMAGE PANEL
           ==================================================== */}
 
           <div
             className="
               relative
-              min-h-[250px]
+              min-h-[420px]
               overflow-hidden
-              rounded-[15px]
+              rounded-[24px]
               bg-[#17342d]
+              lg:min-h-full
             "
           >
+            {/* IMAGE */}
+
             {locationImage ? (
               <>
                 <img
@@ -371,8 +453,13 @@ export default function LocationLifestyle({
                     h-full
                     w-full
                     object-cover
+                    transition-transform
+                    duration-700
+                    hover:scale-[1.025]
                   "
                 />
+
+                {/* DARK OVERLAY */}
 
                 <div
                   className="
@@ -384,6 +471,18 @@ export default function LocationLifestyle({
                     to-transparent
                   "
                 />
+
+                {/* SUBTLE SIDE OVERLAY */}
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-r
+                    from-[#061811]/20
+                    to-transparent
+                  "
+                />
               </>
             ) : (
               <div
@@ -392,37 +491,77 @@ export default function LocationLifestyle({
                   inset-0
                   bg-gradient-to-br
                   from-[#17342d]
-                  to-[#0b221b]
+                  via-[#102d25]
+                  to-[#081a14]
                 "
               />
             )}
 
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <p
+            {/* IMAGE CONTENT */}
+
+            <div
+              className="
+                absolute
+                inset-x-0
+                bottom-0
+                p-7
+                sm:p-8
+              "
+            >
+              {/* LABEL */}
+
+              <div
                 className="
-                  text-[8px]
+                  flex
+                  items-center
+                  gap-3
+                  text-[10px]
                   font-semibold
                   uppercase
-                  tracking-[0.18em]
+                  tracking-[0.22em]
                   text-[#D4AF37]
+                  sm:text-[11px]
                 "
               >
-                LIFESTYLE
-              </p>
+                <span className="h-px w-7 bg-[#D4AF37]" />
+
+                <span>LIFESTYLE</span>
+              </div>
+
+              {/* IMAGE TITLE */}
 
               <h3
                 className="
-                  mt-2
+                  mt-4
+                  max-w-[290px]
                   font-playfair
-                  text-[20px]
-                  leading-[1.25]
+                  text-[29px]
+                  leading-[1.18]
+                  tracking-[-0.015em]
                   text-white
+                  sm:text-[32px]
                 "
               >
-                Everything you
+                Everything you need,
                 <br />
-                need, closer home.
+                closer to home.
               </h3>
+
+              {/* LOCATION */}
+
+              <p
+                className="
+                  mt-4
+                  text-[11px]
+                  leading-[1.6]
+                  text-white/70
+                  sm:text-[12px]
+                "
+              >
+                Everyday essentials, education,
+                healthcare, shopping and leisure
+                around {locationName}.
+              </p>
             </div>
           </div>
         </div>
