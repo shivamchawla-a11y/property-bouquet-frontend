@@ -12,17 +12,17 @@ import {
   MapPin,
 } from "lucide-react";
 
-
 // ============================================================
 // API
 // ============================================================
 
 const API = "/api";
 
-
 // ============================================================
 // LOCATION PREPOSITION
 // ============================================================
+//
+// Same logic as Navbar.
 //
 // Roads / expressways / highways etc.
 // → "on"
@@ -32,15 +32,11 @@ const API = "/api";
 // ============================================================
 
 function getLocationPreposition(location) {
-  const name = String(
-    location?.name || ""
-  )
+  const name = String(location?.name || "")
     .trim()
     .toLowerCase();
 
-  const slug = String(
-    location?.slug || ""
-  )
+  const slug = String(location?.slug || "")
     .trim()
     .toLowerCase();
 
@@ -65,86 +61,198 @@ function getLocationPreposition(location) {
     : "in";
 }
 
-
 // ============================================================
-// BUILD PUBLIC LOCATION SLUG
+// SLUGIFY
 // ============================================================
 //
-// Examples:
-//
-// Dwarka Expressway + Gurgaon
-// → properties-on-dwarka-expressway-gurgaon
-//
-// Golf Course Extension Road + Gurgaon
-// → properties-on-golf-course-extension-road-gurgaon
-//
-// Sohna + Gurgaon
-// → properties-in-sohna-gurgaon
-//
-// Sector 56 + Gurgaon
-// → properties-in-sector-56-gurgaon
+// Same logic as Navbar.
 // ============================================================
 
-function buildPublicLocationSlug(location) {
+function slugifyLocation(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// ============================================================
+// FIND LOCATION IN TREE
+// ============================================================
+//
+// IMPORTANT:
+//
+// Do NOT use:
+//
+// location.parent
+//
+// Do NOT use:
+//
+// location.__rootLocation
+//
+// Instead, recursively search the actual location tree.
+//
+// Example:
+//
+// Gurgaon
+//   ├── Dwarka Expressway
+//   ├── Sohna
+//   ├── Golf Course Extension Road
+//   ├── SPR
+//   └── ...
+//
+// Searching for:
+//
+// Dwarka Expressway
+//
+// returns:
+//
+// {
+//   location: Dwarka Expressway,
+//   root: Gurgaon
+// }
+// ============================================================
+
+function findLocationInTree(
+  tree,
+  locationName,
+  root = null
+) {
+  if (!Array.isArray(tree)) {
+    return null;
+  }
+
+  const target = String(locationName || "")
+    .trim()
+    .toLowerCase();
+
+  for (const location of tree) {
+    const currentRoot =
+      root || location;
+
+    const currentName = String(
+      location?.name || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    // --------------------------------------------------------
+    // CURRENT LOCATION MATCH
+    // --------------------------------------------------------
+
+    if (currentName === target) {
+      return {
+        location,
+        root: currentRoot,
+      };
+    }
+
+    // --------------------------------------------------------
+    // SEARCH CHILDREN
+    // --------------------------------------------------------
+
+    const found = findLocationInTree(
+      location?.children || [],
+      locationName,
+      currentRoot
+    );
+
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
+}
+
+// ============================================================
+// PUBLIC LOCATION URL
+// ============================================================
+//
+// EXACT SAME RULE AS NAVBAR.
+//
+// Gurgaon
+// → /locations/properties-in-gurgaon
+//
+// Dwarka Expressway
+// → /locations/properties-on-dwarka-expressway-gurgaon
+//
+// Golf Course Extension Road
+// → /locations/properties-on-golf-course-extension-road-gurgaon
+//
+// Sohna
+// → /locations/properties-in-sohna-gurgaon
+//
+// SPR
+// → /locations/properties-in-spr-gurgaon
+//
+// Sector 56
+// → /locations/properties-in-sector-56-gurgaon
+//
+// Farukhnagar
+// → /locations/properties-in-farukhnagar-gurgaon
+// ============================================================
+
+function getPublicLocationUrl(
+  location,
+  root = null
+) {
   if (!location) {
-    return "";
+    return "/locations";
   }
 
-  const currentPart = String(
-    location.slug ||
-    location.name ||
-    ""
-  )
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "")
-    .replace(/\s+/g, "-");
+  const currentSlug =
+    slugifyLocation(
+      location.slug ||
+        location.name ||
+        ""
+    );
 
-  if (!currentPart) {
-    return "";
+  if (!currentSlug) {
+    return "/locations";
   }
 
-  // ----------------------------------------------------------
-  // Find root / top-level parent.
-  //
-  // The location tree currently provides parent information
-  // through nested children. Therefore, for this component,
-  // Gurgaon is the root used by the featured locations.
-  // ----------------------------------------------------------
-
-  let root = location;
-
-  while (root?.parent) {
-    root = root.parent;
-  }
-
-  const rootPart = String(
-    root?.slug ||
-    root?.name ||
-    "gurgaon"
-  )
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "")
-    .replace(/\s+/g, "-");
+  const rootSlug =
+    slugifyLocation(
+      root?.slug ||
+        root?.name ||
+        ""
+    );
 
   const preposition =
     getLocationPreposition(location);
 
   // ----------------------------------------------------------
-  // Don't duplicate root if current location itself is root.
+  // CHILD LOCATION
   // ----------------------------------------------------------
 
   if (
-    rootPart &&
-    rootPart !== currentPart
+    rootSlug &&
+    rootSlug !== currentSlug
   ) {
-    return `properties-${preposition}-${currentPart}-${rootPart}`;
+    return `/locations/properties-${preposition}-${currentSlug}-${rootSlug}`;
   }
 
-  return `properties-${preposition}-${currentPart}`;
+  // ----------------------------------------------------------
+  // ROOT LOCATION
+  // ----------------------------------------------------------
+
+  return `/locations/properties-${preposition}-${currentSlug}`;
 }
 
+// ============================================================
+// IMAGE
+// ============================================================
+
+function getImage(location) {
+  if (!location?.image) {
+    return "https://placehold.co/600x800/f3f4f6/999999?text=Location";
+  }
+
+  return location.image.startsWith("http")
+    ? location.image
+    : `${API}${location.image}`;
+}
 
 // ============================================================
 // COMPONENT
@@ -154,9 +262,11 @@ export default function ExploreLocations() {
   const [locations, setLocations] =
     useState([]);
 
+  const [locationTree, setLocationTree] =
+    useState([]);
+
   const [loading, setLoading] =
     useState(true);
-
 
   // ==========================================================
   // FETCH LOCATIONS
@@ -166,87 +276,114 @@ export default function ExploreLocations() {
     fetchLocations();
   }, []);
 
-
   const fetchLocations = async () => {
     try {
       const res = await fetch(
-        `${API}/locations/tree`
+        `${API}/locations/tree`,
+        {
+          cache: "no-store",
+        }
       );
 
       const data =
         await res.json();
 
-      if (res.ok) {
-        const tree =
-          data.data || [];
-
-        // ----------------------------------------------------
-        // Gurgaon parent
-        // ----------------------------------------------------
-
-        const gurgaon =
-          tree.find(
-            (item) =>
-              item.name
-                ?.toLowerCase() ===
-              "gurgaon"
-          );
-
-        // ----------------------------------------------------
-        // Featured locations
-        // ----------------------------------------------------
-
-        const featuredLocations = [
-          "Dwarka expressway",
-          "Sohna",
-          "Golf Course Extension Road",
-          "SPR",
-        ];
-
-        // ----------------------------------------------------
-        // Only selected Gurgaon locations
-        // ----------------------------------------------------
-
-        const filteredLocations =
-          (
-            gurgaon?.children ||
-            []
-          ).filter(
-            (location) =>
-              featuredLocations.some(
-                (name) =>
-                  name.toLowerCase() ===
-                  location.name?.toLowerCase()
-              )
-          );
-
-        // ----------------------------------------------------
-        // Preserve desired order
-        // ----------------------------------------------------
-
-        const orderedLocations =
-          featuredLocations
-            .map((name) =>
-              filteredLocations.find(
-                (location) =>
-                  location.name
-                    ?.toLowerCase() ===
-                  name.toLowerCase()
-              )
-            )
-            .filter(Boolean);
-
-        setLocations(
-          orderedLocations
+      if (!res.ok) {
+        throw new Error(
+          `Location tree request failed: ${res.status}`
         );
       }
+
+      const tree =
+        Array.isArray(data?.data)
+          ? data.data
+          : [];
+
+      // ------------------------------------------------------
+      // SAVE COMPLETE TREE
+      // ------------------------------------------------------
+
+      setLocationTree(tree);
+
+      // ------------------------------------------------------
+      // FIND GURGAON ROOT
+      // ------------------------------------------------------
+
+      const gurgaon =
+        tree.find(
+          (item) =>
+            String(item?.name || "")
+              .trim()
+              .toLowerCase() ===
+            "gurgaon"
+        );
+
+      // ------------------------------------------------------
+      // FEATURED LOCATIONS
+      // ------------------------------------------------------
+
+      const featuredLocations = [
+        "Dwarka expressway",
+        "Sohna",
+        "Golf Course Extension Road",
+        "SPR",
+      ];
+
+      // ------------------------------------------------------
+      // ONLY SELECTED GURGAON LOCATIONS
+      // ------------------------------------------------------
+
+      const filteredLocations =
+        (
+          gurgaon?.children ||
+          []
+        ).filter(
+          (location) =>
+            featuredLocations.some(
+              (name) =>
+                name.toLowerCase() ===
+                String(
+                  location?.name || ""
+                )
+                  .trim()
+                  .toLowerCase()
+            )
+        );
+
+      // ------------------------------------------------------
+      // PRESERVE DESIRED ORDER
+      // ------------------------------------------------------
+
+      const orderedLocations =
+        featuredLocations
+          .map((name) =>
+            filteredLocations.find(
+              (location) =>
+                String(
+                  location?.name || ""
+                )
+                  .trim()
+                  .toLowerCase() ===
+                name.toLowerCase()
+            )
+          )
+          .filter(Boolean);
+
+      setLocations(
+        orderedLocations
+      );
     } catch (err) {
-      console.error(err);
+      console.error(
+        "Failed to fetch featured locations:",
+        err
+      );
+
+      setLocations([]);
+      setLocationTree([]);
     } finally {
       setLoading(false);
     }
   };
-
 
   // ==========================================================
   // LOADING
@@ -260,29 +397,34 @@ export default function ExploreLocations() {
     );
   }
 
+  // ==========================================================
+  // EMPTY
+  // ==========================================================
+
+  if (!locations.length) {
+    return null;
+  }
 
   // ==========================================================
   // RENDER
   // ==========================================================
 
   return (
-    <section className="relative bg-[#f6f3ee] py-24 overflow-hidden border-t border-black/5">
+    <section className="relative overflow-hidden border-t border-black/5 bg-[#f6f3ee] py-24">
 
       {/* ====================================================
           BACKGROUND GLOW
       ==================================================== */}
 
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#c89d58]/10 blur-[120px] rounded-full" />
+      <div className="absolute left-1/2 top-0 h-[350px] w-[700px] -translate-x-1/2 rounded-full bg-[#c89d58]/10 blur-[120px]" />
 
-
-      <div className="max-w-[1440px] mx-auto px-5 relative z-10">
-
+      <div className="relative z-10 mx-auto max-w-[1440px] px-5">
 
         {/* ==================================================
             TOP HEADING
         ================================================== */}
 
-        <div className="text-center mb-16">
+        <div className="mb-16 text-center">
 
           <motion.p
             initial={{
@@ -299,11 +441,10 @@ export default function ExploreLocations() {
             viewport={{
               once: true,
             }}
-            className="text-[11px] uppercase tracking-[3px] text-[#b88a3b] font-semibold mb-5"
+            className="mb-5 text-[11px] font-semibold uppercase tracking-[3px] text-[#b88a3b]"
           >
             EXPLORE BY LOCATION
           </motion.p>
-
 
           <motion.h2
             initial={{
@@ -320,21 +461,19 @@ export default function ExploreLocations() {
             viewport={{
               once: true,
             }}
-            className="text-[38px] md:text-[54px] leading-[1.08] text-[#171717]"
+            className="text-[38px] leading-[1.08] text-[#171717] md:text-[54px]"
             style={{
               fontFamily:
                 "Georgia, Times New Roman, serif",
             }}
           >
             Gurgaon’s Most Premium
-
             <br />
 
             <span className="text-[#b88a3b]">
               Investment Corridors
             </span>
           </motion.h2>
-
 
           <motion.p
             initial={{
@@ -351,7 +490,7 @@ export default function ExploreLocations() {
             viewport={{
               once: true,
             }}
-            className="max-w-[760px] mx-auto mt-7 text-[15px] leading-[2] text-black/55"
+            className="mx-auto mt-7 max-w-[760px] text-[15px] leading-[2] text-black/55"
           >
             Explore Gurgaon’s highest-performing luxury
             micro-markets curated for appreciation,
@@ -359,25 +498,23 @@ export default function ExploreLocations() {
             investment potential.
           </motion.p>
 
-
           {/* ==================================================
               BUTTONS
           ================================================== */}
 
-          <div className="flex items-center justify-center gap-4 mt-10">
+          <div className="mt-10 flex items-center justify-center gap-4">
 
             <Link
               href="/properties"
-              className="group flex items-center gap-3 h-[52px] px-7 rounded-full bg-[#171717] text-white text-[13px] tracking-[1px] font-semibold shadow-[0_10px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02] transition-all duration-300"
+              className="group flex h-[52px] items-center gap-3 rounded-full bg-[#171717] px-7 text-[13px] font-semibold tracking-[1px] text-white shadow-[0_10px_35px_rgba(0,0,0,0.12)] transition-all duration-300 hover:scale-[1.02]"
             >
               VIEW ALL LOCATIONS
 
               <ArrowRight
                 size={15}
-                className="group-hover:translate-x-1 transition"
+                className="transition group-hover:translate-x-1"
               />
             </Link>
-
 
             {/* =================================================
                 ARROWS
@@ -387,17 +524,16 @@ export default function ExploreLocations() {
 
               <button
                 type="button"
-                className="w-12 h-12 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl shadow-lg flex items-center justify-center text-black/70 hover:bg-black hover:text-white transition-all duration-300"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black/10 bg-white/80 text-black/70 shadow-lg backdrop-blur-xl transition-all duration-300 hover:bg-black hover:text-white"
               >
                 <ChevronLeft
                   size={18}
                 />
               </button>
 
-
               <button
                 type="button"
-                className="w-12 h-12 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl shadow-lg flex items-center justify-center text-black/70 hover:bg-black hover:text-white transition-all duration-300"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black/10 bg-white/80 text-black/70 shadow-lg backdrop-blur-xl transition-all duration-300 hover:bg-black hover:text-white"
               >
                 <ChevronRight
                   size={18}
@@ -405,41 +541,75 @@ export default function ExploreLocations() {
               </button>
 
             </div>
-
           </div>
-
         </div>
-
 
         {/* ==================================================
             LOCATION CARDS
         ================================================== */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
           {locations.map(
             (location, index) => {
 
               // ------------------------------------------------
-              // IMPORTANT:
-              // Use the new canonical location URL.
+              // FIND THIS LOCATION IN THE FULL TREE
+              // ------------------------------------------------
+              //
+              // This is the important part.
+              //
+              // We do NOT use:
+              //
+              // location.parent
+              //
+              // We do NOT use:
+              //
+              // location.__rootLocation
+              //
+              // We search the same tree used by Navbar.
               // ------------------------------------------------
 
-              const publicLocationSlug =
-                buildPublicLocationSlug(
-                  location
+              const locationData =
+                findLocationInTree(
+                  locationTree,
+                  location?.name
                 );
 
-              const locationUrl =
-                publicLocationSlug
-                  ? `/locations/${publicLocationSlug}`
-                  : "/properties";
+              // ------------------------------------------------
+              // ACTUAL LOCATION FROM TREE
+              // ------------------------------------------------
 
+              const actualLocation =
+                locationData?.location ||
+                location;
+
+              // ------------------------------------------------
+              // MOST-PARENT ROOT
+              // ------------------------------------------------
+
+              const rootLocation =
+                locationData?.root ||
+                null;
+
+              // ------------------------------------------------
+              // CANONICAL URL
+              // ------------------------------------------------
+
+              const locationUrl =
+                getPublicLocationUrl(
+                  actualLocation,
+                  rootLocation
+                );
 
               return (
                 <Link
                   href={locationUrl}
-                  key={location._id}
+                  key={
+                    location?._id ||
+                    location?.slug ||
+                    index
+                  }
                   className="block"
                 >
 
@@ -463,36 +633,27 @@ export default function ExploreLocations() {
                     whileHover={{
                       y: -10,
                     }}
-                    className="group relative h-[390px] rounded-[34px] overflow-hidden border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.18)] transition-all duration-700"
+                    className="group relative h-[390px] overflow-hidden rounded-[34px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.18)] transition-all duration-700"
                   >
 
                     {/* ==================================================
                         GLASS OUTER
                     ================================================== */}
 
-                    <div className="absolute inset-0 rounded-[28px] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.08)]" />
-
+                    <div className="absolute inset-0 rounded-[28px] border border-white/20 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-2xl" />
 
                     {/* ==================================================
                         IMAGE
                     ================================================== */}
 
                     <motion.img
-                      src={
-                        location.image
-                          ? location.image.startsWith(
-                              "http"
-                            )
-                            ? location.image
-                            : `https://propertybouquet.com/api${location.image}`
-                          : "https://placehold.co/600x800/f3f4f6/999999?text=Location"
-                      }
-                      alt={
-                        `${location.name} properties in Gurgaon`
-                      }
+                      src={getImage(
+                        location
+                      )}
+                      alt={`${location?.name || "Location"} properties in Gurgaon`}
                       loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src =
+                      onError={(event) => {
+                        event.currentTarget.src =
                           "https://placehold.co/600x800/f3f4f6/999999?text=Location";
                       }}
                       whileHover={{
@@ -502,9 +663,8 @@ export default function ExploreLocations() {
                         duration: 1,
                         ease: "easeOut",
                       }}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
-
 
                     {/* ==================================================
                         OVERLAY
@@ -512,39 +672,36 @@ export default function ExploreLocations() {
 
                     <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-black/35 to-transparent" />
 
-
                     {/* ==================================================
                         SHINE EFFECT
                     ================================================== */}
 
                     <div className="absolute inset-0 overflow-hidden">
 
-                      <div className="absolute top-0 -left-[120%] w-[70%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-12 group-hover:left-[140%] transition-all duration-1000" />
+                      <div className="absolute left-[-120%] top-0 h-full w-[70%] rotate-12 bg-gradient-to-r from-transparent via-white/10 to-transparent transition-all duration-1000 group-hover:left-[140%]" />
 
                     </div>
-
 
                     {/* ==================================================
                         TOP TAG
                     ================================================== */}
 
-                    <div className="absolute top-5 left-5 z-20">
+                    <div className="absolute left-5 top-5 z-20">
 
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/15">
+                      <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-xl">
 
                         <TrendingUp
                           size={14}
                           className="text-[#d7b26d]"
                         />
 
-                        <span className="text-[11px] tracking-[1px] font-semibold text-white">
+                        <span className="text-[11px] font-semibold tracking-[1px] text-white">
                           PREMIUM LOCATION
                         </span>
 
                       </div>
 
                     </div>
-
 
                     {/* ==================================================
                         CONTENT
@@ -554,28 +711,27 @@ export default function ExploreLocations() {
 
                       {/* CITY */}
 
-                      <div className="flex items-center gap-2 text-white/75 mb-3">
+                      <div className="mb-3 flex items-center gap-2 text-white/75">
 
                         <MapPin
                           size={14}
                         />
 
-                        <h3 className="text-[24px] leading-[1.15] font-semibold text-white">
-                          {location.name}
+                        <h3 className="text-[24px] font-semibold leading-[1.15] text-white">
+                          {location?.name}
                         </h3>
 
                       </div>
-
 
                       {/* ==================================================
                           LUXURY CTA
                       ================================================== */}
 
-                      <div className="mt-7 pt-5 border-t border-white/10 flex items-center justify-between">
+                      <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-5">
 
                         <div>
 
-                          <p className="text-[10px] uppercase tracking-[2px] text-white/50 mb-2">
+                          <p className="mb-2 text-[10px] uppercase tracking-[2px] text-white/50">
                             Investment Corridor
                           </p>
 
@@ -585,12 +741,11 @@ export default function ExploreLocations() {
 
                         </div>
 
-
                         <motion.div
                           whileHover={{
                             scale: 1.08,
                           }}
-                          className="w-14 h-14 rounded-full bg-gradient-to-br from-[#d8b46b] via-[#c89d58] to-[#a9782f] flex items-center justify-center text-black shadow-[0_15px_40px_rgba(201,157,88,0.45)]"
+                          className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#d8b46b] via-[#c89d58] to-[#a9782f] text-black shadow-[0_15px_40px_rgba(201,157,88,0.45)]"
                         >
                           <ArrowRight
                             size={18}
@@ -598,22 +753,19 @@ export default function ExploreLocations() {
                         </motion.div>
 
                       </div>
-
                     </div>
-
 
                     {/* ==================================================
                         BORDER
                     ================================================== */}
 
-                    <div className="absolute inset-0 rounded-[28px] border border-white/10 pointer-events-none" />
-
+                    <div className="pointer-events-none absolute inset-0 rounded-[28px] border border-white/10" />
 
                     {/* ==================================================
                         GOLD GLOW
                     ================================================== */}
 
-                    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[120px] h-[120px] bg-[#c89d58]/20 blur-[60px] opacity-0 group-hover:opacity-100 transition duration-500" />
+                    <div className="absolute bottom-[-40px] left-1/2 h-[120px] w-[120px] -translate-x-1/2 bg-[#c89d58]/20 opacity-0 blur-[60px] transition duration-500 group-hover:opacity-100" />
 
                   </motion.div>
 
@@ -623,9 +775,7 @@ export default function ExploreLocations() {
           )}
 
         </div>
-
       </div>
-
     </section>
   );
 }

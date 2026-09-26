@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+
 import {
   ArrowUpRight,
   MapPin,
@@ -18,15 +20,18 @@ const FALLBACK_IMAGE =
 ============================================================ */
 
 function getLocationPreposition(location) {
-  const value = `${location?.name || ""} ${
-    location?.slug || ""
-  }`
+  const name = String(location?.name || "")
     .trim()
     .toLowerCase();
 
+  const slug = String(location?.slug || "")
+    .trim()
+    .toLowerCase();
+
+  const value = `${name} ${slug}`;
+
   const onKeywords = [
     "expressway",
-    "express-way",
     "express way",
     "highway",
     "road",
@@ -48,162 +53,246 @@ function getLocationPreposition(location) {
    SLUGIFY
 ============================================================ */
 
-function slugify(value = "") {
-  return String(value)
-    .trim()
+function slugifyLocation(value) {
+  return String(value || "")
     .toLowerCase()
+    .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
 /* ============================================================
-   GET ROOT LOCATION
+   FIND LOCATION + MOST-PARENT LOCATION
 ============================================================ */
 
-function getRootLocation(location) {
-  if (!location) return null;
+/*
+  IMPORTANT:
 
-  let current = location;
-  const visited = new Set();
+  This is the SAME hierarchy approach used by your Navbar.
 
-  while (current?.parent) {
-    const parentId =
-      current.parent?._id?.toString?.() ||
-      current.parent?.toString?.();
+  We do NOT depend on location.parent.
 
-    /*
-      Prevent infinite loops if malformed hierarchy exists.
-    */
-    if (parentId && visited.has(parentId)) {
-      break;
-    }
+  Instead we search:
 
-    if (parentId) {
-      visited.add(parentId);
-    }
+  /api/locations/tree
 
-    /*
-      Parent hierarchy is available as an object.
-    */
-    if (
-      typeof current.parent === "object" &&
-      current.parent !== null
-    ) {
-      current = current.parent;
-      continue;
-    }
+  Example:
 
-    /*
-      Parent is only an ObjectId/string.
-      We cannot walk further from here.
-    */
-    break;
+  Gurgaon
+    ├── Dwarka Expressway
+    ├── Golf Course Road
+    ├── Sector 56
+    └── Farukhnagar
+
+  If we find:
+
+  Dwarka Expressway
+
+  we return:
+
+  {
+    location: Dwarka Expressway,
+    root: Gurgaon
+  }
+*/
+
+function findLocationInTree(
+  tree,
+  targetId,
+  targetSlug,
+  targetName,
+  root = null
+) {
+  if (!Array.isArray(tree)) {
+    return null;
   }
 
-  return current;
+  const normalizedId = String(
+    targetId || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const normalizedSlug = String(
+    targetSlug || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const normalizedName = String(
+    targetName || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  for (const location of tree) {
+    const currentRoot =
+      root || location;
+
+    const currentId = String(
+      location?._id || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const currentSlug = String(
+      location?.slug || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const currentName = String(
+      location?.name || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    /* --------------------------------------------------------
+       MATCH BY ID
+    -------------------------------------------------------- */
+
+    if (
+      normalizedId &&
+      currentId &&
+      normalizedId === currentId
+    ) {
+      return {
+        location,
+        root: currentRoot,
+      };
+    }
+
+    /* --------------------------------------------------------
+       MATCH BY SLUG
+    -------------------------------------------------------- */
+
+    if (
+      normalizedSlug &&
+      currentSlug &&
+      normalizedSlug === currentSlug
+    ) {
+      return {
+        location,
+        root: currentRoot,
+      };
+    }
+
+    /* --------------------------------------------------------
+       MATCH BY NAME
+    -------------------------------------------------------- */
+
+    if (
+      normalizedName &&
+      currentName &&
+      normalizedName === currentName
+    ) {
+      return {
+        location,
+        root: currentRoot,
+      };
+    }
+
+    /* --------------------------------------------------------
+       SEARCH CHILDREN
+    -------------------------------------------------------- */
+
+    const found = findLocationInTree(
+      location?.children || [],
+      targetId,
+      targetSlug,
+      targetName,
+      currentRoot
+    );
+
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
 }
 
 /* ============================================================
-   BUILD PUBLIC LOCATION SLUG
+   PUBLIC LOCATION SEO URL
 ============================================================ */
 
-function buildPublicLocationSlug(location) {
-  if (!location) return "";
+/*
+  EXACT SAME URL RULE AS NAVBAR.
 
-  /*
-    ----------------------------------------------------------
-    1. PREFER CANONICAL PUBLIC SLUG
-    ----------------------------------------------------------
+  Gurgaon
+  →
+  /locations/properties-in-gurgaon
 
-    If the backend already provides publicSlug, always use it.
+  Farukhnagar
+  →
+  /locations/properties-in-farukhnagar-gurgaon
 
-    Example:
-      publicSlug:
-      properties-in-sector-56-gurgaon
+  Sector 56
+  →
+  /locations/properties-in-sector-56-gurgaon
 
-    This prevents frontend-generated URLs from drifting away
-    from the backend routing logic.
-  */
+  Golf Course Road
+  →
+  /locations/properties-on-golf-course-road-gurgaon
 
-  if (
-    typeof location.publicSlug === "string" &&
-    location.publicSlug.trim()
-  ) {
-    let publicSlug = location.publicSlug.trim();
+  Dwarka Expressway
+  →
+  /locations/properties-on-dwarka-expressway-gurgaon
+*/
 
-    /*
-      In case API returns:
-      /locations/properties-in-gurgaon
-
-      normalize it to:
-      properties-in-gurgaon
-    */
-    publicSlug = publicSlug
-      .replace(/^\/+/, "")
-      .replace(/^locations\//, "");
-
-    if (publicSlug) {
-      return publicSlug;
-    }
+function getPublicLocationUrl(
+  location,
+  root = null
+) {
+  if (!location) {
+    return "/locations";
   }
 
-  /*
-    ----------------------------------------------------------
-    2. FALLBACK — BUILD FROM CURRENT + ROOT
-    ----------------------------------------------------------
-  */
+  const currentSlug =
+    slugifyLocation(
+      location?.slug ||
+        location?.name ||
+        ""
+    );
 
-  const currentPart = slugify(
-    location.slug || location.name || ""
-  );
+  if (!currentSlug) {
+    return "/locations";
+  }
 
-  if (!currentPart) return "";
-
-  const root = getRootLocation(location);
-
-  const rootPart = slugify(
-    root?.slug || root?.name || ""
-  );
+  const rootSlug =
+    slugifyLocation(
+      root?.slug ||
+        root?.name ||
+        ""
+    );
 
   const preposition =
     getLocationPreposition(location);
 
-  /*
-    Root location itself.
+  /* ----------------------------------------------------------
+     CHILD LOCATION
 
-    Gurgaon
-    =>
-    properties-in-gurgaon
-  */
+     Current + most-parent
+
+     Dwarka Expressway + Gurgaon
+  ---------------------------------------------------------- */
+
   if (
-    !rootPart ||
-    rootPart === currentPart
+    rootSlug &&
+    rootSlug !== currentSlug
   ) {
-    return `properties-${preposition}-${currentPart}`;
+    return `/locations/properties-${preposition}-${currentSlug}-${rootSlug}`;
   }
 
-  /*
-    Child location.
+  /* ----------------------------------------------------------
+     ROOT LOCATION
 
-    Sector 56 + Gurgaon
-    =>
-    properties-in-sector-56-gurgaon
-  */
+     Gurgaon
 
-  return `properties-${preposition}-${currentPart}-${rootPart}`;
-}
+     → /locations/properties-in-gurgaon
+  ---------------------------------------------------------- */
 
-/* ============================================================
-   PUBLIC LOCATION URL
-============================================================ */
-
-function getPublicLocationUrl(location) {
-  const publicSlug =
-    buildPublicLocationSlug(location);
-
-  if (!publicSlug) return "#";
-
-  return `/locations/${publicSlug}`;
+  return `/locations/properties-${preposition}-${currentSlug}`;
 }
 
 /* ============================================================
@@ -227,16 +316,92 @@ function getImage(location) {
 export default function FeaturedLocationCorridors({
   locations = [],
 }) {
-  if (!locations.length) return null;
+  const [locationTree, setLocationTree] =
+    useState([]);
+
+  const [treeLoading, setTreeLoading] =
+    useState(true);
+
+  /* ==========================================================
+     FETCH LOCATION TREE
+  ========================================================== */
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchLocationTree = async () => {
+      try {
+        const response = await fetch(
+          "/api/locations/tree",
+          {
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch location tree: ${response.status}`
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (!mounted) {
+          return;
+        }
+
+        setLocationTree(
+          Array.isArray(data?.data)
+            ? data.data
+            : []
+        );
+      } catch (error) {
+        console.error(
+          "Featured Location Corridors tree error:",
+          error
+        );
+
+        if (mounted) {
+          setLocationTree([]);
+        }
+      } finally {
+        if (mounted) {
+          setTreeLoading(false);
+        }
+      }
+    };
+
+    fetchLocationTree();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /* ==========================================================
+     DO NOT RENDER WITHOUT LOCATIONS
+  ========================================================== */
+
+  if (!locations.length) {
+    return null;
+  }
 
   return (
     <section className="relative overflow-hidden bg-[#f7f3ee] py-24 md:py-28">
-      {/* Background */}
+
+      {/* ======================================================
+          BACKGROUND
+      ====================================================== */}
+
       <div className="absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-[#c89d58]/[0.08] blur-[130px]" />
 
       <div className="relative z-10 mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12">
 
-        {/* Heading */}
+        {/* ====================================================
+            HEADING
+        ==================================================== */}
+
         <div className="mb-14 max-w-[780px]">
 
           <p className="mb-4 text-[10px] font-semibold uppercase tracking-[3px] text-[#b4873d]">
@@ -252,118 +417,215 @@ export default function FeaturedLocationCorridors({
           >
             Explore Gurgaon&apos;s
             <br />
+
             <span className="text-[#b4873d]">
               Key Investment Corridors
             </span>
           </h2>
 
           <p className="mt-6 max-w-[700px] text-[14px] leading-[1.9] text-black/55 md:text-[15px]">
-            Discover established neighbourhoods, emerging
-            micro-markets and strategic growth corridors
-            across Gurgaon and surrounding regions.
+            Discover established neighbourhoods,
+            emerging micro-markets and strategic
+            growth corridors across Gurgaon and
+            surrounding regions.
           </p>
+
         </div>
 
-        {/* Cards */}
+        {/* ====================================================
+            CARDS
+        ==================================================== */}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {locations.map((location, index) => {
-            const publicSlug =
-              buildPublicLocationSlug(location);
 
-            if (!publicSlug) return null;
+          {locations.map(
+            (location, index) => {
 
-            const publicUrl =
-              `/locations/${publicSlug}`;
+              /* =================================================
+                 FIND LOCATION IN FULL TREE
+              ================================================= */
 
-            return (
-              <Link
-                key={location._id || location.slug || index}
-                href={publicUrl}
-                className="group block"
-              >
-                <motion.article
-                  initial={{
-                    opacity: 0,
-                    y: 25,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  viewport={{
-                    once: true,
-                    amount: 0.15,
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    delay: index * 0.06,
-                  }}
-                  whileHover={{
-                    y: -8,
-                  }}
-                  className="relative h-[430px] overflow-hidden rounded-[30px] border border-black/[0.06] bg-[#111]"
+              const locationData =
+                findLocationInTree(
+                  locationTree,
+
+                  location?._id,
+
+                  location?.slug,
+
+                  location?.name
+                );
+
+              /*
+                IMPORTANT:
+
+                Once tree lookup succeeds:
+
+                locationData.location
+                  = actual location from tree
+
+                locationData.root
+                  = most-parent/root
+
+                Example:
+
+                locationData.location
+                  = Dwarka Expressway
+
+                locationData.root
+                  = Gurgaon
+              */
+
+              const actualLocation =
+                locationData?.location ||
+                location;
+
+              const rootLocation =
+                locationData?.root ||
+                null;
+
+              /* =================================================
+                 BUILD CANONICAL PUBLIC URL
+              ================================================= */
+
+              const publicUrl =
+                getPublicLocationUrl(
+                  actualLocation,
+                  rootLocation
+                );
+
+              if (
+                publicUrl === "/locations"
+              ) {
+                return null;
+              }
+
+              return (
+                <Link
+                  key={
+                    location?._id ||
+                    location?.slug ||
+                    index
+                  }
+                  href={publicUrl}
+                  className="group block"
                 >
-                  {/* Image */}
-                  <img
-                    src={getImage(location)}
-                    alt={`${location.name} property market`}
-                    loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.src =
-                        FALLBACK_IMAGE;
+
+                  <motion.article
+                    initial={{
+                      opacity: 0,
+                      y: 25,
                     }}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.07]"
-                  />
+                    whileInView={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    viewport={{
+                      once: true,
+                      amount: 0.15,
+                    }}
+                    transition={{
+                      duration: 0.5,
+                      delay:
+                        index * 0.06,
+                    }}
+                    whileHover={{
+                      y: -8,
+                    }}
+                    className="relative h-[430px] overflow-hidden rounded-[30px] border border-black/[0.06] bg-[#111]"
+                  >
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
+                    {/* ========================================
+                        IMAGE
+                    ======================================== */}
 
-                  {/* Top badge */}
-                  <div className="absolute left-5 top-5">
-                    <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3.5 py-2 backdrop-blur-xl">
-                      <TrendingUp
-                        size={13}
-                        className="text-[#d4af62]"
-                      />
+                    <img
+                      src={getImage(
+                        location
+                      )}
+                      alt={`${location?.name || "Location"} property market`}
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.src =
+                          FALLBACK_IMAGE;
+                      }}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.07]"
+                    />
 
-                      <span className="text-[9px] font-semibold uppercase tracking-[1.5px] text-white">
-                        Featured Market
-                      </span>
-                    </div>
-                  </div>
+                    {/* ========================================
+                        OVERLAY
+                    ======================================== */}
 
-                  {/* Content */}
-                  <div className="absolute inset-x-0 bottom-0 p-6">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
-                    <div className="mb-3 flex items-center gap-2 text-white/70">
-                      <MapPin size={14} />
+                    {/* ========================================
+                        TOP BADGE
+                    ======================================== */}
 
-                      <span className="text-[10px] uppercase tracking-[1.8px]">
-                        Gurgaon
-                      </span>
-                    </div>
+                    <div className="absolute left-5 top-5">
 
-                    <h3 className="text-[25px] font-medium leading-tight text-white">
-                      {location.name}
-                    </h3>
+                      <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3.5 py-2 backdrop-blur-xl">
 
-                    <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4">
+                        <TrendingUp
+                          size={13}
+                          className="text-[#d4af62]"
+                        />
 
-                      <span className="text-[11px] uppercase tracking-[1.5px] text-white/60">
-                        Explore Location
-                      </span>
+                        <span className="text-[9px] font-semibold uppercase tracking-[1.5px] text-white">
+                          Featured Market
+                        </span>
 
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#c89d58] text-black transition-transform duration-300 group-hover:rotate-45">
-                        <ArrowUpRight size={17} />
                       </div>
 
                     </div>
-                  </div>
-                </motion.article>
-              </Link>
-            );
-          })}
+
+                    {/* ========================================
+                        CONTENT
+                    ======================================== */}
+
+                    <div className="absolute inset-x-0 bottom-0 p-6">
+
+                      <div className="mb-3 flex items-center gap-2 text-white/70">
+
+                        <MapPin size={14} />
+
+                        <span className="text-[10px] uppercase tracking-[1.8px]">
+                          Gurgaon
+                        </span>
+
+                      </div>
+
+                      <h3 className="text-[25px] font-medium leading-tight text-white">
+                        {location?.name}
+                      </h3>
+
+                      <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4">
+
+                        <span className="text-[11px] uppercase tracking-[1.5px] text-white/60">
+                          Explore Location
+                        </span>
+
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#c89d58] text-black transition-transform duration-300 group-hover:rotate-45">
+
+                          <ArrowUpRight
+                            size={17}
+                          />
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </motion.article>
+
+                </Link>
+              );
+            }
+          )}
+
         </div>
+
       </div>
     </section>
   );
