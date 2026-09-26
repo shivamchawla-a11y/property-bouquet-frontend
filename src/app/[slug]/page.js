@@ -1,13 +1,17 @@
 import PropertyPreview from "../admin/add-property/PropertyPreview";
+
 import PropertiesClient from "@/app/properties/PropertiesClient";
 
 import { notFound } from "next/navigation";
+
 import { cache } from "react";
 
 import { buildPropertySEO } from "@/lib/propertySeo";
+
 import { buildPropertySchema } from "@/lib/propertySchema";
 
 import { buildLandingPageSEO } from "@/lib/landingPageSeo";
+
 import { buildLandingPageSchema } from "@/lib/landingPageSchema";
 
 // ======================================================
@@ -18,15 +22,6 @@ const API = "https://propertybouquet.com";
 
 // ======================================================
 // CACHE / ISR SETTINGS
-// ======================================================
-//
-// 3600 seconds = 1 hour
-//
-// This replaces the previous 300-second / 5-minute
-// revalidation period.
-//
-// Property, landing-page and developer data can therefore
-// be reused instead of repeatedly requesting the backend.
 // ======================================================
 
 const REVALIDATE_SECONDS = 3600;
@@ -70,10 +65,7 @@ function buildPublicDeveloperSlug(developerSlug) {
     return "";
   }
 
-  // ------------------------------------------------------
   // Already canonical
-  // ------------------------------------------------------
-
   if (
     cleanSlug.endsWith("-developer-projects") ||
     cleanSlug.endsWith("-developers-projects")
@@ -81,26 +73,17 @@ function buildPublicDeveloperSlug(developerSlug) {
     return cleanSlug;
   }
 
-  // ------------------------------------------------------
   // Backend slug already ends with -developer
-  // ------------------------------------------------------
-
   if (cleanSlug.endsWith("-developer")) {
     return `${cleanSlug}-projects`;
   }
 
-  // ------------------------------------------------------
   // Backend slug already ends with -developers
-  // ------------------------------------------------------
-
   if (cleanSlug.endsWith("-developers")) {
     return `${cleanSlug}-projects`;
   }
 
-  // ------------------------------------------------------
   // Normal backend slug
-  // ------------------------------------------------------
-
   return `${cleanSlug}-developer-projects`;
 }
 
@@ -122,7 +105,6 @@ function getBackendDeveloperSlugCandidates(developerSlug) {
     return [];
   }
 
-  // ------------------------------------------------------
   // Normalize canonical public developer URLs back
   // to their possible backend forms.
   //
@@ -135,7 +117,6 @@ function getBackendDeveloperSlugCandidates(developerSlug) {
   // parsvnath
   // parsvnath-developer
   // parsvnath-developers
-  // ------------------------------------------------------
 
   const baseSlug = cleanSlug.replace(
     /-(?:developer|developers)-projects$/,
@@ -154,13 +135,6 @@ function getBackendDeveloperSlugCandidates(developerSlug) {
 
 // ======================================================
 // PROPERTY
-// ======================================================
-//
-// React cache() prevents duplicate execution during the
-// same server render.
-//
-// Next.js fetch revalidation keeps the fetched response
-// cached for 1 hour.
 // ======================================================
 
 const getProperty = cache(async function getProperty(slug) {
@@ -187,7 +161,6 @@ const getProperty = cache(async function getProperty(slug) {
     return data?.data || null;
   } catch (err) {
     console.error("Property fetch error:", err);
-
     return null;
   }
 });
@@ -196,54 +169,49 @@ const getProperty = cache(async function getProperty(slug) {
 // LANDING PAGE
 // ======================================================
 //
-// Cached for 1 hour.
+// IMPORTANT:
+//
+// This function is now only called when the property
+// lookup fails.
+//
+// Therefore property URLs no longer make an unnecessary
+// /api/landing-pages request.
 // ======================================================
 
-const getLandingPage = cache(
-  async function getLandingPage(slug) {
-    try {
-      if (!slug) {
-        return null;
-      }
-
-      const res = await fetch(
-        `${API}/api/landing-pages/slug/${encodeURIComponent(slug)}`,
-        {
-          next: {
-            revalidate: REVALIDATE_SECONDS,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        return null;
-      }
-
-      const data = await res.json();
-
-      return data?.data || null;
-    } catch (err) {
-      console.error("Landing page fetch error:", err);
-
+const getLandingPage = cache(async function getLandingPage(slug) {
+  try {
+    if (!slug) {
       return null;
     }
+
+    const res = await fetch(
+      `${API}/api/landing-pages/slug/${encodeURIComponent(slug)}`,
+      {
+        next: {
+          revalidate: REVALIDATE_SECONDS,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+
+    return data?.data || null;
+  } catch (err) {
+    console.error("Landing page fetch error:", err);
+    return null;
   }
-);
+});
 
 // ======================================================
 // DEVELOPER DATA
 // ======================================================
-//
-// Developer candidate requests remain parallel.
-//
-// The returned developer data is now cached for 1 hour.
-// ======================================================
 
 const getDeveloperData = cache(
-  async function getDeveloperData(
-    developerName,
-    developerRef
-  ) {
+  async function getDeveloperData(developerName, developerRef) {
     try {
       // --------------------------------------------------
       // 1. COLLECT POSSIBLE DEVELOPER SLUGS
@@ -430,33 +398,68 @@ const getDeveloperData = cache(
 );
 
 // ======================================================
+// RESOLVE PAGE DATA
+// ======================================================
+//
+// IMPORTANT PERFORMANCE CHANGE:
+//
+// We DO NOT fetch property + landing page in parallel.
+//
+// The slug belongs to one page type.
+//
+// We first check property.
+//
+// Only when no property exists do we check landing page.
+//
+// This removes the unnecessary landing-page request from
+// normal property pages and addresses the PageSpeed 401
+// request reported for /api/landing-pages.
+// ======================================================
+
+const getPageData = cache(async function getPageData(slug) {
+  const property = await getProperty(slug);
+
+  if (property) {
+    return {
+      type: "property",
+      property,
+      landingPage: null,
+    };
+  }
+
+  const landingPage = await getLandingPage(slug);
+
+  if (landingPage) {
+    return {
+      type: "landing",
+      property: null,
+      landingPage,
+    };
+  }
+
+  return {
+    type: "not-found",
+    property: null,
+    landingPage: null,
+  };
+});
+
+// ======================================================
 // METADATA
 // ======================================================
 
-export async function generateMetadata({
-  params,
-}) {
+export async function generateMetadata({ params }) {
   const { slug } = await params;
 
-  // ------------------------------------------------------
-  // PROPERTY + LANDING PAGE
-  // ------------------------------------------------------
-
-  const [
-    property,
-    landingPage,
-  ] = await Promise.all([
-    getProperty(slug),
-    getLandingPage(slug),
-  ]);
+  const pageData = await getPageData(slug);
 
   // ------------------------------------------------------
   // PROPERTY
   // ------------------------------------------------------
 
-  if (property) {
+  if (pageData.type === "property") {
     return buildPropertySEO(
-      property,
+      pageData.property,
       slug
     );
   }
@@ -465,9 +468,9 @@ export async function generateMetadata({
   // LANDING PAGE
   // ------------------------------------------------------
 
-  if (landingPage) {
+  if (pageData.type === "landing") {
     return buildLandingPageSEO(
-      landingPage,
+      pageData.landingPage,
       slug
     );
   }
@@ -477,9 +480,7 @@ export async function generateMetadata({
   // ------------------------------------------------------
 
   return {
-    title:
-      "Page Not Found | Property Bouquet",
-
+    title: "Page Not Found | Property Bouquet",
     description:
       "The requested page could not be found.",
   };
@@ -489,28 +490,18 @@ export async function generateMetadata({
 // PAGE
 // ======================================================
 
-export default async function Page({
-  params,
-}) {
+export default async function Page({ params }) {
   const { slug } = await params;
 
-  // ------------------------------------------------------
-  // PROPERTY + LANDING PAGE
-  // ------------------------------------------------------
-
-  const [
-    property,
-    landingPage,
-  ] = await Promise.all([
-    getProperty(slug),
-    getLandingPage(slug),
-  ]);
+  const pageData = await getPageData(slug);
 
   // ======================================================
   // PROPERTY PAGE
   // ======================================================
 
-  if (property) {
+  if (pageData.type === "property") {
+    const property = pageData.property;
+
     // --------------------------------------------------
     // FETCH DEVELOPER DATA SERVER-SIDE
     // --------------------------------------------------
@@ -540,10 +531,7 @@ export default async function Page({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html:
-              JSON.stringify(
-                schema
-              ),
+            __html: JSON.stringify(schema),
           }}
         />
 
@@ -554,9 +542,7 @@ export default async function Page({
         <div className="bg-white">
           <PropertyPreview
             form={property}
-            developerData={
-              developerData
-            }
+            developerData={developerData}
           />
         </div>
       </>
@@ -567,7 +553,9 @@ export default async function Page({
   // LANDING PAGE
   // ======================================================
 
-  if (landingPage) {
+  if (pageData.type === "landing") {
+    const landingPage = pageData.landingPage;
+
     // --------------------------------------------------
     // BUILD LANDING PAGE SCHEMA
     // --------------------------------------------------
@@ -586,10 +574,7 @@ export default async function Page({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html:
-              JSON.stringify(
-                schema
-              ),
+            __html: JSON.stringify(schema),
           }}
         />
 
@@ -599,9 +584,7 @@ export default async function Page({
 
         <div className="bg-white">
           <PropertiesClient
-            landingPage={
-              landingPage
-            }
+            landingPage={landingPage}
           />
         </div>
       </>
