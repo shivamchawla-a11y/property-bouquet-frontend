@@ -16,15 +16,21 @@ export default function LocationLifestyle({
      CUSTOM PAGE CONTENT
   ============================================================ */
 
-  const customContent = pageContent?.lifestyle || {};
+  const customContent =
+    pageContent?.lifestyle || {};
 
   /* ============================================================
      HELPER
   ============================================================ */
 
-  const value = (customValue, fallback) => {
-    return typeof customValue === "string" &&
+  const value = (
+    customValue,
+    fallback
+  ) => {
+    return (
+      typeof customValue === "string" &&
       customValue.trim()
+    )
       ? customValue.trim()
       : fallback;
   };
@@ -39,7 +45,8 @@ export default function LocationLifestyle({
   const defaultTitle =
     `Everyday Convenience Around ${locationName}`;
 
-  const defaultDescription = `A location becomes more than an address when the everyday essentials of modern living are within practical reach. For residents of ${locationName}, schools, healthcare, retail, dining and leisure infrastructure form an important part of the broader residential experience. Buyers can consider these factors alongside the individual project's specifications, amenities and connectivity.`;
+  const defaultDescription =
+    `A location becomes more than an address when the everyday essentials of modern living are within practical reach. For residents of ${locationName}, schools, healthcare, retail, dining and leisure infrastructure form an important part of the broader residential experience. Buyers can consider these factors alongside the individual project's specifications, amenities and connectivity.`;
 
   const customEyebrow = value(
     customContent?.eyebrow,
@@ -119,27 +126,14 @@ export default function LocationLifestyle({
 
   /* ============================================================
      CUSTOM GROUPS
-
-     IMPORTANT:
-
-     We DO NOT replace the entire default array just because
-     one custom group exists.
-
-     Instead:
-
-       custom group #1 -> overrides default #1
-       custom group #2 -> overrides default #2
-       custom group #3 -> overrides default #3
-       custom group #4+ -> additional custom group
-
-     Blank values fall back to the corresponding static value.
   ============================================================ */
 
-  const customGroups = Array.isArray(
-    customContent?.groups
-  )
-    ? customContent.groups
-    : [];
+  const customGroups =
+    Array.isArray(
+      customContent?.groups
+    )
+      ? customContent.groups
+      : [];
 
   const totalGroups = Math.max(
     defaultGroups.length,
@@ -148,82 +142,149 @@ export default function LocationLifestyle({
 
   const lifestyleGroups = [];
 
-  for (let index = 0; index < totalGroups; index++) {
-    const fallback = defaultGroups[index];
+  /* ============================================================
+     BUILD GROUPS
+  ============================================================ */
+
+  for (
+    let index = 0;
+    index < totalGroups;
+    index++
+  ) {
+    const fallback =
+      defaultGroups[index];
 
     const customGroup =
       customGroups[index] &&
-      typeof customGroups[index] === "object"
+      typeof customGroups[index] ===
+        "object"
         ? customGroups[index]
         : {};
+
+    const hasCustomTitle =
+      typeof customGroup?.title ===
+        "string" &&
+      customGroup.title.trim();
+
+    const hasCustomDescription =
+      typeof customGroup?.description ===
+        "string" &&
+      customGroup.description.trim();
+
+    const customItems =
+      Array.isArray(
+        customGroup?.items
+      )
+        ? customGroup.items
+            .filter(
+              (item) =>
+                typeof item ===
+                  "string" &&
+                item.trim()
+            )
+            .map((item) =>
+              item.trim()
+            )
+        : [];
+
+    const hasCustomItems =
+      customItems.length > 0;
 
     /* ==========================================================
        EXISTING DEFAULT GROUP
     ========================================================== */
 
     if (fallback) {
-      const customItems = Array.isArray(
-        customGroup?.items
-      )
-        ? customGroup.items
-        : [];
-
-      const totalItems = Math.max(
-        fallback.items.length,
-        customItems.length
-      );
-
-      const mergedItems = [];
-
-      for (
-        let itemIndex = 0;
-        itemIndex < totalItems;
-        itemIndex++
-      ) {
-        const fallbackItem =
-          fallback.items[itemIndex];
-
-        const customItem =
-          customItems[itemIndex];
-
-        if (
-          typeof customItem === "string" &&
-          customItem.trim()
-        ) {
-          mergedItems.push(
-            customItem.trim()
-          );
-        } else if (
-          typeof fallbackItem === "string" &&
-          fallbackItem.trim()
-        ) {
-          mergedItems.push(
-            fallbackItem
-          );
-        }
-      }
-
       const Icon =
-        groupIcons[index % groupIcons.length];
+        groupIcons[
+          index % groupIcons.length
+        ];
 
-      lifestyleGroups.push({
-        title: value(
+      /*
+       * IMPORTANT BEHAVIOUR
+       *
+       * If there is NO custom content for this group:
+       * use the complete static/default group.
+       *
+       * If the admin has customized the title or description:
+       * this becomes a custom group.
+       *
+       * In that case:
+       * - custom items -> show custom items
+       * - no custom items -> show NO bullet items
+       *
+       * This prevents unrelated default bullets such as:
+       * "Hospitals and medical centres"
+       * from appearing underneath a custom description.
+       */
+
+      const groupHasCustomContent =
+        Boolean(
+          hasCustomTitle ||
+            hasCustomDescription ||
+            hasCustomItems
+        );
+
+      let finalTitle;
+      let finalDescription;
+      let finalItems;
+
+      if (!groupHasCustomContent) {
+        /* ------------------------------------------------------
+           COMPLETELY DEFAULT GROUP
+        ------------------------------------------------------ */
+
+        finalTitle =
+          fallback.title;
+
+        finalDescription =
+          fallback.description;
+
+        finalItems = [
+          ...fallback.items,
+        ];
+      } else {
+        /* ------------------------------------------------------
+           CUSTOMIZED GROUP
+        ------------------------------------------------------ */
+
+        finalTitle = value(
           customGroup?.title,
           fallback.title
-        ),
+        );
 
-        description: value(
+        finalDescription = value(
           customGroup?.description,
           fallback.description
-        ),
+        );
 
-        items:
-          mergedItems.length > 0
-            ? mergedItems
-            : fallback.items,
+        /*
+         * If custom items exist, use them.
+         *
+         * If no custom items exist, intentionally return
+         * an empty array instead of fallback.items.
+         */
+        finalItems = hasCustomItems
+          ? customItems
+          : [];
+      }
 
-        icon: Icon,
-      });
+      /*
+       * Only add a group if it has meaningful content.
+       */
+      if (
+        finalTitle ||
+        finalDescription ||
+        finalItems.length > 0
+      ) {
+        lifestyleGroups.push({
+          title: finalTitle,
+          description:
+            finalDescription,
+          items: finalItems,
+          icon: Icon,
+        });
+      }
 
       continue;
     }
@@ -238,28 +299,20 @@ export default function LocationLifestyle({
     ========================================================== */
 
     const Icon =
-      groupIcons[index % groupIcons.length];
-
-    const customItems = Array.isArray(
-      customGroup?.items
-    )
-      ? customGroup.items
-          .filter(
-            (item) =>
-              typeof item === "string" &&
-              item.trim()
-          )
-          .map((item) => item.trim())
-      : [];
+      groupIcons[
+        index % groupIcons.length
+      ];
 
     const title =
-      typeof customGroup?.title === "string" &&
+      typeof customGroup?.title ===
+        "string" &&
       customGroup.title.trim()
         ? customGroup.title.trim()
-        : `Lifestyle & Convenience`;
+        : "Lifestyle & Convenience";
 
     const description =
-      typeof customGroup?.description === "string" &&
+      typeof customGroup?.description ===
+        "string" &&
       customGroup.description.trim()
         ? customGroup.description.trim()
         : `Everyday conveniences and lifestyle destinations around ${locationName}.`;
@@ -333,7 +386,9 @@ export default function LocationLifestyle({
             >
               <span className="h-px w-8 bg-[#C89D58]" />
 
-              <span>{customEyebrow}</span>
+              <span>
+                {customEyebrow}
+              </span>
             </div>
 
             {/* TITLE */}
@@ -392,7 +447,8 @@ export default function LocationLifestyle({
             >
               {lifestyleGroups.map(
                 (group, index) => {
-                  const Icon = group.icon;
+                  const Icon =
+                    group.icon;
 
                   return (
                     <article
@@ -483,42 +539,50 @@ export default function LocationLifestyle({
 
                       {/* ITEMS */}
 
-                      <ul
-                        className="
-                          mt-5
-                          space-y-3
-                        "
-                      >
-                        {group.items.map(
-                          (item, itemIndex) => (
-                            <li
-                              key={`${item}-${itemIndex}`}
-                              className="
-                                flex
-                                items-start
-                                gap-3
-                                text-[11.5px]
-                                leading-[1.55]
-                                text-[#59635e]
-                                sm:text-[12px]
-                              "
-                            >
-                              <span
+                      {group.items.length >
+                        0 && (
+                        <ul
+                          className="
+                            mt-5
+                            space-y-3
+                          "
+                        >
+                          {group.items.map(
+                            (
+                              item,
+                              itemIndex
+                            ) => (
+                              <li
+                                key={`${item}-${itemIndex}`}
                                 className="
-                                  mt-[7px]
-                                  h-[5px]
-                                  w-[5px]
-                                  shrink-0
-                                  rounded-full
-                                  bg-[#C89D58]
+                                  flex
+                                  items-start
+                                  gap-3
+                                  text-[11.5px]
+                                  leading-[1.55]
+                                  text-[#59635e]
+                                  sm:text-[12px]
                                 "
-                              />
+                              >
+                                <span
+                                  className="
+                                    mt-[7px]
+                                    h-[5px]
+                                    w-[5px]
+                                    shrink-0
+                                    rounded-full
+                                    bg-[#C89D58]
+                                  "
+                                />
 
-                              <span>{item}</span>
-                            </li>
-                          )
-                        )}
-                      </ul>
+                                <span>
+                                  {item}
+                                </span>
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      )}
 
                       {/* CTA */}
 
@@ -652,7 +716,9 @@ export default function LocationLifestyle({
               >
                 <span className="h-px w-7 bg-[#D4AF37]" />
 
-                <span>LIFESTYLE</span>
+                <span>
+                  LIFESTYLE
+                </span>
               </div>
 
               <h3
