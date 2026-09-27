@@ -19,26 +19,41 @@ export default function WhyBuyLocation({
 
   const customContent = pageContent?.whyBuy || {};
 
-  const customEyebrow =
-    typeof customContent?.eyebrow === "string" &&
-    customContent.eyebrow.trim()
-      ? customContent.eyebrow.trim()
-      : "WHY BUY?";
+  // ============================================================
+  // SAFE VALUE HELPER
+  //
+  // Non-empty admin value = use admin value
+  // Empty/missing admin value = use static default
+  // ============================================================
 
-  const customTitle =
-    typeof customContent?.title === "string" &&
-    customContent.title.trim()
-      ? customContent.title.trim()
-      : `Why Consider Buying in ${locationName}?`;
-
-  const customDescription =
-    typeof customContent?.description === "string" &&
-    customContent.description.trim()
-      ? customContent.description.trim()
-      : `Choosing a property is about more than the individual home. Buyers often evaluate the surrounding location, connectivity, infrastructure, residential demand, quality of development, lifestyle ecosystem and the potential suitability of the address for their long-term objectives. These factors can help provide a broader framework when assessing opportunities in ${locationName}.`;
+  const value = (customValue, fallback) => {
+    return typeof customValue === "string" &&
+      customValue.trim()
+      ? customValue.trim()
+      : fallback;
+  };
 
   // ============================================================
-  // DEFAULT REASONS
+  // HEADER CONTENT
+  // ============================================================
+
+  const eyebrow = value(
+    customContent?.eyebrow,
+    "WHY BUY?"
+  );
+
+  const title = value(
+    customContent?.title,
+    `Why Consider Buying in ${locationName}?`
+  );
+
+  const description = value(
+    customContent?.description,
+    `Choosing a property is about more than the individual home. Buyers often evaluate the surrounding location, connectivity, infrastructure, residential demand, quality of development, lifestyle ecosystem and the potential suitability of the address for their long-term objectives. These factors can help provide a broader framework when assessing opportunities in ${locationName}.`
+  );
+
+  // ============================================================
+  // STATIC DEFAULT REASONS
   // ============================================================
 
   const defaultReasons = [
@@ -76,34 +91,60 @@ export default function WhyBuyLocation({
 
   // ============================================================
   // ADMIN REASONS
+  //
+  // IMPORTANT:
+  // Merge by position instead of replacing the entire array.
+  //
+  // Example:
+  // Admin edits reason #2 only
+  // → reason #1, #3, #4, #5, #6 remain default
+  //
+  // Extra admin reasons are also preserved.
   // ============================================================
 
   const customReasons = Array.isArray(
     customContent?.reasons
   )
     ? customContent.reasons
-        .map((reason) => ({
-          title:
-            typeof reason?.title === "string"
-              ? reason.title.trim()
-              : "",
-
-          description:
-            typeof reason?.description === "string"
-              ? reason.description.trim()
-              : "",
-        }))
-        .filter(
-          (reason) =>
-            reason.title &&
-            reason.description
-        )
     : [];
 
-  const reasons =
-    customReasons.length > 0
-      ? customReasons
-      : defaultReasons;
+  const reasonsLength = Math.max(
+    defaultReasons.length,
+    customReasons.length
+  );
+
+  const reasons = Array.from(
+    { length: reasonsLength },
+    (_, index) => {
+      const fallback =
+        defaultReasons[index] || {
+          title: "",
+          description: "",
+        };
+
+      const custom =
+        customReasons[index] || {};
+
+      const title = value(
+        custom?.title,
+        fallback.title
+      );
+
+      const description = value(
+        custom?.description,
+        fallback.description
+      );
+
+      return {
+        title,
+        description,
+      };
+    }
+  ).filter(
+    (reason) =>
+      reason.title ||
+      reason.description
+  );
 
   // ============================================================
   // ICONS
@@ -171,7 +212,7 @@ export default function WhyBuyLocation({
           >
             <span className="h-px w-8 bg-[#C89D58]" />
 
-            <span>{customEyebrow}</span>
+            <span>{eyebrow}</span>
           </div>
 
           {/* TITLE */}
@@ -192,7 +233,7 @@ export default function WhyBuyLocation({
               lg:text-[48px]
             "
           >
-            {customTitle}
+            {title}
           </h2>
 
           {/* GOLD ACCENT */}
@@ -212,7 +253,7 @@ export default function WhyBuyLocation({
               md:text-[15px]
             "
           >
-            {customDescription}
+            {description}
           </p>
         </div>
 
@@ -233,7 +274,8 @@ export default function WhyBuyLocation({
         >
           {reasons.map((reason, index) => {
             const Icon =
-              icons[index] || Sparkles;
+              icons[index % icons.length] ||
+              Sparkles;
 
             return (
               <article
@@ -316,7 +358,10 @@ export default function WhyBuyLocation({
                     text-[#b7afa3]
                   "
                 >
-                  {String(index + 1).padStart(2, "0")}
+                  {String(index + 1).padStart(
+                    2,
+                    "0"
+                  )}
                 </span>
 
                 {/* TITLE */}

@@ -20,16 +20,16 @@ export default function LocationHero({
   buildPublicLocationSlug,
   pageContent,
 }) {
-  const custom =
-    pageContent?.hero || {};
+  const custom = pageContent?.hero || {};
 
   const value = (
     customValue,
     fallback
   ) => {
-    return typeof customValue ===
-      "string" &&
+    return (
+      typeof customValue === "string" &&
       customValue.trim()
+    )
       ? customValue.trim()
       : fallback;
   };
@@ -58,7 +58,7 @@ export default function LocationHero({
       .trim()
       .toLowerCase();
 
-    const value = `${name} ${slug}`;
+    const locationValue = `${name} ${slug}`;
 
     const onKeywords = [
       "expressway",
@@ -73,7 +73,7 @@ export default function LocationHero({
     ];
 
     return onKeywords.some((keyword) =>
-      value.includes(keyword)
+      locationValue.includes(keyword)
     )
       ? "on"
       : "in";
@@ -122,26 +122,26 @@ export default function LocationHero({
   properties.forEach((property) => {
     const developerName =
       property?.developerName ||
-      property?.coreDetails
-        ?.developerName ||
+      property?.coreDetails?.developerName ||
       property?.developer?.name ||
       property?.developerData?.name ||
       property?.developerRef?.name;
 
     if (developerName) {
-      developerNames.add(
-        String(
-          developerName
-        ).trim()
-      );
+      const cleanName = String(
+        developerName
+      ).trim();
+
+      if (cleanName) {
+        developerNames.add(cleanName);
+      }
     }
   });
 
   const developerCount =
     developerNames.size;
 
-  const configurationSet =
-    new Set();
+  const configurationSet = new Set();
 
   properties.forEach((property) => {
     const floorPlans =
@@ -150,11 +150,15 @@ export default function LocationHero({
 
     floorPlans.forEach((plan) => {
       if (plan?.unitType) {
-        configurationSet.add(
-          String(
-            plan.unitType
-          ).trim()
-        );
+        const unitType = String(
+          plan.unitType
+        ).trim();
+
+        if (unitType) {
+          configurationSet.add(
+            unitType
+          );
+        }
       }
     });
 
@@ -165,17 +169,27 @@ export default function LocationHero({
     unitConfigurations.forEach(
       (unit) => {
         if (unit?.unitType) {
-          configurationSet.add(
-            String(
-              unit.unitType
-            ).trim()
-          );
+          const unitType = String(
+            unit.unitType
+          ).trim();
+
+          if (unitType) {
+            configurationSet.add(
+              unitType
+            );
+          }
         }
 
         if (unit?.bhk) {
-          configurationSet.add(
-            String(unit.bhk).trim()
-          );
+          const bhk = String(
+            unit.bhk
+          ).trim();
+
+          if (bhk) {
+            configurationSet.add(
+              bhk
+            );
+          }
         }
       }
     );
@@ -190,21 +204,18 @@ export default function LocationHero({
 
   const configurationText =
     configurationList.length
-      ? configurationList.join(
-          " & "
-        )
+      ? configurationList.join(" & ")
       : "Multiple";
 
   /* ============================================================
      DEFAULT HERO CONTENT
   ============================================================ */
 
-  const locationSlug =
-    String(
-      location?.slug ||
-        location?.name ||
-        ""
-    ).toLowerCase();
+  const locationSlug = String(
+    location?.slug ||
+      location?.name ||
+      ""
+  ).toLowerCase();
 
   const isGrowthCorridor =
     locationSlug.includes(
@@ -262,22 +273,24 @@ export default function LocationHero({
     defaultDescription
   );
 
-  const locationLabel =
-    value(
-      custom.locationLabel,
-      "Prime Location"
-    );
+  const locationLabel = value(
+    custom.locationLabel,
+    "Prime Location"
+  );
 
   const whyTitle = value(
     custom.whyTitle,
     `Why ${locationName}`
   );
 
-  const whyDescription =
-    value(
-      custom.whyDescription,
-      "A carefully curated collection of premium residential and investment opportunities."
-    );
+  const whyDescription = value(
+    custom.whyDescription,
+    "A carefully curated collection of premium residential and investment opportunities."
+  );
+
+  /* ============================================================
+     DEFAULT BENEFITS
+  ============================================================ */
 
   const benefitsDefaults = [
     "Strategic connectivity & accessibility",
@@ -293,71 +306,131 @@ export default function LocationHero({
     "Curated Opportunities",
   ];
 
-  const benefits =
-    benefitsDefaults.map(
-      (fallback, index) =>
-        value(
-          custom?.benefits?.[index],
+  /* ============================================================
+     BENEFIT MERGING
+
+     IMPORTANT:
+
+     The admin editor may contain:
+       - blank items
+       - customized items
+       - additional items
+
+     Blank custom items fall back to the static default
+     at the same position.
+
+     Additional custom items are preserved and displayed.
+
+     Example:
+
+       Defaults:
+       1. Strategic connectivity
+       2. Premium developments
+       3. Leading developers
+       4. Curated opportunities
+
+       Admin:
+       1. Custom text
+       2. ""
+       3. Custom text
+       4. ""
+       5. Extra custom benefit
+
+     Result:
+
+       1. Custom text
+       2. Premium developments
+       3. Custom text
+       4. Curated opportunities
+       5. Extra custom benefit
+  ============================================================ */
+
+  const mergeBenefitArray = (
+    defaults,
+    customItems
+  ) => {
+    const customArray =
+      Array.isArray(customItems)
+        ? customItems
+        : [];
+
+    const totalLength = Math.max(
+      defaults.length,
+      customArray.length
+    );
+
+    return Array.from(
+      { length: totalLength },
+      (_, index) => {
+        const fallback =
+          defaults[index] || "";
+
+        const customValue =
+          customArray[index];
+
+        return value(
+          customValue,
           fallback
-        )
+        );
+      }
+    ).filter(Boolean);
+  };
+
+  const benefits =
+    mergeBenefitArray(
+      benefitsDefaults,
+      custom?.benefits
     );
 
   const mobileBenefits =
-    mobileDefaults.map(
-      (fallback, index) =>
-        value(
-          custom?.mobileBenefits?.[index],
-          fallback
-        )
+    mergeBenefitArray(
+      mobileDefaults,
+      custom?.mobileBenefits
     );
 
-  const primaryCtaText =
-    value(
-      custom.primaryCtaText,
-      "Explore Properties"
-    );
+  const primaryCtaText = value(
+    custom.primaryCtaText,
+    "Explore Properties"
+  );
 
-  const primaryCtaLink =
-    value(
-      custom.primaryCtaLink,
-      "#projects"
-    );
+  const primaryCtaLink = value(
+    custom.primaryCtaLink,
+    "#projects"
+  );
 
-  const secondaryCtaText =
-    value(
-      custom.secondaryCtaText,
-      "Contact Advisor"
-    );
+  const secondaryCtaText = value(
+    custom.secondaryCtaText,
+    "Contact Advisor"
+  );
 
-  const secondaryCtaLink =
-    value(
-      custom.secondaryCtaLink,
-      "/contact"
-    );
+  const secondaryCtaLink = value(
+    custom.secondaryCtaLink,
+    "/contact"
+  );
 
-  const footerEyebrow =
-    value(
-      custom.footerEyebrow,
-      "Property Bouquet"
-    );
+  const footerEyebrow = value(
+    custom.footerEyebrow,
+    "Property Bouquet"
+  );
 
-  const footerText =
-    value(
-      custom.footerText,
-      "Premium properties, thoughtfully curated."
-    );
+  const footerText = value(
+    custom.footerText,
+    "Premium properties, thoughtfully curated."
+  );
 
   /* ============================================================
      IMAGE
   ============================================================ */
 
   const finalHeroImage =
-    custom.image?.trim() ||
-    heroImage ||
-    locationImage ||
-    properties?.[0]?.media
-      ?.heroImageUrl ||
-    "";
+    typeof custom.image === "string" &&
+    custom.image.trim()
+      ? custom.image.trim()
+      : heroImage ||
+        locationImage ||
+        properties?.[0]?.media
+          ?.heroImageUrl ||
+        "";
 
   return (
     <section
@@ -848,7 +921,7 @@ export default function LocationHero({
                 {benefits.map(
                   (benefit, index) => (
                     <Benefit
-                      key={index}
+                      key={`${index}-${benefit}`}
                       text={benefit}
                     />
                   )
@@ -872,7 +945,7 @@ export default function LocationHero({
           {mobileBenefits.map(
             (benefit, index) => (
               <MobileBenefit
-                key={index}
+                key={`${index}-${benefit}`}
                 text={benefit}
               />
             )

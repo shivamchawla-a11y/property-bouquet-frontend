@@ -12,39 +12,61 @@ export default function LocationLifestyle({
   locationImage = "",
   pageContent,
 }) {
-  // ============================================================
-  // CUSTOM PAGE CONTENT
-  // ============================================================
+  /* ============================================================
+     CUSTOM PAGE CONTENT
+  ============================================================ */
 
   const customContent = pageContent?.lifestyle || {};
 
-  const customEyebrow =
-    typeof customContent.eyebrow === "string" &&
-    customContent.eyebrow.trim()
-      ? customContent.eyebrow.trim()
-      : "SCHOOLS, HOSPITALS & LIFESTYLE";
+  /* ============================================================
+     HELPER
+  ============================================================ */
 
-  const customTitle =
-    typeof customContent.title === "string" &&
-    customContent.title.trim()
-      ? customContent.title.trim()
-      : `Everyday Convenience Around ${locationName}`;
+  const value = (customValue, fallback) => {
+    return typeof customValue === "string" &&
+      customValue.trim()
+      ? customValue.trim()
+      : fallback;
+  };
 
-  const customDescription =
-    typeof customContent.description === "string" &&
-    customContent.description.trim()
-      ? customContent.description.trim()
-      : `A location becomes more than an address when the everyday essentials of modern living are within practical reach. For residents of ${locationName}, schools, healthcare, retail, dining and leisure infrastructure form an important part of the broader residential experience. Buyers can consider these factors alongside the individual project's specifications, amenities and connectivity.`;
+  /* ============================================================
+     HEADER DEFAULTS
+  ============================================================ */
 
-  // ============================================================
-  // DEFAULT GROUPS
-  // ============================================================
+  const defaultEyebrow =
+    "SCHOOLS, HOSPITALS & LIFESTYLE";
+
+  const defaultTitle =
+    `Everyday Convenience Around ${locationName}`;
+
+  const defaultDescription = `A location becomes more than an address when the everyday essentials of modern living are within practical reach. For residents of ${locationName}, schools, healthcare, retail, dining and leisure infrastructure form an important part of the broader residential experience. Buyers can consider these factors alongside the individual project's specifications, amenities and connectivity.`;
+
+  const customEyebrow = value(
+    customContent?.eyebrow,
+    defaultEyebrow
+  );
+
+  const customTitle = value(
+    customContent?.title,
+    defaultTitle
+  );
+
+  const customDescription = value(
+    customContent?.description,
+    defaultDescription
+  );
+
+  /* ============================================================
+     DEFAULT GROUPS
+  ============================================================ */
 
   const defaultGroups = [
     {
       title: "Top Schools & Universities",
+
       description:
         "Educational options are an important consideration for families evaluating a long-term residential address.",
+
       items: [
         "Schools and educational institutions",
         "Higher education options",
@@ -55,8 +77,10 @@ export default function LocationLifestyle({
 
     {
       title: "Leading Healthcare",
+
       description:
         "Access to healthcare infrastructure contributes to everyday convenience and residential liveability.",
+
       items: [
         "Hospitals and medical centres",
         "Specialist healthcare",
@@ -67,8 +91,10 @@ export default function LocationLifestyle({
 
     {
       title: "Shopping & Entertainment",
+
       description:
         "Retail, dining and leisure destinations add to the lifestyle experience surrounding a residential community.",
+
       items: [
         "Shopping destinations",
         "Restaurants and cafes",
@@ -78,30 +104,146 @@ export default function LocationLifestyle({
     },
   ];
 
-  // ============================================================
-  // CUSTOM GROUPS
-  //
-  // Use admin groups only when actual content exists.
-  // ============================================================
+  /* ============================================================
+     ICONS
 
-  const hasCustomGroups =
-    Array.isArray(customContent.groups) &&
-    customContent.groups.some(
-      (group) =>
-        typeof group?.title === "string" &&
-        group.title.trim()
-    );
+     First three retain the original icons.
+     Additional custom groups cycle through them.
+  ============================================================ */
 
-  const lifestyleGroups = (
-    hasCustomGroups
-      ? customContent.groups
-      : defaultGroups
-  ).map((group, index) => {
-    const fallback =
-      defaultGroups[index] || defaultGroups[0];
+  const groupIcons = [
+    GraduationCap,
+    HeartPulse,
+    ShoppingBag,
+  ];
 
-    const items = Array.isArray(group?.items)
-      ? group.items
+  /* ============================================================
+     CUSTOM GROUPS
+
+     IMPORTANT:
+
+     We DO NOT replace the entire default array just because
+     one custom group exists.
+
+     Instead:
+
+       custom group #1 -> overrides default #1
+       custom group #2 -> overrides default #2
+       custom group #3 -> overrides default #3
+       custom group #4+ -> additional custom group
+
+     Blank values fall back to the corresponding static value.
+  ============================================================ */
+
+  const customGroups = Array.isArray(
+    customContent?.groups
+  )
+    ? customContent.groups
+    : [];
+
+  const totalGroups = Math.max(
+    defaultGroups.length,
+    customGroups.length
+  );
+
+  const lifestyleGroups = [];
+
+  for (let index = 0; index < totalGroups; index++) {
+    const fallback = defaultGroups[index];
+
+    const customGroup =
+      customGroups[index] &&
+      typeof customGroups[index] === "object"
+        ? customGroups[index]
+        : {};
+
+    /* ==========================================================
+       EXISTING DEFAULT GROUP
+    ========================================================== */
+
+    if (fallback) {
+      const customItems = Array.isArray(
+        customGroup?.items
+      )
+        ? customGroup.items
+        : [];
+
+      const totalItems = Math.max(
+        fallback.items.length,
+        customItems.length
+      );
+
+      const mergedItems = [];
+
+      for (
+        let itemIndex = 0;
+        itemIndex < totalItems;
+        itemIndex++
+      ) {
+        const fallbackItem =
+          fallback.items[itemIndex];
+
+        const customItem =
+          customItems[itemIndex];
+
+        if (
+          typeof customItem === "string" &&
+          customItem.trim()
+        ) {
+          mergedItems.push(
+            customItem.trim()
+          );
+        } else if (
+          typeof fallbackItem === "string" &&
+          fallbackItem.trim()
+        ) {
+          mergedItems.push(
+            fallbackItem
+          );
+        }
+      }
+
+      const Icon =
+        groupIcons[index % groupIcons.length];
+
+      lifestyleGroups.push({
+        title: value(
+          customGroup?.title,
+          fallback.title
+        ),
+
+        description: value(
+          customGroup?.description,
+          fallback.description
+        ),
+
+        items:
+          mergedItems.length > 0
+            ? mergedItems
+            : fallback.items,
+
+        icon: Icon,
+      });
+
+      continue;
+    }
+
+    /* ==========================================================
+       ADDITIONAL CUSTOM GROUP
+
+       Example:
+       Admin creates group #4.
+
+       We preserve it instead of throwing it away.
+    ========================================================== */
+
+    const Icon =
+      groupIcons[index % groupIcons.length];
+
+    const customItems = Array.isArray(
+      customGroup?.items
+    )
+      ? customGroup.items
           .filter(
             (item) =>
               typeof item === "string" &&
@@ -110,36 +252,29 @@ export default function LocationLifestyle({
           .map((item) => item.trim())
       : [];
 
-    return {
-      title:
-        typeof group?.title === "string" &&
-        group.title.trim()
-          ? group.title.trim()
-          : fallback.title,
+    const title =
+      typeof customGroup?.title === "string" &&
+      customGroup.title.trim()
+        ? customGroup.title.trim()
+        : `Lifestyle & Convenience`;
 
-      description:
-        typeof group?.description === "string" &&
-        group.description.trim()
-          ? group.description.trim()
-          : fallback.description,
+    const description =
+      typeof customGroup?.description === "string" &&
+      customGroup.description.trim()
+        ? customGroup.description.trim()
+        : `Everyday conveniences and lifestyle destinations around ${locationName}.`;
 
-      items:
-        items.length > 0
-          ? items
-          : fallback.items,
+    lifestyleGroups.push({
+      title,
+      description,
+      items: customItems,
+      icon: Icon,
+    });
+  }
 
-      icon:
-        index === 0
-          ? GraduationCap
-          : index === 1
-            ? HeartPulse
-            : ShoppingBag,
-    };
-  });
-
-  // ============================================================
-  // RENDER
-  // ============================================================
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
     <section
@@ -440,8 +575,6 @@ export default function LocationLifestyle({
               lg:min-h-full
             "
           >
-            {/* IMAGE */}
-
             {locationImage ? (
               <>
                 <img
@@ -459,8 +592,6 @@ export default function LocationLifestyle({
                   "
                 />
 
-                {/* DARK OVERLAY */}
-
                 <div
                   className="
                     absolute
@@ -471,8 +602,6 @@ export default function LocationLifestyle({
                     to-transparent
                   "
                 />
-
-                {/* SUBTLE SIDE OVERLAY */}
 
                 <div
                   className="
@@ -508,8 +637,6 @@ export default function LocationLifestyle({
                 sm:p-8
               "
             >
-              {/* LABEL */}
-
               <div
                 className="
                   flex
@@ -528,8 +655,6 @@ export default function LocationLifestyle({
                 <span>LIFESTYLE</span>
               </div>
 
-              {/* IMAGE TITLE */}
-
               <h3
                 className="
                   mt-4
@@ -546,8 +671,6 @@ export default function LocationLifestyle({
                 <br />
                 closer to home.
               </h3>
-
-              {/* LOCATION */}
 
               <p
                 className="

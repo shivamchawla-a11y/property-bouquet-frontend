@@ -73,18 +73,58 @@ export default function LocationConnectivity({
   ];
 
   /* ============================================================
-     CUSTOM ITEMS
+     ICONS FOR ADDITIONAL CUSTOM ITEMS
 
-     Only title/subtitle are configurable.
-     Icons remain controlled by the component.
+     Existing six cards keep their original icons.
+     Additional admin-created cards cycle through these icons.
   ============================================================ */
 
-  const connectivityItems = defaultItems.map(
-    (fallback, index) => {
-      const customItem =
-        custom?.items?.[index] || {};
+  const additionalIcons = [
+    Plane,
+    TrainFront,
+    Navigation,
+    Building2,
+    MapPinned,
+    ShoppingBag,
+  ];
 
-      return {
+  /* ============================================================
+     CONNECTIVITY ITEMS
+
+     IMPORTANT BEHAVIOUR:
+
+     - Empty custom array -> all static defaults
+     - Custom item at index -> overrides that default item
+     - Empty custom fields -> static field remains
+     - Additional custom items -> displayed
+  ============================================================ */
+
+  const customItems = Array.isArray(custom?.items)
+    ? custom.items
+    : [];
+
+  const connectivityItems = [];
+
+  const totalItems = Math.max(
+    defaultItems.length,
+    customItems.length
+  );
+
+  for (let index = 0; index < totalItems; index++) {
+    const fallback = defaultItems[index];
+
+    const customItem =
+      customItems[index] &&
+      typeof customItems[index] === "object"
+        ? customItems[index]
+        : {};
+
+    /* ==========================================================
+       EXISTING DEFAULT ITEM
+    ========================================================== */
+
+    if (fallback) {
+      connectivityItems.push({
         ...fallback,
 
         title: value(
@@ -96,9 +136,45 @@ export default function LocationConnectivity({
           customItem.subtitle,
           fallback.subtitle
         ),
-      };
+      });
+
+      continue;
     }
-  );
+
+    /* ==========================================================
+       ADDITIONAL CUSTOM ITEM
+
+       If the admin adds item #7, #8, etc., preserve it.
+    ========================================================== */
+
+    const Icon =
+      additionalIcons[
+        index % additionalIcons.length
+      ];
+
+    const title =
+      typeof customItem.title === "string" &&
+      customItem.title.trim()
+        ? customItem.title.trim()
+        : `Key Destination ${index + 1}`;
+
+    const subtitle =
+      typeof customItem.subtitle === "string" &&
+      customItem.subtitle.trim()
+        ? customItem.subtitle.trim()
+        : "Location connectivity";
+
+    connectivityItems.push({
+      title,
+      subtitle,
+      icon: (
+        <Icon
+          size={20}
+          strokeWidth={1.7}
+        />
+      ),
+    });
+  }
 
   /* ============================================================
      DEFAULT COPY
@@ -107,27 +183,27 @@ export default function LocationConnectivity({
   const defaultDescription = `Located in ${locationName}, the address benefits from access to important roads, transportation networks, business destinations, lifestyle districts and everyday conveniences. Its connectivity profile adds to the practicality of the location for both residents and investors.`;
 
   const eyebrow = value(
-    custom.eyebrow,
+    custom?.eyebrow,
     "CONNECTIVITY & KEY DESTINATIONS"
   );
 
   const title = value(
-    custom.title,
+    custom?.title,
     "Seamless Connectivity to Key Destinations"
   );
 
   const description = value(
-    custom.description,
+    custom?.description,
     defaultDescription
   );
 
   const advantageEyebrow = value(
-    custom.advantageEyebrow,
+    custom?.advantageEyebrow,
     "LOCATION ADVANTAGE"
   );
 
   const advantageTitle = value(
-    custom.advantageTitle,
+    custom?.advantageTitle,
     "A well-connected address for a brighter tomorrow."
   );
 
@@ -218,8 +294,6 @@ export default function LocationConnectivity({
         ====================================================== */}
 
         <div className="max-w-[880px]">
-          {/* Eyebrow */}
-
           <div
             className="
               flex
@@ -239,8 +313,6 @@ export default function LocationConnectivity({
 
             <span className="hidden h-px w-5 bg-[#C89D58]/40 sm:block" />
           </div>
-
-          {/* Heading */}
 
           <h2
             id="connectivity-heading"
@@ -262,15 +334,10 @@ export default function LocationConnectivity({
             {title}
           </h2>
 
-          {/* Gold divider */}
-
           <div className="mt-5 flex items-center gap-2">
             <div className="h-[2px] w-14 bg-[#C89D58]" />
-
             <div className="h-[2px] w-2 bg-[#D4AF37]/40" />
           </div>
-
-          {/* Description */}
 
           <p
             className="
@@ -335,9 +402,7 @@ export default function LocationConnectivity({
             lg:grid-cols-[1.08fr_0.92fr]
           "
         >
-          {/* ====================================================
-              IMAGE PANEL
-          ==================================================== */}
+          {/* IMAGE PANEL */}
 
           <div
             className="
@@ -366,8 +431,6 @@ export default function LocationConnectivity({
                   "
                 />
 
-                {/* Image overlay */}
-
                 <div
                   className="
                     absolute
@@ -389,8 +452,6 @@ export default function LocationConnectivity({
                     to-transparent
                   "
                 />
-
-                {/* Image top label */}
 
                 <div
                   className="
@@ -430,8 +491,6 @@ export default function LocationConnectivity({
                     Location Connectivity
                   </span>
                 </div>
-
-                {/* Image bottom location */}
 
                 <div
                   className="
@@ -544,9 +603,7 @@ export default function LocationConnectivity({
             )}
           </div>
 
-          {/* ====================================================
-              ADVANTAGE PANEL
-          ==================================================== */}
+          {/* ADVANTAGE PANEL */}
 
           <div
             className="
@@ -563,8 +620,6 @@ export default function LocationConnectivity({
               xl:p-14
             "
           >
-            {/* Decorative glow */}
-
             <div
               className="
                 pointer-events-none
@@ -593,8 +648,6 @@ export default function LocationConnectivity({
               "
             />
 
-            {/* Decorative circle */}
-
             <div
               className="
                 pointer-events-none
@@ -612,8 +665,6 @@ export default function LocationConnectivity({
             />
 
             <div className="relative">
-              {/* Eyebrow */}
-
               <div
                 className="
                   flex
@@ -632,8 +683,6 @@ export default function LocationConnectivity({
                 <span>{advantageEyebrow}</span>
               </div>
 
-              {/* Title */}
-
               <h3
                 className="
                   mt-5
@@ -651,8 +700,6 @@ export default function LocationConnectivity({
               >
                 {advantageTitle}
               </h3>
-
-              {/* Description */}
 
               <p
                 className="
@@ -673,14 +720,10 @@ export default function LocationConnectivity({
                 considerations.
               </p>
 
-              {/* Divider */}
-
               <div className="mt-7 flex items-center gap-2">
                 <div className="h-[2px] w-14 bg-[#D4AF37]" />
                 <div className="h-[2px] w-2 bg-[#D4AF37]/40" />
               </div>
-
-              {/* Bottom mini information */}
 
               <div
                 className="
@@ -763,8 +806,6 @@ function ConnectivityCard({
         sm:p-6
       "
     >
-      {/* Subtle hover glow */}
-
       <div
         className="
           pointer-events-none
@@ -781,8 +822,6 @@ function ConnectivityCard({
           group-hover:bg-[#D4AF37]/[0.07]
         "
       />
-
-      {/* Top line */}
 
       <div
         className="
@@ -801,8 +840,6 @@ function ConnectivityCard({
       />
 
       <div className="relative flex items-start gap-4">
-        {/* Icon */}
-
         <div
           className="
             flex
@@ -825,11 +862,7 @@ function ConnectivityCard({
           {icon}
         </div>
 
-        {/* Content */}
-
         <div className="min-w-0 flex-1">
-          {/* Number */}
-
           <div
             className="
               mb-1.5
@@ -839,10 +872,8 @@ function ConnectivityCard({
               text-[#A18A5A]
             "
           >
-            0{index + 1}
+            {String(index + 1).padStart(2, "0")}
           </div>
-
-          {/* Title */}
 
           <h3
             className="
@@ -858,8 +889,6 @@ function ConnectivityCard({
             {title}
           </h3>
 
-          {/* Subtitle */}
-
           <p
             className="
               mt-1.5
@@ -872,8 +901,6 @@ function ConnectivityCard({
             {subtitle}
           </p>
         </div>
-
-        {/* Arrow */}
 
         <div
           className="

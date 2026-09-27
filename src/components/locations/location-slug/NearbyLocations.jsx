@@ -13,45 +13,51 @@ export default function NearbyLocations({
   buildPublicLocationSlug,
   pageContent,
 }) {
+  // ============================================================
+  // ADMIN CUSTOM CONTENT
+  // ============================================================
+
   const custom =
     pageContent?.nearby || {};
 
-  /* ============================================================
-     HELPER
-  ============================================================ */
+  // ============================================================
+  // SAFE VALUE HELPER
+  // ============================================================
 
   const value = (
     customValue,
     fallback
   ) => {
-    return typeof customValue === "string" &&
+    return (
+      typeof customValue === "string" &&
       customValue.trim()
+    )
       ? customValue.trim()
       : fallback;
   };
 
-  /* ============================================================
-     DEFAULT COPY
-  ============================================================ */
+  // ============================================================
+  // DEFAULT COPY
+  // ============================================================
 
   const eyebrow = value(
-    custom.eyebrow,
+    custom?.eyebrow,
     "EXPLORE MORE"
   );
 
   const title = value(
-    custom.title,
+    custom?.title,
     "Explore Nearby Locations"
   );
 
   const description = value(
-    custom.description,
+    custom?.description,
     `Discover nearby locations around ${locationName}, with access to complementary residential, commercial, lifestyle and investment opportunities across the wider area.`
   );
 
-  /* ============================================================
-     CURRENT LOCATION ID
-  ============================================================ */
+  // ============================================================
+  // CURRENT LOCATION ID
+  // ============================================================
 
   const currentLocationId =
     location?._id?.toString?.() ||
@@ -59,23 +65,24 @@ export default function NearbyLocations({
     location?.slug ||
     location?.name;
 
-  /* ============================================================
-     FIND LOCATION FROM PROPERTY
-  ============================================================ */
+  // ============================================================
+  // FIND LOCATION FROM PROPERTY
+  // ============================================================
 
-  const getPropertyLocation =
-    (property) => {
-      return (
-        property?.locationData
-          ?.locationRef ||
-        property?.locationRef ||
-        property?.location
-      );
-    };
+  const getPropertyLocation = (
+    property
+  ) => {
+    return (
+      property?.locationData
+        ?.locationRef ||
+      property?.locationRef ||
+      property?.location
+    );
+  };
 
-  /* ============================================================
-     LOCATION ID HELPER
-  ============================================================ */
+  // ============================================================
+  // LOCATION ID HELPER
+  // ============================================================
 
   const getLocationId = (
     item
@@ -88,30 +95,31 @@ export default function NearbyLocations({
     );
   };
 
-  /* ============================================================
-     DIRECT CHILDREN
-  ============================================================ */
+  // ============================================================
+  // DIRECT CHILDREN
+  // ============================================================
 
-  const directChildren = Array.isArray(
-    location?.children
-  )
-    ? location.children
-    : [];
+  const directChildren =
+    Array.isArray(location?.children)
+      ? location.children
+      : [];
 
-  /* ============================================================
-     COLLECT NEARBY LOCATIONS
-     
-     Priority:
-     1. Direct children of current location
-     2. Locations appearing in property hierarchy
-     3. Parent's other direct children
-  ============================================================ */
+  // ============================================================
+  // COLLECT NEARBY LOCATIONS
+  //
+  // Priority:
+  // 1. Direct children
+  // 2. Locations found in property hierarchy
+  // 3. Parent siblings
+  //
+  // This remains completely dynamic.
+  // ============================================================
 
   const nearbyMap = new Map();
 
-  /* ------------------------------------------------------------
-     1. DIRECT CHILDREN
-  ------------------------------------------------------------ */
+  // ------------------------------------------------------------
+  // 1. DIRECT CHILDREN
+  // ------------------------------------------------------------
 
   directChildren.forEach(
     (child) => {
@@ -120,8 +128,7 @@ export default function NearbyLocations({
 
       if (
         !childId ||
-        childId ===
-          currentLocationId
+        childId === currentLocationId
       ) {
         return;
       }
@@ -133,9 +140,9 @@ export default function NearbyLocations({
     }
   );
 
-  /* ------------------------------------------------------------
-     2. PROPERTY LOCATION HIERARCHY
-  ------------------------------------------------------------ */
+  // ------------------------------------------------------------
+  // 2. PROPERTY LOCATION HIERARCHY
+  // ------------------------------------------------------------
 
   properties.forEach(
     (property) => {
@@ -179,9 +186,9 @@ export default function NearbyLocations({
     }
   );
 
-  /* ------------------------------------------------------------
-     3. PARENT SIBLINGS
-  ------------------------------------------------------------ */
+  // ------------------------------------------------------------
+  // 3. PARENT SIBLINGS
+  // ------------------------------------------------------------
 
   const parent =
     location?.parent;
@@ -215,16 +222,15 @@ export default function NearbyLocations({
     );
   }
 
-  /* ============================================================
-     SORT LOCATIONS
-     
-     Natural sorting makes:
-     Sector 1
-     Sector 2
-     Sector 10
-     
-     appear in the expected order.
-  ============================================================ */
+  // ============================================================
+  // SORT LOCATIONS NATURALLY
+  //
+  // Sector 1
+  // Sector 2
+  // Sector 10
+  // Sector 52
+  // Sector 53
+  // ============================================================
 
   const nearbyLocations =
     Array.from(
@@ -239,13 +245,17 @@ export default function NearbyLocations({
       )
       .slice(0, 10);
 
-  /* ============================================================
-     EMPTY STATE
-  ============================================================ */
+  // ============================================================
+  // EMPTY STATE
+  // ============================================================
 
   if (!nearbyLocations.length) {
     return null;
   }
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <section
@@ -285,6 +295,8 @@ export default function NearbyLocations({
           "
         >
           <div className="max-w-[800px]">
+            {/* EYEBROW */}
+
             <div
               className="
                 mb-4
@@ -305,6 +317,8 @@ export default function NearbyLocations({
               {eyebrow}
             </div>
 
+            {/* TITLE */}
+
             <h2
               className="
                 font-playfair
@@ -320,6 +334,8 @@ export default function NearbyLocations({
             >
               {title}
             </h2>
+
+            {/* DESCRIPTION */}
 
             <p
               className="
@@ -357,8 +373,10 @@ export default function NearbyLocations({
                 );
 
               const nearbyName =
-                nearby?.name ||
-                "Location";
+                typeof nearby?.name ===
+                "string"
+                  ? nearby.name.trim()
+                  : "Location";
 
               const publicSlug =
                 typeof buildPublicLocationSlug ===
@@ -399,6 +417,8 @@ export default function NearbyLocations({
                     hover:shadow-[0_14px_35px_rgba(23,52,45,0.09)]
                   "
                 >
+                  {/* LOCATION ICON */}
+
                   <span
                     className="
                       flex
@@ -415,6 +435,8 @@ export default function NearbyLocations({
                     <MapPin size={13} />
                   </span>
 
+                  {/* LOCATION NAME */}
+
                   <span
                     className="
                       text-[11px]
@@ -425,6 +447,8 @@ export default function NearbyLocations({
                   >
                     {nearbyName}
                   </span>
+
+                  {/* ARROW */}
 
                   <ArrowRight
                     size={14}
@@ -448,22 +472,6 @@ export default function NearbyLocations({
 
 /* ============================================================
    NATURAL LOCATION SORT
-     
-   Examples:
-
-   Sector 1
-   Sector 2
-   Sector 10
-   Sector 52
-   Sector 53
-
-   instead of:
-
-   Sector 1
-   Sector 10
-   Sector 2
-   Sector 52
-   Sector 53
 ============================================================ */
 
 function naturalLocationSort(

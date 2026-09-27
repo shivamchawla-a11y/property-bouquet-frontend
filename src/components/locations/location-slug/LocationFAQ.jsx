@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Minus } from "lucide-react";
 
 export default function LocationFAQ({
@@ -14,23 +14,40 @@ export default function LocationFAQ({
 
   const customContent = pageContent?.faq || {};
 
-  const customEyebrow =
-    typeof customContent?.eyebrow === "string" &&
-    customContent.eyebrow.trim()
-      ? customContent.eyebrow.trim()
-      : "PROPERTY BUYER QUESTIONS";
+  // ============================================================
+  // SAFE VALUE HELPER
+  // ============================================================
 
-  const customTitle =
-    typeof customContent?.title === "string" &&
-    customContent.title.trim()
-      ? customContent.title.trim()
-      : `Common Questions About ${locationName}`;
+  const value = (
+    customValue,
+    fallback
+  ) => {
+    return (
+      typeof customValue === "string" &&
+      customValue.trim()
+    )
+      ? customValue.trim()
+      : fallback;
+  };
 
-  const customDescription =
-    typeof customContent?.description === "string" &&
-    customContent.description.trim()
-      ? customContent.description.trim()
-      : `Explore answers to common questions about buying property in ${locationName}, including property types, pricing, investment considerations and how to compare available projects.`;
+  // ============================================================
+  // HEADER
+  // ============================================================
+
+  const eyebrow = value(
+    customContent?.eyebrow,
+    "PROPERTY BUYER QUESTIONS"
+  );
+
+  const title = value(
+    customContent?.title,
+    `Common Questions About ${locationName}`
+  );
+
+  const description = value(
+    customContent?.description,
+    `Explore answers to common questions about buying property in ${locationName}, including property types, pricing, investment considerations and how to compare available projects.`
+  );
 
   // ============================================================
   // DEFAULT FAQS
@@ -84,42 +101,92 @@ export default function LocationFAQ({
 
   // ============================================================
   // ADMIN FAQ ITEMS
+  //
+  // IMPORTANT:
+  // Merge by position instead of replacing the entire FAQ list.
+  //
+  // Example:
+  // Admin edits FAQ #2 only
+  // → FAQ #1, #3, #4, etc. remain default.
+  //
+  // Additional admin FAQs are preserved.
   // ============================================================
 
-  const customFaqs = Array.isArray(customContent?.items)
+  const customFaqs = Array.isArray(
+    customContent?.items
+  )
     ? customContent.items
-        .map((item) => ({
-          question:
-            typeof item?.question === "string"
-              ? item.question.trim()
-              : "",
-
-          answer:
-            typeof item?.answer === "string"
-              ? item.answer.trim()
-              : "",
-        }))
-        .filter(
-          (item) =>
-            item.question &&
-            item.answer
-        )
     : [];
 
-  // ============================================================
-  // FINAL FAQ DATA
-  // ============================================================
+  const faqLength = Math.max(
+    defaultFaqs.length,
+    customFaqs.length
+  );
 
-  const faqs =
-    customFaqs.length > 0
-      ? customFaqs
-      : defaultFaqs;
+  const faqs = Array.from(
+    { length: faqLength },
+    (_, index) => {
+      const fallback =
+        defaultFaqs[index] || {
+          question: "",
+          answer: "",
+        };
+
+      const custom =
+        customFaqs[index] || {};
+
+      const question = value(
+        custom?.question,
+        fallback.question
+      );
+
+      const answer = value(
+        custom?.answer,
+        fallback.answer
+      );
+
+      return {
+        question,
+        answer,
+      };
+    }
+  ).filter(
+    (faq) =>
+      faq.question ||
+      faq.answer
+  );
 
   // ============================================================
   // OPEN FAQ
   // ============================================================
 
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openIndex, setOpenIndex] =
+    useState(0);
+
+  // ============================================================
+  // KEEP OPEN INDEX VALID
+  //
+  // Prevents an invalid open index if the number of FAQs
+  // changes after content updates.
+  // ============================================================
+
+  useEffect(() => {
+    if (!faqs.length) {
+      setOpenIndex(-1);
+      return;
+    }
+
+    setOpenIndex((current) => {
+      if (
+        current < 0 ||
+        current >= faqs.length
+      ) {
+        return 0;
+      }
+
+      return current;
+    });
+  }, [faqs.length]);
 
   // ============================================================
   // RENDER
@@ -179,7 +246,7 @@ export default function LocationFAQ({
           >
             <span className="h-px w-8 bg-[#C89D58]" />
 
-            <span>{customEyebrow}</span>
+            <span>{eyebrow}</span>
 
             <span className="h-px w-8 bg-[#C89D58]" />
           </div>
@@ -201,7 +268,7 @@ export default function LocationFAQ({
               lg:text-[48px]
             "
           >
-            {customTitle}
+            {title}
           </h2>
 
           {/* GOLD ACCENT */}
@@ -230,7 +297,7 @@ export default function LocationFAQ({
               md:text-[15px]
             "
           >
-            {customDescription}
+            {description}
           </p>
         </div>
 
@@ -250,7 +317,8 @@ export default function LocationFAQ({
           "
         >
           {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
+            const isOpen =
+              openIndex === index;
 
             return (
               <div
@@ -269,7 +337,9 @@ export default function LocationFAQ({
                   type="button"
                   onClick={() =>
                     setOpenIndex(
-                      isOpen ? -1 : index
+                      isOpen
+                        ? -1
+                        : index
                     )
                   }
                   aria-expanded={isOpen}

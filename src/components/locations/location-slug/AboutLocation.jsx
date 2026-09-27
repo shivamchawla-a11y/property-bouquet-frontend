@@ -29,15 +29,21 @@ export default function AboutLocation({
      READ MORE STATE
   ============================================================ */
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] =
+    useState(false);
 
   /* ============================================================
      HELPER
   ============================================================ */
 
-  const value = (customValue, fallback) => {
-    return typeof customValue === "string" &&
+  const value = (
+    customValue,
+    fallback
+  ) => {
+    return (
+      typeof customValue === "string" &&
       customValue.trim()
+    )
       ? customValue.trim()
       : fallback;
   };
@@ -61,9 +67,12 @@ export default function AboutLocation({
       location?.image,
       location?.imageUrl,
       properties?.[0]?.locationImage,
-      properties?.[0]?.media?.locationImageUrl,
-      properties?.[0]?.media?.heroImageUrl,
-      properties?.[0]?.media?.images?.[0]?.url,
+      properties?.[0]?.media
+        ?.locationImageUrl,
+      properties?.[0]?.media
+        ?.heroImageUrl,
+      properties?.[0]?.media
+        ?.images?.[0]?.url,
     ];
 
     return (
@@ -75,7 +84,8 @@ export default function AboutLocation({
     );
   };
 
-  const resolvedImage = resolveImage();
+  const resolvedImage =
+    resolveImage();
 
   /* ============================================================
      PROPERTY TYPES
@@ -84,24 +94,30 @@ export default function AboutLocation({
   const propertyTypes = useMemo(() => {
     const types = new Set();
 
-    properties.forEach((property) => {
-      const values = [
-        property?.categoryData?.categoryName,
-        property?.category?.name,
-        property?.propertyType,
-        property?.propertyCategory,
-        property?.coreDetails?.propertyType,
-      ];
+    properties.forEach(
+      (property) => {
+        const values = [
+          property?.categoryData
+            ?.categoryName,
+          property?.category?.name,
+          property?.propertyType,
+          property?.propertyCategory,
+          property?.coreDetails
+            ?.propertyType,
+        ];
 
-      values.forEach((item) => {
-        if (
-          typeof item === "string" &&
-          item.trim()
-        ) {
-          types.add(item.trim());
-        }
-      });
-    });
+        values.forEach((item) => {
+          if (
+            typeof item === "string" &&
+            item.trim()
+          ) {
+            types.add(
+              item.trim()
+            );
+          }
+        });
+      }
+    );
 
     return Array.from(types);
   }, [properties]);
@@ -110,48 +126,60 @@ export default function AboutLocation({
      DEVELOPERS
   ============================================================ */
 
-  const developerNames = useMemo(() => {
-    const developers = new Set();
+  const developerNames =
+    useMemo(() => {
+      const developers = new Set();
 
-    properties.forEach((property) => {
-      const values = [
-        property?.developerName,
-        property?.coreDetails?.developerName,
-        property?.developer?.name,
-        property?.developerData?.name,
-        property?.developerRef?.name,
-      ];
+      properties.forEach(
+        (property) => {
+          const values = [
+            property?.developerName,
+            property?.coreDetails
+              ?.developerName,
+            property?.developer?.name,
+            property?.developerData
+              ?.name,
+            property?.developerRef
+              ?.name,
+          ];
 
-      values.forEach((item) => {
-        if (
-          typeof item === "string" &&
-          item.trim()
-        ) {
-          developers.add(item.trim());
+          values.forEach((item) => {
+            if (
+              typeof item === "string" &&
+              item.trim()
+            ) {
+              developers.add(
+                item.trim()
+              );
+            }
+          });
         }
-      });
-    });
+      );
 
-    return Array.from(developers);
-  }, [properties]);
+      return Array.from(
+        developers
+      );
+    }, [properties]);
 
   /* ============================================================
      STARTING PRICES
   ============================================================ */
 
-  const startingPrices = useMemo(() => {
-    return properties
-      .map((property) =>
-        Number(
-          property?.coreDetails?.startingPrice
+  const startingPrices =
+    useMemo(() => {
+      return properties
+        .map((property) =>
+          Number(
+            property?.coreDetails
+              ?.startingPrice
+          )
         )
-      )
-      .filter(
-        (price) =>
-          Number.isFinite(price) &&
-          price > 0
-      );
-  }, [properties]);
+        .filter(
+          (price) =>
+            Number.isFinite(price) &&
+            price > 0
+        );
+    }, [properties]);
 
   /* ============================================================
      FORMAT PRICE
@@ -163,18 +191,28 @@ export default function AboutLocation({
     }
 
     if (price >= 10000000) {
-      const value = price / 10000000;
+      const formatted =
+        price / 10000000;
 
-      return `₹${value
-        .toFixed(value >= 10 ? 0 : 1)
+      return `₹${formatted
+        .toFixed(
+          formatted >= 10
+            ? 0
+            : 1
+        )
         .replace(/\.0$/, "")} Cr`;
     }
 
     if (price >= 100000) {
-      const value = price / 100000;
+      const formatted =
+        price / 100000;
 
-      return `₹${value
-        .toFixed(value >= 10 ? 0 : 1)
+      return `₹${formatted
+        .toFixed(
+          formatted >= 10
+            ? 0
+            : 1
+        )
         .replace(/\.0$/, "")} L`;
     }
 
@@ -186,16 +224,20 @@ export default function AboutLocation({
   const pricePositioning =
     startingPrices.length
       ? (() => {
-          const min = Math.min(
-            ...startingPrices
-          );
+          const min =
+            Math.min(
+              ...startingPrices
+            );
 
-          const max = Math.max(
-            ...startingPrices
-          );
+          const max =
+            Math.max(
+              ...startingPrices
+            );
 
           if (min === max) {
-            return formatPrice(min);
+            return formatPrice(
+              min
+            );
           }
 
           return `${formatPrice(
@@ -237,15 +279,17 @@ export default function AboutLocation({
     "A Thriving Real Estate Destination"
   );
 
-  const marketDescription = value(
-    custom.marketDescription,
-    `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
-  );
+  const marketDescription =
+    value(
+      custom.marketDescription,
+      `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
+    );
 
-  const perspectiveEyebrow = value(
-    custom.perspectiveEyebrow,
-    "PROPERTY BOUQUET PERSPECTIVE"
-  );
+  const perspectiveEyebrow =
+    value(
+      custom.perspectiveEyebrow,
+      "PROPERTY BOUQUET PERSPECTIVE"
+    );
 
   const perspectiveQuote = value(
     custom.perspectiveQuote,
@@ -277,30 +321,79 @@ export default function AboutLocation({
     },
     {
       title: "Price Positioning",
-      description: pricePositioning,
+      description:
+        pricePositioning,
     },
   ];
 
-  const highlights =
-    defaultHighlights.map(
-      (fallback, index) => {
-        const customItem =
-          custom?.highlights?.[index] ||
-          {};
+  /* ============================================================
+     HIGHLIGHT MERGING
 
-        return {
-          title: value(
-            customItem.title,
-            fallback.title
-          ),
+     IMPORTANT:
 
-          description: value(
-            customItem.description,
-            fallback.description
-          ),
-        };
-      }
+     The admin editor can contain:
+       - blank items
+       - customized items
+       - additional items
+
+     Blank custom fields fall back to the
+     corresponding dynamic/static default.
+
+     Additional custom highlight items are preserved.
+
+     This means one customized highlight does NOT
+     remove the other default highlights.
+  ============================================================ */
+
+  const customHighlights =
+    Array.isArray(
+      custom?.highlights
+    )
+      ? custom.highlights
+      : [];
+
+  const highlightLength =
+    Math.max(
+      defaultHighlights.length,
+      customHighlights.length
     );
+
+  const highlights = Array.from(
+    {
+      length: highlightLength,
+    },
+    (_, index) => {
+      const fallback =
+        defaultHighlights[index] || {
+          title: "",
+          description: "",
+        };
+
+      const customItem =
+        customHighlights[index] &&
+        typeof customHighlights[
+          index
+        ] === "object"
+          ? customHighlights[index]
+          : {};
+
+      return {
+        title: value(
+          customItem?.title,
+          fallback.title
+        ),
+
+        description: value(
+          customItem?.description,
+          fallback.description
+        ),
+      };
+    }
+  ).filter(
+    (item) =>
+      item.title ||
+      item.description
+  );
 
   /* ============================================================
      DEFAULT MARKET INSIGHTS
@@ -324,31 +417,78 @@ export default function AboutLocation({
     },
   ];
 
+  /* ============================================================
+     MARKET INSIGHT MERGING
+
+     Blank custom fields use the default.
+
+     Customized fields replace only their own
+     corresponding default.
+
+     Additional custom insights are preserved.
+  ============================================================ */
+
+  const customMarketInsights =
+    Array.isArray(
+      custom?.marketInsights
+    )
+      ? custom.marketInsights
+      : [];
+
+  const marketInsightLength =
+    Math.max(
+      defaultMarketInsights.length,
+      customMarketInsights.length
+    );
+
   const marketInsights =
-    defaultMarketInsights.map(
-      (fallback, index) => {
-        const customItem =
-          custom?.marketInsights?.[
+    Array.from(
+      {
+        length:
+          marketInsightLength,
+      },
+      (_, index) => {
+        const fallback =
+          defaultMarketInsights[
             index
-          ] || {};
+          ] || {
+            title: "",
+            description: "",
+          };
+
+        const customItem =
+          customMarketInsights[
+            index
+          ] &&
+          typeof customMarketInsights[
+            index
+          ] === "object"
+            ? customMarketInsights[
+                index
+              ]
+            : {};
 
         return {
           title: value(
-            customItem.title,
+            customItem?.title,
             fallback.title
           ),
 
           description: value(
-            customItem.description,
+            customItem?.description,
             fallback.description
           ),
         };
       }
+    ).filter(
+      (item) =>
+        item.title ||
+        item.description
     );
 
   /* ============================================================
      CLEAN RICH TEXT
-     
+
      ReactQuill can store:
        &nbsp;
        &#160;
@@ -362,10 +502,22 @@ export default function AboutLocation({
   const normalizedContent =
     typeof content === "string"
       ? content
-          .replace(/&nbsp;/gi, " ")
-          .replace(/&#160;/gi, " ")
-          .replace(/&#xA0;/gi, " ")
-          .replace(/\u00a0/g, " ")
+          .replace(
+            /&nbsp;/gi,
+            " "
+          )
+          .replace(
+            /&#160;/gi,
+            " "
+          )
+          .replace(
+            /&#xA0;/gi,
+            " "
+          )
+          .replace(
+            /\u00a0/g,
+            " "
+          )
           .replace(
             /<p>\s*<\/p>/gi,
             ""
@@ -383,15 +535,21 @@ export default function AboutLocation({
 
   /* ============================================================
      DETERMINE WHETHER READ MORE IS REQUIRED
-     
+
      Short descriptions stay normal.
      Longer descriptions get the collapsed preview.
   ============================================================ */
 
   const plainTextLength =
     normalizedContent
-      .replace(/<[^>]*>/g, " ")
-      .replace(/\s+/g, " ")
+      .replace(
+        /<[^>]*>/g,
+        " "
+      )
+      .replace(
+        /\s+/g,
+        " "
+      )
       .trim()
       .length;
 
@@ -432,9 +590,6 @@ export default function AboutLocation({
         >
           {/* ==================================================
               MAIN GRID
-
-              The two columns are completely independent.
-              Long text can never expand underneath the image.
           ================================================== */}
 
           <div
@@ -461,9 +616,7 @@ export default function AboutLocation({
                 max-w-full
               "
             >
-              {/* ==================================================
-                  EYEBROW
-              ================================================== */}
+              {/* EYEBROW */}
 
               <div
                 className="
@@ -503,9 +656,7 @@ export default function AboutLocation({
                 </span>
               </div>
 
-              {/* ==================================================
-                  TITLE
-              ================================================== */}
+              {/* TITLE */}
 
               <h2
                 className="
@@ -536,21 +687,7 @@ export default function AboutLocation({
                 "
               />
 
-              {/* ==================================================
-                  DESCRIPTION WRAPPER
-
-                  This is the important fix.
-
-                  When collapsed:
-                  - fixed maximum visual height
-                  - overflow hidden
-                  - gradient fade at bottom
-
-                  When expanded:
-                  - natural height
-                  - no clipping
-                  - stays entirely inside LEFT column
-              ================================================== */}
+              {/* DESCRIPTION */}
 
               <div
                 className={`
@@ -567,10 +704,6 @@ export default function AboutLocation({
                   }
                 `}
               >
-                {/* ==================================================
-                    RICH TEXT
-                ================================================== */}
-
                 {hasRichText ? (
                   <div
                     className="
@@ -671,7 +804,9 @@ export default function AboutLocation({
                     "
                   >
                     {normalizedContent
-                      .split(/\n\s*\n/)
+                      .split(
+                        /\n\s*\n/
+                      )
                       .map(
                         (
                           paragraph,
@@ -693,12 +828,7 @@ export default function AboutLocation({
                   </div>
                 )}
 
-                {/* ==================================================
-                    COLLAPSED FADE
-
-                    Gives the user a visual indication that
-                    more content exists below.
-                ================================================== */}
+                {/* COLLAPSED FADE */}
 
                 {!isExpanded &&
                   needsReadMore && (
@@ -718,13 +848,7 @@ export default function AboutLocation({
                   )}
               </div>
 
-              {/* ==================================================
-                  READ MORE / READ LESS
-
-                  This is now attached directly to the
-                  description instead of linking down to
-                  the Real Estate Market section.
-              ================================================== */}
+              {/* READ MORE */}
 
               {needsReadMore && (
                 <button
@@ -735,7 +859,9 @@ export default function AboutLocation({
                         !previous
                     )
                   }
-                  aria-expanded={isExpanded}
+                  aria-expanded={
+                    isExpanded
+                  }
                   className="
                     mt-5
                     inline-flex
@@ -767,27 +893,16 @@ export default function AboutLocation({
                   {isExpanded ? (
                     <ArrowUp
                       size={14}
-                      className="
-                        shrink-0
-                      "
+                      className="shrink-0"
                     />
                   ) : (
                     <ArrowRight
                       size={14}
-                      className="
-                        shrink-0
-                      "
+                      className="shrink-0"
                     />
                   )}
                 </button>
               )}
-
-              {/* ==================================================
-                  IF CONTENT IS SHORT
-
-                  Keep the same visual rhythm even when
-                  Read More isn't necessary.
-              ================================================== */}
 
               {!needsReadMore && (
                 <div className="h-1" />
@@ -796,8 +911,6 @@ export default function AboutLocation({
 
             {/* ==================================================
                 RIGHT IMAGE COLUMN
-
-                Completely independent from the text column.
             ================================================== */}
 
             <div
@@ -850,9 +963,7 @@ export default function AboutLocation({
                     />
                   </div>
 
-                  {/* ==================================================
-                      IMAGE OVERLAY
-                  ================================================== */}
+                  {/* IMAGE OVERLAY */}
 
                   <div
                     className="
@@ -962,14 +1073,16 @@ export default function AboutLocation({
             {highlights.map(
               (item, index) => (
                 <SnapshotCard
-                  key={index}
+                  key={`${index}-${item.title}`}
                   icon={
                     index === 0 ? (
                       <Building2 size={16} />
                     ) : index === 1 ? (
                       <Users size={16} />
                     ) : (
-                      <TrendingUp size={16} />
+                      <TrendingUp
+                        size={16}
+                      />
                     )
                   }
                   title={item.title}
@@ -999,9 +1112,7 @@ export default function AboutLocation({
           lg:py-24
         "
       >
-        {/* ====================================================
-            DECORATIVE GLOW
-        ==================================================== */}
+        {/* DECORATIVE GLOW */}
 
         <div
           className="
@@ -1045,9 +1156,7 @@ export default function AboutLocation({
             lg:px-10
           "
         >
-          {/* ==================================================
-              MARKET INTRO
-          ================================================== */}
+          {/* MARKET INTRO */}
 
           <div
             className="
@@ -1128,9 +1237,7 @@ export default function AboutLocation({
             </p>
           </div>
 
-          {/* ====================================================
-              MARKET INSIGHTS
-          ==================================================== */}
+          {/* MARKET INSIGHTS */}
 
           <div
             className="
@@ -1145,7 +1252,7 @@ export default function AboutLocation({
             {marketInsights.map(
               (item, index) => (
                 <MarketInsight
-                  key={index}
+                  key={`${index}-${item.title}`}
                   index={index}
                   title={item.title}
                   description={
@@ -1156,9 +1263,7 @@ export default function AboutLocation({
             )}
           </div>
 
-          {/* ====================================================
-              PERSPECTIVE
-          ==================================================== */}
+          {/* PERSPECTIVE */}
 
           <div
             className="
