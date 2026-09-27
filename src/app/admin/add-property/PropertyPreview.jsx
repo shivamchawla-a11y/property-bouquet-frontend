@@ -2131,17 +2131,54 @@ flex-wrap
         aboutParagraph2 ||
         "Designed with an emphasis on elegance and functionality, the residences offer a harmonious blend of contemporary architecture, premium finishes and lifestyle-enhancing experiences.";
 
+      /* ============================================================
+         CLEAN RICH TEXT
+         ReactQuill can generate:
+         &nbsp;
+         &#160;
+         &#xA0;
+         actual NBSP characters
+
+         Normalize them so normal browser wrapping is restored.
+      ============================================================ */
+
+      const normalizeRichText = (text = "") => {
+        if (typeof text !== "string") return "";
+
+        return text
+          .replace(/&nbsp;/gi, " ")
+          .replace(/&#160;/gi, " ")
+          .replace(/&#xA0;/gi, " ")
+          .replace(/\u00a0/g, " ")
+          .replace(/\r\n/g, "\n")
+          .trim();
+      };
+
+      const cleanParagraph1 = normalizeRichText(paragraph1);
+      const cleanParagraph2 = normalizeRichText(paragraph2);
+
+      /* ============================================================
+         HTML DETECTION
+      ============================================================ */
+
       const isHtml = (text = "") =>
         /<\/?[a-z][\s\S]*>/i.test(text);
 
-      const plainText =
-        `${paragraph1} ${paragraph2}`.replace(/<[^>]*>/g, "");
+      /* ============================================================
+         PLAIN TEXT LENGTH
+      ============================================================ */
+
+      const plainText = `${cleanParagraph1} ${cleanParagraph2}`
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
       const shouldTruncate = plainText.length > 700;
 
       return (
         <>
           {/* ================= TEXT CONTENT BOX ================= */}
+
           <div
             className={`
               about-description-content
@@ -2149,67 +2186,370 @@ flex-wrap
               w-full
               max-w-full
               min-w-0
-              overflow-hidden
-              transition-all
-              duration-500
+
+              /* IMPORTANT:
+                 Never force individual words to break.
+              */
+              whitespace-normal
+              break-normal
+
               ${
                 showAboutMore || !shouldTruncate
-                  ? "max-h-[5000px]"
-                  : "max-h-[340px]"
+                  ? "max-h-[5000px] overflow-visible"
+                  : "max-h-[340px] overflow-hidden"
               }
             `}
           >
+            {/* ====================================================
+                FIRST PARAGRAPH
+            ==================================================== */}
 
-            {/* ================= FIRST PARAGRAPH ================= */}
-            {isHtml(paragraph1) ? (
+            {isHtml(cleanParagraph1) ? (
               <div
                 className="
                   about-rich-text
+
                   w-full
                   max-w-full
                   min-w-0
+
+                  whitespace-normal
+                  break-normal
+
+                  text-[14px]
+                  leading-7
+                  text-[#505050]
+
+                  sm:text-[15px]
+                  sm:leading-7
+
+                  /* NORMAL WORD WRAPPING */
+                  [overflow-wrap:break-word]
+                  [word-break:normal]
+                  [hyphens:none]
+
+                  /* QUILL PARAGRAPHS */
+                  [&_p]:block
+                  [&_p]:w-full
+                  [&_p]:max-w-full
+                  [&_p]:m-0
+                  [&_p]:mb-5
+                  [&_p]:p-0
+
+                  [&_p]:whitespace-normal
+                  [&_p]:break-normal
+                  [&_p]:[overflow-wrap:break-word]
+                  [&_p]:[word-break:normal]
+                  [&_p]:[hyphens:none]
+
+                  [&_p:last-child]:mb-0
+
+                  /* HEADINGS */
+                  [&_h1]:block
+                  [&_h1]:max-w-full
+                  [&_h1]:whitespace-normal
+                  [&_h1]:break-normal
+                  [&_h1]:[overflow-wrap:break-word]
+                  [&_h1]:[word-break:normal]
+
+                  [&_h2]:block
+                  [&_h2]:max-w-full
+                  [&_h2]:whitespace-normal
+                  [&_h2]:break-normal
+                  [&_h2]:[overflow-wrap:break-word]
+                  [&_h2]:[word-break:normal]
+
+                  [&_h3]:block
+                  [&_h3]:max-w-full
+                  [&_h3]:whitespace-normal
+                  [&_h3]:break-normal
+                  [&_h3]:[overflow-wrap:break-word]
+                  [&_h3]:[word-break:normal]
+
+                  [&_h4]:block
+                  [&_h4]:max-w-full
+                  [&_h4]:whitespace-normal
+                  [&_h4]:break-normal
+                  [&_h4]:[overflow-wrap:break-word]
+                  [&_h4]:[word-break:normal]
+
+                  [&_h5]:block
+                  [&_h5]:max-w-full
+                  [&_h5]:whitespace-normal
+                  [&_h5]:break-normal
+                  [&_h5]:[overflow-wrap:break-word]
+                  [&_h5]:[word-break:normal]
+
+                  [&_h6]:block
+                  [&_h6]:max-w-full
+                  [&_h6]:whitespace-normal
+                  [&_h6]:break-normal
+                  [&_h6]:[overflow-wrap:break-word]
+                  [&_h6]:[word-break:normal]
+
+                  /* LISTS */
+                  [&_ul]:block
+                  [&_ul]:max-w-full
+                  [&_ul]:mb-5
+                  [&_ul]:pl-6
+                  [&_ul]:list-disc
+                  [&_ul]:whitespace-normal
+                  [&_ul]:break-normal
+                  [&_ul]:[overflow-wrap:break-word]
+                  [&_ul]:[word-break:normal]
+
+                  [&_ol]:block
+                  [&_ol]:max-w-full
+                  [&_ol]:mb-5
+                  [&_ol]:pl-6
+                  [&_ol]:list-decimal
+                  [&_ol]:whitespace-normal
+                  [&_ol]:break-normal
+                  [&_ol]:[overflow-wrap:break-word]
+                  [&_ol]:[word-break:normal]
+
+                  [&_li]:max-w-full
+                  [&_li]:mb-1
+                  [&_li]:whitespace-normal
+                  [&_li]:break-normal
+                  [&_li]:[overflow-wrap:break-word]
+                  [&_li]:[word-break:normal]
+
+                  /* STRONG / BOLD */
+                  [&_strong]:font-semibold
+                  [&_strong]:text-[#263832]
+
+                  [&_b]:font-semibold
+                  [&_b]:text-[#263832]
+
+                  /* EMPHASIS */
+                  [&_em]:italic
+
+                  /* LINKS */
+                  [&_a]:text-[#A47A2B]
+                  [&_a]:underline
+                  [&_a]:underline-offset-2
+                  [&_a]:whitespace-normal
+                  [&_a]:break-normal
+                  [&_a]:[overflow-wrap:break-word]
+                  [&_a]:[word-break:normal]
+
+                  /* IMAGES */
+                  [&_img]:block
+                  [&_img]:h-auto
+                  [&_img]:max-w-full
+
+                  /* TABLES */
+                  [&_table]:block
+                  [&_table]:w-full
+                  [&_table]:max-w-full
+                  [&_table]:overflow-x-auto
+
+                  /* SPANS */
+                  [&_span]:max-w-full
+                  [&_span]:whitespace-normal
                 "
                 dangerouslySetInnerHTML={{
-                  __html: paragraph1,
+                  __html: cleanParagraph1,
                 }}
               />
             ) : (
-              <p className="about-paragraph">
-                {paragraph1}
+              <p
+                className="
+                  about-paragraph
+                  m-0
+                  w-full
+                  max-w-full
+
+                  text-[14px]
+                  leading-7
+                  text-[#505050]
+
+                  sm:text-[15px]
+                  sm:leading-7
+
+                  whitespace-normal
+                  break-normal
+                  [overflow-wrap:break-word]
+                  [word-break:normal]
+                  [hyphens:none]
+                "
+              >
+                {cleanParagraph1}
               </p>
             )}
 
-            {/* ================= SECOND PARAGRAPH ================= */}
-            {paragraph2 &&
-              (isHtml(paragraph2) ? (
+            {/* ====================================================
+                SECOND PARAGRAPH
+            ==================================================== */}
+
+            {cleanParagraph2 &&
+              (isHtml(cleanParagraph2) ? (
                 <div
                   className="
                     about-rich-text
+                    mt-5
+
                     w-full
                     max-w-full
                     min-w-0
-                    mt-5
+
+                    whitespace-normal
+                    break-normal
+
+                    text-[14px]
+                    leading-7
+                    text-[#505050]
+
+                    sm:text-[15px]
+                    sm:leading-7
+
+                    [overflow-wrap:break-word]
+                    [word-break:normal]
+                    [hyphens:none]
+
+                    [&_p]:block
+                    [&_p]:w-full
+                    [&_p]:max-w-full
+                    [&_p]:m-0
+                    [&_p]:mb-5
+                    [&_p]:p-0
+
+                    [&_p]:whitespace-normal
+                    [&_p]:break-normal
+                    [&_p]:[overflow-wrap:break-word]
+                    [&_p]:[word-break:normal]
+                    [&_p]:[hyphens:none]
+
+                    [&_p:last-child]:mb-0
+
+                    [&_h1]:block
+                    [&_h1]:max-w-full
+                    [&_h1]:whitespace-normal
+                    [&_h1]:break-normal
+                    [&_h1]:[overflow-wrap:break-word]
+                    [&_h1]:[word-break:normal]
+
+                    [&_h2]:block
+                    [&_h2]:max-w-full
+                    [&_h2]:whitespace-normal
+                    [&_h2]:break-normal
+                    [&_h2]:[overflow-wrap:break-word]
+                    [&_h2]:[word-break:normal]
+
+                    [&_h3]:block
+                    [&_h3]:max-w-full
+                    [&_h3]:whitespace-normal
+                    [&_h3]:break-normal
+                    [&_h3]:[overflow-wrap:break-word]
+                    [&_h3]:[word-break:normal]
+
+                    [&_h4]:block
+                    [&_h4]:max-w-full
+                    [&_h4]:whitespace-normal
+                    [&_h4]:break-normal
+                    [&_h4]:[overflow-wrap:break-word]
+                    [&_h4]:[word-break:normal]
+
+                    [&_ul]:block
+                    [&_ul]:max-w-full
+                    [&_ul]:mb-5
+                    [&_ul]:pl-6
+                    [&_ul]:list-disc
+                    [&_ul]:whitespace-normal
+                    [&_ul]:break-normal
+                    [&_ul]:[overflow-wrap:break-word]
+                    [&_ul]:[word-break:normal]
+
+                    [&_ol]:block
+                    [&_ol]:max-w-full
+                    [&_ol]:mb-5
+                    [&_ol]:pl-6
+                    [&_ol]:list-decimal
+                    [&_ol]:whitespace-normal
+                    [&_ol]:break-normal
+                    [&_ol]:[overflow-wrap:break-word]
+                    [&_ol]:[word-break:normal]
+
+                    [&_li]:max-w-full
+                    [&_li]:mb-1
+                    [&_li]:whitespace-normal
+                    [&_li]:break-normal
+                    [&_li]:[overflow-wrap:break-word]
+                    [&_li]:[word-break:normal]
+
+                    [&_strong]:font-semibold
+                    [&_strong]:text-[#263832]
+
+                    [&_b]:font-semibold
+                    [&_b]:text-[#263832]
+
+                    [&_em]:italic
+
+                    [&_a]:text-[#A47A2B]
+                    [&_a]:underline
+                    [&_a]:underline-offset-2
+                    [&_a]:whitespace-normal
+                    [&_a]:break-normal
+                    [&_a]:[overflow-wrap:break-word]
+                    [&_a]:[word-break:normal]
+
+                    [&_img]:block
+                    [&_img]:h-auto
+                    [&_img]:max-w-full
+
+                    [&_table]:block
+                    [&_table]:w-full
+                    [&_table]:max-w-full
+                    [&_table]:overflow-x-auto
+
+                    [&_span]:max-w-full
+                    [&_span]:whitespace-normal
                   "
                   dangerouslySetInnerHTML={{
-                    __html: paragraph2,
+                    __html: cleanParagraph2,
                   }}
                 />
               ) : (
-                <p className="about-paragraph mt-5">
-                  {paragraph2}
+                <p
+                  className="
+                    about-paragraph
+                    mt-5
+                    m-0
+                    w-full
+                    max-w-full
+
+                    text-[14px]
+                    leading-7
+                    text-[#505050]
+
+                    sm:text-[15px]
+                    sm:leading-7
+
+                    whitespace-normal
+                    break-normal
+                    [overflow-wrap:break-word]
+                    [word-break:normal]
+                    [hyphens:none]
+                  "
+                >
+                  {cleanParagraph2}
                 </p>
               ))}
 
-            {/* ================= FADE ================= */}
+            {/* ====================================================
+                FADE
+            ==================================================== */}
+
             {!showAboutMore && shouldTruncate && (
               <div
                 className="
+                  pointer-events-none
                   absolute
                   bottom-0
                   left-0
                   right-0
                   h-24
-                  pointer-events-none
                   bg-gradient-to-t
                   from-[#f7f3ec]
                   via-[#f7f3ec]/85
@@ -2220,6 +2560,7 @@ flex-wrap
           </div>
 
           {/* ================= BUTTONS ================= */}
+
           <div
             className="
               flex
@@ -2234,8 +2575,9 @@ flex-wrap
               <button
                 type="button"
                 onClick={() =>
-                  setShowAboutMore(!showAboutMore)
+                  setShowAboutMore((previous) => !previous)
                 }
+                aria-expanded={showAboutMore}
                 className="
                   group
                   flex-1
@@ -2253,11 +2595,10 @@ flex-wrap
                   border-[#17342d]
                   bg-transparent
                   text-[#17342d]
-                  transition-all
+                  transition-colors
                   duration-300
                   hover:bg-[#17342d]
                   hover:text-white
-                  hover:-translate-y-[2px]
                 "
               >
                 <span
@@ -2271,19 +2612,15 @@ flex-wrap
                     whitespace-nowrap
                   "
                 >
-                  {showAboutMore
-                    ? "Read Less"
-                    : "Read More"}
+                  {showAboutMore ? "Read Less" : "Read More"}
                 </span>
 
                 <span
                   className="
                     text-base
                     md:text-lg
-                    transition-transform
-                    duration-300
-                    group-hover:translate-x-1
                   "
+                  aria-hidden="true"
                 >
                   →
                 </span>
@@ -2311,23 +2648,18 @@ flex-wrap
                 border
                 border-[#17342d]
                 shadow-[0_14px_35px_rgba(23,52,45,.18)]
-                transition-all
+                transition-colors
                 duration-300
                 hover:bg-[#c9a64b]
                 hover:border-[#c9a64b]
                 hover:text-[#17342d]
-                hover:-translate-y-[2px]
               "
             >
               <Download
                 size={16}
                 strokeWidth={2.2}
-                className="
-                  transition-transform
-                  duration-300
-                  group-hover:-translate-y-[2px]
-                  shrink-0
-                "
+                aria-hidden="true"
+                className="shrink-0"
               />
 
               <span
@@ -4903,35 +5235,49 @@ else {
   );
 })()}
 
-{/* ================= PREMIUM GALLERY SECTION ================= */}
-{media.gallery?.filter(Boolean).length > 0 && (
+{/* ============================================================
+    PREMIUM GALLERY SECTION — PERFORMANCE OPTIMIZED
+    ============================================================
+
+    Performance changes:
+    - Removed Framer Motion from the gallery
+    - Removed whileInView / whileHover animations
+    - Removed AnimatePresence
+    - Removed priority from gallery thumbnails
+    - Added loading="lazy" to gallery thumbnails
+    - Reduced thumbnail image quality from 100 to 80
+    - Kept fullscreen image priority because it is loaded
+      only after the user explicitly opens it
+    - Preserved gallery navigation and keyboard functionality
+    - Preserved existing premium visual design
+    - Added accessible button labels
+============================================================ */}
+
+{gallery.length > 0 && (
   <>
-    <motion.section
+    <section
       id="gallery"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
-      variants={staggerContainer}
       className="relative bg-[#f7f3ee] py-16 md:py-24 overflow-hidden"
     >
-
       {/* BACKGROUND */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage:
             "radial-gradient(circle, #17342d 1px, transparent 1px)",
           backgroundSize: "28px 28px",
         }}
+        aria-hidden="true"
       />
 
       <div className="relative z-10 max-w-[1500px] mx-auto px-4 sm:px-5">
 
-        {/* ================= HEADING ================= */}
-        <motion.div
-          variants={fadeUp}
-          className="text-center mb-12 md:mb-16"
-        >
+        {/* =====================================================
+            HEADING
+        ===================================================== */}
+
+        <div className="text-center mb-12 md:mb-16">
+
           <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
             06 | GALLERY
           </p>
@@ -4948,28 +5294,44 @@ else {
             </span>
           </h2>
 
-          <div className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+          <div
+            className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative"
+            aria-hidden="true"
+          >
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
           </div>
 
           <p className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2">
-            Discover elegant architecture, luxurious interiors, lush landscapes,
-            and thoughtfully curated experiences designed for a timeless lifestyle.
+            Discover elegant architecture, luxurious interiors, lush
+            landscapes, and thoughtfully curated experiences designed
+            for a timeless lifestyle.
           </p>
-        </motion.div>
 
-        {/* ================= GALLERY WRAPPER ================= */}
+        </div>
+
+
+        {/* =====================================================
+            GALLERY WRAPPER
+        ===================================================== */}
+
         <div className="relative rounded-[24px] md:rounded-[40px] border border-[#e6d7c3] bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.10)] overflow-hidden">
 
           {/* SOFT GLOW */}
-          <div className="absolute -top-32 -left-20 w-72 h-72 bg-[#d4b071]/10 blur-3xl rounded-full" />
+          <div
+            className="absolute -top-32 -left-20 w-72 h-72 bg-[#d4b071]/10 blur-3xl rounded-full pointer-events-none"
+            aria-hidden="true"
+          />
 
           <div className="relative z-10">
 
-            {/* TOP BAR */}
+            {/* =================================================
+                TOP BAR
+            ================================================= */}
+
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 md:mb-10">
 
               <div>
+
                 <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[10px] sm:text-xs font-semibold mb-3">
                   Premium Lifestyle Showcase
                 </p>
@@ -4980,40 +5342,45 @@ else {
                     fontFamily: "Cormorant Garamond, serif",
                   }}
                 >
-                  Curated Spaces & Experiences
+                  Curated Spaces &amp; Experiences
                 </h3>
+
               </div>
 
-              {/* CTA */}
-              <motion.button
-                whileHover={{
-                  scale: 1.04,
-                }}
-                whileTap={{
-                  scale: 0.98,
-                }}
+
+              {/* =================================================
+                  OPEN FULL GALLERY BUTTON
+              ================================================= */}
+
+              <button
+                type="button"
+                aria-label="Open full property gallery"
                 onClick={() => {
-                  setSelectedImage(
-                    media.gallery.filter(Boolean)[0]
-                  );
+                  if (!gallery.length) return;
+
+                  setSelectedImage(gallery[0]);
                   setSelectedIndex(0);
                 }}
-                className="group w-full sm:w-auto justify-center bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-3 sm:gap-4 uppercase tracking-[1.5px] sm:tracking-[2px] text-[11px] sm:text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-all duration-500"
+                className="group w-full sm:w-auto justify-center bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-3 sm:gap-4 uppercase tracking-[1.5px] sm:tracking-[2px] text-[11px] sm:text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-shadow duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4b071] focus-visible:ring-offset-2"
               >
 
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d4b071] flex items-center justify-center group-hover:rotate-12 transition duration-500">
+                <span
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d4b071] flex items-center justify-center transition-transform duration-300 group-hover:rotate-12"
+                  aria-hidden="true"
+                >
                   ✦
-                </div>
+                </span>
 
                 Open Full Gallery
 
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition"
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2}
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -5021,186 +5388,195 @@ else {
                     d="M13 7l5 5m0 0l-5 5m5-5H6"
                   />
                 </svg>
-              </motion.button>
-            </div>
 
-{/* ================= PREMIUM SMART GRID ================= */}
-
-{/* ================= PREMIUM SMART GRID ================= */}
-
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-
-  {gallery.map((img, i) => {
-
-    const remainder = gallery.length % 4;
-
-    // Only when exactly ONE image would be left,
-    // make the FIRST image the hero.
-    const heroFirst =
-      remainder === 1 &&
-      gallery.length > 4 &&
-      i === 0;
-
-    return (
-
-      <motion.div
-        key={i}
-        variants={fadeUp}
-        whileHover={{
-          y: -8,
-          scale: 1.01,
-        }}
-        transition={{
-          duration: 0.45,
-        }}
-        onClick={() => {
-          setSelectedImage(img);
-          setSelectedIndex(i);
-        }}
-        className={`
-          group
-          cursor-pointer
-          overflow-hidden
-          rounded-[28px]
-          bg-white
-          border
-          border-[#ebe2d5]
-          shadow-[0_15px_45px_rgba(0,0,0,0.08)]
-          hover:shadow-[0_30px_80px_rgba(0,0,0,0.16)]
-          transition-all
-          duration-500
-
-          ${
-            heroFirst
-              ? "sm:col-span-2 lg:col-span-3 xl:col-span-4"
-              : ""
-          }
-        `}
-      >
-
-        {/* IMAGE */}
-
-        <div
-          className={`
-            relative
-            overflow-hidden
-
-            ${
-              heroFirst
-                ? "aspect-[21/8] lg:aspect-[18/6]"
-                : "aspect-[4/3]"
-            }
-          `}
-        >
-
-          {img && (
-  <Image
-    src={img}
-    alt={getImageAlt(img)}
-    fill
-    quality={100}
-    priority={i < 2}
-    sizes="
-      (max-width:640px) 100vw,
-      (max-width:1024px) 50vw,
-      (max-width:1440px) 33vw,
-      25vw
-    "
-    className="
-      object-cover
-      transition-transform
-      duration-[1400ms]
-      ease-out
-      group-hover:scale-105
-    "
-  />
-)}
-
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
-
-          {/* Shine */}
-          <div className="absolute inset-0 overflow-hidden">
-
-            <div
-              className="
-                absolute
-                top-0
-                -left-[120%]
-                h-full
-                w-[45%]
-                rotate-12
-                bg-gradient-to-r
-                from-transparent
-                via-white/20
-                to-transparent
-                group-hover:left-[140%]
-                transition-all
-                duration-[1500ms]
-              "
-            />
-
-          </div>
-
-          {/* View */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-
-            <div className="w-16 h-16 rounded-full backdrop-blur-xl border border-white/25 bg-white/10 flex items-center justify-center">
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-7 h-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12H9m0 0l3-3m-3 3l3 3"
-                />
-              </svg>
+              </button>
 
             </div>
 
-          </div>
 
-        </div>
+            {/* =================================================
+                PREMIUM SMART GRID
+            ================================================= */}
 
-      </motion.div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
 
-    );
+              {gallery.map((img, i) => {
 
-  })}
+                const remainder = gallery.length % 4;
 
-</div>
+                /*
+                 * When exactly one image would be left,
+                 * make the first image span the entire row.
+                 */
+                const heroFirst =
+                  remainder === 1 &&
+                  gallery.length > 4 &&
+                  i === 0;
+
+                return (
+                  <button
+                    key={`${img}-${i}`}
+                    type="button"
+                    aria-label={`View gallery image ${i + 1} of ${gallery.length}`}
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setSelectedIndex(i);
+                    }}
+                    className={`
+                      group
+                      relative
+                      block
+                      w-full
+                      cursor-pointer
+                      overflow-hidden
+                      rounded-[28px]
+                      bg-white
+                      border
+                      border-[#ebe2d5]
+                      shadow-[0_15px_45px_rgba(0,0,0,0.08)]
+                      text-left
+                      transition-shadow
+                      duration-300
+                      hover:shadow-[0_25px_60px_rgba(0,0,0,0.14)]
+                      focus:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[#b58b47]
+                      focus-visible:ring-offset-2
+
+                      ${
+                        heroFirst
+                          ? "sm:col-span-2 lg:col-span-3 xl:col-span-4"
+                          : ""
+                      }
+                    `}
+                  >
+
+                    {/* =================================================
+                        IMAGE CONTAINER
+                    ================================================= */}
+
+                    <div
+                      className={`
+                        relative
+                        overflow-hidden
+
+                        ${
+                          heroFirst
+                            ? "aspect-[21/8] lg:aspect-[18/6]"
+                            : "aspect-[4/3]"
+                        }
+                      `}
+                    >
+
+                      <Image
+                        src={img}
+                        alt={getImageAlt(img)}
+                        fill
+                        loading="lazy"
+                        quality={80}
+                        sizes={
+                          heroFirst
+                            ? "(max-width:640px) 100vw, (max-width:1024px) 100vw, 100vw"
+                            : "(max-width:640px) 100vw, (max-width:1024px) 50vw, (max-width:1440px) 33vw, 25vw"
+                        }
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+
+
+                      {/* =================================================
+                          HOVER OVERLAY
+                      ================================================= */}
+
+                      <span
+                        className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        aria-hidden="true"
+                      />
+
+
+                      {/* =================================================
+                          VIEW ICON
+                      ================================================= */}
+
+                      <span
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        aria-hidden="true"
+                      >
+                        <span className="w-16 h-16 rounded-full backdrop-blur-xl border border-white/25 bg-white/10 flex items-center justify-center">
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-7 h-7 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 12H9m0 0l3-3m-3 3l3 3"
+                            />
+                          </svg>
+
+                        </span>
+                      </span>
+
+                    </div>
+
+                  </button>
+                );
+              })}
+
+            </div>
+
           </div>
         </div>
       </div>
-    </motion.section>
+    </section>
 
-    {/* ================= FULLSCREEN GALLERY ================= */}
-    <AnimatePresence>
-      {selectedImage && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center px-3 sm:px-4"
+
+    {/* ============================================================
+        FULLSCREEN GALLERY
+        ============================================================
+
+        This remains interactive because it is opened by the user.
+
+        The fullscreen image uses priority because it is intentionally
+        requested only after the user clicks an image.
+    ============================================================ */}
+
+    {selectedImage && (
+      <div
+        className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center px-3 sm:px-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Property image gallery"
+      >
+
+        {/* ========================================================
+            CLOSE
+        ======================================================== */}
+
+        <button
+          type="button"
+          aria-label="Close gallery"
+          onClick={() => setSelectedImage(null)}
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
+          <span aria-hidden="true">✕</span>
+        </button>
 
-          {/* CLOSE */}
-          <button
-            onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
-          >
-            ✕
-          </button>
 
-          {/* LEFT */}
+        {/* ========================================================
+            LEFT
+        ======================================================== */}
+
+        {gallery.length > 1 && (
           <button
+            type="button"
+            aria-label="View previous gallery image"
             onClick={() => {
+
               const newIndex =
                 selectedIndex === 0
                   ? gallery.length - 1
@@ -5208,48 +5584,49 @@ else {
 
               setSelectedIndex(newIndex);
               setSelectedImage(gallery[newIndex]);
+
             }}
-            className="absolute left-2 sm:left-5 md:left-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
+            className="absolute left-2 sm:left-5 md:left-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
-            ←
+            <span
+              className="text-xl sm:text-2xl"
+              aria-hidden="true"
+            >
+              ←
+            </span>
           </button>
+        )}
 
-          {/* IMAGE */}
-          <motion.div
-  key={selectedImage}
-  initial={{
-    opacity: 0,
-    scale: 0.92,
-  }}
-  animate={{
-    opacity: 1,
-    scale: 1,
-  }}
-  exit={{
-    opacity: 0,
-    scale: 0.92,
-  }}
-  transition={{
-    duration: 0.35,
-  }}
-  className="relative w-[96vw] h-[92vh]"
->
 
-  <Image
-    src={selectedImage}
-    alt={getImageAlt(selectedImage)}
-    fill
-    priority
-    quality={75}
-    sizes="100vw"
-    className="object-contain rounded-[24px]"
-  />
+        {/* ========================================================
+            IMAGE
+        ======================================================== */}
 
-</motion.div>
+        <div className="relative w-[96vw] h-[92vh]">
 
-          {/* RIGHT */}
+          <Image
+            src={selectedImage}
+            alt={getImageAlt(selectedImage)}
+            fill
+            priority
+            quality={80}
+            sizes="100vw"
+            className="object-contain rounded-[24px]"
+          />
+
+        </div>
+
+
+        {/* ========================================================
+            RIGHT
+        ======================================================== */}
+
+        {gallery.length > 1 && (
           <button
+            type="button"
+            aria-label="View next gallery image"
             onClick={() => {
+
               const newIndex =
                 selectedIndex === gallery.length - 1
                   ? 0
@@ -5257,34 +5634,33 @@ else {
 
               setSelectedIndex(newIndex);
               setSelectedImage(gallery[newIndex]);
-            }}
-            className="absolute right-2 sm:right-5 md:right-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition text-sm sm:text-base"
-          >
-            →
-          </button>
 
-        </motion.div>
-      )}
-    </AnimatePresence>
+            }}
+            className="absolute right-2 sm:right-5 md:right-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <span
+              className="text-xl sm:text-2xl"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </button>
+        )}
+
+      </div>
+    )}
   </>
 )}
 
 {/* ================= LOCATION ADVANTAGES PREMIUM SECTION ================= */}
-<motion.section
+<section
   id="location"
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.15 }}
-  variants={staggerContainer}
   className="bg-[#f7f3ee] py-16 md:py-20 overflow-hidden"
 >
   <div className="max-w-[1450px] mx-auto px-4 sm:px-5">
 
     {/* TOP HEADING */}
-    <motion.div
-      variants={fadeUp}
-      className="text-center mb-12 md:mb-14"
-    >
+    <div className="text-center mb-12 md:mb-14">
       <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
         {locationData.sectionNumber || "07"} |{" "}
         {locationData.topLabel || "PRIME LOCATION"}
@@ -5305,14 +5681,13 @@ else {
       <p className="max-w-3xl mx-auto mt-5 md:mt-6 text-[#555] text-[14px] sm:text-base md:text-lg leading-relaxed px-2">
         {locationData.description || coreDetails.title}
       </p>
-    </motion.div>
+    </div>
 
     {/* ================= MAIN GRID ================= */}
     <div className="grid lg:grid-cols-[360px_1fr] gap-5 md:gap-6 items-stretch">
 
       {/* ================= LEFT SIDE LOCATION CARDS ================= */}
-      <motion.div
-        variants={fadeLeft}
+      <div
         className="rounded-[24px] md:rounded-[30px] overflow-hidden border border-[#dcc8a8] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
       >
 
@@ -5349,20 +5724,10 @@ else {
 
           {locationData.landmarks?.map((l, i) => (
             l.name && (
-              <motion.div
+              <div
                 key={i}
-                whileHover={{
-                  y: -3,
-                  scale: 1.01,
-                }}
-                transition={{
-                  duration: 0.3,
-                }}
-                className="group relative overflow-hidden rounded-[18px] sm:rounded-[22px] border border-[#eadfce] bg-white p-4 sm:p-5 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-all duration-500"
+                className="relative overflow-hidden rounded-[18px] sm:rounded-[22px] border border-[#eadfce] bg-white p-4 sm:p-5 shadow-sm"
               >
-
-                {/* GOLD HOVER */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-[linear-gradient(120deg,transparent,rgba(212,176,113,0.08),transparent)] translate-x-[-100%] group-hover:translate-x-[100%]" />
 
                 <div className="relative z-10 flex items-center justify-between gap-3 sm:gap-4">
 
@@ -5371,9 +5736,7 @@ else {
 
                     {/* ICON */}
                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#08211c] to-[#123f34] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-sm sm:text-base">
-
                       {l.icon || "✦"}
-
                     </div>
 
                     {/* TEXT */}
@@ -5400,15 +5763,14 @@ else {
                     </span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= MAP SECTION ================= */}
-      <motion.div
-        variants={fadeUp}
+      <div
         className="relative rounded-[24px] md:rounded-[34px] overflow-hidden border border-[#dcc8a8] shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white flex flex-col h-full"
       >
 
@@ -5455,6 +5817,10 @@ else {
           {locationData.mapEmbedUrl ? (
             <iframe
               src={locationData.mapEmbedUrl}
+              title={
+                locationData.mapSectionTitle ||
+                "Interactive location map"
+              }
               className="absolute inset-0 w-full h-full"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -5473,18 +5839,7 @@ else {
           )}
 
           {/* FLOATING INFO CARD */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 40,
-            }}
-            whileInView={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.7,
-            }}
+          <div
             className="absolute left-3 right-3 sm:left-6 sm:right-auto bottom-4 sm:bottom-8 z-20 sm:max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
           >
 
@@ -5500,7 +5855,8 @@ else {
                 </p>
 
                 <h4 className="text-[#17342d] text-[18px] sm:text-xl font-semibold leading-tight">
-                  {locationData.floatingCardTitle || "Prime Sector Connectivity"}
+                  {locationData.floatingCardTitle ||
+                    "Prime Sector Connectivity"}
                 </h4>
 
                 <p className="text-[#666] text-[12px] sm:text-sm mt-3 leading-relaxed">
@@ -5509,109 +5865,105 @@ else {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
 
-   {/* BOTTOM STRIP */}
-<motion.div
-  variants={fadeUp}
-  className="mt-6 md:mt-8"
->
-  {/* Navigation */}
+    {/* ================= BOTTOM STRIP ================= */}
+    <div className="mt-6 md:mt-8">
 
-  <div
-    ref={emblaRef}
-    className="overflow-hidden rounded-[20px] md:rounded-[24px]"
-  >
-    <div className="flex -ml-3">
-      {stripItems.map((item, i) => (
-        <div
-          key={i}
-          className="
-            pl-3
-            flex-[0_0_100%]
-            sm:flex-[0_0_50%]
-            lg:flex-[0_0_33.3333%]
-            xl:flex-[0_0_25%]
-            min-w-0
-          "
-        >
-          <motion.div
-            whileHover={{
-              y: -6,
-            }}
-            transition={{
-              duration: 0.3,
-            }}
-            className="
-              h-full
-              rounded-[22px]
-              border
-              border-[#c9a96a]
-              bg-gradient-to-r
-              from-[#07211c]
-              to-[#0f3a30]
-              p-6
-              md:p-7
-            "
-          >
-            <div className="flex items-start gap-4">
+      {/* Navigation */}
+      <div
+        ref={emblaRef}
+        className="overflow-hidden rounded-[20px] md:rounded-[24px]"
+      >
+        <div className="flex -ml-3">
+
+          {stripItems.map((item, i) => (
+            <div
+              key={i}
+              className="
+                pl-3
+                flex-[0_0_100%]
+                sm:flex-[0_0_50%]
+                lg:flex-[0_0_33.3333%]
+                xl:flex-[0_0_25%]
+                min-w-0
+              "
+            >
 
               <div
                 className="
-                  w-12
-                  h-12
-                  rounded-full
+                  h-full
+                  rounded-[22px]
                   border
                   border-[#c9a96a]
-                  flex
-                  items-center
-                  justify-center
-                  text-[#d8b06b]
-                  text-lg
-                  shrink-0
+                  bg-gradient-to-r
+                  from-[#07211c]
+                  to-[#0f3a30]
+                  p-6
+                  md:p-7
                 "
               >
-                {item.icon || "✦"}
+
+                <div className="flex items-start gap-4">
+
+                  <div
+                    className="
+                      w-12
+                      h-12
+                      rounded-full
+                      border
+                      border-[#c9a96a]
+                      flex
+                      items-center
+                      justify-center
+                      text-[#d8b06b]
+                      text-lg
+                      shrink-0
+                    "
+                  >
+                    {item.icon || "✦"}
+                  </div>
+
+                  <div>
+                    <h4
+                      className="
+                        text-[#d8b06b]
+                        text-sm
+                        uppercase
+                        tracking-[1px]
+                        font-semibold
+                        leading-relaxed
+                      "
+                    >
+                      {item.title}
+                    </h4>
+
+                    <p
+                      className="
+                        text-white/70
+                        text-sm
+                        mt-3
+                        leading-relaxed
+                      "
+                    >
+                      {item.desc}
+                    </p>
+                  </div>
+
+                </div>
               </div>
-
-              <div>
-                <h4
-                  className="
-                    text-[#d8b06b]
-                    text-sm
-                    uppercase
-                    tracking-[1px]
-                    font-semibold
-                    leading-relaxed
-                  "
-                >
-                  {item.title}
-                </h4>
-
-                <p
-                  className="
-                    text-white/70
-                    text-sm
-                    mt-3
-                    leading-relaxed
-                  "
-                >
-                  {item.desc}
-                </p>
-              </div>
-
             </div>
-          </motion.div>
+          ))}
+
         </div>
-      ))}
+      </div>
     </div>
   </div>
-</motion.div>
-  </div>
-</motion.section>
+</section>
+
 
 {/* ================= MASTER PLAN PREMIUM SECTION ================= */}
 {gatedContent?.brochurePdfUrl && (
@@ -5958,212 +6310,305 @@ else {
   </section>
 )}
 
-{/* ================= PREMIUM FAQ SECTION ================= */}
+{/* ============================================================
+    PREMIUM FAQ SECTION — PERFORMANCE OPTIMIZED
+    ============================================================
+
+    Performance improvements:
+    - Removed Framer Motion completely
+    - Removed whileInView / variants / animation observers
+    - Removed developer image hover animation
+    - Removed animated logo pulse
+    - Uses native <details>/<summary> accordion
+    - Uses Next.js Image for developer imagery
+    - Developer imagery is lazy loaded
+    - Uses CSS transitions only for lightweight interaction
+    - Preserves enquiry modal functionality
+    - Preserves Call + WhatsApp actions
+    - Preserves premium visual design
+============================================================ */}
+
 {faqs.filter((f) => f.question).length > 0 && (
   <section
     id="faq"
-    className="relative bg-[#f7f3ee] py-24 overflow-hidden"
+    className="relative bg-[#f7f3ee] py-20 md:py-24 overflow-hidden"
   >
 
-    {/* SOFT BACKGROUND */}
+    {/* ==========================================================
+        SOFT BACKGROUND
+    ========================================================== */}
+
     <div
-      className="absolute inset-0 opacity-[0.03]"
+      className="absolute inset-0 opacity-[0.03] pointer-events-none"
       style={{
         backgroundImage:
           "radial-gradient(circle, #17342d 1px, transparent 1px)",
         backgroundSize: "28px 28px",
       }}
+      aria-hidden="true"
     />
 
-    <div className="relative z-10 max-w-[1450px] mx-auto px-5">
 
-      {/* ================= HEADING ================= */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="text-center mb-16"
-      >
+    <div className="relative z-10 max-w-[1450px] mx-auto px-4 sm:px-5">
 
-        <p className="uppercase tracking-[4px] text-[#b58b47] text-sm font-medium mb-4">
-          {(faqSection?.sectionNumber || "10")} |{" "}
-          {(faqSection?.topLabel || "FAQ")}
+
+      {/* ========================================================
+          HEADING
+      ======================================================== */}
+
+      <div className="text-center mb-12 md:mb-16">
+
+        <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
+          {faqSection?.sectionNumber || "10"} |{" "}
+          {faqSection?.topLabel || "FAQ"}
         </p>
 
+
         <h2
-          className="text-4xl md:text-6xl font-light text-[#17342d] leading-tight"
+          className="text-4xl sm:text-5xl md:text-6xl font-light text-[#17342d] leading-tight"
           style={{
             fontFamily: "Cormorant Garamond, serif",
           }}
         >
-          {faqSection?.heading ||
-            "Frequently Asked Questions"}
+          {faqSection?.heading || "Frequently Asked Questions"}
         </h2>
 
-        <div className="w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative">
+
+        <div
+          className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative"
+          aria-hidden="true"
+        >
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
         </div>
 
-        <p className="max-w-2xl mx-auto mt-7 text-[#6b6b6b] text-base leading-relaxed">
+
+        <p className="max-w-2xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-sm sm:text-base leading-relaxed">
           {faqSection?.subheading ||
             "Find answers to common questions about the project and your journey to your dream home."}
         </p>
-      </motion.div>
-
-      {/* ================= MAIN GRID ================= */}
-      <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
-
-        {/* ================= LEFT CARD ================= */}
-<motion.div
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  variants={fadeLeft}
-  className="rounded-[28px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_25px_80px_rgba(0,0,0,0.10)]"
->
-  {/* IMAGE */}
-  <div className="relative h-[400px] overflow-hidden group">
-
-    {/* DEVELOPER IMAGE */}
-    <img
-      src={developerImage || "/location6.webp"}
-      alt={developerName}
-      className="w-full h-full object-cover transition duration-[3000ms] group-hover:scale-110"
-    />
-
-    {/* DARK OVERLAY */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
-
-    {/* GOLD LIGHT */}
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)]" />
-
-    {/* CONTENT */}
-    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-
-      {/* LOGO */}
-      {developerLogo && (
-        <div className="relative mb-7">
-
-          <div className="absolute inset-0 rounded-full border border-[#d6b16f]/30 scale-[1.28] animate-pulse" />
-
-          <div className="w-28 h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
-
-            <img
-              src={developerLogo}
-              alt={developerName}
-              className="w-16 h-16 object-contain"
-            />
-
-          </div>
-        </div>
-      )}
-
-      {/* NAME */}
-      <h3
-        className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight"
-        style={{
-          fontFamily: "Cormorant Garamond, serif",
-        }}
-      >
-        {developerName}
-      </h3>
-
-      {/* DIVIDER */}
-      <div className="relative w-28 h-[1px] bg-[#d6b16f] my-6">
-
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rotate-45 bg-[#d6b16f]" />
 
       </div>
 
-      <p className="uppercase tracking-[6px] text-xs md:text-sm text-[#f0d29a] font-semibold">
-        Luxury Developer
-      </p>
 
-    </div>
-  </div>
+      {/* ========================================================
+          MAIN GRID
+      ======================================================== */}
 
-  {/* CONTACT BOX */}
-  <div className="relative overflow-hidden bg-gradient-to-br from-[#071c17] via-[#0b2d25] to-[#123c32] p-9 text-white">
+      <div className="grid lg:grid-cols-[320px_1fr] gap-7 md:gap-8 items-start">
 
-    {/* GLOW */}
-    <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#d6b16f]/10 blur-3xl" />
 
-    <div className="relative z-10">
+        {/* ======================================================
+            LEFT DEVELOPER CARD
+        ====================================================== */}
 
-      <div className="flex items-start gap-5">
+        <div className="rounded-[28px] overflow-hidden border border-[#dfd5c8] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.09)]">
 
-        {/* ICON */}
-        <div className="w-16 h-16 rounded-full border border-[#d6b16f]/30 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
+          {/* ====================================================
+              DEVELOPER IMAGE
+          ==================================================== */}
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-7 h-7"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.7}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          <div className="relative h-[360px] sm:h-[400px] overflow-hidden group">
+
+            <Image
+              src={developerImage || "/location6.webp"}
+              alt={
+                developerName
+                  ? `${developerName} developer`
+                  : "Property developer"
+              }
+              fill
+              loading="lazy"
+              quality={78}
+              sizes="(max-width:1024px) 100vw, 320px"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
             />
-          </svg>
 
-        </div>
 
-        <div className="flex-1">
+            {/* DARK OVERLAY */}
 
-          {/* SMALLER HEADING */}
-          <h4
-            className="text-2xl md:text-[30px] font-light leading-tight"
-            style={{
-              fontFamily: "Cormorant Garamond, serif",
-            }}
-          >
-            {faqSection?.contactTitle || "Still have questions?"}
-          </h4>
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 pointer-events-none"
+              aria-hidden="true"
+            />
 
-          <p className="text-white/70 text-[15px] leading-7 mt-3 max-w-md">
-            {faqSection?.contactDescription ||
-              "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
-          </p>
 
-          {/* GOLD DIVIDER */}
-          <div className="w-16 h-[1px] bg-[#d6b16f] mt-6 mb-6" />
+            {/* GOLD LIGHT */}
 
-          {/* PHONE CARD */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md px-5 py-5">
+            <div
+              className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,111,0.18),transparent_60%)] pointer-events-none"
+              aria-hidden="true"
+            />
 
-            <p className="uppercase tracking-[3px] text-[11px] text-[#d6b16f] mb-2">
-              Contact Advisor
-            </p>
 
-            {/* BIGGER PHONE */}
-            <div className="text-xl md:text-2xl font-semibold tracking-wide text-white">
-              {faqSection?.contactPhone || "9090 106 101"}
+            {/* ==================================================
+                CONTENT
+            ================================================== */}
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-7 sm:px-8">
+
+              {/* =================================================
+                  DEVELOPER LOGO
+              ================================================= */}
+
+              {developerLogo && (
+                <div className="relative mb-6">
+
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-[#d6b16f] bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.30)]">
+
+                    <Image
+                      src={developerLogo}
+                      alt={
+                        developerName
+                          ? `${developerName} logo`
+                          : "Developer logo"
+                      }
+                      width={112}
+                      height={112}
+                      loading="lazy"
+                      quality={80}
+                      sizes="112px"
+                      className="w-16 h-16 object-contain"
+                    />
+
+                  </div>
+
+                </div>
+              )}
+
+
+              {/* =================================================
+                  DEVELOPER NAME
+              ================================================= */}
+
+              <h3
+                className="text-4xl md:text-5xl xl:text-6xl text-white font-light leading-tight"
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                }}
+              >
+                {developerName}
+              </h3>
+
+
+              {/* DIVIDER */}
+
+              <div
+                className="relative w-28 h-[1px] bg-[#d6b16f] my-5 md:my-6"
+                aria-hidden="true"
+              >
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rotate-45 bg-[#d6b16f]" />
+              </div>
+
+
+              <p className="uppercase tracking-[5px] text-[10px] md:text-xs text-[#f0d29a] font-semibold">
+                Luxury Developer
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* ====================================================
+              CONTACT BOX
+          ==================================================== */}
+
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#071c17] via-[#0b2d25] to-[#123c32] p-7 sm:p-9 text-white">
+
+            {/* GLOW */}
+
+            <div
+              className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#d6b16f]/10 blur-3xl pointer-events-none"
+              aria-hidden="true"
+            />
+
+
+            <div className="relative z-10">
+
+              <div className="flex items-start gap-4 sm:gap-5">
+
+                {/* ICON */}
+
+                <div
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-[#d6b16f]/30 bg-white/5 flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0"
+                  aria-hidden="true"
+                >
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6 sm:w-7 sm:h-7"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.7}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 5h18M9 3v2m6-2v2m-7 8h8m-8 4h5m-9 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+
+                </div>
+
+
+                <div className="flex-1 min-w-0">
+
+                  <h4
+                    className="text-2xl md:text-[30px] font-light leading-tight"
+                    style={{
+                      fontFamily: "Cormorant Garamond, serif",
+                    }}
+                  >
+                    {faqSection?.contactTitle ||
+                      "Still have questions?"}
+                  </h4>
+
+
+                  <p className="text-white/70 text-sm sm:text-[15px] leading-7 mt-3 max-w-md">
+                    {faqSection?.contactDescription ||
+                      "Connect with our luxury property specialists and discover every detail crafted for elevated living."}
+                  </p>
+
+
+                  {/* GOLD DIVIDER */}
+
+                  <div
+                    className="w-16 h-[1px] bg-[#d6b16f] mt-5 mb-5"
+                    aria-hidden="true"
+                  />
+
+
+                  {/* PHONE CARD */}
+
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 sm:px-5 py-4 sm:py-5">
+
+                    <p className="uppercase tracking-[3px] text-[10px] sm:text-[11px] text-[#d6b16f] mb-2">
+                      Contact Advisor
+                    </p>
+
+                    <div className="text-xl md:text-2xl font-semibold tracking-wide text-white">
+                      {faqSection?.contactPhone || "9090 106 101"}
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
             </div>
 
           </div>
 
         </div>
 
-      </div>
 
-    </div>
+        {/* ======================================================
+            FAQ ACCORDION
+        ====================================================== */}
 
-  </div>
-</motion.div>
-
-        {/* ================= FAQ ACCORDION ================= */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeRight}
-          className="space-y-4"
-        >
+        <div className="space-y-3 md:space-y-4">
 
           {faqs.map(
             (f, i) =>
@@ -6171,16 +6616,23 @@ else {
                 <details
                   key={i}
                   open={i === 0}
-                  className="group rounded-[18px] border border-[#e3d9cc] bg-[#fbf9f6] overflow-hidden shadow-sm transition-all duration-300"
+                  className="group rounded-[18px] border border-[#e3d9cc] bg-[#fbf9f6] overflow-hidden shadow-sm transition-shadow duration-200 hover:shadow-md"
                 >
 
-                  {/* QUESTION */}
-                  <summary className="list-none cursor-pointer px-7 py-6 flex items-center justify-between">
+                  {/* =================================================
+                      QUESTION
+                  ================================================= */}
 
-                    <div className="flex items-center gap-5">
+                  <summary className="list-none cursor-pointer px-5 sm:px-6 md:px-7 py-5 md:py-6 flex items-center justify-between gap-4 select-none">
+
+                    <div className="flex items-center gap-4 md:gap-5 min-w-0">
 
                       {/* ICON */}
-                      <div className="w-12 h-12 rounded-full border border-[#dbc7a0] flex items-center justify-center text-[#c8a66a] flex-shrink-0">
+
+                      <div
+                        className="w-11 h-11 md:w-12 md:h-12 rounded-full border border-[#dbc7a0] flex items-center justify-center text-[#c8a66a] flex-shrink-0"
+                        aria-hidden="true"
+                      >
 
                         {i % 6 === 0 && (
                           <svg
@@ -6283,16 +6735,28 @@ else {
                             />
                           </svg>
                         )}
+
                       </div>
 
+
                       {/* QUESTION */}
-                      <h3 className="text-[#1c2d28] text-lg md:text-[19px] font-medium leading-relaxed">
+
+                      <h3 className="text-[#1c2d28] text-base sm:text-lg md:text-[19px] font-medium leading-relaxed">
                         {f.question}
                       </h3>
+
                     </div>
 
-                    {/* ARROW */}
-                    <div className="ml-5 flex-shrink-0 text-[#17342d] transition-transform duration-300 group-open:rotate-180">
+
+                    {/* =================================================
+                        ARROW
+                    ================================================= */}
+
+                    <div
+                      className="ml-2 flex-shrink-0 text-[#17342d] transition-transform duration-200 group-open:rotate-180"
+                      aria-hidden="true"
+                    >
+
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="w-5 h-5"
@@ -6307,243 +6771,282 @@ else {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
+
                     </div>
+
                   </summary>
 
-                  {/* ANSWER */}
-                  {/* ANSWER */}
-<div className="px-7 pb-7 border-t border-[#ece3d8]">
-  {(() => {
-    const answer = f.answer || "";
 
-    const isHtml = (text = "") =>
-      /<\/?[a-z][\s\S]*>/i.test(text);
+                  {/* =================================================
+                      ANSWER
+                  ================================================= */}
 
-    return isHtml(answer) ? (
-      <div
-        className="
-          prose-luxury
-          mt-5
-          whitespace-normal
-          break-words
-        "
-        dangerouslySetInnerHTML={{
-          __html: answer,
-        }}
-      />
-    ) : (
-      <p
-        className="
-          mt-5
-          text-[#666]
-          text-[15px]
-          leading-[1.9]
-          whitespace-pre-line
-          break-words
-        "
-      >
-        {answer}
-      </p>
-    );
-  })()}
-</div>
+                  <div className="px-5 sm:px-6 md:px-7 pb-6 md:pb-7 border-t border-[#ece3d8]">
+
+                    {(() => {
+
+                      const answer = f.answer || "";
+
+                      const isHtml = (text = "") =>
+                        /<\/?[a-z][\s\S]*>/i.test(text);
+
+                      return isHtml(answer) ? (
+
+                        <div
+                          className="prose-luxury mt-5 whitespace-normal break-words"
+                          dangerouslySetInnerHTML={{
+                            __html: answer,
+                          }}
+                        />
+
+                      ) : (
+
+                        <p className="mt-5 text-[#666] text-[15px] leading-[1.9] whitespace-pre-line break-words">
+                          {answer}
+                        </p>
+
+                      );
+
+                    })()}
+
+                  </div>
+
                 </details>
               )
           )}
-        </motion.div>
-      </div>
-
-
-      {/* ================= BOTTOM CTA ================= */}
-      {/* ================= BOTTOM CTA ================= */}
-<motion.div
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  variants={fadeUp}
-  className="mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
->
-  {/* DESKTOP */}
-  <div className="hidden lg:grid lg:grid-cols-[1fr_auto]">
-
-    {/* LEFT */}
-    <div className="flex items-center gap-5 p-7">
-
-      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0">
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-8 h-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.8}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8 7V3m8 4V3m-9 8h10"
-          />
-        </svg>
-
-      </div>
-
-      <div>
-
-        <h3
-          className="text-3xl text-[#17342d] font-light"
-          style={{
-            fontFamily:
-              "Cormorant Garamond, serif",
-          }}
-        >
-          {faqSection?.ctaTitle ||
-            "Ready to experience your dream home?"}
-        </h3>
-
-        <p className="text-[#777] mt-2 leading-relaxed">
-          {faqSection?.ctaDescription ||
-            "Book a site visit and take the first step towards your dream home."}
-        </p>
-
-      </div>
-
-    </div>
-
-    {/* RIGHT */}
-    <div className="border-l border-[#e5ddd2] p-6 flex items-center gap-3">
-
-      <button
-        onClick={() => setShowModal(true)}
-        className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:scale-[1.03] transition-all duration-300 text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg"
-      >
-        {faqSection?.ctaButtonText ||
-          "Book A Site Visit"}
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M13 7l5 5m0 0l-5 5m5-5H6"
-          />
-        </svg>
-      </button>
-
-      <a
-        href="tel:+919090106101"
-        className="px-6 py-4 rounded-xl border border-[#17342d] text-[#17342d] font-semibold hover:bg-[#17342d] hover:text-white transition"
-      >
-        Call
-      </a>
-
-      <a
-        href="https://wa.me/919090106101"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-6 py-4 rounded-xl bg-[#25D366] text-white font-semibold hover:brightness-110 transition"
-      >
-        WhatsApp
-      </a>
-
-    </div>
-
-  </div>
-
-  {/* MOBILE */}
-  <div className="lg:hidden">
-
-    <div className="p-6">
-
-      <div className="flex items-start gap-4">
-
-        <div className="w-14 h-14 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shrink-0">
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-7 h-7"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 7V3m8 4V3m-9 8h10"
-            />
-          </svg>
-
-        </div>
-
-        <div>
-
-          <h3
-            className="text-[28px] leading-tight text-[#17342d]"
-            style={{
-              fontFamily:
-                "Cormorant Garamond, serif",
-            }}
-          >
-            {faqSection?.ctaTitle ||
-              "Ready to experience your dream home?"}
-          </h3>
-
-          <p className="text-[#777] mt-2 text-[14px] leading-7">
-            {faqSection?.ctaDescription ||
-              "Book a site visit and take the first step towards your dream home."}
-          </p>
 
         </div>
 
       </div>
 
-    </div>
 
-    <div className="border-t border-[#e5ddd2] p-5">
+      {/* ========================================================
+          BOTTOM CTA
+      ======================================================== */}
 
-      <div className="flex flex-col gap-3">
+      <div className="mt-8 md:mt-10 rounded-[24px] border border-[#e0d6ca] bg-[#fbf8f4] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)]">
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="w-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d6b16f] py-4 rounded-xl font-semibold uppercase tracking-wide"
-        >
-          {faqSection?.ctaButtonText ||
-            "Book A Site Visit"}
-        </button>
+        {/* ======================================================
+            DESKTOP
+        ====================================================== */}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="hidden lg:grid lg:grid-cols-[1fr_auto]">
 
-          <a
-            href="tel:+919090106101"
-            className="border border-[#17342d] rounded-xl py-4 text-center font-semibold text-[#17342d] hover:bg-[#17342d] hover:text-white transition"
-          >
-            Call
-          </a>
+          {/* LEFT */}
 
-          <a
-            href="https://wa.me/919090106101"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl py-4 text-center bg-[#25D366] text-white font-semibold hover:brightness-110 transition"
-          >
-            WhatsApp
-          </a>
+          <div className="flex items-center gap-5 p-7">
+
+            <div
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shadow-lg flex-shrink-0"
+              aria-hidden="true"
+            >
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10"
+                />
+              </svg>
+
+            </div>
+
+
+            <div>
+
+              <h3
+                className="text-3xl text-[#17342d] font-light"
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                }}
+              >
+                {faqSection?.ctaTitle ||
+                  "Ready to experience your dream home?"}
+              </h3>
+
+              <p className="text-[#777] mt-2 leading-relaxed">
+                {faqSection?.ctaDescription ||
+                  "Book a site visit and take the first step towards your dream home."}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* RIGHT */}
+
+          <div className="border-l border-[#e5ddd2] p-6 flex items-center gap-3">
+
+            <button
+              type="button"
+              aria-label={
+                faqSection?.ctaButtonText ||
+                "Book a Site Visit"
+              }
+              onClick={() => setShowModal(true)}
+              className="bg-gradient-to-r from-[#08211c] to-[#0f3a30] hover:brightness-110 transition text-[#d6b16f] px-10 py-4 rounded-xl flex items-center gap-4 uppercase tracking-wide text-sm font-semibold shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b16f] focus-visible:ring-offset-2"
+            >
+
+              {faqSection?.ctaButtonText ||
+                "Book A Site Visit"}
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+
+            </button>
+
+
+            <a
+              href="tel:+919090106101"
+              aria-label="Call Property Bouquet"
+              className="px-6 py-4 rounded-xl border border-[#17342d] text-[#17342d] font-semibold hover:bg-[#17342d] hover:text-white transition-colors duration-200"
+            >
+              Call
+            </a>
+
+
+            <a
+              href="https://wa.me/919090106101"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Contact Property Bouquet on WhatsApp"
+              className="px-6 py-4 rounded-xl bg-[#25D366] text-white font-semibold hover:brightness-110 transition duration-200"
+            >
+              WhatsApp
+            </a>
+
+          </div>
+
+        </div>
+
+
+        {/* ======================================================
+            MOBILE
+        ====================================================== */}
+
+        <div className="lg:hidden">
+
+          <div className="p-5 sm:p-6">
+
+            <div className="flex items-start gap-4">
+
+              <div
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] flex items-center justify-center text-[#d6b16f] shrink-0"
+                aria-hidden="true"
+              >
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 h-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 7V3m8 4V3m-9 8h10"
+                  />
+                </svg>
+
+              </div>
+
+
+              <div className="min-w-0">
+
+                <h3
+                  className="text-[28px] leading-tight text-[#17342d]"
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
+                  }}
+                >
+                  {faqSection?.ctaTitle ||
+                    "Ready to experience your dream home?"}
+                </h3>
+
+
+                <p className="text-[#777] mt-2 text-[14px] leading-7">
+                  {faqSection?.ctaDescription ||
+                    "Book a site visit and take the first step towards your dream home."}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div className="border-t border-[#e5ddd2] p-5">
+
+            <div className="flex flex-col gap-3">
+
+              <button
+                type="button"
+                aria-label={
+                  faqSection?.ctaButtonText ||
+                  "Book a Site Visit"
+                }
+                onClick={() => setShowModal(true)}
+                className="w-full bg-gradient-to-r from-[#08211c] to-[#0f3a30] text-[#d6b16f] py-4 rounded-xl font-semibold uppercase tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b16f] focus-visible:ring-offset-2"
+              >
+                {faqSection?.ctaButtonText ||
+                  "Book A Site Visit"}
+              </button>
+
+
+              <div className="grid grid-cols-2 gap-3">
+
+                <a
+                  href="tel:+919090106101"
+                  aria-label="Call Property Bouquet"
+                  className="border border-[#17342d] rounded-xl py-4 text-center font-semibold text-[#17342d] hover:bg-[#17342d] hover:text-white transition-colors duration-200"
+                >
+                  Call
+                </a>
+
+
+                <a
+                  href="https://wa.me/919090106101"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Contact Property Bouquet on WhatsApp"
+                  className="rounded-xl py-4 text-center bg-[#25D366] text-white font-semibold hover:brightness-110 transition duration-200"
+                >
+                  WhatsApp
+                </a>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
       </div>
-
-    </div>
-
-  </div>
-</motion.div>
 
     </div>
   </section>
