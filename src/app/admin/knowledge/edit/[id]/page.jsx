@@ -857,6 +857,7 @@ export default function EditKnowledgePage() {
                         "Market Education",
                         "NRI Guide",
                         "Tips & Tricks",
+                        "Project's Review",
                         "General",
                       ].includes(form.category) && (
                         <option value={form.category}>

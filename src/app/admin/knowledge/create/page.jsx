@@ -27,6 +27,7 @@ const CATEGORIES = [
   "Market Education",
   "NRI Guide",
   "Tips & Tricks",
+  "Project's Review",
   "General",
 ];
 
