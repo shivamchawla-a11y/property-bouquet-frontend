@@ -1,40 +1,59 @@
-const DEFAULT_FAQS = (locationName, preposition = "in") => [
+const DEFAULT_FAQS = (
+  locationName,
+  preposition = "in"
+) => [
   {
     question: `What types of properties are available ${preposition} ${locationName}?`,
+
     answer: `Property Bouquet features apartments, luxury residences, builder floors, independent floors and other residential opportunities available ${preposition} ${locationName}, subject to current listings.`,
   },
 
   {
     question: `What is the property price range ${preposition} ${locationName}?`,
+
     answer: `Property prices vary by project, developer, property type, size, location and specifications. Current Property Bouquet listings provide the latest available pricing information where disclosed.`,
   },
 
   {
     question: `Which areas are well connected to ${locationName}?`,
+
     answer: `${locationName} can be evaluated through its connectivity to major roads, expressways, business districts, schools, healthcare facilities, retail destinations and other important parts of the surrounding region.`,
   },
 
   {
     question: `Is ${locationName} suitable for homebuyers?`,
+
     answer: `${locationName} can be evaluated by homebuyers based on factors such as connectivity, residential infrastructure, available amenities, property types, developer offerings and proximity to everyday conveniences.`,
   },
 
   {
     question: `Is ${locationName} suitable for property investment?`,
+
     answer: `Investment suitability depends on factors including acquisition price, project quality, location, infrastructure, demand, developer track record, possession timelines and the buyer's investment objectives.`,
   },
 ];
 
+
+/* ============================================================
+   DWARKA EXPRESSWAY — FINAL EDITORIAL CONTENT
+   Source:
+   Dwarka Expressway Location Page Final Version
+   ============================================================ */
+
 const CONTENT = {
   "dwarka-expressway": {
     preposition: "on",
+
+    /* ========================================================
+       SEO
+       ======================================================== */
 
     seo: {
       title:
         "Properties on Dwarka Expressway, Gurugram | Property Bouquet",
 
       description:
-        "Explore luxury flats, apartments, builder floors and new launch projects on Dwarka Expressway, Gurugram. Compare properties, prices, developers and locations with Property Bouquet.",
+        "Explore luxury flats and builder floors on Dwarka Expressway, Gurugram from ₹1.43 Cr. Compare sector-wise prices and projects by Adani, Emaar, BPTP & M3M.",
 
       focusKeyword:
         "properties on Dwarka Expressway",
@@ -45,22 +64,33 @@ const CONTENT = {
         "builder floors on Dwarka Expressway",
         "Dwarka Expressway property prices",
         "new launch projects on Dwarka Expressway",
-        "properties near Dwarka Expressway",
-        "residential projects on Dwarka Expressway",
+        "ready to move flats Dwarka Expressway",
+        "Dwarka Expressway sectors",
+        "Dwarka Expressway metro",
+        "properties in Dwarka Expressway",
       ],
     },
 
+    /* ========================================================
+       HERO
+       ======================================================== */
+
     hero: {
-      eyebrow: "A PREMIUM GROWTH CORRIDOR",
+      enabled: true,
+
+      eyebrow:
+        "A PREMIUM GROWTH CORRIDOR",
+
+      badge:
+        "Prime Location",
 
       title:
         "Luxury Properties on Dwarka Expressway",
 
       description:
-        "Explore luxury flats, builder floors and new launch projects on Dwarka Expressway, Gurugram's evolving real estate corridor. Discover available projects, compare property options and connect with Property Bouquet advisors for guidance.",
+        "Explore luxury flats, builder floors and new launch projects on Dwarka Expressway, Gurugram's airport corridor. Every project is reviewed by advisors who know each sector first-hand.",
 
       badges: [
-        "Luxury Projects",
         "2 to 4 BHK",
       ],
 
@@ -71,25 +101,158 @@ const CONTENT = {
         "Contact Advisor",
     },
 
+    /* ========================================================
+       INTRO / ABOUT
+       ======================================================== */
+
     about: {
       enabled: true,
 
       eyebrow:
-        "INTRODUCING THE CORRIDOR",
+        "WHY DWARKA EXPRESSWAY",
 
       title:
         "Dwarka Expressway (NH-248BB), Gurugram",
 
       description:
-        "Dwarka Expressway (NH-248BB) is an important road corridor connecting Delhi and Gurugram. Its residential landscape includes premium apartments, builder floors, independent floors and new developments across multiple sectors. The corridor has attracted attention from homebuyers and developers as connectivity and surrounding infrastructure continue to evolve.",
+        "Dwarka Expressway (NH-248BB) is an eight-lane, signal-free expressway that connects Shiv Murti in Delhi to Kherki Daula on NH-48 in Gurugram. Fully open since August 2025, it has turned the new sectors of Gurgaon into one of the NCR's most in-demand residential corridors.",
+
+      secondaryDescription:
+        "It took a long time to get here. The road was first planned in the mid-2000s as the Northern Peripheral Road and was taken over by NHAI in 2016. Many buyers in Sectors 102, 106 and 113 waited years for a highway that kept getting delayed.",
+
+      tertiaryDescription:
+        "That wait is now over. The Haryana stretch, about 18.9 km, opened in March 2024. The Delhi stretch, with its tunnel link towards IGI Airport, followed in August 2025. An elevated carriageway carries through traffic, while service roads below handle local movement.",
+
+      marketDescription:
+        "The market has changed with the road. Early projects were mostly mid-segment. Today, properties in Dwarka Expressway include branded luxury apartments, spacious builder floors and gated townships from Adani Realty, Emaar, BPTP, M3M and Central Park.",
 
       highlights: [
-        "Connectivity towards Delhi and IGI Airport",
-        "Luxury residential projects across multiple sectors",
-        "Apartments, builder floors and independent floors",
-        "Access to established and emerging neighbourhoods",
+        "Signal-free drive to IGI Airport and Delhi",
+        "Luxury projects by Adani, Emaar, BPTP and M3M",
+        "Flats, builder floors and township homes",
+        "Sector-level advice from the Property Bouquet advisory team",
       ],
+
+      snapshot: {
+        location:
+          "Dwarka Expressway (NH-248BB), Gurugram",
+
+        propertyTypes:
+          "Apartments, Builder Floors, Independent Floors",
+
+        segment:
+          "Premium & Luxury",
+
+        priceRange:
+          "₹1.43 Cr – ₹10.40 Cr",
+      },
+
+      snapshotLabel:
+        "Location Snapshot",
     },
+
+    /* ========================================================
+       REAL ESTATE MARKET
+       ======================================================== */
+
+    realEstateMarket: {
+      enabled: true,
+
+      eyebrow:
+        "REAL ESTATE MARKET",
+
+      title:
+        "Dwarka Expressway: A Thriving Real Estate Destination",
+
+      description:
+        "Dwarka Expressway isn't one market. It's four stretches, each with its own prices, property types and commutes. Choosing the right sector matters as much as choosing the right project.",
+
+      stretches: [
+        {
+          title:
+            "Sectors 108 to 113 — Delhi End",
+
+          description:
+            "Closest to Dwarka, the Delhi border and the airport. This stretch can be relevant for buyers who fly often or work in Delhi.",
+
+          projects: [
+            "M3M Capital — Sector 113",
+          ],
+        },
+
+        {
+          title:
+            "Sectors 99 to 106 — Heart of the Corridor",
+
+          description:
+            "This stretch includes several recent luxury launches and established residential developments across the central part of the corridor.",
+
+          projects: [
+            "Adani The Marq — Sector 102",
+            "BPTP Gaia Residences — Sector 102",
+            "Emaar Imperial Gardens — Sector 102",
+            "Central Park Delphine — Sector 104",
+            "Spiti Floors — Sector 99A",
+          ],
+        },
+
+        {
+          title:
+            "Sectors 36A to 37D — NH-48 End",
+
+          description:
+            "Larger townships in this stretch provide access towards Manesar and the Delhi–Jaipur highway.",
+
+          projects: [
+            "Signature Global City 37D",
+            "BPTP Terra",
+          ],
+        },
+
+        {
+          title:
+            "Sectors 81 to 95 — New Gurgaon",
+
+          description:
+            "These sectors sit just inside the wider corridor and are often marketed alongside Dwarka Expressway, generally with lower entry prices than some of the premium central stretches.",
+
+          projects: [],
+        },
+      ],
+
+      highlights: [
+        {
+          title:
+            "Growing Demand",
+
+          description:
+            "End-users are moving in, not just investors holding homes.",
+        },
+
+        {
+          title:
+            "Premium Developments",
+
+          description:
+            "A new wave of branded towers and low-rise builder floors is expanding the residential mix.",
+        },
+
+        {
+          title:
+            "Connectivity Advantage",
+
+          description:
+            "An eight-lane elevated road provides a major connection towards Delhi and the airport.",
+        },
+      ],
+
+      perspective:
+        "With the expressway finally complete, this corridor has moved from a promise to a place people actually live.",
+    },
+
+    /* ========================================================
+       REAL ESTATE TYPES
+       ======================================================== */
 
     realEstateTypes: {
       enabled: true,
@@ -98,23 +261,15 @@ const CONTENT = {
         "Properties on Dwarka Expressway for Every Lifestyle",
 
       description:
-        "Property options along Dwarka Expressway span multiple formats, allowing buyers to evaluate homes according to their lifestyle, space requirements and budget.",
+        "Dwarka Expressway offers more property formats than many Gurugram corridors. You can choose between full-amenity high-rises, quieter low-rise floors and homes inside planned townships.",
 
       types: [
         {
           title:
-            "Independent Floors",
+            "Independent Floor",
 
           description:
-            "Independent-floor residences can appeal to buyers looking for greater privacy, independent access and a more residential living format.",
-        },
-
-        {
-          title:
-            "Luxury Apartments",
-
-          description:
-            "Premium apartments offer amenities-led community living with a range of configurations and lifestyle facilities.",
+            "Independent floors inside planned townships, mainly around Sector 37D, give you a home of your own within a gated community. They are a middle path between a flat and a standalone house, and they often offer lower entry prices on the corridor.",
         },
 
         {
@@ -122,18 +277,30 @@ const CONTENT = {
             "Builder Floors",
 
           description:
-            "Builder-floor residences provide another option for buyers seeking relatively independent residential living in established or developing neighbourhoods.",
+            "Builder floors on Dwarka Expressway offer fewer neighbours, more privacy and a more independent feel. This format is harder to find on Golf Course Road at similar budgets. Spiti Floors in Sector 99A is one example of low-rise luxury floors in the corridor.",
         },
 
         {
           title:
-            "New Launch Projects",
+            "Apartments",
 
           description:
-            "New developments provide access to contemporary layouts, modern amenities and newly planned residential communities.",
+            "Most flats on Dwarka Expressway are in high-rise gated communities with clubhouses, 24x7 security and full amenities. Luxury apartments range from 3 BHK homes to large 4 BHK residences, with ultra-luxury options such as Central Park Delphine at the top end.",
+        },
+
+        {
+          title:
+            "Plots",
+
+          description:
+            "Residential plots along the corridor are limited and usually part of larger licensed townships. Buyers should ask an advisor about current plot availability and verify the relevant township's DTCP licence status before committing.",
         },
       ],
     },
+
+    /* ========================================================
+       PRICES
+       ======================================================== */
 
     prices: {
       enabled: true,
@@ -142,68 +309,292 @@ const CONTENT = {
         "Property Prices on Dwarka Expressway",
 
       description:
-        "Property prices on Dwarka Expressway vary according to sector, project, developer, property type, configuration, size, amenities and construction stage. Use the live Property Bouquet listings above to compare currently available opportunities.",
+        "Property prices on Dwarka Expressway start from about ₹1.43 Cr for independent floors and go above ₹10 Cr for ultra-luxury apartments, based on projects listed on Property Bouquet. Prices depend on where a project sits on the corridor, its format and its construction stage.",
+
+      lastUpdated:
+        "auto",
+
+      priceRange: {
+        minimum:
+          14300000,
+
+        maximum:
+          104000000,
+      },
+
+      projects: [
+        {
+          project:
+            "Signature Global City 37D",
+
+          sector:
+            "37D",
+
+          type:
+            "Independent Floors",
+
+          configuration:
+            "2 & 3 BHK",
+
+          startingPrice:
+            "₹1.43 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "DLF New Town Heights 1",
+
+          sector:
+            "",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "2, 3 & 4 BHK",
+
+          startingPrice:
+            "₹1.63 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "Spiti Floors",
+
+          sector:
+            "99A",
+
+          type:
+            "Builder Floors",
+
+          configuration:
+            "3 BHK",
+
+          startingPrice:
+            "₹1.95 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "Emaar Imperial Gardens",
+
+          sector:
+            "102",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "3 BHK, 3 BHK + Utility",
+
+          startingPrice:
+            "₹2.39 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "BPTP Terra",
+
+          sector:
+            "37D",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "",
+
+          startingPrice:
+            "₹2.75 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "M3M Capital",
+
+          sector:
+            "113",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "",
+
+          startingPrice:
+            "₹2.83 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "BPTP Gaia Residences",
+
+          sector:
+            "102",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "3, 3.5 & 4 BHK",
+
+          startingPrice:
+            "₹3.85 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "Adani The Marq",
+
+          sector:
+            "102",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "3 & 4 BHK",
+
+          startingPrice:
+            "₹4.14 Cr",
+
+          status:
+            "",
+        },
+
+        {
+          project:
+            "Central Park Delphine",
+
+          sector:
+            "104",
+
+          type:
+            "Apartments",
+
+          configuration:
+            "",
+
+          startingPrice:
+            "₹10.40 Cr",
+
+          status:
+            "",
+        },
+      ],
 
       factorsTitle:
         "What Influences Property Prices?",
 
       factors: [
-        "Project location and sector",
-        "Developer and project positioning",
-        "Apartment or floor configuration",
-        "Unit size and layout",
-        "Amenities and specifications",
-        "Construction and possession stage",
-        "Connectivity and surrounding infrastructure",
+        "Position on the corridor — homes near the Delhi end usually cost more",
+        "Expressway frontage versus quieter interior sectors",
+        "Developer reputation and delivery track record",
+        "Configuration and carpet area",
+        "Floor, view and facing",
+        "Construction stage — new launch versus ready to move",
+        "Payment plan and applicable charges",
+        "Readiness of sector roads, water and sewerage",
       ],
+
+      priceNote:
+        "Need current pricing? Rates change with inventory, construction stage and applicable charges. Our advisors can share the latest price for any project, including new launch offers.",
     },
+
+    /* ========================================================
+       CONNECTIVITY
+       ======================================================== */
 
     connectivity: {
       enabled: true,
 
       eyebrow:
-        "CONNECTIVITY",
+        "CONNECTIVITY & KEY DESTINATIONS",
 
       title:
         "Seamless Connectivity from Dwarka Expressway",
 
       description:
-        "Dwarka Expressway provides an important connection between Delhi and Gurugram while improving access to major employment, airport and residential destinations. Its wider connectivity network is an important consideration when evaluating property in the corridor.",
+        "Dwarka Expressway gives you a signal-free drive to IGI Airport and Delhi. It meets NH-48 at both ends and links to central Gurugram through the Southern and Central Peripheral Roads.",
 
       points: [
         {
           title:
-            "Delhi & IGI Airport",
+            "Major Airport",
 
           description:
-            "The corridor provides access towards Delhi and Indira Gandhi International Airport.",
+            "Direct, signal-free route to IGI Airport through the Delhi stretch's tunnel link.",
         },
 
         {
           title:
-            "Gurugram Business Districts",
+            "Metro & Rail",
 
           description:
-            "Connectivity towards major employment and commercial areas makes the corridor relevant for working professionals.",
+            "There is no metro on the expressway yet. The nearest stations are Dwarka Sector 21 and Yashobhoomi (Dwarka Sector 25). A Palam Vihar–Dwarka Sector 21 metro spur via Sectors 110A and 111 has state approval.",
         },
 
         {
           title:
-            "Major Road Networks",
+            "Key Road Network",
 
           description:
-            "Connections to surrounding arterial roads and expressways improve access across Gurugram and neighbouring areas.",
+            "NH-48 at both ends, SPR and CPR to central Gurugram, and UER-II to north and west Delhi provide wider road connectivity.",
         },
 
         {
           title:
-            "New Gurugram",
+            "Business Districts",
 
           description:
-            "Dwarka Expressway sits within a developing residential ecosystem with multiple new projects and supporting infrastructure.",
+            "Aerocity and Dwarka in Delhi, along with Cyber City, Udyog Vihar and IMT Manesar in Gurugram, are important employment and commercial destinations.",
+        },
+
+        {
+          title:
+            "Golf & Leisure",
+
+          description:
+            "Golf clubs on Golf Course Road are reachable via SPR, while Aerocity's dining and events are close to the Delhi end.",
+        },
+
+        {
+          title:
+            "Retail & Hospitality",
+
+          description:
+            "Yashobhoomi, India's international convention centre, is at the Delhi end, with Aerocity's hotels and hospitality destinations nearby.",
         },
       ],
+
+      slogan:
+        "A well-connected address for a brighter tomorrow.",
     },
+
+    /* ========================================================
+       LIFESTYLE
+       ======================================================== */
 
     lifestyle: {
       enabled: true,
@@ -212,31 +603,37 @@ const CONTENT = {
         "Everyday Convenience Around Dwarka Expressway",
 
       description:
-        "The surrounding residential ecosystem is developing alongside retail, education, healthcare and everyday services, creating a more complete neighbourhood experience for residents.",
+        "Social infrastructure around properties on Dwarka Expressway is still catching up with housing, but it is growing fast. Many sectors now have schools, clinics and daily-needs shops nearby. Larger hospitals and malls are a short drive away in Dwarka or central Gurugram.",
+
+      tip:
+        "When you visit a project, spend 20 minutes driving around the sector. It tells you more about daily life than any brochure.",
 
       sections: [
         {
           title:
-            "Everything You Need, Closer to Home",
+            "Top Schools & Universities",
 
           description:
-            "Residents can evaluate nearby schools, healthcare facilities, retail destinations, dining, entertainment and daily conveniences while choosing a project.",
+            "Schools are opening steadily across the corridor, with established options in nearby Dwarka.",
+
+          items: [
+            "Delhi Public School, Dwarka",
+            "Venkateshwar International School, Dwarka",
+          ],
         },
 
         {
           title:
-            "Schools & Education",
+            "Leading Healthcare",
 
           description:
-            "The wider Gurugram and Delhi-NCR ecosystem provides access to established educational institutions.",
-        },
+            "Clinics and mid-sized hospitals serve the sectors, with multi-speciality hospitals a short drive away.",
 
-        {
-          title:
-            "Healthcare Facilities",
-
-          description:
-            "Major hospitals and healthcare facilities across Gurugram and Delhi remain accessible through the surrounding road network.",
+          items: [
+            "Manipal Hospital, Dwarka",
+            "Venkateshwar Hospital, Dwarka",
+            "Medanta – The Medicity, Sector 38, Gurugram",
+          ],
         },
 
         {
@@ -244,19 +641,32 @@ const CONTENT = {
             "Shopping & Entertainment",
 
           description:
-            "Retail destinations, malls, dining and entertainment options across Gurugram provide additional lifestyle convenience.",
+            "Daily-needs retail is growing inside the sectors, with larger malls a short drive away.",
+
+          items: [
+            "Vegas Mall, Dwarka",
+            "Ambience Mall, NH-48, Gurugram",
+            "Aerocity dining and hospitality district",
+          ],
         },
       ],
+
+      slogan:
+        "Everything you need, closer home.",
     },
+
+    /* ========================================================
+       WHY BUY
+       ======================================================== */
 
     whyBuy: {
       enabled: true,
 
       title:
-        "Why Consider Properties on Dwarka Expressway?",
+        "Why Buy Properties on Dwarka Expressway?",
 
       description:
-        "Buyers evaluating Dwarka Expressway typically consider the corridor through a combination of location, connectivity, infrastructure, residential development and lifestyle factors.",
+        "Buying property on Dwarka Expressway makes the most sense if you fly often, work in Delhi, or want a newer and larger home than older Gurugram offers at the same budget.",
 
       reasons: [
         {
@@ -264,31 +674,31 @@ const CONTENT = {
             "Strategic Location",
 
           description:
-            "The corridor connects important parts of Delhi and Gurugram and provides access towards the airport and major employment areas.",
+            "Between Delhi, IGI Airport and Gurugram, with one signal-free road connecting all three.",
         },
 
         {
           title:
-            "Infrastructure Development",
+            "Infrastructure Growth",
 
           description:
-            "Infrastructure development around the corridor has contributed to continued residential and commercial activity.",
+            "The expressway is complete. Metro links, sector roads and social infrastructure are the next layer being built.",
         },
 
         {
           title:
-            "Residential Development",
+            "Residential Demand",
 
           description:
-            "The area includes established communities as well as new residential developments catering to different buyer profiles.",
+            "End-users are moving in, not just investors holding homes. This reflects the corridor's development as a residential neighbourhood.",
         },
 
         {
           title:
-            "Multiple Developers",
+            "Reputed Developers",
 
           description:
-            "Multiple established developers have launched residential projects across the wider Dwarka Expressway corridor.",
+            "Adani Realty, Emaar, BPTP, M3M, Central Park, DLF and Signature Global all have projects in the wider corridor.",
         },
 
         {
@@ -296,18 +706,22 @@ const CONTENT = {
             "Lifestyle Ecosystem",
 
           description:
-            "Growing access to education, healthcare, retail and entertainment contributes to the area's residential ecosystem.",
+            "Newer homes, larger layouts and full-amenity gated communities are developing alongside schools and retail.",
         },
 
         {
           title:
-            "Long-Term Evaluation",
+            "Long-Term Potential",
 
           description:
-            "Buyers can assess future suitability by considering infrastructure, development plans, project quality and surrounding residential demand.",
+            "Much of the connectivity story is already in place. Future development depends on social infrastructure, metro approvals and new supply. Property Bouquet does not project returns and instead helps buyers evaluate individual projects.",
         },
       ],
     },
+
+    /* ========================================================
+       NEARBY LOCATIONS
+       ======================================================== */
 
     nearby: {
       enabled: true,
@@ -316,8 +730,46 @@ const CONTENT = {
         "Explore Locations Near Dwarka Expressway",
 
       description:
-        "Explore nearby Gurugram locations and compare residential opportunities across connected neighbourhoods.",
+        "Compare Dwarka Expressway with Gurugram's other luxury corridors to see how prices, property types and commutes differ.",
+
+      locations: [
+        {
+          name:
+            "New Gurgaon",
+
+          slug:
+            "properties-in-new-gurgaon",
+        },
+
+        {
+          name:
+            "Golf Course Extension Road",
+
+          slug:
+            "properties-on-golf-course-extension-road",
+        },
+
+        {
+          name:
+            "Sohna Road",
+
+          slug:
+            "properties-on-sohna-road",
+        },
+
+        {
+          name:
+            "Golf Course Road",
+
+          slug:
+            "properties-on-golf-course-road",
+        },
+      ],
     },
+
+    /* ========================================================
+       FAQ
+       ======================================================== */
 
     faq: {
       enabled: true,
@@ -325,12 +777,79 @@ const CONTENT = {
       title:
         "FAQs About Properties on Dwarka Expressway",
 
-      items:
-        DEFAULT_FAQS(
-          "Dwarka Expressway",
-          "on"
-        ),
+      intro:
+        "Straight answers to what buyers ask us most. For project-specific pricing and availability, speak with a Property Bouquet advisor.",
+
+      items: [
+        {
+          question:
+            "What types of properties are available on Dwarka Expressway?",
+
+          answer:
+            "Properties on Dwarka Expressway include luxury flats in high-rise gated communities, low-rise builder floors and independent floors inside planned townships. Configurations range from 2 BHK to 4 BHK, with a few ultra-luxury residences at the top end. Residential plots are limited and usually part of licensed townships.",
+        },
+
+        {
+          question:
+            "What is the property price range on Dwarka Expressway?",
+
+          answer:
+            "Starting prices on Property Bouquet range from about ₹1.43 Cr to ₹10.40 Cr, depending on the project, sector and format. Independent floors and builder floors start under ₹2 Cr, while branded luxury apartments in Sectors 102 to 104 start higher. Confirm live rates with an advisor.",
+        },
+
+        {
+          question:
+            "What should I consider before buying a property on Dwarka Expressway?",
+
+          answer:
+            "Check the project's HRERA registration, committed possession date and the developer's DTCP licence. Then confirm that sector roads, water and sewerage are complete, how far the tower is from the elevated road, and your real peak-hour commute. Visiting the sector once before deciding helps.",
+        },
+
+        {
+          question:
+            "Is Dwarka Expressway suitable for end-use homebuyers?",
+
+          answer:
+            "Yes, especially if you want quick access to Delhi and IGI Airport, a newer home and a larger layout. Schools and daily-needs shops are more developed in some sectors than others, so check the specific sector before you choose a project.",
+        },
+
+        {
+          question:
+            "Is Dwarka Expressway suitable for property investment?",
+
+          answer:
+            "The expressway is complete, so much of the connectivity benefit is already reflected in prices. Future growth depends on social infrastructure, metro approvals and new supply. We don't project returns. Speak to an advisor about specific projects and your holding timeline.",
+        },
+
+        {
+          question:
+            "How can I find the right property on Dwarka Expressway?",
+
+          answer:
+            "Start with three things: your budget, preferred sector and possession timeline. Share them with a Property Bouquet advisor, and we'll shortlist projects that fit and arrange site visits so you can compare them in person before deciding.",
+        },
+
+        {
+          question:
+            "How many properties are currently listed on Dwarka Expressway?",
+
+          answer:
+            "Property Bouquet lists projects on Dwarka Expressway from leading developers, covering independent floors, builder floors and apartments. New projects are added only after our advisory team reviews them.",
+        },
+
+        {
+          question:
+            "Can Property Bouquet help me compare properties on Dwarka Expressway?",
+
+          answer:
+            "Yes. We compare projects on price, layout, developer track record, sector infrastructure and possession timeline, then help you narrow down to a focused shortlist. You can also schedule a site visit for any project.",
+        },
+      ],
     },
+
+    /* ========================================================
+       ADVISOR CTA
+       ======================================================== */
 
     advisor: {
       enabled: true,
@@ -339,31 +858,139 @@ const CONTENT = {
         "Looking for the Right Property on Dwarka Expressway?",
 
       description:
-        "Speak with a Property Bouquet advisor to discuss available projects, configurations, pricing and site-visit options.",
+        "Tell us your budget, preferred sector, size and move-in timeline. A Property Bouquet advisor who works with properties on Dwarka Expressway every day will send you a shortlist that fits, not a list of everything available.",
+
+      primaryButton:
+        "Talk to an Expert",
+
+      secondaryButton:
+        "Schedule a Site Visit",
     },
+
+    /* ========================================================
+       IMAGES / ALT TEXT
+       ======================================================== */
 
     images: {
       hero: "",
+
       heroAlt:
         "Luxury properties on Dwarka Expressway, Gurugram",
 
       introAlt:
-        "Elevated Dwarka Expressway with residential developments in Gurugram",
+        "Elevated Dwarka Expressway with residential towers in New Gurgaon",
 
       aboutAlt:
         "Residential sectors along Dwarka Expressway, Gurugram",
 
       connectivityAlt:
-        "Dwarka Expressway connectivity towards IGI Airport",
+        "Dwarka Expressway elevated carriageway towards IGI Airport",
 
       lifestyleAlt:
-        "Residential community and lifestyle destinations near Dwarka Expressway",
+        "Gated residential community on Dwarka Expressway",
 
       advisorAlt:
-        "Property Bouquet advisor discussing residential projects on Dwarka Expressway",
+        "Property Bouquet advisor discussing projects on Dwarka Expressway",
+    },
+
+    /* ========================================================
+       INTERNAL LINKS
+       ======================================================== */
+
+    internalLinks: {
+      developers: [
+        {
+          label:
+            "Adani Realty",
+          href:
+            "/developers/adani-realty",
+        },
+        {
+          label:
+            "Emaar",
+          href:
+            "/developers/emaar",
+        },
+        {
+          label:
+            "BPTP",
+          href:
+            "/developers/bptp",
+        },
+        {
+          label:
+            "M3M",
+          href:
+            "/developers/m3m",
+        },
+        {
+          label:
+            "Central Park",
+          href:
+            "/developers/central-park",
+        },
+      ],
+
+      projects: [
+        {
+          label:
+            "M3M Capital",
+          href:
+            "/projects/m3m-capital",
+        },
+        {
+          label:
+            "Adani The Marq",
+          href:
+            "/projects/adani-the-marq",
+        },
+        {
+          label:
+            "BPTP Gaia Residences",
+          href:
+            "/projects/bptp-gaia-residences",
+        },
+        {
+          label:
+            "Emaar Imperial Gardens",
+          href:
+            "/projects/emaar-imperial-gardens",
+        },
+        {
+          label:
+            "Central Park Delphine",
+          href:
+            "/projects/central-park-delphine",
+        },
+        {
+          label:
+            "Spiti Floors",
+          href:
+            "/projects/spiti-floors",
+        },
+        {
+          label:
+            "Signature Global City 37D",
+          href:
+            "/projects/signature-global-city-37d",
+        },
+        {
+          label:
+            "BPTP Terra",
+          href:
+            "/projects/bptp-terra",
+        },
+      ],
+
+      contact: "/contact",
     },
   },
 };
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
 
 function cleanSlug(value) {
   return String(value || "")
@@ -382,7 +1009,10 @@ function getLocationName(location) {
   );
 }
 
-function getPreposition(locationName, slug) {
+function getPreposition(
+  locationName,
+  slug
+) {
   const value =
     `${locationName || ""} ${slug || ""}`.toLowerCase();
 
@@ -393,7 +1023,9 @@ function getPreposition(locationName, slug) {
     : "in";
 }
 
-function getProjectCount(properties = []) {
+function getProjectCount(
+  properties = []
+) {
   return Array.isArray(properties)
     ? properties.length
     : 0;
@@ -417,7 +1049,9 @@ function buildDefaultContent(
     );
 
   const projectCount =
-    getProjectCount(properties);
+    getProjectCount(
+      properties
+    );
 
   const liveProjectText =
     projectCount === 1
@@ -447,8 +1081,13 @@ function buildDefaultContent(
     },
 
     hero: {
+      enabled: true,
+
       eyebrow:
         "PRIME RESIDENTIAL LOCATION",
+
+      badge:
+        "Prime Location",
 
       title:
         `Luxury Properties ${preposition} ${locationName}`,
@@ -475,7 +1114,7 @@ function buildDefaultContent(
         "ABOUT THE LOCATION",
 
       title:
-        `${locationName}`,
+        locationName,
 
       description:
         location?.description ||
@@ -487,6 +1126,23 @@ function buildDefaultContent(
         "Access to surrounding infrastructure",
         "Lifestyle and everyday conveniences",
       ],
+    },
+
+    realEstateMarket: {
+      enabled: false,
+
+      eyebrow:
+        "REAL ESTATE MARKET",
+
+      title:
+        `Real Estate Market ${preposition} ${locationName}`,
+
+      description:
+        `Explore the residential market ${preposition} ${locationName} by sector, project type, connectivity and current property availability.`,
+
+      stretches: [],
+
+      highlights: [],
     },
 
     realEstateTypes: {
@@ -542,6 +1198,8 @@ function buildDefaultContent(
       description:
         `Property prices ${preposition} ${locationName} vary by project, developer, configuration, size, location, amenities and specifications. Review the current Property Bouquet listings for available pricing where disclosed.`,
 
+      projects: [],
+
       factorsTitle:
         "What Influences Property Prices?",
 
@@ -554,6 +1212,9 @@ function buildDefaultContent(
         "Amenities",
         "Construction and possession stage",
       ],
+
+      priceNote:
+        "Rates can change with inventory, construction stage and applicable charges. Confirm current pricing with the Property Bouquet advisory team.",
     },
 
     connectivity: {
@@ -715,6 +1376,8 @@ function buildDefaultContent(
 
       description:
         `Compare nearby locations and residential opportunities around ${locationName}.`,
+
+      locations: [],
     },
 
     faq: {
@@ -722,6 +1385,9 @@ function buildDefaultContent(
 
       title:
         `FAQs About Properties ${preposition} ${locationName}`,
+
+      intro:
+        "Straight answers to common property questions. For project-specific pricing and availability, speak with a Property Bouquet advisor.",
 
       items:
         DEFAULT_FAQS(
@@ -738,6 +1404,12 @@ function buildDefaultContent(
 
       description:
         `Speak with a Property Bouquet advisor about available properties, projects, configurations and site visits ${preposition} ${locationName}.`,
+
+      primaryButton:
+        "Talk to an Expert",
+
+      secondaryButton:
+        "Schedule a Site Visit",
     },
 
     images: {
@@ -761,8 +1433,22 @@ function buildDefaultContent(
       advisorAlt:
         `Property Bouquet advisor discussing properties ${preposition} ${locationName}`,
     },
+
+    internalLinks: {
+      developers: [],
+
+      projects: [],
+
+      contact:
+        "/contact",
+    },
   };
 }
+
+
+/* ============================================================
+   PUBLIC API
+   ============================================================ */
 
 export function getLocationContent(
   location,
