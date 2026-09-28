@@ -1,36 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
 import { useSearchParams } from "next/navigation";
 
 import Navbar from "@/components/home/Navbar";
-
 import Footer from "@/components/home/Footer";
 
 import LocationHero from "@/components/locations/location-slug/LocationHero";
-
 import LocationProjects from "@/components/locations/location-slug/LocationProjects";
-
 import AboutLocation from "@/components/locations/location-slug/AboutLocation";
-
 import LocationRealEstateTypes from "@/components/locations/location-slug/LocationRealEstateTypes";
-
 import LocationPropertyPrices from "@/components/locations/location-slug/LocationPropertyPrices";
-
 import LocationConnectivity from "@/components/locations/location-slug/LocationConnectivity";
-
 import LocationLifestyle from "@/components/locations/location-slug/LocationLifestyle";
-
 import WhyBuyLocation from "@/components/locations/location-slug/WhyBuyLocation";
-
 import NearbyLocations from "@/components/locations/location-slug/NearbyLocations";
-
 import LocationFAQ from "@/components/locations/location-slug/LocationFAQ";
-
 import LocationAdvisorCTA from "@/components/locations/location-slug/LocationAdvisorCTA";
-
 import MobileLocationFilters from "@/components/locations/location-slug/MobileLocationFilters";
+
+import { getLocationContent } from "./locationContent";
 
 export default function LocationSlugClient({
   location,
@@ -39,19 +28,18 @@ export default function LocationSlugClient({
 }) {
   const searchParams = useSearchParams();
 
-  const [
-    filteredProperties,
-    setFilteredProperties,
-  ] = useState(() => [...properties]);
+  // ============================================================
+  // STATE
+  // ============================================================
 
-  const [sortBy, setSortBy] =
-    useState("newest");
+  const [filteredProperties, setFilteredProperties] =
+    useState(() => [...properties]);
 
-  const [visibleCards, setVisibleCards] =
-    useState(9);
+  const [sortBy, setSortBy] = useState("newest");
 
-  const [showFilters, setShowFilters] =
-    useState(false);
+  const [visibleCards, setVisibleCards] = useState(9);
+
+  const [showFilters, setShowFilters] = useState(false);
 
   const CARDS_PER_PAGE = 9;
 
@@ -60,20 +48,139 @@ export default function LocationSlugClient({
   // ============================================================
 
   const locationName =
-    location?.name || "Prime Location";
+    location?.name ||
+    location?.seoName ||
+    "Prime Location";
 
   // ============================================================
-  // PAGE CONTENT
+  // LOCATION CONTENT
   //
-  // All editable location-page copy lives here.
+  // locationContent.js provides the default / SEO content
+  // for each location.
   //
-  // Every section below receives this same object so that
-  // individual components can decide which custom values
-  // should override their existing defaults.
+  // Backend/admin pageContent has higher priority and can
+  // override individual sections.
   // ============================================================
 
-  const pageContent =
-    location?.pageContent || {};
+  const pageContent = useMemo(() => {
+    const generatedContent =
+      getLocationContent(
+        location,
+        properties
+      ) || {};
+
+    const adminContent =
+      location?.pageContent || {};
+
+    return {
+      ...generatedContent,
+
+      // ========================================================
+      // ROOT CONTENT
+      // ========================================================
+
+      ...adminContent,
+
+      // ========================================================
+      // HERO
+      // ========================================================
+
+      hero: {
+        ...(generatedContent?.hero || {}),
+        ...(adminContent?.hero || {}),
+      },
+
+      // ========================================================
+      // ABOUT
+      // ========================================================
+
+      about: {
+        ...(generatedContent?.about || {}),
+        ...(adminContent?.about || {}),
+      },
+
+      // ========================================================
+      // REAL ESTATE TYPES
+      // ========================================================
+
+      realEstateTypes: {
+        ...(generatedContent?.realEstateTypes || {}),
+        ...(adminContent?.realEstateTypes || {}),
+      },
+
+      // ========================================================
+      // PROPERTY PRICES
+      // ========================================================
+
+      prices: {
+        ...(generatedContent?.prices || {}),
+        ...(adminContent?.prices || {}),
+      },
+
+      // ========================================================
+      // CONNECTIVITY
+      // ========================================================
+
+      connectivity: {
+        ...(generatedContent?.connectivity || {}),
+        ...(adminContent?.connectivity || {}),
+      },
+
+      // ========================================================
+      // LIFESTYLE
+      // ========================================================
+
+      lifestyle: {
+        ...(generatedContent?.lifestyle || {}),
+        ...(adminContent?.lifestyle || {}),
+      },
+
+      // ========================================================
+      // WHY BUY
+      // ========================================================
+
+      whyBuy: {
+        ...(generatedContent?.whyBuy || {}),
+        ...(adminContent?.whyBuy || {}),
+      },
+
+      // ========================================================
+      // NEARBY
+      // ========================================================
+
+      nearby: {
+        ...(generatedContent?.nearby || {}),
+        ...(adminContent?.nearby || {}),
+      },
+
+      // ========================================================
+      // FAQ
+      // ========================================================
+
+      faq: {
+        ...(generatedContent?.faq || {}),
+        ...(adminContent?.faq || {}),
+      },
+
+      // ========================================================
+      // ADVISOR CTA
+      // ========================================================
+
+      advisor: {
+        ...(generatedContent?.advisor || {}),
+        ...(adminContent?.advisor || {}),
+      },
+
+      // ========================================================
+      // IMAGES
+      // ========================================================
+
+      images: {
+        ...(generatedContent?.images || {}),
+        ...(adminContent?.images || {}),
+      },
+    };
+  }, [location, properties]);
 
   // ============================================================
   // PUBLIC LOCATION URL HELPERS
@@ -115,10 +222,16 @@ export default function LocationSlugClient({
       : "in";
   };
 
+  // ============================================================
+  // BUILD PUBLIC LOCATION SLUG
+  // ============================================================
+
   const buildPublicLocationSlug = (
     currentLocation
   ) => {
-    if (!currentLocation) return "";
+    if (!currentLocation) {
+      return "";
+    }
 
     const currentSlug = String(
       currentLocation?.slug || ""
@@ -127,7 +240,9 @@ export default function LocationSlugClient({
       .toLowerCase()
       .replace(/^\/+|\/+$/g, "");
 
-    if (!currentSlug) return "";
+    if (!currentSlug) {
+      return "";
+    }
 
     let root = currentLocation;
 
@@ -178,6 +293,17 @@ export default function LocationSlugClient({
 
   // ============================================================
   // FIND CLOSEST LOCATION IMAGE
+  //
+  // Current location image wins.
+  //
+  // If unavailable:
+  // Current Location
+  //      ↓
+  // Parent
+  //      ↓
+  // Grandparent
+  //      ↓
+  // etc.
   // ============================================================
 
   const getClosestLocationImage = (
@@ -206,8 +332,7 @@ export default function LocationSlugClient({
       }
 
       const image =
-        typeof current?.image ===
-        "string"
+        typeof current?.image === "string"
           ? current.image.trim()
           : "";
 
@@ -231,10 +356,21 @@ export default function LocationSlugClient({
     );
   }, [location]);
 
+  // ============================================================
+  // HERO IMAGE
+  //
+  // Priority:
+  //
+  // 1. Custom locationContent image
+  // 2. Current / parent location image
+  // 3. First property hero image
+  // ============================================================
+
   const heroImage =
+    pageContent?.images?.hero ||
+    pageContent?.hero?.image ||
     locationImage ||
-    properties?.[0]?.media
-      ?.heroImageUrl ||
+    properties?.[0]?.media?.heroImageUrl ||
     "";
 
   // ============================================================
@@ -266,6 +402,8 @@ export default function LocationSlugClient({
 
   const locationDescription =
     location?.description ||
+    pageContent?.about?.description ||
+    pageContent?.about?.content ||
     `Explore the real estate landscape of ${locationName}, including premium residences, landmark developments, thoughtfully planned communities and property opportunities across different segments. ${locationName} offers buyers and investors an address to evaluate through the combined lens of connectivity, infrastructure, lifestyle convenience, development quality and long-term suitability. Property Bouquet brings together curated property opportunities to help you research the area, compare available projects and identify homes or investments aligned with your requirements.`;
 
   // ============================================================
@@ -283,13 +421,37 @@ export default function LocationSlugClient({
       searchParams.get("search");
 
     if (search) {
+      const searchValue =
+        search.toLowerCase().trim();
+
       result = result.filter(
-        (property) =>
-          property?.coreDetails?.title
-            ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            )
+        (property) => {
+          const title =
+            property?.coreDetails?.title ||
+            "";
+
+          const developer =
+            property?.coreDetails
+              ?.developerName ||
+            "";
+
+          const locationNameValue =
+            property?.locationData
+              ?.locationName ||
+            "";
+
+          return (
+            title
+              .toLowerCase()
+              .includes(searchValue) ||
+            developer
+              .toLowerCase()
+              .includes(searchValue) ||
+            locationNameValue
+              .toLowerCase()
+              .includes(searchValue)
+          );
+        }
       );
     }
 
@@ -454,7 +616,7 @@ export default function LocationSlugClient({
           ]
             .filter(Boolean)
             .map((item) =>
-              item
+              String(item)
                 .toLowerCase()
                 .trim()
             );
@@ -505,13 +667,16 @@ export default function LocationSlugClient({
             }
 
             const startPrice =
-              property?.coreDetails
-                ?.startingPrice || 0;
+              Number(
+                property?.coreDetails
+                  ?.startingPrice
+              ) || 0;
 
             const maxPrice =
-              property?.coreDetails
-                ?.maxPrice ||
-              startPrice;
+              Number(
+                property?.coreDetails
+                  ?.maxPrice
+              ) || startPrice;
 
             return (
               maxPrice >= minBudget &&
@@ -577,6 +742,9 @@ export default function LocationSlugClient({
       searchParams.get("bhk");
 
     if (bhk) {
+      const searchBhk =
+        bhk.toLowerCase().trim();
+
       result = result.filter(
         (property) =>
           property?.gatedContent
@@ -585,10 +753,7 @@ export default function LocationSlugClient({
               (plan) =>
                 plan?.unitType
                   ?.toLowerCase()
-                  .trim() ===
-                bhk
-                  .toLowerCase()
-                  .trim()
+                  .trim() === searchBhk
             )
       );
     }
@@ -597,9 +762,7 @@ export default function LocationSlugClient({
     // SORTING
     // ==========================================================
 
-    if (
-      sortBy === "newest"
-    ) {
+    if (sortBy === "newest") {
       result.sort(
         (a, b) =>
           new Date(
@@ -617,14 +780,14 @@ export default function LocationSlugClient({
     ) {
       result.sort(
         (a, b) =>
-          (
+          (Number(
             a?.coreDetails
-              ?.startingPrice || 0
-          ) -
-          (
+              ?.startingPrice
+          ) || 0) -
+          (Number(
             b?.coreDetails
-              ?.startingPrice || 0
-          )
+              ?.startingPrice
+          ) || 0)
       );
     }
 
@@ -634,16 +797,20 @@ export default function LocationSlugClient({
     ) {
       result.sort(
         (a, b) =>
-          (
+          (Number(
             b?.coreDetails
-              ?.startingPrice || 0
-          ) -
-          (
+              ?.startingPrice
+          ) || 0) -
+          (Number(
             a?.coreDetails
-              ?.startingPrice || 0
-          )
+              ?.startingPrice
+          ) || 0)
       );
     }
+
+    // ==========================================================
+    // RESET PAGINATION
+    // ==========================================================
 
     setVisibleCards(
       CARDS_PER_PAGE
@@ -663,10 +830,13 @@ export default function LocationSlugClient({
   // ============================================================
 
   useEffect(() => {
-    document.body.style.overflow =
-      showFilters
-        ? "hidden"
-        : "auto";
+    if (showFilters) {
+      document.body.style.overflow =
+        "hidden";
+    } else {
+      document.body.style.overflow =
+        "auto";
+    }
 
     return () => {
       document.body.style.overflow =
@@ -742,11 +912,11 @@ export default function LocationSlugClient({
 
       {/* ======================================================
           PROJECTS
+          
+          Projects remain fully dynamic.
 
-          IMPORTANT:
-          Projects remain dynamic.
-
-          They are NOT controlled by pageContent.
+          locationContent.js does NOT replace the actual
+          property/project data.
       ====================================================== */}
 
       <LocationProjects
@@ -800,86 +970,160 @@ export default function LocationSlugClient({
           REAL ESTATE TYPES
       ====================================================== */}
 
-      <LocationRealEstateTypes
-        locationName={locationName}
-        properties={properties}
-        pageContent={pageContent}
-      />
+      {pageContent?.realEstateTypes
+        ?.enabled !== false && (
+        <LocationRealEstateTypes
+          locationName={
+            locationName
+          }
+          properties={
+            properties
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           PROPERTY PRICES
       ====================================================== */}
 
-      <LocationPropertyPrices
-        locationName={locationName}
-        properties={properties}
-        pageContent={pageContent}
-      />
+      {pageContent?.prices
+        ?.enabled !== false && (
+        <LocationPropertyPrices
+          locationName={
+            locationName
+          }
+          properties={
+            properties
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           CONNECTIVITY
       ====================================================== */}
 
-      <LocationConnectivity
-        location={location}
-        locationName={locationName}
-        locationImage={locationImage}
-        pageContent={pageContent}
-      />
+      {pageContent?.connectivity
+        ?.enabled !== false && (
+        <LocationConnectivity
+          location={location}
+          locationName={
+            locationName
+          }
+          locationImage={
+            locationImage
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
-          SCHOOLS / HOSPITALS / LIFESTYLE
+          LIFESTYLE
+          
+          Schools / hospitals / lifestyle / amenities
       ====================================================== */}
 
-      <LocationLifestyle
-        locationName={locationName}
-        locationImage={locationImage}
-        pageContent={pageContent}
-      />
+      {pageContent?.lifestyle
+        ?.enabled !== false && (
+        <LocationLifestyle
+          locationName={
+            locationName
+          }
+          locationImage={
+            locationImage
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           WHY BUY
       ====================================================== */}
 
-      <WhyBuyLocation
-        locationName={locationName}
-        pageContent={pageContent}
-      />
+      {pageContent?.whyBuy
+        ?.enabled !== false && (
+        <WhyBuyLocation
+          locationName={
+            locationName
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           NEARBY LOCATIONS
       ====================================================== */}
 
-      <NearbyLocations
-        location={location}
-        locationName={locationName}
-        properties={properties}
-        buildPublicLocationSlug={
-          buildPublicLocationSlug
-        }
-        pageContent={pageContent}
-      />
+      {pageContent?.nearby
+        ?.enabled !== false && (
+        <NearbyLocations
+          location={location}
+          locationName={
+            locationName
+          }
+          properties={
+            properties
+          }
+          buildPublicLocationSlug={
+            buildPublicLocationSlug
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           FAQ
       ====================================================== */}
 
-      <LocationFAQ
-        locationName={locationName}
-        properties={properties}
-        pageContent={pageContent}
-      />
+      {pageContent?.faq
+        ?.enabled !== false && (
+        <LocationFAQ
+          locationName={
+            locationName
+          }
+          properties={
+            properties
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           FINAL ADVISOR CTA
       ====================================================== */}
 
-      <LocationAdvisorCTA
-        locationName={locationName}
-        properties={properties}
-        locationImage={locationImage}
-        pageContent={pageContent}
-      />
+      {pageContent?.advisor
+        ?.enabled !== false && (
+        <LocationAdvisorCTA
+          locationName={
+            locationName
+          }
+          properties={
+            properties
+          }
+          locationImage={
+            locationImage
+          }
+          pageContent={
+            pageContent
+          }
+        />
+      )}
 
       {/* ======================================================
           MOBILE FILTER DRAWER
@@ -897,10 +1141,14 @@ export default function LocationSlugClient({
               CARDS_PER_PAGE
             );
 
-            setShowFilters(false);
+            setShowFilters(
+              false
+            );
           }}
           onClose={() =>
-            setShowFilters(false)
+            setShowFilters(
+              false
+            )
           }
         />
       )}
