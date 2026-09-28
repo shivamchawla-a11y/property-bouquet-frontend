@@ -10,9 +10,17 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "d2dy9w7mmecm6m.cloudfront.net",
+      },
+      {
+        protocol: "https",
+        hostname: "managemylawsuits.com",
+      },
     ],
 
-    qualities: [75, 85, 90, 100],
+    qualities: [75, 78, 80, 85, 90, 100],
   },
 
   async rewrites() {
