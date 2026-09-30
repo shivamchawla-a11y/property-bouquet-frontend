@@ -16,469 +16,647 @@ export default function LuxuryDropdown({
   locationAction = false,
   locationLoading = false,
 }) {
-const [open, setOpen] = useState(false);
-const [budgetValues, setBudgetValues] =
-  useState([50, 500]);
+  const [open, setOpen] = useState(false);
 
-const ref = useRef(null);
+  const [budgetValues, setBudgetValues] = useState([50, 500]);
 
-useEffect(() => {
-const handleClickOutside = (e) => {
-if (
-ref.current &&
-!ref.current.contains(e.target)
-) {
-setOpen(false);
-}
-};
+  const ref = useRef(null);
 
+  /* ============================================================
+     CLOSE WHEN CLICKING OUTSIDE
+  ============================================================ */
 
-document.addEventListener(
-  "mousedown",
-  handleClickOutside
-);
-
-return () => {
-  document.removeEventListener(
-    "mousedown",
-    handleClickOutside
-  );
-};
-
-
-}, []);
-
-const formatBudget = (value) => {
-  if (value >= 500) return "₹5Cr+";
-
-  if (value >= 100) {
-    return `₹${(
-      value / 100
-    ).toFixed(
-      value % 100 === 0 ? 0 : 1
-    )}Cr`;
-  }
-
-  return `₹${value}L`;
-};
-
-return ( <div
-   ref={ref}
-   className="group relative flex items-center gap-3 px-4 py-3 h-full"
- >
-{/* ICON */} 
-<div className="relative shrink-0"> <div className="absolute inset-0 bg-[#c89d58]/30 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
-
-    <div className="relative w-8 h-8 rounded-xl border border-white/10 bg-white/[0.06] backdrop-blur-xl flex items-center justify-center">
-      <Icon
-        size={16}
-        className="text-[#d4ae67]"
-      />
-    </div>
-  </div>
-
-  {/* CONTENT */}
-  <div className="flex-1 min-w-0">
-    <p className="text-[8px] uppercase tracking-[2.5px] text-white/40 font-semibold mb-1">
-      {label}
-    </p>
-
-    <button
-      type="button"
-      onClick={() => setOpen((prev) => !prev)}
-      className="w-full flex items-center justify-between text-left"
-    >
-      <span className="text-white text-[13px] font-medium truncate">
-        {value || placeholder}
-      </span>
-
-      <motion.div
-        animate={{
-          rotate: open ? 180 : 0,
-        }}
-        transition={{
-          duration: 0.2,
-        }}
-      >
-        <ChevronDown
-          size={15}
-          className="text-[#c89d58]"
-        />
-      </motion.div>
-    </button>
-  </div>
-
-  {/* DROPDOWN */} 
-  <AnimatePresence>
-{open && (
-<motion.div
-initial={{
-opacity: 0,
-y: 20,
-scale: 0.95,
-}}
-animate={{
-opacity: 1,
-y: 0,
-scale: 1,
-}}
-exit={{
-opacity: 0,
-y: 20,
-scale: 0.95,
-}}
-transition={{
-duration: 0.22,
-ease: [0.22, 1, 0.36, 1],
-}}
-className="
-absolute
-left-0
-top-full
-mt-2
-w-[300px]
-z-[999999]
-rounded-2xl
-overflow-hidden
-border
-border-[#c89d58]/20
-bg-black/95
-backdrop-blur-3xl
-shadow-[0_25px_80px_rgba(0,0,0,0.7)]
-"
->
-{budgetSlider ? (
-  <div className="p-5">
-
-  {/* HEADER CARD */}
-
-  <div
-    className="
-      mb-5
-      rounded-[16px]
-      border border-[#c89d58]/15
-      bg-gradient-to-b
-      from-white/[0.05]
-      to-white/[0.02]
-      backdrop-blur-xl
-      p-4
-    "
-  >
-    <div className="flex justify-between">
-
-      <div>
-        <p className="text-white/35 text-[10px] uppercase tracking-[2px]">
-          Minimum
-        </p>
-
-        <p className="text-white text-[15px] font-medium mt-1">
-          {formatBudget(
-            budgetValues[0]
-          )}
-        </p>
-      </div>
-
-      <div className="text-right">
-        <p className="text-white/35 text-[10px] uppercase tracking-[2px]">
-          Maximum
-        </p>
-
-        <p className="text-[#d4ab57] text-[15px] font-medium mt-1">
-          {formatBudget(
-            budgetValues[1]
-          )}
-        </p>
-      </div>
-
-    </div>
-  </div>
-
-  {/* RANGE */}
-
-  <div className="px-2 py-4">
-
-    <Range
-      values={budgetValues}
-      step={10}
-      min={50}
-      max={500}
-      onChange={(values) =>
-        setBudgetValues(values)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
       }
-      renderTrack={({
-        props,
-        children,
-      }) => (
-        <div
-          {...props}
-          className="h-[4px] w-full rounded-full"
-          style={{
-            background: getTrackBackground({
-              values:
-                budgetValues,
-              colors: [
-                "rgba(255,255,255,0.08)",
-                "#d4ab57",
-                "rgba(255,255,255,0.08)",
-              ],
-              min: 50,
-              max: 500,
-            }),
-          }}
-        >
-          {children}
-        </div>
-      )}
-      renderThumb={({ props }) => {
-  const { key, ...restProps } = props;
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  /* ============================================================
+     FORMAT BUDGET
+  ============================================================ */
+
+  const formatBudget = (amount) => {
+    if (amount >= 500) {
+      return "₹5Cr+";
+    }
+
+    if (amount >= 100) {
+      return `₹${(amount / 100).toFixed(
+        amount % 100 === 0 ? 0 : 1
+      )}Cr`;
+    }
+
+    return `₹${amount}L`;
+  };
+
+  /* ============================================================
+     APPLY BUDGET
+  ============================================================ */
+
+  const handleApplyBudget = () => {
+    const min = budgetValues[0] * 100000;
+    const max = budgetValues[1] * 100000;
+
+    onChange({
+      value: `${min}-${max}`,
+      label: `${formatBudget(budgetValues[0])} - ${formatBudget(
+        budgetValues[1]
+      )}`,
+    });
+
+    setOpen(false);
+  };
+
+  /* ============================================================
+     SELECT OPTION
+  ============================================================ */
+
+  const handleOptionSelect = (item) => {
+    onChange(item);
+    setOpen(false);
+  };
+
+  /* ============================================================
+     LOCATION
+  ============================================================ */
+
+  const handleLocation = () => {
+    onChange("__USE_MY_LOCATION__");
+  };
 
   return (
     <div
-      key={key}
-      {...restProps}
+      ref={ref}
       className="
-        h-5
-        w-5
-        rounded-full
-        border
-        border-white/20
-        bg-gradient-to-b
-        from-[#e6c57b]
-        to-[#be8c32]
-        shadow-[0_0_20px_rgba(200,157,88,0.6)]
-        focus:outline-none
+        group
+        relative
+        flex
+        h-full
+        min-w-0
+        items-center
+        gap-3
+        px-4
+        py-3
       "
-    />
-  );
-}}
-    />
+    >
+      {/* ========================================================
+          ICON
+      ======================================================== */}
 
-  </div>
+      <div className="relative shrink-0">
+        <div
+          className="
+            absolute
+            inset-0
+            rounded-full
+            bg-[#c89d58]/20
+            blur-xl
+            opacity-0
+            transition-all
+            duration-500
+            group-hover:opacity-100
+          "
+        />
 
-  {/* PRESET CHIPS */}
+        <div
+          className="
+            relative
+            flex
+            h-8
+            w-8
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-[#c89d58]/30
+            bg-[#fbfaf6]
+          "
+        >
+          {Icon && (
+            <Icon
+              size={16}
+              strokeWidth={1.7}
+              className="text-[#c18f3f]"
+            />
+          )}
+        </div>
+      </div>
 
-  <div className="grid grid-cols-2 gap-2 mt-5">
+      {/* ========================================================
+          CONTENT
+      ======================================================== */}
 
-    {[
-  [50,100],
-  [100,200],
-  [200,500],
-].map((range, index) => (
-      <button
-        key={index}
-        onClick={() =>
-          setBudgetValues(range)
-        }
-        className="
-          h-[36px]
-          rounded-xl
-          border
-          border-white/10
-          bg-white/[0.03]
-          hover:border-[#c89d58]/40
-          hover:bg-white/[0.05]
-          text-white/80
-          text-[11px]
-          transition-all
-        "
-      >
-        {formatBudget(range[0])}
-        {" - "}
-        {formatBudget(range[1])}
-      </button>
-    ))}
+      <div className="min-w-0 flex-1">
+        <p
+          className="
+            mb-1
+            truncate
+            text-[8px]
+            font-semibold
+            uppercase
+            tracking-[2.5px]
+            text-[#87938e]
+          "
+        >
+          {label}
+        </p>
 
-    <button
-  onClick={() =>
-    setBudgetValues([500,500])
-  }
-  className="
-    h-[36px]
-    rounded-xl
-    border
-    border-[#c89d58]/20
-    bg-[#c89d58]/10
-    text-[#d4ab57]
-    text-[11px]
-    transition-all
-  "
->
-  ₹5Cr+
-</button>
-
-  </div>
-
-  {/* APPLY */}
-
-  <button
-    onClick={() => {
-  const min =
-    budgetValues[0] * 100000;
-
-  const max =
-    budgetValues[1] * 100000;
-
-  onChange({
-    value: `${min}-${max}`,
-    label: `${formatBudget(
-      budgetValues[0]
-    )} - ${formatBudget(
-      budgetValues[1]
-    )}`,
-  });
-
-  setOpen(false);
-}}
-    className="
-      mt-5
-      w-full
-      h-[44px]
-      rounded-[14px]
-      bg-gradient-to-r
-      from-[#e6c57b]
-      via-[#d4ab57]
-      to-[#be8c32]
-      text-black
-      text-[12px]
-      font-semibold
-      tracking-[2px]
-      uppercase
-      shadow-[0_10px_25px_rgba(200,157,88,0.25)]
-    "
-  >
-    Apply Budget
-  </button>
-
-</div>
-) : (
-  <>
-    {/* =====================================================
-        USE MY LOCATION
-    ===================================================== */}
-
-    {locationAction && (
-      <button
-        type="button"
-        onClick={() => {
-          onChange("__USE_MY_LOCATION__");
-        }}
-        disabled={locationLoading}
-        className="
-          w-full
-          px-5
-          py-4
-          text-left
-          border-b
-          border-white/[0.08]
-          bg-[#c89d58]/[0.06]
-          hover:bg-[#c89d58]/[0.10]
-          transition-all
-          duration-200
-          group
-        "
-      >
-        <div className="flex items-center gap-3">
-          <div
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((previous) => !previous)}
+          className="
+            flex
+            w-full
+            min-w-0
+            items-center
+            justify-between
+            gap-2
+            text-left
+            outline-none
+          "
+        >
+          <span
             className="
-              flex
-              h-9
-              w-9
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-[#c89d58]/30
-              bg-[#c89d58]/10
+              min-w-0
+              truncate
+              text-[13px]
+              font-medium
+              text-[#17342d]
             "
           >
-            {locationLoading ? (
-              <span
-                className="
-                  h-4
-                  w-4
-                  animate-spin
-                  rounded-full
-                  border-2
-                  border-[#c89d58]/30
-                  border-t-[#c89d58]
-                "
-              />
+            {value || placeholder}
+          </span>
+
+          <motion.span
+            className="shrink-0"
+            animate={{
+              rotate: open ? 180 : 0,
+            }}
+            transition={{
+              duration: 0.2,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <ChevronDown
+              size={15}
+              strokeWidth={1.8}
+              className="text-[#c89d58]"
+            />
+          </motion.span>
+        </button>
+      </div>
+
+      {/* ========================================================
+          DROPDOWN
+      ======================================================== */}
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 10,
+              scale: 0.97,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              y: 8,
+              scale: 0.98,
+            }}
+            transition={{
+              duration: 0.2,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            role="listbox"
+            className="
+              absolute
+              left-0
+              top-full
+              z-[999999]
+              mt-3
+              w-[300px]
+              max-w-[calc(100vw-32px)]
+              overflow-hidden
+              rounded-[18px]
+              border
+              border-[#ded8cb]
+              bg-white
+              shadow-[0_24px_70px_rgba(23,52,45,0.18)]
+            "
+          >
+            {/* ==================================================
+                BUDGET DROPDOWN
+            ================================================== */}
+
+            {budgetSlider ? (
+              <div className="p-5">
+                {/* HEADER */}
+
+                <div
+                  className="
+                    mb-5
+                    rounded-[15px]
+                    border
+                    border-[#e9e3d7]
+                    bg-[#faf8f3]
+                    p-4
+                  "
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    {/* MINIMUM */}
+
+                    <div>
+                      <p
+                        className="
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[2px]
+                          text-[#8d9691]
+                        "
+                      >
+                        Minimum
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+                          text-[15px]
+                          font-semibold
+                          text-[#17342d]
+                        "
+                      >
+                        {formatBudget(budgetValues[0])}
+                      </p>
+                    </div>
+
+                    {/* MAXIMUM */}
+
+                    <div className="text-right">
+                      <p
+                        className="
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[2px]
+                          text-[#8d9691]
+                        "
+                      >
+                        Maximum
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+                          text-[15px]
+                          font-semibold
+                          text-[#b9822e]
+                        "
+                      >
+                        {formatBudget(budgetValues[1])}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RANGE */}
+
+                <div className="px-2 py-4">
+                  <Range
+                    values={budgetValues}
+                    step={10}
+                    min={50}
+                    max={500}
+                    onChange={(values) => {
+                      setBudgetValues(values);
+                    }}
+                    renderTrack={({ props, children }) => (
+                      <div
+                        {...props}
+                        className="
+                          h-[4px]
+                          w-full
+                          rounded-full
+                        "
+                        style={{
+                          background: getTrackBackground({
+                            values: budgetValues,
+                            colors: [
+                              "#e7e2d9",
+                              "#c89d58",
+                              "#e7e2d9",
+                            ],
+                            min: 50,
+                            max: 500,
+                          }),
+                        }}
+                      >
+                        {children}
+                      </div>
+                    )}
+                    renderThumb={({ props }) => {
+                      const { key, ...restProps } = props;
+
+                      return (
+                        <div
+                          key={key}
+                          {...restProps}
+                          className="
+                            h-5
+                            w-5
+                            rounded-full
+                            border
+                            border-white
+                            bg-gradient-to-b
+                            from-[#e6c57b]
+                            to-[#b9822e]
+                            shadow-[0_3px_12px_rgba(200,157,88,0.35)]
+                            outline-none
+                          "
+                        />
+                      );
+                    }}
+                  />
+                </div>
+
+                {/* PRESETS */}
+
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBudgetValues([50, 100]);
+                    }}
+                    className="
+                      h-[36px]
+                      rounded-xl
+                      border
+                      border-[#e5dfd4]
+                      bg-[#fbfaf7]
+                      text-[11px]
+                      font-medium
+                      text-[#4b5a54]
+                      transition-all
+                      duration-200
+                      hover:border-[#c89d58]/50
+                      hover:bg-[#f8f2e7]
+                    "
+                  >
+                    ₹50L - ₹1Cr
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBudgetValues([100, 200]);
+                    }}
+                    className="
+                      h-[36px]
+                      rounded-xl
+                      border
+                      border-[#e5dfd4]
+                      bg-[#fbfaf7]
+                      text-[11px]
+                      font-medium
+                      text-[#4b5a54]
+                      transition-all
+                      duration-200
+                      hover:border-[#c89d58]/50
+                      hover:bg-[#f8f2e7]
+                    "
+                  >
+                    ₹1Cr - ₹2Cr
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBudgetValues([200, 500]);
+                    }}
+                    className="
+                      h-[36px]
+                      rounded-xl
+                      border
+                      border-[#e5dfd4]
+                      bg-[#fbfaf7]
+                      text-[11px]
+                      font-medium
+                      text-[#4b5a54]
+                      transition-all
+                      duration-200
+                      hover:border-[#c89d58]/50
+                      hover:bg-[#f8f2e7]
+                    "
+                  >
+                    ₹2Cr - ₹5Cr+
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBudgetValues([500, 500]);
+                    }}
+                    className="
+                      h-[36px]
+                      rounded-xl
+                      border
+                      border-[#c89d58]/40
+                      bg-[#c89d58]/10
+                      text-[11px]
+                      font-semibold
+                      text-[#a87322]
+                      transition-all
+                      duration-200
+                      hover:bg-[#c89d58]/15
+                    "
+                  >
+                    ₹5Cr+
+                  </button>
+                </div>
+
+                {/* APPLY */}
+
+                <button
+                  type="button"
+                  onClick={handleApplyBudget}
+                  className="
+                    mt-5
+                    h-[44px]
+                    w-full
+                    rounded-[14px]
+                    bg-[#123d31]
+                    text-[11px]
+                    font-semibold
+                    uppercase
+                    tracking-[2px]
+                    text-white
+                    shadow-[0_10px_25px_rgba(18,61,49,0.18)]
+                    transition-all
+                    duration-200
+                    hover:bg-[#0d3027]
+                    active:scale-[0.99]
+                  "
+                >
+                  Apply Budget
+                </button>
+              </div>
             ) : (
-              <MapPin
-                size={17}
-                className="text-[#d4ae67]"
-                strokeWidth={1.7}
-              />
+              <>
+                {/* ==================================================
+                    USE MY LOCATION
+                ================================================== */}
+
+                {locationAction && (
+                  <button
+                    type="button"
+                    onClick={handleLocation}
+                    disabled={locationLoading}
+                    className="
+                      w-full
+                      border-b
+                      border-[#eee9df]
+                      bg-[#faf7ef]
+                      px-5
+                      py-4
+                      text-left
+                      transition-all
+                      duration-200
+                      hover:bg-[#f6f0e4]
+                      disabled:cursor-wait
+                    "
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="
+                          flex
+                          h-9
+                          w-9
+                          shrink-0
+                          items-center
+                          justify-center
+                          rounded-full
+                          border
+                          border-[#c89d58]/35
+                          bg-[#c89d58]/10
+                        "
+                      >
+                        {locationLoading ? (
+                          <span
+                            className="
+                              h-4
+                              w-4
+                              animate-spin
+                              rounded-full
+                              border-2
+                              border-[#c89d58]/30
+                              border-t-[#c89d58]
+                            "
+                          />
+                        ) : (
+                          <MapPin
+                            size={17}
+                            strokeWidth={1.7}
+                            className="text-[#b9822e]"
+                          />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p
+                          className="
+                            truncate
+                            text-[12px]
+                            font-semibold
+                            text-[#17342d]
+                          "
+                        >
+                          {locationLoading
+                            ? "Detecting your location..."
+                            : "Use My Current Location"}
+                        </p>
+
+                        <p
+                          className="
+                            mt-0.5
+                            text-[10px]
+                            text-[#8b9691]
+                          "
+                        >
+                          Find properties near you
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* ==================================================
+                    OPTIONS
+                ================================================== */}
+
+                <div className="max-h-[320px] overflow-y-auto">
+                  {options.length > 0 ? (
+                    options.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        role="option"
+                        aria-selected={value === item}
+                        onClick={() => handleOptionSelect(item)}
+                        className="
+                          w-full
+                          border-b
+                          border-[#f0ece5]
+                          px-5
+                          py-4
+                          text-left
+                          text-[13px]
+                          font-medium
+                          text-[#30453e]
+                          transition-all
+                          duration-200
+                          last:border-none
+                          hover:bg-[#faf7f1]
+                          hover:text-[#17342d]
+                        "
+                      >
+                        {item}
+                      </button>
+                    ))
+                  ) : (
+                    <div
+                      className="
+                        px-5
+                        py-5
+                        text-center
+                        text-[12px]
+                        text-[#929b96]
+                      "
+                    >
+                      No options available
+                    </div>
+                  )}
+                </div>
+              </>
             )}
-          </div>
-
-          <div className="min-w-0">
-            <p
-              className="
-                text-[12px]
-                font-medium
-                text-[#d4ae67]
-              "
-            >
-              {locationLoading
-                ? "Detecting your location..."
-                : "Use My Current Location"}
-            </p>
-
-            <p
-              className="
-                mt-0.5
-                text-[10px]
-                text-white/35
-              "
-            >
-              Find properties near you
-            </p>
-          </div>
-        </div>
-      </button>
-    )}
-
-    {/* =====================================================
-        NORMAL OPTIONS
-    ===================================================== */}
-
-    {options.map((item) => (
-      <button
-        key={item}
-        type="button"
-        onClick={() => {
-          onChange(item);
-          setOpen(false);
-        }}
-        className="
-          w-full
-          px-5
-          py-4
-          text-left
-          text-white/80
-          hover:text-white
-          hover:bg-white/[0.05]
-          transition-all
-          duration-200
-          border-b
-          border-white/[0.04]
-          last:border-none
-        "
-      >
-        {item}
-      </button>
-    ))}
-  </>
-)}
-</motion.div>
-)} 
-
-</AnimatePresence>
-
-</div>
-
-
-);
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

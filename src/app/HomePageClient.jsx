@@ -52,7 +52,7 @@ export default function HomePage() {
   return (
     <main className="bg-[#f6f6f6] overflow-hidden">
 
-      <Navbar
+      <Navbar forceSolid
         onConsultationClick={() =>
           setShowConsultation(true)
         }
