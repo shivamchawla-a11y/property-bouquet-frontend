@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Minus } from "lucide-react";
 
 export default function LocationFAQ({
@@ -157,6 +157,52 @@ export default function LocationFAQ({
   );
 
   // ============================================================
+  // NORMALIZE FAQ RICH TEXT
+  //
+  // ReactQuill can store:
+  //   &nbsp;
+  //   &#160;
+  //   &#xA0;
+  //   actual NBSP characters
+  //
+  // Normalize them so they cannot create horizontal overflow.
+  // ============================================================
+
+  const normalizedFaqs = useMemo(() => {
+    return faqs.map((faq) => {
+      const normalizedAnswer =
+        typeof faq.answer === "string"
+          ? faq.answer
+              .replace(
+                /&nbsp;/gi,
+                " "
+              )
+              .replace(
+                /&#160;/gi,
+                " "
+              )
+              .replace(
+                /&#xA0;/gi,
+                " "
+              )
+              .replace(
+                /\u00a0/g,
+                " "
+              )
+              .replace(
+                /<p>\s*<\/p>/gi,
+                ""
+              )
+          : "";
+
+      return {
+        ...faq,
+        normalizedAnswer,
+      };
+    });
+  }, [faqs]);
+
+  // ============================================================
   // OPEN FAQ
   // ============================================================
 
@@ -171,7 +217,7 @@ export default function LocationFAQ({
   // ============================================================
 
   useEffect(() => {
-    if (!faqs.length) {
+    if (!normalizedFaqs.length) {
       setOpenIndex(-1);
       return;
     }
@@ -179,14 +225,14 @@ export default function LocationFAQ({
     setOpenIndex((current) => {
       if (
         current < 0 ||
-        current >= faqs.length
+        current >= normalizedFaqs.length
       ) {
         return 0;
       }
 
       return current;
     });
-  }, [faqs.length]);
+  }, [normalizedFaqs.length]);
 
   // ============================================================
   // RENDER
@@ -316,131 +362,277 @@ export default function LocationFAQ({
             lg:gap-x-20
           "
         >
-          {faqs.map((faq, index) => {
-            const isOpen =
-              openIndex === index;
+          {normalizedFaqs.map(
+            (faq, index) => {
+              const isOpen =
+                openIndex === index;
 
-            return (
-              <div
-                key={`${faq.question || "faq"}-${index}`}
-                className="
-                  group
-                  border-b
-                  border-[#ded7cc]
-                "
-              >
-                {/* ==================================================
-                    QUESTION
-                ================================================== */}
+              // ==================================================
+              // RICH TEXT DETECTION
+              // ==================================================
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenIndex(
-                      isOpen
-                        ? -1
-                        : index
-                    )
-                  }
-                  aria-expanded={isOpen}
-                  aria-controls={`faq-answer-${index}`}
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    gap-7
-                    py-6
-                    text-left
-                    transition-all
-                    duration-200
-                  "
-                >
-                  {/* QUESTION TEXT */}
+              const hasRichText =
+                /<\/?[a-z][\s\S]*>/i.test(
+                  faq.normalizedAnswer
+                );
 
-                  <span
-                    className={`
-                      max-w-[calc(100%-50px)]
-                      text-[14px]
-                      font-semibold
-                      leading-[1.55]
-                      transition-colors
-                      duration-200
-                      sm:text-[15px]
-                      md:text-[16px]
-                      ${
-                        isOpen
-                          ? "text-[#8F7335]"
-                          : "text-[#17342d] group-hover:text-[#8F7335]"
-                      }
-                    `}
-                  >
-                    {faq.question}
-                  </span>
-
-                  {/* PLUS / MINUS */}
-
-                  <span
-                    className={`
-                      flex
-                      h-9
-                      w-9
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-full
-                      border
-                      transition-all
-                      duration-300
-                      ${
-                        isOpen
-                          ? "border-[#C89D58] bg-[#C89D58] text-white"
-                          : "border-[#d8d0c3] bg-[#faf8f4] text-[#8F7335] group-hover:border-[#C89D58] group-hover:bg-[#fffaf1]"
-                      }
-                    `}
-                  >
-                    {isOpen ? (
-                      <Minus
-                        size={15}
-                        strokeWidth={1.8}
-                      />
-                    ) : (
-                      <Plus
-                        size={15}
-                        strokeWidth={1.8}
-                      />
-                    )}
-                  </span>
-                </button>
-
-                {/* ==================================================
-                    ANSWER
-                ================================================== */}
-
+              return (
                 <div
-                  id={`faq-answer-${index}`}
-                  hidden={!isOpen}
+                  key={`${faq.question || "faq"}-${index}`}
                   className="
-                    max-w-[680px]
-                    pb-6
-                    pr-10
+                    group
+                    border-b
+                    border-[#ded7cc]
                   "
                 >
-                  <p
+                  {/* ==================================================
+                      QUESTION
+                  ================================================== */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenIndex(
+                        isOpen
+                          ? -1
+                          : index
+                      )
+                    }
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-answer-${index}`}
                     className="
-                      text-[12.5px]
-                      leading-[1.9]
-                      text-[#69716c]
-                      sm:text-[13px]
-                      md:text-[14px]
+                      flex
+                      w-full
+                      items-center
+                      justify-between
+                      gap-7
+                      py-6
+                      text-left
+                      transition-all
+                      duration-200
                     "
                   >
-                    {faq.answer}
-                  </p>
+                    {/* QUESTION TEXT */}
+
+                    <span
+                      className={`
+                        max-w-[calc(100%-50px)]
+                        break-words
+                        [overflow-wrap:anywhere]
+                        text-[14px]
+                        font-semibold
+                        leading-[1.55]
+                        transition-colors
+                        duration-200
+                        sm:text-[15px]
+                        md:text-[16px]
+                        ${
+                          isOpen
+                            ? "text-[#8F7335]"
+                            : "text-[#17342d] group-hover:text-[#8F7335]"
+                        }
+                      `}
+                    >
+                      {faq.question}
+                    </span>
+
+                    {/* PLUS / MINUS */}
+
+                    <span
+                      className={`
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        border
+                        transition-all
+                        duration-300
+                        ${
+                          isOpen
+                            ? "border-[#C89D58] bg-[#C89D58] text-white"
+                            : "border-[#d8d0c3] bg-[#faf8f4] text-[#8F7335] group-hover:border-[#C89D58] group-hover:bg-[#fffaf1]"
+                        }
+                      `}
+                    >
+                      {isOpen ? (
+                        <Minus
+                          size={15}
+                          strokeWidth={1.8}
+                        />
+                      ) : (
+                        <Plus
+                          size={15}
+                          strokeWidth={1.8}
+                        />
+                      )}
+                    </span>
+                  </button>
+
+                  {/* ==================================================
+                      ANSWER
+                  ================================================== */}
+
+                  <div
+                    id={`faq-answer-${index}`}
+                    hidden={!isOpen}
+                    className="
+                      max-w-[680px]
+                      min-w-0
+                      pb-6
+                      pr-10
+                    "
+                  >
+                    {hasRichText ? (
+                      /* ==================================================
+                         RICH TEXT ANSWER
+                      ================================================== */
+
+                      <div
+                        className="
+                          min-w-0
+                          w-full
+                          max-w-full
+                          break-words
+                          text-[12.5px]
+                          leading-[1.9]
+                          text-[#69716c]
+                          [overflow-wrap:anywhere]
+                          [word-break:break-word]
+
+                          [&_*]:max-w-full
+                          [&_img]:h-auto
+                          [&_img]:max-w-full
+
+                          [&_p]:m-0
+                          [&_p]:mb-4
+                          [&_p:last-child]:mb-0
+                          [&_p]:break-words
+                          [&_p]:[overflow-wrap:anywhere]
+
+                          [&_strong]:font-semibold
+                          [&_strong]:text-[#4f5b55]
+
+                          [&_b]:font-semibold
+                          [&_b]:text-[#4f5b55]
+
+                          [&_em]:italic
+
+                          [&_a]:font-medium
+                          [&_a]:text-[#A47A2B]
+                          [&_a]:underline
+                          [&_a]:underline-offset-2
+
+                          [&_ul]:mb-4
+                          [&_ul]:ml-5
+                          [&_ul]:max-w-full
+                          [&_ul]:list-disc
+
+                          [&_ol]:mb-4
+                          [&_ol]:ml-5
+                          [&_ol]:max-w-full
+                          [&_ol]:list-decimal
+
+                          [&_li]:mb-1
+                          [&_li]:break-words
+                          [&_li]:[overflow-wrap:anywhere]
+
+                          [&_h1]:max-w-full
+                          [&_h2]:max-w-full
+                          [&_h3]:max-w-full
+                          [&_h4]:max-w-full
+                          [&_h5]:max-w-full
+                          [&_h6]:max-w-full
+
+                          [&_h1]:mb-3
+                          [&_h1]:mt-5
+                          [&_h1]:font-playfair
+                          [&_h1]:font-semibold
+                          [&_h1]:text-[#17342d]
+
+                          [&_h2]:mb-3
+                          [&_h2]:mt-5
+                          [&_h2]:font-playfair
+                          [&_h2]:font-semibold
+                          [&_h2]:text-[#17342d]
+
+                          [&_h3]:mb-3
+                          [&_h3]:mt-5
+                          [&_h3]:font-playfair
+                          [&_h3]:text-xl
+                          [&_h3]:font-semibold
+                          [&_h3]:text-[#17342d]
+
+                          [&_h4]:mb-2
+                          [&_h4]:mt-4
+                          [&_h4]:font-semibold
+                          [&_h4]:text-[#17342d]
+
+                          sm:text-[13px]
+
+                          md:text-[14px]
+                        "
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            faq.normalizedAnswer,
+                        }}
+                      />
+                    ) : (
+                      /* ==================================================
+                         PLAIN TEXT ANSWER
+                      ================================================== */
+
+                      <div
+                        className="
+                          min-w-0
+                          w-full
+                          max-w-full
+                          space-y-4
+                          break-words
+                          text-[12.5px]
+                          leading-[1.9]
+                          text-[#69716c]
+                          [overflow-wrap:anywhere]
+                          [word-break:break-word]
+
+                          sm:text-[13px]
+
+                          md:text-[14px]
+                        "
+                      >
+                        {faq.normalizedAnswer
+                          .split(
+                            /\n\s*\n/
+                          )
+                          .map(
+                            (
+                              paragraph,
+                              paragraphIndex
+                            ) => (
+                              <p
+                                key={
+                                  paragraphIndex
+                                }
+                                className="
+                                  m-0
+                                  max-w-full
+                                  break-words
+                                  [overflow-wrap:anywhere]
+                                "
+                              >
+                                {paragraph.trim()}
+                              </p>
+                            )
+                          )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+          )}
         </div>
 
         {/* ======================================================
@@ -477,6 +669,7 @@ export default function LocationFAQ({
           </p>
 
           <span className="h-px w-6 bg-[#C89D58]" />
+
         </div>
       </div>
     </section>

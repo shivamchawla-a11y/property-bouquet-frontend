@@ -2989,30 +2989,32 @@ export default function LocationPageEditor() {
               }
             />
 
-            <div className="mt-3">
-              <TextAreaField
-                label="Answer"
-                value={item.answer}
-                onChange={(value) =>
-                  setContent((prev) => ({
-                    ...prev,
-                    faq: {
-                      ...prev.faq,
-                      items:
-                        prev.faq.items.map(
-                          (faq, i) =>
-                            i === index
-                              ? {
-                                  ...faq,
-                                  answer: value,
-                                }
-                              : faq
-                        ),
-                    },
-                  }))
-                }
-              />
-            </div>
+            <div className="mt-4">
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Answer
+  </label>
+
+  <RichTextEditor
+    value={item.answer}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        faq: {
+          ...prev.faq,
+          items: prev.faq.items.map(
+            (faq, i) =>
+              i === index
+                ? {
+                    ...faq,
+                    answer: value,
+                  }
+                : faq
+          ),
+        },
+      }))
+    }
+  />
+</div>
           </div>
         )
       )}
