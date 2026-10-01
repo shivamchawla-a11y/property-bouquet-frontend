@@ -1,5 +1,9 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+
 import {
   ArrowRight,
   Building2,
@@ -11,109 +15,520 @@ import {
   Trees,
 } from "lucide-react";
 
-import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
-
-import SearchPanel from "./SearchPanel";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 /* ============================================================
    PROPERTY BOUQUET — DESKTOP HERO
 
-   IMPORTANT
+   HERO PROJECT CAROUSEL
    ------------------------------------------------------------
-   - Uses the REAL functional SearchPanel
-   - SearchPanel remains in normal document flow
-   - Hero uses overflow-visible so dropdowns can escape
-   - Categories are fetched from /api/properties
-   - Categories use categoryData.categoryName
-   - Category click uses ?propertyType=
-   - Mobile hero remains separate
+   Automatic circular movement:
+
+       TOP
+        ↓
+      CENTER
+        ↓
+      BOTTOM
+        ↓
+       TOP
+
+   Therefore on every rotation:
+
+     TOP PROJECT    → CENTER
+     CENTER PROJECT → BOTTOM
+     BOTTOM PROJECT → TOP
+
+   No arrows.
+   No manual carousel controls.
+   Real Featured properties.
+============================================================ */
+
+
+/* ============================================================
+   SEARCH PANEL
+   ------------------------------------------------------------
+   Loaded separately so SearchPanel does not block the initial
+   hero render.
+============================================================ */
+
+const SearchPanel = dynamic(
+  () => import("./SearchPanel"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="
+          h-[72px]
+          w-full
+          animate-pulse
+          rounded-[18px]
+          border
+          border-[#e8e2d7]
+          bg-white/80
+        "
+      />
+    ),
+  }
+);
+
+
+/* ============================================================
+   CONSTANTS
+============================================================ */
+
+const FEATURED_API =
+  "/api/properties?propertyTag=Featured";
+
+/*
+ * Time between carousel movements.
+ *
+ * 4200ms gives the user enough time to see the project while
+ * still making the hero feel alive.
+ */
+const HERO_ROTATION_MS = 4200;
+
+/*
+ * The actual movement duration.
+ *
+ * This is deliberately longer than a normal fade so the user
+ * can SEE the project physically move between positions.
+ */
+const HERO_ANIMATION_MS = 1150;
+
+
+/*
+ * Only keep a small number of featured projects in memory.
+ *
+ * We don't need 30/50/100 properties in the hero carousel.
+ */
+const MAX_HERO_PROPERTIES = 8;
+
+
+const FALLBACK_IMAGES = [
+  "/img1.jpg",
+  "/img2.jpg",
+  "/img3.jpg",
+];
+
+
+/* ============================================================
+   RANDOM SHUFFLE
+============================================================ */
+
+function shuffleArray(array) {
+  const shuffled = [...array];
+
+  for (
+    let i = shuffled.length - 1;
+    i > 0;
+    i -= 1
+  ) {
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
+
+    [
+      shuffled[i],
+      shuffled[j],
+    ] = [
+      shuffled[j],
+      shuffled[i],
+    ];
+  }
+
+  return shuffled;
+}
+
+
+/* ============================================================
+   PROPERTY ID
+   ------------------------------------------------------------
+   Important for Framer Motion.
+
+   The same property must keep the same React key when it moves
+   from TOP → CENTER → BOTTOM.
+
+   That is what makes the movement physical rather than making
+   the old image disappear and the new image appear.
+============================================================ */
+
+function getPropertyKey(property) {
+  return (
+    property?._id ||
+    property?.id ||
+    property?.slug ||
+    property?.coreDetails?.title ||
+    Math.random()
+  );
+}
+
+
+/* ============================================================
+   PROPERTY IMAGE
+============================================================ */
+
+function getPropertyImage(
+  property,
+  fallbackIndex = 0
+) {
+  const image =
+    property?.media?.heroImageUrl ||
+    property?.media?.heroImage ||
+    property?.media?.heroImage?.url ||
+    property?.heroImageUrl ||
+    property?.image ||
+    property?.coreDetails?.image;
+
+  if (
+    image &&
+    typeof image === "string"
+  ) {
+    return image;
+  }
+
+  return (
+    FALLBACK_IMAGES[
+      Math.abs(fallbackIndex) %
+        FALLBACK_IMAGES.length
+    ] ||
+    FALLBACK_IMAGES[0]
+  );
+}
+
+
+/* ============================================================
+   PROPERTY TITLE
+============================================================ */
+
+function getPropertyTitle(property) {
+  return (
+    property?.coreDetails?.title ||
+    property?.title ||
+    property?.name ||
+    "Featured Property"
+  );
+}
+
+
+/* ============================================================
+   PROPERTY LOCATION
+============================================================ */
+
+function getPropertyLocation(property) {
+  const location =
+    property?.locationData?.locationRef;
+
+  if (!location) {
+    return (
+      property?.locationData?.customLocation ||
+      property?.locationData?.locationName ||
+      property?.location ||
+      "Prime Location"
+    );
+  }
+
+  const parts = [];
+
+  if (location?.name) {
+    parts.push(location.name);
+  }
+
+  if (location?.parent?.name) {
+    parts.push(
+      location.parent.name
+    );
+  }
+
+  if (
+    location?.parent?.parent?.name
+  ) {
+    parts.push(
+      location.parent.parent.name
+    );
+  }
+
+  return (
+    parts.join(", ") ||
+    property?.locationData?.locationName ||
+    "Prime Location"
+  );
+}
+
+
+/* ============================================================
+   COMPONENT
 ============================================================ */
 
 export default function HeroSection() {
+
   /* ==========================================================
-     DYNAMIC PROPERTY CATEGORIES
+     FEATURED PROPERTIES
   ========================================================== */
 
-  const [propertyCategories, setPropertyCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [
+    featuredProperties,
+    setFeaturedProperties,
+  ] = useState([]);
+
+  const [
+    featuredLoading,
+    setFeaturedLoading,
+  ] = useState(true);
+
+  const [
+    activeIndex,
+    setActiveIndex,
+  ] = useState(0);
+
+
+  /* ==========================================================
+     CATEGORY DATA
+  ========================================================== */
+
+  const [
+    propertyCategories,
+    setPropertyCategories,
+  ] = useState([]);
+
+  const [
+    categoriesLoading,
+    setCategoriesLoading,
+  ] = useState(true);
+
+
+  /* ==========================================================
+     ROTATION REF
+  ========================================================== */
+
+  const rotationTimeoutRef =
+    useRef(null);
+
+
+  /* ==========================================================
+     FETCH FEATURED PROPERTIES
+     ----------------------------------------------------------
+     Exact Featured API:
+
+       /api/properties?propertyTag=Featured
+  ========================================================== */
+
+  useEffect(() => {
+    const controller =
+      new AbortController();
+
+    let mounted = true;
+
+    async function fetchFeaturedProperties() {
+      try {
+        setFeaturedLoading(true);
+
+        const response =
+          await fetch(
+            FEATURED_API,
+            {
+              /*
+               * Keep this request fresh because Featured
+               * properties can be changed from admin.
+               */
+              cache: "no-store",
+
+              signal:
+                controller.signal,
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `Featured properties request failed: ${response.status}`
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (!mounted) {
+          return;
+        }
+
+        /*
+         * Expected API shape:
+         *
+         * {
+         *   success: true,
+         *   data: [...]
+         * }
+         */
+        if (!data?.success) {
+          setFeaturedProperties([]);
+          return;
+        }
+
+        /*
+         * Keep only valid public properties.
+         */
+        const published =
+          Array.isArray(data?.data)
+            ? data.data.filter(
+                (property) =>
+                  property?.status ===
+                    "published" &&
+                  property?.isDeleted ===
+                    false &&
+                  property?.isActive ===
+                    true
+              )
+            : [];
+
+        /*
+         * Randomize once.
+         *
+         * The carousel itself does NOT randomize every rotation.
+         */
+        const randomized =
+          shuffleArray(published);
+
+        /*
+         * Keep the hero lightweight.
+         */
+        const limited =
+          randomized.slice(
+            0,
+            MAX_HERO_PROPERTIES
+          );
+
+        setFeaturedProperties(
+          limited
+        );
+
+        setActiveIndex(0);
+      } catch (error) {
+        if (
+          error?.name !==
+          "AbortError"
+        ) {
+          console.error(
+            "Property Bouquet featured hero fetch failed:",
+            error
+          );
+
+          if (mounted) {
+            setFeaturedProperties([]);
+          }
+        }
+      } finally {
+        if (
+          mounted &&
+          !controller.signal.aborted
+        ) {
+          setFeaturedLoading(false);
+        }
+      }
+    }
+
+    fetchFeaturedProperties();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
+
+
+  /* ==========================================================
+     FETCH CATEGORIES
+     ----------------------------------------------------------
+     Delayed so the Featured hero gets the network priority.
+  ========================================================== */
 
   useEffect(() => {
     let cancelled = false;
 
-    const fetchPropertyCategories = async () => {
+    let idleId = null;
+    let timeoutId = null;
+
+    async function fetchCategories() {
       try {
         setCategoriesLoading(true);
 
-        const response = await fetch("/api/properties", {
-          cache: "no-store",
-        });
+        const response =
+          await fetch(
+            "/api/properties",
+            {
+              cache: "no-store",
+            }
+          );
 
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch properties: ${response.status}`
+            `Categories request failed: ${response.status}`
           );
         }
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
-        /*
-         * Support the common response shapes without changing
-         * the actual category source.
-         */
-        const propertyData = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.properties)
-            ? data.properties
-            : Array.isArray(data?.data)
-              ? data.data
-              : [];
+        const propertyData =
+          Array.isArray(data)
+            ? data
+            : Array.isArray(
+                  data?.properties
+                )
+              ? data.properties
+              : Array.isArray(
+                    data?.data
+                  )
+                ? data.data
+                : [];
 
-        /*
-         * EXACT SAME CATEGORY SOURCE AS SEARCHPANEL:
-         *
-         * property?.categoryData?.categoryName
-         */
         const uniqueCategories = [
           ...new Set(
             propertyData
               .map(
                 (property) =>
-                  property?.categoryData?.categoryName
+                  property
+                    ?.categoryData
+                    ?.categoryName
               )
               .filter(Boolean)
-              .map((name) => String(name).trim())
+              .map((name) =>
+                String(name).trim()
+              )
               .filter(Boolean)
           ),
         ];
 
-        if (!uniqueCategories.length) {
-          setPropertyCategories([]);
-          return;
-        }
-
-        /*
-         * Select the four most relevant categories for the
-         * homepage while keeping their REAL database names.
-         *
-         * Nothing is renamed.
-         */
-        const getCategoryScore = (name) => {
-          const value = name.toLowerCase();
+        const getCategoryScore = (
+          name
+        ) => {
+          const value =
+            String(name)
+              .toLowerCase();
 
           if (
-            value.includes("apartment") ||
-            value.includes("residential") ||
+            value.includes(
+              "apartment"
+            ) ||
+            value.includes(
+              "residential"
+            ) ||
             value.includes("flat")
           ) {
             return 100;
           }
 
-          if (value.includes("villa")) {
+          if (
+            value.includes("villa")
+          ) {
             return 90;
           }
 
@@ -125,7 +540,9 @@ export default function HeroSection() {
           }
 
           if (
-            value.includes("commercial") ||
+            value.includes(
+              "commercial"
+            ) ||
             value.includes("office") ||
             value.includes("retail")
           ) {
@@ -133,72 +550,237 @@ export default function HeroSection() {
           }
 
           if (
-            value.includes("builder") ||
+            value.includes(
+              "builder"
+            ) ||
             value.includes("floor")
           ) {
             return 60;
           }
 
-          if (value.includes("penthouse")) {
+          if (
+            value.includes(
+              "penthouse"
+            )
+          ) {
             return 55;
           }
 
-          if (value.includes("investment")) {
+          if (
+            value.includes(
+              "investment"
+            )
+          ) {
             return 50;
           }
 
           return 10;
         };
 
-        const sortedCategories = [...uniqueCategories].sort(
-          (a, b) => {
-            const scoreDifference =
-              getCategoryScore(b) -
-              getCategoryScore(a);
+        const sortedCategories =
+          [...uniqueCategories].sort(
+            (a, b) => {
+              const difference =
+                getCategoryScore(b) -
+                getCategoryScore(a);
 
-            if (scoreDifference !== 0) {
-              return scoreDifference;
+              if (
+                difference !== 0
+              ) {
+                return difference;
+              }
+
+              return a.localeCompare(
+                b
+              );
             }
+          );
 
-            return a.localeCompare(b);
-          }
-        );
-
-        /*
-         * First four highest-priority REAL categories.
-         */
         setPropertyCategories(
-          sortedCategories.slice(0, 4)
+          sortedCategories.slice(
+            0,
+            4
+          )
         );
       } catch (error) {
-        console.error(
-          "Property Bouquet category fetch failed:",
-          error
-        );
-
         if (!cancelled) {
-          setPropertyCategories([]);
+          console.error(
+            "Property Bouquet category fetch failed:",
+            error
+          );
+
+          setPropertyCategories(
+            []
+          );
         }
       } finally {
         if (!cancelled) {
-          setCategoriesLoading(false);
+          setCategoriesLoading(
+            false
+          );
         }
       }
-    };
+    }
 
-    fetchPropertyCategories();
+
+    /*
+     * Do not make the category request compete with the hero.
+     */
+    if (
+      typeof window !==
+        "undefined" &&
+      "requestIdleCallback" in
+        window
+    ) {
+      idleId =
+        window.requestIdleCallback(
+          fetchCategories,
+          {
+            timeout: 1400,
+          }
+        );
+    } else {
+      timeoutId =
+        window.setTimeout(
+          fetchCategories,
+          350
+        );
+    }
+
 
     return () => {
       cancelled = true;
+
+      if (
+        idleId !== null &&
+        typeof window !==
+          "undefined" &&
+        "cancelIdleCallback" in
+          window
+      ) {
+        window.cancelIdleCallback(
+          idleId
+        );
+      }
+
+      if (
+        timeoutId !== null
+      ) {
+        clearTimeout(
+          timeoutId
+        );
+      }
     };
   }, []);
+
+
+  /* ==========================================================
+     AUTOMATIC CIRCULAR ROTATION
+     ----------------------------------------------------------
+
+     Current state:
+
+       TOP    = next
+       CENTER = active
+       BOTTOM = previous
+
+
+     After +1:
+
+       old TOP    → CENTER
+       old CENTER → BOTTOM
+       old BOTTOM → TOP
+
+
+     This is the actual physical circular movement.
+  ========================================================== */
+
+  useEffect(() => {
+    if (
+      featuredProperties.length <
+      3
+    ) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+
+    const scheduleNextRotation =
+      () => {
+        if (cancelled) {
+          return;
+        }
+
+        /*
+         * Do not rotate when the user has another tab open.
+         * This saves CPU and avoids unnecessary animation work.
+         */
+        if (
+          typeof document !==
+            "undefined" &&
+          document.visibilityState !==
+            "visible"
+        ) {
+          rotationTimeoutRef.current =
+            window.setTimeout(
+              scheduleNextRotation,
+              HERO_ROTATION_MS
+            );
+
+          return;
+        }
+
+        setActiveIndex(
+  (prev) =>
+    (prev - 1 + featuredProperties.length) %
+    featuredProperties.length
+);
+        rotationTimeoutRef.current =
+          window.setTimeout(
+            scheduleNextRotation,
+            HERO_ROTATION_MS
+          );
+      };
+
+
+    rotationTimeoutRef.current =
+      window.setTimeout(
+        scheduleNextRotation,
+        HERO_ROTATION_MS
+      );
+
+
+    return () => {
+      cancelled = true;
+
+      if (
+        rotationTimeoutRef.current
+      ) {
+        clearTimeout(
+          rotationTimeoutRef.current
+        );
+
+        rotationTimeoutRef.current =
+          null;
+      }
+    };
+  }, [
+    featuredProperties.length,
+  ]);
+
 
   /* ==========================================================
      CATEGORY ICON
   ========================================================== */
 
-  const getCategoryIcon = (categoryName) => {
-    const value = String(categoryName || "").toLowerCase();
+  const getCategoryIcon = (
+    categoryName
+  ) => {
+    const value =
+      String(
+        categoryName || ""
+      ).toLowerCase();
 
     if (
       value.includes("plot") ||
@@ -208,50 +790,167 @@ export default function HeroSection() {
     }
 
     if (
-      value.includes("commercial") ||
+      value.includes(
+        "commercial"
+      ) ||
       value.includes("office") ||
       value.includes("retail")
     ) {
       return Landmark;
     }
 
-    if (value.includes("villa")) {
+    if (
+      value.includes("villa")
+    ) {
       return Home;
     }
 
     return Building2;
   };
 
+
   /* ==========================================================
      CATEGORY CARDS
   ========================================================== */
 
- const categoryCards = useMemo(() => {
-  return propertyCategories.map((categoryName, index) => ({
-    title: categoryName,
-    icon: getCategoryIcon(categoryName),
+  const categoryCards =
+    useMemo(() => {
+      return propertyCategories.map(
+        (
+          categoryName,
+          index
+        ) => ({
+          title:
+            categoryName,
 
-    // Category images:
-    // 1st → img4.jpg
-    // 2nd → img5.jpg
-    // 3rd → img6.jpg
-    // 4th → img7.jpg
-    image: `/img${index + 4}.webp`,
+          icon:
+            getCategoryIcon(
+              categoryName
+            ),
 
-    /*
-     * Slightly different crop for visual variety.
-     * The actual category remains completely dynamic.
-     */
-    position:
-      index === 0
-        ? "center"
-        : index === 1
-          ? "65% center"
-          : index === 2
-            ? "25% bottom"
-            : "80% center",
-  }));
-}, [propertyCategories]);
+          image:
+            `/img${index + 4}.webp`,
+
+          position:
+            index === 0
+              ? "center"
+              : index === 1
+                ? "65% center"
+                : index === 2
+                  ? "25% bottom"
+                  : "80% center",
+        })
+      );
+    }, [
+      propertyCategories,
+    ]);
+
+
+  /* ==========================================================
+     CAROUSEL DATA
+  ========================================================== */
+
+  const carouselProperties =
+    useMemo(() => {
+      const count =
+        featuredProperties.length;
+
+      if (count < 3) {
+        return {
+          previous: null,
+          active: null,
+          next: null,
+        };
+      }
+
+      const safeActive =
+        activeIndex % count;
+
+      const previous =
+        featuredProperties[
+          (
+            safeActive -
+            1 +
+            count
+          ) % count
+        ];
+
+      const active =
+        featuredProperties[
+          safeActive
+        ];
+
+      const next =
+        featuredProperties[
+          (safeActive + 1) %
+            count
+        ];
+
+      return {
+        previous,
+        active,
+        next,
+      };
+    }, [
+      featuredProperties,
+      activeIndex,
+    ]);
+
+
+  /* ==========================================================
+     UNIQUE VISIBLE CARDS
+     ----------------------------------------------------------
+     Stable keys are essential for the physical movement.
+  ========================================================== */
+
+  const visibleCarouselCards =
+    useMemo(() => {
+      const cards = [];
+
+      if (
+        carouselProperties.previous
+      ) {
+        cards.push({
+          property:
+            carouselProperties.previous,
+          role: "previous",
+        });
+      }
+
+      if (
+        carouselProperties.active
+      ) {
+        cards.push({
+          property:
+            carouselProperties.active,
+          role: "active",
+        });
+      }
+
+      if (
+        carouselProperties.next
+      ) {
+        cards.push({
+          property:
+            carouselProperties.next,
+          role: "next",
+        });
+      }
+
+      return cards;
+    }, [
+      carouselProperties,
+    ]);
+
+
+  const showHeroSkeleton =
+    featuredLoading &&
+    !featuredProperties.length;
+
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <section
@@ -263,11 +962,9 @@ export default function HeroSection() {
         text-[#17342d]
       "
     >
+
       {/* ======================================================
           BACKGROUND DECORATION
-
-          IMPORTANT:
-          NO overflow-hidden on the parent.
       ====================================================== */}
 
       <div
@@ -317,6 +1014,7 @@ export default function HeroSection() {
         "
       />
 
+
       {/* ======================================================
           DESKTOP HERO CONTENT
       ====================================================== */}
@@ -331,9 +1029,6 @@ export default function HeroSection() {
           xl:pt-[76px]
         "
       >
-        {/* ====================================================
-            CONTROLLED WIDTH
-        ==================================================== */}
 
         <div
           className="
@@ -347,6 +1042,7 @@ export default function HeroSection() {
             xl:px-6
           "
         >
+
           {/* ==================================================
               HERO TOP
           ================================================== */}
@@ -360,6 +1056,7 @@ export default function HeroSection() {
               xl:h-[420px]
             "
           >
+
             {/* =================================================
                 LEFT CONTENT
             ================================================= */}
@@ -375,9 +1072,8 @@ export default function HeroSection() {
                 xl:pt-[62px]
               "
             >
-              {/* =================================================
-                  EYEBROW
-              ================================================= */}
+
+              {/* EYEBROW */}
 
               <motion.div
                 initial={{
@@ -410,7 +1106,8 @@ export default function HeroSection() {
                     xl:tracking-[3.2px]
                   "
                 >
-                  CURATED FOR GENERATIONS OF WEALTH
+                  CURATED FOR GENERATIONS OF
+                  WEALTH
                 </span>
 
                 <span
@@ -424,9 +1121,8 @@ export default function HeroSection() {
                 />
               </motion.div>
 
-              {/* =================================================
-                  MAIN HEADING
-              ================================================= */}
+
+              {/* MAIN HEADING */}
 
               <motion.h1
                 initial={{
@@ -470,9 +1166,8 @@ export default function HeroSection() {
                 </span>
               </motion.h1>
 
-              {/* =================================================
-                  DESCRIPTION
-              ================================================= */}
+
+              {/* DESCRIPTION */}
 
               <motion.p
                 initial={{
@@ -499,14 +1194,14 @@ export default function HeroSection() {
                   xl:leading-[1.7]
                 "
               >
-                Premium residences, luxury investments, and
-                exclusive opportunities across India&apos;s
+                Premium residences, luxury
+                investments, and exclusive
+                opportunities across India&apos;s
                 most sought-after locations.
               </motion.p>
 
-              {/* =================================================
-                  MINI FEATURES
-              ================================================= */}
+
+              {/* MINI FEATURES */}
 
               <motion.div
                 initial={{
@@ -552,7 +1247,9 @@ export default function HeroSection() {
                   last
                 />
               </motion.div>
+
             </div>
+
 
             {/* =================================================
                 RIGHT IMAGE COMPOSITION
@@ -576,6 +1273,7 @@ export default function HeroSection() {
                 xl:w-[610px]
               "
             >
+
               {/* LARGE CIRCLE */}
 
               <div
@@ -593,6 +1291,7 @@ export default function HeroSection() {
                   xl:w-[355px]
                 "
               />
+
 
               {/* DECORATIVE GOLD LINE */}
 
@@ -612,162 +1311,65 @@ export default function HeroSection() {
                 "
               />
 
-              {/* MAIN IMAGE */}
 
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  x: 22,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                transition={{
-                  duration: 0.8,
-                  delay: 0.12,
-                }}
-                className="
-                  absolute
-                  left-[28px]
-                  top-[112px]
-                  z-20
+              {/* =================================================
+                  HERO PROJECT CAROUSEL
 
-                  h-[245px]
-                  w-[350px]
+                  IMPORTANT:
 
-                  overflow-hidden
-                  rounded-[17px]
-                  border
-                  border-white
-                  bg-white
+                  We DO NOT render separate permanent TOP /
+                  CENTER / BOTTOM image elements.
 
-                  shadow-[0_18px_42px_rgba(22,46,38,0.15)]
+                  Instead, the SAME project DOM element changes
+                  role.
 
-                  xl:left-[22px]
-                  xl:top-[112px]
-                  xl:h-[255px]
-                  xl:w-[365px]
-                "
-              >
-                <Image
-                  src="/img1.jpg"
-                  alt="Luxury property"
-                  fill
-                  priority
-                  quality={90}
-                  sizes="365px"
-                  className="object-cover object-center"
-                />
+                  Framer Motion therefore sees:
 
-                <div
-                  className="
-                    absolute
-                    inset-0
-                    bg-gradient-to-t
-                    from-[#102f27]/15
-                    to-transparent
-                  "
-                />
-              </motion.div>
+                    Project A:
+                      CENTER → BOTTOM
 
-              {/* TOP RIGHT IMAGE */}
+                    Project B:
+                      TOP → CENTER
 
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: -14,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.7,
-                  delay: 0.28,
-                }}
-                className="
-                  absolute
-                  right-[62px]
-                  top-[20px]
-                  z-30
+                    Project C:
+                      BOTTOM → TOP
 
-                  h-[140px]
-                  w-[188px]
+                  That produces the actual circular movement.
+              ================================================= */}
 
-                  overflow-hidden
-                  rounded-[15px]
-                  border
-                  border-white
-                  bg-white
+              {showHeroSkeleton ? (
+                <HeroCarouselSkeleton />
+              ) : visibleCarouselCards.length > 0 ? (
 
-                  shadow-[0_15px_35px_rgba(22,46,38,0.14)]
+                visibleCarouselCards.map(
+                  ({
+                    property,
+                    role,
+                  }) => (
+                    <HeroProjectCard
+                      key={getPropertyKey(
+                        property
+                      )}
+                      property={
+                        property
+                      }
+                      role={role}
+                    />
+                  )
+                )
 
-                  xl:right-[58px]
-                  xl:h-[150px]
-                  xl:w-[200px]
-                "
-              >
-                <Image
-                  src="/img2.jpg"
-                  alt="Luxury residential development"
-                  fill
-                  quality={85}
-                  sizes="200px"
-                  className="object-cover object-[68%_35%]"
-                />
-              </motion.div>
+              ) : (
+                <FallbackHeroImage />
+              )}
 
-              {/* BOTTOM RIGHT IMAGE */}
 
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  x: 15,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                transition={{
-                  duration: 0.75,
-                  delay: 0.38,
-                }}
-                className="
-                  absolute
-                  bottom-[3px]
-                  right-[0px]
-                  z-30
-
-                  h-[140px]
-                  w-[190px]
-
-                  overflow-hidden
-                  rounded-[15px]
-                  border
-                  border-white
-                  bg-white
-
-                  shadow-[0_15px_35px_rgba(22,46,38,0.14)]
-
-                  xl:h-[148px]
-                  xl:w-[202px]
-                "
-              >
-                <Image
-                  src="/img3.jpg"
-                  alt="Premium property landscape"
-                  fill
-                  quality={85}
-                  sizes="202px"
-                  className="object-cover object-[30%_75%]"
-                />
-              </motion.div>
-
-              {/* HANDWRITTEN TEXT */}
+              {/* =================================================
+                  HANDWRITTEN TEXT
+              ================================================= */}
 
               <div
                 className="
+                  pointer-events-none
                   absolute
                   right-[-2px]
                   top-[102px]
@@ -798,10 +1400,12 @@ export default function HeroSection() {
                 Redefined
               </div>
 
+
               {/* LEAF DETAIL */}
 
               <div
                 className="
+                  pointer-events-none
                   absolute
                   bottom-[4px]
                   left-[0px]
@@ -813,17 +1417,14 @@ export default function HeroSection() {
               >
                 🌿
               </div>
+
             </div>
+
           </div>
 
-          {/* ==================================================
-              REAL FUNCTIONAL SEARCH PANEL
 
-              IMPORTANT:
-              - High stacking level
-              - Overflow visible
-              - Dropdown can escape downward
-              - Category section stays underneath
+          {/* ==================================================
+              SEARCH PANEL
           ================================================== */}
 
           <motion.div
@@ -850,6 +1451,7 @@ export default function HeroSection() {
             <SearchPanel />
           </motion.div>
 
+
           {/* ==================================================
               TRUST STRIP
           ================================================== */}
@@ -868,6 +1470,7 @@ export default function HeroSection() {
             "
           >
             <div className="grid grid-cols-4">
+
               <TrustItem
                 icon={ShieldCheck}
                 title="Exclusive Listings"
@@ -893,18 +1496,16 @@ export default function HeroSection() {
                 subtitle="Build wealth for tomorrow"
                 last
               />
+
             </div>
           </div>
+
         </div>
       </div>
 
+
       {/* ======================================================
           CATEGORY SECTION
-
-          IMPORTANT:
-          - Lower stacking level than SearchPanel
-          - NOT overflow-hidden
-          - Search dropdown can appear over this section
       ====================================================== */}
 
       <section
@@ -916,6 +1517,7 @@ export default function HeroSection() {
           lg:py-[29px]
         "
       >
+
         <div
           className="
             mx-auto
@@ -927,6 +1529,7 @@ export default function HeroSection() {
             xl:px-6
           "
         >
+
           <div
             className="
               grid
@@ -937,11 +1540,11 @@ export default function HeroSection() {
               lg:gap-8
             "
           >
-            {/* =================================================
-                CATEGORY TITLE
-            ================================================= */}
+
+            {/* CATEGORY TITLE */}
 
             <div>
+
               <div
                 className="
                   mb-[8px]
@@ -971,6 +1574,7 @@ export default function HeroSection() {
                 />
               </div>
 
+
               <h2
                 className="
                   font-serif
@@ -990,11 +1594,11 @@ export default function HeroSection() {
                 <br />
                 Your Dreams
               </h2>
+
             </div>
 
-            {/* =================================================
-                REAL DYNAMIC CATEGORY CARDS
-            ================================================= */}
+
+            {/* CATEGORY CARDS */}
 
             <div
               className="
@@ -1003,6 +1607,7 @@ export default function HeroSection() {
                 gap-3
               "
             >
+
               {categoriesLoading ? (
                 <>
                   <CategorySkeleton />
@@ -1011,16 +1616,31 @@ export default function HeroSection() {
                   <CategorySkeleton />
                 </>
               ) : categoryCards.length > 0 ? (
-                categoryCards.map((category) => (
-  <CategoryCard
-    key={category.title}
-    title={category.title}
-    icon={category.icon}
-    image={category.image}
-    position={category.position}
-  />
-))
+
+                categoryCards.map(
+                  (category) => (
+                    <CategoryCard
+                      key={
+                        category.title
+                      }
+                      title={
+                        category.title
+                      }
+                      icon={
+                        category.icon
+                      }
+                      image={
+                        category.image
+                      }
+                      position={
+                        category.position
+                      }
+                    />
+                  )
+                )
+
               ) : (
+
                 <div
                   className="
                     col-span-4
@@ -1038,16 +1658,574 @@ export default function HeroSection() {
                     text-[#8a8f8b]
                   "
                 >
-                  Explore our property collection
+                  Explore our property
+                  collection
                 </div>
+
               )}
+
             </div>
+
           </div>
+
         </div>
+
       </section>
+
     </section>
   );
 }
+
+
+/* ============================================================
+   HERO PROJECT CARD
+   ------------------------------------------------------------
+   THIS IS THE IMPORTANT PART.
+
+   The `key` belongs to the PROPERTY, not the ROLE.
+
+   Example:
+
+   First state:
+
+     Project A = CENTER
+     Project B = TOP
+     Project C = BOTTOM
+
+   Next state:
+
+     Project A = BOTTOM
+     Project B = CENTER
+     Project C = TOP
+
+   React keeps A/B/C alive.
+
+   Framer Motion detects that their layout positions changed and
+   physically animates each card to its new position.
+============================================================ */
+
+function HeroProjectCard({
+  property,
+  role,
+}) {
+  const href =
+    property?.slug
+      ? `/${property.slug}`
+      : "/properties";
+
+  const title =
+    getPropertyTitle(
+      property
+    );
+
+  const image =
+    getPropertyImage(
+      property
+    );
+
+  const location =
+    getPropertyLocation(
+      property
+    );
+
+
+  /*
+   * The classes define the three physical positions.
+   *
+   * Framer Motion's `layout` animates between them.
+   */
+  const roleClasses = {
+    active: `
+      left-[28px]
+      top-[112px]
+
+      h-[245px]
+      w-[350px]
+
+      z-20
+
+      xl:left-[22px]
+      xl:top-[112px]
+      xl:h-[255px]
+      xl:w-[365px]
+    `,
+
+    next: `
+      right-[62px]
+      top-[20px]
+
+      h-[140px]
+      w-[188px]
+
+      z-30
+
+      xl:right-[58px]
+      xl:top-[20px]
+      xl:h-[150px]
+      xl:w-[200px]
+    `,
+
+    previous: `
+      right-[0px]
+      bottom-[3px]
+
+      h-[140px]
+      w-[190px]
+
+      z-30
+
+      xl:right-[0px]
+      xl:bottom-[3px]
+      xl:h-[148px]
+      xl:w-[202px]
+    `,
+  };
+
+
+  const isActive =
+    role === "active";
+
+
+  return (
+    <motion.div
+      layout
+      initial={false}
+
+      /*
+       * Opacity remains high for all three cards.
+       *
+       * The important animation is layout:
+       * position + size + stacking.
+       */
+      animate={{
+        opacity:
+          isActive
+            ? 1
+            : 0.97,
+      }}
+
+      transition={{
+        layout: {
+          duration:
+            HERO_ANIMATION_MS /
+            1000,
+
+          ease: [
+            0.22,
+            1,
+            0.36,
+            1,
+          ],
+        },
+
+        opacity: {
+          duration:
+            HERO_ANIMATION_MS /
+            1000,
+          ease: "easeOut",
+        },
+      }}
+
+      className={`
+        pointer-events-auto
+        absolute
+
+        overflow-hidden
+        rounded-[17px]
+
+        border
+        border-white
+
+        bg-white
+
+        ${roleClasses[role]}
+
+        ${
+          isActive
+            ? `
+              shadow-[0_18px_42px_rgba(22,46,38,0.15)]
+            `
+            : `
+              rounded-[15px]
+              shadow-[0_15px_35px_rgba(22,46,38,0.14)]
+            `
+        }
+      `}
+    >
+
+      <Link
+        href={href}
+        aria-label={`View ${title}`}
+        className="
+          group
+          block
+          h-full
+          w-full
+        "
+      >
+
+        <Image
+          src={image}
+          alt={title}
+          fill
+
+          /*
+           * Only the CENTER image is prioritized.
+           *
+           * TOP and BOTTOM use lazy loading so we don't
+           * unnecessarily compete with the initial hero LCP.
+           */
+          priority={
+            isActive
+          }
+
+          loading={
+            isActive
+              ? "eager"
+              : "lazy"
+          }
+
+          quality={
+            isActive
+              ? 88
+              : 78
+          }
+
+          sizes={
+            isActive
+              ? `
+                (min-width: 1280px) 365px,
+                350px
+              `
+              : `
+                (min-width: 1280px) 202px,
+                200px
+              `
+          }
+
+          className="
+            object-cover
+            object-center
+
+            transition-transform
+            duration-[1200ms]
+            ease-out
+
+            group-hover:scale-[1.035]
+          "
+        />
+
+
+        {/* IMAGE GRADIENT */}
+
+        <div
+          className={`
+            absolute
+            inset-0
+
+            bg-gradient-to-t
+
+            ${
+              isActive
+                ? `
+                  from-[#102f27]/55
+                  via-[#102f27]/5
+                  to-transparent
+                `
+                : `
+                  from-[#102f27]/50
+                  via-transparent
+                  to-transparent
+                `
+            }
+          `}
+        />
+
+
+        {/* =================================================
+            CENTER PROJECT INFORMATION
+        ================================================= */}
+
+        {isActive ? (
+
+          <div
+            className="
+              absolute
+              bottom-3
+              left-3
+              right-3
+
+              flex
+              items-end
+              justify-between
+              gap-3
+            "
+          >
+
+            <div className="min-w-0">
+
+              <p
+                className="
+                  truncate
+                  text-[11px]
+                  font-semibold
+                  tracking-[0.3px]
+                  text-white
+                  drop-shadow
+                "
+              >
+                {title}
+              </p>
+
+              <p
+                className="
+                  mt-[2px]
+                  truncate
+                  text-[8px]
+                  uppercase
+                  tracking-[1.2px]
+                  text-white/80
+                "
+              >
+                {location}
+              </p>
+
+            </div>
+
+
+            <span
+              className="
+                flex
+                h-[27px]
+                w-[27px]
+                shrink-0
+
+                items-center
+                justify-center
+
+                rounded-full
+
+                border
+                border-white/70
+
+                bg-[#17342d]/40
+
+                text-white
+
+                backdrop-blur-sm
+
+                transition-all
+                duration-300
+
+                group-hover:border-[#d4b16d]
+                group-hover:bg-[#d4b16d]
+                group-hover:text-[#17342d]
+              "
+            >
+              <ArrowRight
+                size={12}
+                strokeWidth={2}
+              />
+            </span>
+
+          </div>
+
+        ) : (
+
+          /* =================================================
+             TOP / BOTTOM COMPACT LABEL
+          ================================================= */
+
+          <div
+            className="
+              absolute
+              bottom-2
+              left-2
+              right-2
+            "
+          >
+
+            <p
+              className="
+                truncate
+                text-[9px]
+                font-semibold
+                text-white
+                drop-shadow
+              "
+            >
+              {title}
+            </p>
+
+          </div>
+
+        )}
+
+      </Link>
+
+    </motion.div>
+  );
+}
+
+
+/* ============================================================
+   HERO SKELETON
+============================================================ */
+
+function HeroCarouselSkeleton() {
+  return (
+    <>
+      {/* MAIN */}
+
+      <div
+        className="
+          absolute
+          left-[28px]
+          top-[112px]
+          z-20
+
+          h-[245px]
+          w-[350px]
+
+          animate-pulse
+
+          overflow-hidden
+          rounded-[17px]
+
+          border
+          border-white
+
+          bg-[#e9e5dc]
+
+          shadow-[0_18px_42px_rgba(22,46,38,0.12)]
+
+          xl:left-[22px]
+          xl:top-[112px]
+          xl:h-[255px]
+          xl:w-[365px]
+        "
+      />
+
+
+      {/* TOP */}
+
+      <div
+        className="
+          absolute
+          right-[62px]
+          top-[20px]
+          z-30
+
+          h-[140px]
+          w-[188px]
+
+          animate-pulse
+
+          rounded-[15px]
+          border
+          border-white
+
+          bg-[#e9e5dc]
+
+          xl:right-[58px]
+          xl:h-[150px]
+          xl:w-[200px]
+        "
+      />
+
+
+      {/* BOTTOM */}
+
+      <div
+        className="
+          absolute
+          bottom-[3px]
+          right-[0px]
+          z-30
+
+          h-[140px]
+          w-[190px]
+
+          animate-pulse
+
+          rounded-[15px]
+          border
+          border-white
+
+          bg-[#e9e5dc]
+
+          xl:h-[148px]
+          xl:w-[202px]
+        "
+      />
+    </>
+  );
+}
+
+
+/* ============================================================
+   FALLBACK HERO IMAGE
+============================================================ */
+
+function FallbackHeroImage() {
+  return (
+    <div
+      className="
+        absolute
+        left-[28px]
+        top-[112px]
+        z-20
+
+        h-[245px]
+        w-[350px]
+
+        overflow-hidden
+        rounded-[17px]
+
+        border
+        border-white
+
+        bg-white
+
+        shadow-[0_18px_42px_rgba(22,46,38,0.15)]
+
+        xl:left-[22px]
+        xl:top-[112px]
+        xl:h-[255px]
+        xl:w-[365px]
+      "
+    >
+
+      <Image
+        src="/img1.jpg"
+        alt="Luxury property"
+        fill
+        priority
+        quality={88}
+        sizes="
+          (min-width: 1280px) 365px,
+          350px
+        "
+        className="
+          object-cover
+          object-center
+        "
+      />
+
+      <div
+        className="
+          absolute
+          inset-0
+          bg-gradient-to-t
+          from-[#102f27]/20
+          to-transparent
+        "
+      />
+
+    </div>
+  );
+}
+
 
 /* ============================================================
    MINI FEATURE
@@ -1070,23 +2248,32 @@ function MiniFeature({
         pr-5
         mr-4
 
-        ${!last ? "border-r border-[#ddd9cf]" : ""}
+        ${
+          !last
+            ? "border-r border-[#ddd9cf]"
+            : ""
+        }
 
         xl:pr-6
         xl:mr-5
       `}
     >
+
       <span
         className="
           flex
           h-[31px]
           w-[31px]
           shrink-0
+
           items-center
           justify-center
+
           rounded-full
+
           border
           border-[#d8bb82]
+
           text-[#c0934d]
         "
       >
@@ -1096,7 +2283,9 @@ function MiniFeature({
         />
       </span>
 
+
       <span className="whitespace-nowrap">
+
         <span
           className="
             block
@@ -1122,10 +2311,13 @@ function MiniFeature({
         >
           {subtitle}
         </span>
+
       </span>
+
     </div>
   );
 }
+
 
 /* ============================================================
    TRUST ITEM
@@ -1147,24 +2339,37 @@ function TrustItem({
         gap-3
         px-2
 
-        ${!first ? "border-l border-[#e5e1d8]" : ""}
+        ${
+          !first
+            ? "border-l border-[#e5e1d8]"
+            : ""
+        }
 
-        ${last ? "pr-0" : ""}
+        ${
+          last
+            ? "pr-0"
+            : ""
+        }
 
         xl:px-5
       `}
     >
+
       <span
         className="
           flex
           h-[31px]
           w-[31px]
           shrink-0
+
           items-center
           justify-center
+
           rounded-full
+
           border
           border-[#d9bd86]
+
           text-[#bd914d]
         "
       >
@@ -1174,7 +2379,9 @@ function TrustItem({
         />
       </span>
 
+
       <span className="min-w-0">
+
         <span
           className="
             block
@@ -1202,10 +2409,13 @@ function TrustItem({
         >
           {subtitle}
         </span>
+
       </span>
+
     </div>
   );
 }
+
 
 /* ============================================================
    CATEGORY SKELETON
@@ -1216,10 +2426,14 @@ function CategorySkeleton() {
     <div
       className="
         h-[108px]
+
         animate-pulse
+
         rounded-[13px]
+
         border
         border-[#e7e1d6]
+
         bg-[#eeeae1]
 
         xl:h-[114px]
@@ -1228,14 +2442,9 @@ function CategorySkeleton() {
   );
 }
 
+
 /* ============================================================
    CATEGORY CARD
-
-   IMPORTANT:
-   Clicking this uses the EXACT SAME query parameter
-   as SearchPanel:
-
-   /properties?propertyType=...
 ============================================================ */
 
 function CategoryCard({
@@ -1244,9 +2453,10 @@ function CategoryCard({
   image,
   position = "center",
 }) {
-  const href = `/properties?propertyType=${encodeURIComponent(
-    title
-  )}`;
+  const href =
+    `/properties?propertyType=${encodeURIComponent(
+      title
+    )}`;
 
   return (
     <Link
@@ -1254,10 +2464,13 @@ function CategoryCard({
       className="
         group
         relative
+
         h-[108px]
 
         overflow-hidden
+
         rounded-[13px]
+
         border
         border-white
 
@@ -1268,26 +2481,41 @@ function CategoryCard({
         xl:h-[114px]
       "
     >
+
       <Image
-  src={image}
-  alt={`${title} properties`}
-  fill
-  sizes="250px"
-  className="
-    object-cover
-    transition-transform
-    duration-700
-    group-hover:scale-[1.05]
-  "
-  style={{
-    objectPosition: position,
-  }}
-/>
+        src={image}
+        alt={`${title} properties`}
+        fill
+
+        /*
+         * Category images are below the hero and therefore
+         * remain lazy-loaded.
+         */
+        loading="lazy"
+
+        sizes="250px"
+
+        className="
+          object-cover
+
+          transition-transform
+          duration-700
+
+          group-hover:scale-[1.05]
+        "
+
+        style={{
+          objectPosition:
+            position,
+        }}
+      />
+
 
       <div
         className="
           absolute
           inset-0
+
           bg-gradient-to-t
           from-[#12392f]/95
           via-[#12392f]/30
@@ -1295,17 +2523,20 @@ function CategoryCard({
         "
       />
 
+
       <div
         className="
           absolute
           bottom-3
           left-3
           right-3
+
           flex
           items-center
           justify-between
         "
       >
+
         <div
           className="
             flex
@@ -1314,6 +2545,7 @@ function CategoryCard({
             gap-2
           "
         >
+
           <Icon
             size={14}
             strokeWidth={1.7}
@@ -1335,7 +2567,9 @@ function CategoryCard({
           >
             {title}
           </span>
+
         </div>
+
 
         <span
           className="
@@ -1343,11 +2577,15 @@ function CategoryCard({
             h-[23px]
             w-[23px]
             shrink-0
+
             items-center
             justify-center
+
             rounded-full
+
             border
             border-white/55
+
             text-white
 
             transition-all
@@ -1363,7 +2601,9 @@ function CategoryCard({
             strokeWidth={2}
           />
         </span>
+
       </div>
+
     </Link>
   );
 }
