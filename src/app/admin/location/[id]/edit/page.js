@@ -1693,21 +1693,21 @@ export default function LocationPageEditor() {
                 placeholder="A Thriving Real Estate Destination"
               />
 
-              <TextAreaField
-                label="Market Description"
-                value={
-                  content.about
-                    .marketDescription
-                }
-                onChange={(value) =>
-                  updateAbout(
-                    "marketDescription",
-                    value
-                  )
-                }
-                placeholder="Leave blank to use the existing market description."
-                rows={4}
-              />
+              <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Market Description
+  </label>
+
+  <RichTextEditor
+    value={content.about.marketDescription}
+    onChange={(value) =>
+      updateAbout(
+        "marketDescription",
+        value
+      )
+    }
+  />
+</div>
 
               <div className="grid lg:grid-cols-3 gap-4">
                 {content.about.marketInsights.map(
@@ -1846,21 +1846,21 @@ export default function LocationPageEditor() {
             />
           </div>
 
-          <TextAreaField
-            label="Description"
-            value={
-              content.connectivity
-                .description
-            }
-            onChange={(value) =>
-              updateConnectivity(
-                "description",
-                value
-              )
-            }
-            placeholder="Leave blank to use the existing location-based connectivity description."
-            rows={5}
-          />
+          <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.connectivity.description}
+    onChange={(value) =>
+      updateConnectivity(
+        "description",
+        value
+      )
+    }
+  />
+</div>
 
           <ImageUpload
             label="Connectivity Image"
@@ -2035,21 +2035,21 @@ export default function LocationPageEditor() {
             />
           </div>
 
-          <TextAreaField
-            label="Description"
-            value={
-              content.nearby
-                .description
-            }
-            onChange={(value) =>
-              updateNearby(
-                "description",
-                value
-              )
-            }
-            placeholder="Leave blank to use the existing location-based description."
-            rows={4}
-          />
+          <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.nearby.description}
+    onChange={(value) =>
+      updateNearby(
+        "description",
+        value
+      )
+    }
+  />
+</div>
 
           <div className="rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 p-4 text-xs text-gray-600">
             <strong className="text-[#0f3b2e]">
@@ -2096,19 +2096,24 @@ export default function LocationPageEditor() {
       }
     />
 
-    <TextAreaField
-      label="Description"
-      value={content.realEstateTypes.description}
-      onChange={(value) =>
-        setContent((prev) => ({
-          ...prev,
-          realEstateTypes: {
-            ...prev.realEstateTypes,
-            description: value,
-          },
-        }))
-      }
-    />
+    <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.realEstateTypes.description}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        realEstateTypes: {
+          ...prev.realEstateTypes,
+          description: value,
+        },
+      }))
+    }
+  />
+</div>
 
     <div className="mt-2">
       <div className="mb-3 flex items-center justify-between">
@@ -2263,19 +2268,24 @@ export default function LocationPageEditor() {
       }
     />
 
-    <TextAreaField
-      label="Description"
-      value={content.propertyPrices.description}
-      onChange={(value) =>
-        setContent((prev) => ({
-          ...prev,
-          propertyPrices: {
-            ...prev.propertyPrices,
-            description: value,
-          },
-        }))
-      }
-    />
+    <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.propertyPrices.description}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        propertyPrices: {
+          ...prev.propertyPrices,
+          description: value,
+        },
+      }))
+    }
+  />
+</div>  
 
     <div className="grid gap-4 md:grid-cols-2">
       <Field
@@ -2755,19 +2765,24 @@ export default function LocationPageEditor() {
       }
     />
 
-    <TextAreaField
-      label="Description"
-      value={content.whyBuy.description}
-      onChange={(value) =>
-        setContent((prev) => ({
-          ...prev,
-          whyBuy: {
-            ...prev.whyBuy,
-            description: value,
-          },
-        }))
-      }
-    />
+    <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.whyBuy.description}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        whyBuy: {
+          ...prev.whyBuy,
+          description: value,
+        },
+      }))
+    }
+  />
+</div>
 
     <div className="grid gap-4 lg:grid-cols-2">
       {content.whyBuy.reasons.map(

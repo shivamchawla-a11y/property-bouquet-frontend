@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+
 import {
   ArrowRight,
   ArrowUp,
@@ -29,17 +30,13 @@ export default function AboutLocation({
      READ MORE STATE
   ============================================================ */
 
-  const [isExpanded, setIsExpanded] =
-    useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   /* ============================================================
      HELPER
   ============================================================ */
 
-  const value = (
-    customValue,
-    fallback
-  ) => {
+  const value = (customValue, fallback) => {
     return (
       typeof customValue === "string" &&
       customValue.trim()
@@ -67,12 +64,9 @@ export default function AboutLocation({
       location?.image,
       location?.imageUrl,
       properties?.[0]?.locationImage,
-      properties?.[0]?.media
-        ?.locationImageUrl,
-      properties?.[0]?.media
-        ?.heroImageUrl,
-      properties?.[0]?.media
-        ?.images?.[0]?.url,
+      properties?.[0]?.media?.locationImageUrl,
+      properties?.[0]?.media?.heroImageUrl,
+      properties?.[0]?.media?.images?.[0]?.url,
     ];
 
     return (
@@ -84,8 +78,7 @@ export default function AboutLocation({
     );
   };
 
-  const resolvedImage =
-    resolveImage();
+  const resolvedImage = resolveImage();
 
   /* ============================================================
      PROPERTY TYPES
@@ -94,30 +87,24 @@ export default function AboutLocation({
   const propertyTypes = useMemo(() => {
     const types = new Set();
 
-    properties.forEach(
-      (property) => {
-        const values = [
-          property?.categoryData
-            ?.categoryName,
-          property?.category?.name,
-          property?.propertyType,
-          property?.propertyCategory,
-          property?.coreDetails
-            ?.propertyType,
-        ];
+    properties.forEach((property) => {
+      const values = [
+        property?.categoryData?.categoryName,
+        property?.category?.name,
+        property?.propertyType,
+        property?.propertyCategory,
+        property?.coreDetails?.propertyType,
+      ];
 
-        values.forEach((item) => {
-          if (
-            typeof item === "string" &&
-            item.trim()
-          ) {
-            types.add(
-              item.trim()
-            );
-          }
-        });
-      }
-    );
+      values.forEach((item) => {
+        if (
+          typeof item === "string" &&
+          item.trim()
+        ) {
+          types.add(item.trim());
+        }
+      });
+    });
 
     return Array.from(types);
   }, [properties]);
@@ -126,60 +113,48 @@ export default function AboutLocation({
      DEVELOPERS
   ============================================================ */
 
-  const developerNames =
-    useMemo(() => {
-      const developers = new Set();
+  const developerNames = useMemo(() => {
+    const developers = new Set();
 
-      properties.forEach(
-        (property) => {
-          const values = [
-            property?.developerName,
-            property?.coreDetails
-              ?.developerName,
-            property?.developer?.name,
-            property?.developerData
-              ?.name,
-            property?.developerRef
-              ?.name,
-          ];
+    properties.forEach((property) => {
+      const values = [
+        property?.developerName,
+        property?.coreDetails?.developerName,
+        property?.developer?.name,
+        property?.developerData?.name,
+        property?.developerRef?.name,
+      ];
 
-          values.forEach((item) => {
-            if (
-              typeof item === "string" &&
-              item.trim()
-            ) {
-              developers.add(
-                item.trim()
-              );
-            }
-          });
+      values.forEach((item) => {
+        if (
+          typeof item === "string" &&
+          item.trim()
+        ) {
+          developers.add(item.trim());
         }
-      );
+      });
+    });
 
-      return Array.from(
-        developers
-      );
-    }, [properties]);
+    return Array.from(developers);
+  }, [properties]);
 
   /* ============================================================
      STARTING PRICES
   ============================================================ */
 
-  const startingPrices =
-    useMemo(() => {
-      return properties
-        .map((property) =>
-          Number(
-            property?.coreDetails
-              ?.startingPrice
-          )
+  const startingPrices = useMemo(() => {
+    return properties
+      .map((property) =>
+        Number(
+          property?.coreDetails?.startingPrice
         )
-        .filter(
-          (price) =>
-            Number.isFinite(price) &&
-            price > 0
-        );
-    }, [properties]);
+      )
+      .filter(
+        (price) =>
+          Number.isFinite(price) &&
+          price > 0
+      );
+  }, [properties]);
 
   /* ============================================================
      FORMAT PRICE
@@ -191,60 +166,40 @@ export default function AboutLocation({
     }
 
     if (price >= 10000000) {
-      const formatted =
-        price / 10000000;
+      const formatted = price / 10000000;
 
       return `₹${formatted
         .toFixed(
-          formatted >= 10
-            ? 0
-            : 1
+          formatted >= 10 ? 0 : 1
         )
         .replace(/\.0$/, "")} Cr`;
     }
 
     if (price >= 100000) {
-      const formatted =
-        price / 100000;
+      const formatted = price / 100000;
 
       return `₹${formatted
         .toFixed(
-          formatted >= 10
-            ? 0
-            : 1
+          formatted >= 10 ? 0 : 1
         )
         .replace(/\.0$/, "")} L`;
     }
 
-    return `₹${price.toLocaleString(
-      "en-IN"
-    )}`;
+    return `₹${price.toLocaleString("en-IN")}`;
   };
 
-  const pricePositioning =
-    startingPrices.length
-      ? (() => {
-          const min =
-            Math.min(
-              ...startingPrices
-            );
+  const pricePositioning = startingPrices.length
+    ? (() => {
+        const min = Math.min(...startingPrices);
+        const max = Math.max(...startingPrices);
 
-          const max =
-            Math.max(
-              ...startingPrices
-            );
+        if (min === max) {
+          return formatPrice(min);
+        }
 
-          if (min === max) {
-            return formatPrice(
-              min
-            );
-          }
-
-          return `${formatPrice(
-            min
-          )} onwards`;
-        })()
-      : "Premium segment";
+        return `${formatPrice(min)} onwards`;
+      })()
+    : "Premium segment";
 
   /* ============================================================
      DEFAULT CONTENT
@@ -279,17 +234,28 @@ export default function AboutLocation({
     "A Thriving Real Estate Destination"
   );
 
-  const marketDescription =
-    value(
-      custom.marketDescription,
-      `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
-    );
+  /* ============================================================
+     MARKET DESCRIPTION
 
-  const perspectiveEyebrow =
-    value(
-      custom.perspectiveEyebrow,
-      "PROPERTY BOUQUET PERSPECTIVE"
-    );
+     IMPORTANT:
+     This field can now contain either:
+
+     1. Plain text
+     2. Rich HTML from ReactQuill
+
+     We normalize it first and then detect whether HTML
+     exists before deciding how to render it.
+  ============================================================ */
+
+  const marketDescription = value(
+    custom.marketDescription,
+    `${locationName} continues to attract attention from homebuyers and investors looking for a combination of established infrastructure, everyday convenience, strong connectivity and quality residential development. The area's evolving real estate landscape offers opportunities across multiple configurations and price segments.`
+  );
+
+  const perspectiveEyebrow = value(
+    custom.perspectiveEyebrow,
+    "PROPERTY BOUQUET PERSPECTIVE"
+  );
 
   const perspectiveQuote = value(
     custom.perspectiveQuote,
@@ -303,33 +269,28 @@ export default function AboutLocation({
   const defaultHighlights = [
     {
       title: "Property Types",
-      description:
-        propertyTypes.length
-          ? propertyTypes
-              .slice(0, 3)
-              .join(", ")
-          : "Premium residential developments",
+      description: propertyTypes.length
+        ? propertyTypes
+            .slice(0, 3)
+            .join(", ")
+        : "Premium residential developments",
     },
     {
       title: "Developer Presence",
-      description:
-        developerNames.length
-          ? developerNames
-              .slice(0, 3)
-              .join(", ")
-          : "Multiple established developers",
+      description: developerNames.length
+        ? developerNames
+            .slice(0, 3)
+            .join(", ")
+        : "Multiple established developers",
     },
     {
       title: "Price Positioning",
-      description:
-        pricePositioning,
+      description: pricePositioning,
     },
   ];
 
   /* ============================================================
      HIGHLIGHT MERGING
-
-     IMPORTANT:
 
      The admin editor can contain:
        - blank items
@@ -341,22 +302,20 @@ export default function AboutLocation({
 
      Additional custom highlight items are preserved.
 
-     This means one customized highlight does NOT
-     remove the other default highlights.
+     IMPORTANT:
+     Highlight descriptions remain PLAIN TEXT.
   ============================================================ */
 
-  const customHighlights =
-    Array.isArray(
-      custom?.highlights
-    )
-      ? custom.highlights
-      : [];
+  const customHighlights = Array.isArray(
+    custom?.highlights
+  )
+    ? custom.highlights
+    : [];
 
-  const highlightLength =
-    Math.max(
-      defaultHighlights.length,
-      customHighlights.length
-    );
+  const highlightLength = Math.max(
+    defaultHighlights.length,
+    customHighlights.length
+  );
 
   const highlights = Array.from(
     {
@@ -371,9 +330,7 @@ export default function AboutLocation({
 
       const customItem =
         customHighlights[index] &&
-        typeof customHighlights[
-          index
-        ] === "object"
+        typeof customHighlights[index] === "object"
           ? customHighlights[index]
           : {};
 
@@ -382,7 +339,6 @@ export default function AboutLocation({
           customItem?.title,
           fallback.title
         ),
-
         description: value(
           customItem?.description,
           fallback.description
@@ -397,6 +353,9 @@ export default function AboutLocation({
 
   /* ============================================================
      DEFAULT MARKET INSIGHTS
+
+     IMPORTANT:
+     These card descriptions remain PLAIN TEXT.
   ============================================================ */
 
   const defaultMarketInsights = [
@@ -426,70 +385,61 @@ export default function AboutLocation({
      corresponding default.
 
      Additional custom insights are preserved.
+
+     IMPORTANT:
+     Market insight descriptions remain PLAIN TEXT.
   ============================================================ */
 
-  const customMarketInsights =
-    Array.isArray(
-      custom?.marketInsights
-    )
-      ? custom.marketInsights
-      : [];
+  const customMarketInsights = Array.isArray(
+    custom?.marketInsights
+  )
+    ? custom.marketInsights
+    : [];
 
-  const marketInsightLength =
-    Math.max(
-      defaultMarketInsights.length,
-      customMarketInsights.length
-    );
+  const marketInsightLength = Math.max(
+    defaultMarketInsights.length,
+    customMarketInsights.length
+  );
 
-  const marketInsights =
-    Array.from(
-      {
-        length:
-          marketInsightLength,
-      },
-      (_, index) => {
-        const fallback =
-          defaultMarketInsights[
-            index
-          ] || {
-            title: "",
-            description: "",
-          };
-
-        const customItem =
-          customMarketInsights[
-            index
-          ] &&
-          typeof customMarketInsights[
-            index
-          ] === "object"
-            ? customMarketInsights[
-                index
-              ]
-            : {};
-
-        return {
-          title: value(
-            customItem?.title,
-            fallback.title
-          ),
-
-          description: value(
-            customItem?.description,
-            fallback.description
-          ),
+  const marketInsights = Array.from(
+    {
+      length: marketInsightLength,
+    },
+    (_, index) => {
+      const fallback =
+        defaultMarketInsights[index] || {
+          title: "",
+          description: "",
         };
-      }
-    ).filter(
-      (item) =>
-        item.title ||
-        item.description
-    );
+
+      const customItem =
+        customMarketInsights[index] &&
+        typeof customMarketInsights[index] === "object"
+          ? customMarketInsights[index]
+          : {};
+
+      return {
+        title: value(
+          customItem?.title,
+          fallback.title
+        ),
+        description: value(
+          customItem?.description,
+          fallback.description
+        ),
+      };
+    }
+  ).filter(
+    (item) =>
+      item.title ||
+      item.description
+  );
 
   /* ============================================================
      CLEAN RICH TEXT
 
      ReactQuill can store:
+
        &nbsp;
        &#160;
        &#xA0;
@@ -497,64 +447,113 @@ export default function AboutLocation({
 
      Convert them into normal spaces so they cannot
      create horizontal overflow.
+
+     This helper is used for the ABOUT content and
+     MARKET DESCRIPTION.
+  ============================================================ */
+
+  const normalizeRichText = (text) => {
+    if (typeof text !== "string") {
+      return "";
+    }
+
+    return text
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&#160;/gi, " ")
+      .replace(/&#xA0;/gi, " ")
+      .replace(/\u00a0/g, " ")
+      .replace(/<p>\s*<\/p>/gi, "");
+  };
+
+  /* ============================================================
+     ABOUT CONTENT CLEANUP
   ============================================================ */
 
   const normalizedContent =
-    typeof content === "string"
-      ? content
-          .replace(
-            /&nbsp;/gi,
-            " "
-          )
-          .replace(
-            /&#160;/gi,
-            " "
-          )
-          .replace(
-            /&#xA0;/gi,
-            " "
-          )
-          .replace(
-            /\u00a0/g,
-            " "
-          )
-          .replace(
-            /<p>\s*<\/p>/gi,
-            ""
-          )
-      : "";
+    normalizeRichText(content);
 
   /* ============================================================
-     RICH TEXT DETECTION
+     MARKET DESCRIPTION CLEANUP
+
+     This is the important new part.
+
+     The market description can be either:
+       - normal plain text
+       - HTML generated by RichTextEditor
   ============================================================ */
 
-  const hasRichText =
-    /<\/?[a-z][\s\S]*>/i.test(
-      normalizedContent
+  const normalizedMarketDescription =
+    normalizeRichText(
+      marketDescription
     );
 
   /* ============================================================
-     DETERMINE WHETHER READ MORE IS REQUIRED
+     RICH TEXT DETECTION
+
+     Detect actual HTML tags.
+
+     Examples detected:
+       <p>...</p>
+       <strong>...</strong>
+       <ul>...</ul>
+       <h3>...</h3>
+       <a href="...">...</a>
+
+     Normal plain text is NOT treated as HTML.
+  ============================================================ */
+
+  const hasRichText = (text) => {
+    if (typeof text !== "string") {
+      return false;
+    }
+
+    return /<\s*[a-z][^>]*>/i.test(text);
+  };
+
+  const contentHasRichText =
+    hasRichText(normalizedContent);
+
+  const marketDescriptionHasRichText =
+    hasRichText(
+      normalizedMarketDescription
+    );
+
+  /* ============================================================
+     ABOUT DESCRIPTION READ MORE
 
      Short descriptions stay normal.
+
      Longer descriptions get the collapsed preview.
   ============================================================ */
 
-  const plainTextLength =
-    normalizedContent
-      .replace(
-        /<[^>]*>/g,
-        " "
-      )
-      .replace(
-        /\s+/g,
-        " "
-      )
-      .trim()
-      .length;
+  const plainTextLength = normalizedContent
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .length;
 
   const needsReadMore =
     plainTextLength > 420;
+
+  /* ============================================================
+     MARKET DESCRIPTION PLAIN TEXT LENGTH
+
+     The same Read More behavior can be used whether
+     marketDescription is HTML or plain text.
+
+     HTML tags are removed only for calculating
+     the text length.
+  ============================================================ */
+
+  const marketPlainTextLength =
+    normalizedMarketDescription
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .length;
+
+  const marketNeedsReadMore =
+    marketPlainTextLength > 700;
 
   /* ============================================================
      RENDER
@@ -704,7 +703,7 @@ export default function AboutLocation({
                   }
                 `}
               >
-                {hasRichText ? (
+                {contentHasRichText ? (
                   <div
                     className="
                       min-w-0
@@ -716,66 +715,52 @@ export default function AboutLocation({
                       text-[#47545a]
                       [overflow-wrap:anywhere]
                       [word-break:break-word]
-
                       [&_*]:max-w-full
                       [&_img]:h-auto
                       [&_img]:max-w-full
-
                       [&_p]:m-0
                       [&_p]:mb-4
                       [&_p:last-child]:mb-0
                       [&_p]:break-words
                       [&_p]:[overflow-wrap:anywhere]
-
                       [&_strong]:font-semibold
                       [&_strong]:text-[#263832]
-
                       [&_b]:font-semibold
                       [&_b]:text-[#263832]
-
                       [&_em]:italic
-
                       [&_a]:font-medium
                       [&_a]:text-[#A47A2B]
                       [&_a]:underline
                       [&_a]:underline-offset-2
-
                       [&_ul]:mb-4
                       [&_ul]:ml-5
                       [&_ul]:max-w-full
                       [&_ul]:list-disc
-
                       [&_ol]:mb-4
                       [&_ol]:ml-5
                       [&_ol]:max-w-full
                       [&_ol]:list-decimal
-
                       [&_li]:mb-1
                       [&_li]:break-words
                       [&_li]:[overflow-wrap:anywhere]
-
                       [&_h1]:max-w-full
                       [&_h2]:max-w-full
                       [&_h3]:max-w-full
                       [&_h4]:max-w-full
                       [&_h5]:max-w-full
                       [&_h6]:max-w-full
-
                       [&_h3]:mb-3
                       [&_h3]:mt-5
                       [&_h3]:font-playfair
                       [&_h3]:text-xl
                       [&_h3]:font-semibold
                       [&_h3]:text-[#17342d]
-
                       [&_h4]:mb-2
                       [&_h4]:mt-4
                       [&_h4]:font-semibold
                       [&_h4]:text-[#17342d]
-
                       sm:text-[14px]
                       sm:leading-7
-
                       md:text-[15px]
                     "
                     dangerouslySetInnerHTML={{
@@ -796,17 +781,13 @@ export default function AboutLocation({
                       text-[#47545a]
                       [overflow-wrap:anywhere]
                       [word-break:break-word]
-
                       sm:text-[14px]
                       sm:leading-7
-
                       md:text-[15px]
                     "
                   >
                     {normalizedContent
-                      .split(
-                        /\n\s*\n/
-                      )
+                      .split(/\n\s*\n/)
                       .map(
                         (
                           paragraph,
@@ -859,9 +840,7 @@ export default function AboutLocation({
                         !previous
                     )
                   }
-                  aria-expanded={
-                    isExpanded
-                  }
+                  aria-expanded={isExpanded}
                   className="
                     mt-5
                     inline-flex
@@ -1220,24 +1199,243 @@ export default function AboutLocation({
               {marketTitle}
             </h2>
 
-            <p
-              className="
+            {/* ==================================================
+                MARKET DESCRIPTION
+
+                SUPPORTS BOTH:
+
+                PLAIN TEXT:
+                "Gurgaon offers..."
+
+                AND RICH HTML:
+                "<p><strong>Gurgaon</strong> offers...</p>"
+
+                HTML is rendered with dangerouslySetInnerHTML.
+                Plain text is rendered normally.
+            ================================================== */}
+
+            <div
+              className={`
+                relative
                 mt-5
+                min-w-0
                 max-w-[760px]
-                break-words
-                text-[13px]
-                leading-7
-                text-white/65
-                [overflow-wrap:anywhere]
-                sm:text-[14px]
-                md:text-[15px]
-              "
+                ${
+                  !isExpanded &&
+                  marketNeedsReadMore
+                    ? "max-h-[210px] overflow-hidden"
+                    : "overflow-visible"
+                }
+              `}
             >
-              {marketDescription}
-            </p>
+              {marketDescriptionHasRichText ? (
+                <div
+                  className="
+                    min-w-0
+                    w-full
+                    max-w-full
+                    break-words
+                    text-[13px]
+                    leading-7
+                    text-white/65
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
+
+                    [&_*]:max-w-full
+
+                    [&_p]:m-0
+                    [&_p]:mb-4
+                    [&_p:last-child]:mb-0
+                    [&_p]:break-words
+                    [&_p]:[overflow-wrap:anywhere]
+
+                    [&_strong]:font-semibold
+                    [&_strong]:text-white
+
+                    [&_b]:font-semibold
+                    [&_b]:text-white
+
+                    [&_em]:italic
+
+                    [&_u]:underline
+                    [&_u]:underline-offset-2
+
+                    [&_a]:font-medium
+                    [&_a]:text-[#D4AF37]
+                    [&_a]:underline
+                    [&_a]:underline-offset-2
+
+                    [&_ul]:mb-4
+                    [&_ul]:ml-5
+                    [&_ul]:max-w-full
+                    [&_ul]:list-disc
+
+                    [&_ol]:mb-4
+                    [&_ol]:ml-5
+                    [&_ol]:max-w-full
+                    [&_ol]:list-decimal
+
+                    [&_li]:mb-1
+                    [&_li]:break-words
+                    [&_li]:[overflow-wrap:anywhere]
+
+                    [&_h1]:max-w-full
+                    [&_h2]:max-w-full
+                    [&_h3]:max-w-full
+                    [&_h4]:max-w-full
+                    [&_h5]:max-w-full
+                    [&_h6]:max-w-full
+
+                    [&_h1]:font-playfair
+                    [&_h2]:font-playfair
+                    [&_h3]:font-playfair
+                    [&_h4]:font-playfair
+
+                    [&_h3]:mb-3
+                    [&_h3]:mt-5
+                    [&_h3]:text-xl
+                    [&_h3]:font-semibold
+                    [&_h3]:text-white
+
+                    [&_h4]:mb-2
+                    [&_h4]:mt-4
+                    [&_h4]:font-semibold
+                    [&_h4]:text-white
+
+                    [&_img]:h-auto
+                    [&_img]:max-w-full
+                    [&_img]:rounded-xl
+
+                    sm:text-[14px]
+                    sm:leading-7
+                    md:text-[15px]
+                  "
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      normalizedMarketDescription,
+                  }}
+                />
+              ) : (
+                <div
+                  className="
+                    min-w-0
+                    w-full
+                    max-w-full
+                    break-words
+                    text-[13px]
+                    leading-7
+                    text-white/65
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
+                    sm:text-[14px]
+                    sm:leading-7
+                    md:text-[15px]
+                  "
+                >
+                  {normalizedMarketDescription
+                    .split(/\n\s*\n/)
+                    .map(
+                      (
+                        paragraph,
+                        index
+                      ) => (
+                        <p
+                          key={index}
+                          className="
+                            m-0
+                            mb-4
+                            last:mb-0
+                            max-w-full
+                            break-words
+                            [overflow-wrap:anywhere]
+                          "
+                        >
+                          {paragraph.trim()}
+                        </p>
+                      )
+                    )}
+                </div>
+              )}
+
+              {/* MARKET DESCRIPTION COLLAPSED FADE */}
+
+              {!isExpanded &&
+                marketNeedsReadMore && (
+                  <div
+                    className="
+                      pointer-events-none
+                      absolute
+                      inset-x-0
+                      bottom-0
+                      h-20
+                      bg-gradient-to-t
+                      from-[#17342d]
+                      via-[#17342d]/90
+                      to-transparent
+                    "
+                  />
+                )}
+            </div>
+
+            {/* MARKET DESCRIPTION READ MORE */}
+
+            {marketNeedsReadMore && (
+              <button
+                type="button"
+                onClick={() =>
+                  setIsExpanded(
+                    (previous) =>
+                      !previous
+                  )
+                }
+                aria-expanded={isExpanded}
+                className="
+                  mt-5
+                  inline-flex
+                  items-center
+                  gap-2
+                  border-0
+                  bg-transparent
+                  p-0
+                  text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.12em]
+                  text-white
+                  transition-all
+                  duration-300
+                  hover:text-[#D4AF37]
+                  focus:outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-[#D4AF37]/50
+                  focus-visible:ring-offset-4
+                  focus-visible:ring-offset-[#17342d]
+                "
+              >
+                <span>
+                  {isExpanded
+                    ? "Read Less"
+                    : "Read More"}
+                </span>
+
+                {isExpanded ? (
+                  <ArrowUp
+                    size={14}
+                    className="shrink-0"
+                  />
+                ) : (
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0"
+                  />
+                )}
+              </button>
+            )}
           </div>
 
-          {/* MARKET INSIGHTS */}
+          {/* ==================================================
+              MARKET INSIGHTS
+          ================================================== */}
 
           <div
             className="
@@ -1263,7 +1461,9 @@ export default function AboutLocation({
             )}
           </div>
 
-          {/* PERSPECTIVE */}
+          {/* ==================================================
+              PERSPECTIVE
+          ================================================== */}
 
           <div
             className="
@@ -1426,6 +1626,9 @@ function SnapshotCard({
 
 /* ============================================================
    MARKET INSIGHT
+
+   IMPORTANT:
+   These are intentionally still plain-text cards.
 ============================================================ */
 
 function MarketInsight({

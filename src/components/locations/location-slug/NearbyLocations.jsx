@@ -37,6 +37,31 @@ export default function NearbyLocations({
   };
 
   // ============================================================
+  // RICH TEXT HELPER
+  //
+  // nearby.description supports:
+  // - Plain text
+  // - Rich HTML from RichTextEditor
+  // ============================================================
+
+  const normalizeRichText = (text) => {
+    if (typeof text !== "string") {
+      return "";
+    }
+
+    return text
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&#160;/gi, " ")
+      .replace(/&#xA0;/gi, " ")
+      .replace(/\u00a0/g, " ")
+      .replace(/<p>\s*<\/p>/gi, "");
+  };
+
+  const isRichText = (text) => {
+    return /<\s*[a-z][^>]*>/i.test(text);
+  };
+
+  // ============================================================
   // DEFAULT COPY
   // ============================================================
 
@@ -54,6 +79,24 @@ export default function NearbyLocations({
     custom?.description,
     `Discover nearby locations around ${locationName}, with access to complementary residential, commercial, lifestyle and investment opportunities across the wider area.`
   );
+
+  // ============================================================
+  // NORMALIZED DESCRIPTION
+  //
+  // Supports both:
+  //
+  // Plain:
+  // Discover nearby locations around Gurgaon...
+  //
+  // Rich:
+  // <p>Discover nearby <strong>locations</strong>...</p>
+  // ============================================================
+
+  const normalizedDescription =
+    normalizeRichText(description);
+
+  const hasRichDescription =
+    isRichText(normalizedDescription);
 
   // ============================================================
   // CURRENT LOCATION ID
@@ -335,21 +378,129 @@ export default function NearbyLocations({
               {title}
             </h2>
 
-            {/* DESCRIPTION */}
+            {/* ==================================================
+                DESCRIPTION
 
-            <p
-              className="
-                mt-5
-                max-w-[760px]
-                text-[13px]
-                leading-7
-                text-[#667078]
-                sm:text-[14px]
-                md:text-[15px]
-              "
-            >
-              {description}
-            </p>
+                Supports BOTH:
+                1. Plain text
+                2. Rich HTML from RichTextEditor
+            ================================================== */}
+
+            {hasRichDescription ? (
+              <div
+                className="
+                  mt-5
+                  max-w-[760px]
+                  text-[13px]
+                  leading-7
+                  text-[#667078]
+
+                  sm:text-[14px]
+                  md:text-[15px]
+
+                  [&_p]:m-0
+                  [&_p]:mb-4
+                  [&_p:last-child]:mb-0
+
+                  [&_strong]:font-semibold
+                  [&_b]:font-semibold
+
+                  [&_em]:italic
+
+                  [&_u]:underline
+                  [&_u]:underline-offset-2
+
+                  [&_a]:font-medium
+                  [&_a]:text-[#A47A2B]
+                  [&_a]:underline
+                  [&_a]:underline-offset-2
+
+                  [&_ul]:my-4
+                  [&_ul]:list-disc
+                  [&_ul]:pl-5
+
+                  [&_ol]:my-4
+                  [&_ol]:list-decimal
+                  [&_ol]:pl-5
+
+                  [&_li]:mb-1.5
+
+                  [&_h1]:mb-3
+                  [&_h1]:font-playfair
+                  [&_h1]:text-2xl
+                  [&_h1]:font-semibold
+                  [&_h1]:leading-tight
+                  [&_h1]:text-[#17342d]
+
+                  [&_h2]:mb-3
+                  [&_h2]:font-playfair
+                  [&_h2]:text-xl
+                  [&_h2]:font-semibold
+                  [&_h2]:leading-tight
+                  [&_h2]:text-[#17342d]
+
+                  [&_h3]:mb-2
+                  [&_h3]:font-playfair
+                  [&_h3]:text-lg
+                  [&_h3]:font-semibold
+                  [&_h3]:leading-tight
+                  [&_h3]:text-[#17342d]
+
+                  [&_h4]:mb-2
+                  [&_h4]:font-semibold
+                  [&_h4]:text-[#17342d]
+
+                  [&_img]:my-4
+                  [&_img]:max-w-full
+                  [&_img]:rounded-xl
+                "
+                dangerouslySetInnerHTML={{
+                  __html:
+                    normalizedDescription,
+                }}
+              />
+            ) : (
+              <div
+                className="
+                  mt-5
+                  max-w-[760px]
+                  text-[13px]
+                  leading-7
+                  text-[#667078]
+                  sm:text-[14px]
+                  md:text-[15px]
+                "
+              >
+                {normalizedDescription
+                  .split(/\n\s*\n/)
+                  .map(
+                    (
+                      paragraph,
+                      index
+                    ) => {
+                      const trimmed =
+                        paragraph.trim();
+
+                      if (!trimmed) {
+                        return null;
+                      }
+
+                      return (
+                        <p
+                          key={index}
+                          className="
+                            m-0
+                            mb-4
+                            last:mb-0
+                          "
+                        >
+                          {trimmed}
+                        </p>
+                      );
+                    }
+                  )}
+              </div>
+            )}
           </div>
         </div>
 
