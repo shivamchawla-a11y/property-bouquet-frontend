@@ -11,7 +11,6 @@ import {
   Trees,
 } from "lucide-react";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
@@ -21,23 +20,21 @@ import SearchPanelMobile from "./SearchPanelMobile";
 /* ============================================================
    PROPERTY BOUQUET — MOBILE HERO
 
-   IMPORTANT
+   MOBILE-FIRST VERSION
    ------------------------------------------------------------
-   - MOBILE-ONLY responsive hero
-   - Uses the REAL functional SearchPanelMobile
+   - No hero images
+   - No /img1.jpg
+   - No /img2.jpg
+   - No /img3.jpg
+   - Faster mobile initial load
+   - Purely responsive mobile layout
+   - Functional SearchPanelMobile
    - SearchPanelMobile remains in normal document flow
    - Hero uses overflow-visible so dropdowns can escape
    - Categories are fetched from /api/properties
    - Uses categoryData.categoryName
    - Category click uses ?propertyType=
-   - Uses EXACTLY the SAME HOMEPAGE IMAGE NAMES as DESKTOP
-
-   HERO IMAGES
-   ------------------------------------------------------------
-   /img1.jpg  → Main hero image
-   /img2.jpg  → Top-right hero image
-   /img3.jpg  → Bottom-right hero image
-
+   
    CATEGORY IMAGES
    ------------------------------------------------------------
    /img4.webp → Category 1
@@ -239,14 +236,14 @@ export default function HeroSectionMobile() {
 
      IMPORTANT
      ----------------------------------------------------------
-     These use the EXACT SAME IMAGE ASSIGNMENT as desktop.
+     These still use the category images:
 
      1st category → /img4.webp
      2nd category → /img5.webp
      3rd category → /img6.webp
      4th category → /img7.webp
 
-     Category names themselves remain dynamic.
+     The HERO itself has NO IMAGES.
   ========================================================== */
 
   const categoryCards = useMemo(() => {
@@ -255,10 +252,6 @@ export default function HeroSectionMobile() {
       .map((categoryName, index) => ({
         title: categoryName,
         icon: getCategoryIcon(categoryName),
-
-        /*
-         * EXACT SAME CATEGORY IMAGE SOURCE AS DESKTOP.
-         */
         image: `/img${index + 4}.webp`,
       }));
   }, [propertyCategories]);
@@ -331,6 +324,7 @@ export default function HeroSectionMobile() {
           px-4
           pt-[82px]
           pb-0
+
           sm:px-5
           sm:pt-[88px]
         "
@@ -467,263 +461,167 @@ export default function HeroSectionMobile() {
           </motion.p>
 
           {/* =================================================
-              MOBILE HERO IMAGE COMPOSITION
+              MOBILE HERO VISUAL
 
-              EXACT SAME IMAGE FILES AS DESKTOP:
+              NO IMAGES
 
-              /img1.jpg
-              /img2.jpg
-              /img3.jpg
+              Removed:
+              ❌ /img1.jpg
+              ❌ /img2.jpg
+              ❌ /img3.jpg
+
+              Instead, we use a lightweight premium
+              CSS-only visual accent.
+
+              This keeps the hero:
+              - fast
+              - clean
+              - lightweight
+              - mobile-focused
+              - visually premium
           ================================================= */}
 
           <motion.div
             initial={{
               opacity: 0,
-              y: 18,
+              y: 14,
             }}
             animate={{
               opacity: 1,
               y: 0,
             }}
             transition={{
-              duration: 0.75,
+              duration: 0.6,
               delay: 0.18,
             }}
             className="
               relative
-              mt-[22px]
-              h-[245px]
+              mt-[24px]
+              h-[105px]
               w-full
-
-              sm:h-[275px]
+              overflow-visible
             "
           >
-            {/* =================================================
-                SOFT CIRCLE
-            ================================================= */}
+            {/* Soft luxury background shape */}
 
             <div
               className="
                 absolute
-                right-[-25px]
-                top-[-12px]
-                h-[205px]
-                w-[205px]
+                right-[5px]
+                top-0
+                h-[94px]
+                w-[94px]
                 rounded-full
-                bg-[#eee3cb]
-
-                sm:right-[8px]
-                sm:h-[225px]
-                sm:w-[225px]
+                border
+                border-[#d8bb82]/35
+                bg-[#eee3cb]/45
               "
             />
 
-            {/* =================================================
-                MAIN IMAGE
+            {/* Inner ring */}
 
-                DESKTOP:
-                /img1.jpg
+            <div
+              className="
+                absolute
+                right-[21px]
+                top-[16px]
+                h-[62px]
+                w-[62px]
+                rounded-full
+                border
+                border-[#c89d58]/30
+              "
+            />
 
-                MOBILE:
-                SAME /img1.jpg
-            ================================================= */}
+            {/* Gold accent line */}
+
+            <div
+              className="
+                absolute
+                right-[10px]
+                top-[46px]
+                h-px
+                w-[145px]
+                bg-gradient-to-r
+                from-transparent
+                via-[#c89d58]
+                to-transparent
+              "
+            />
+
+            {/* Small gold point */}
+
+            <span
+              className="
+                absolute
+                right-[82px]
+                top-[43px]
+                h-[7px]
+                w-[7px]
+                rounded-full
+                bg-[#c89d58]
+                shadow-[0_0_0_5px_rgba(200,157,88,0.10)]
+              "
+            />
+
+            {/* Lightweight editorial text */}
 
             <div
               className="
                 absolute
                 left-0
-                top-[48px]
-                z-20
-                h-[170px]
-                w-[68%]
-                overflow-hidden
-                rounded-[16px]
-                border
-                border-white
-                bg-white
-                shadow-[0_16px_35px_rgba(22,46,38,0.15)]
-
-                sm:top-[52px]
-                sm:h-[195px]
-                sm:w-[70%]
+                top-[14px]
+                max-w-[220px]
               "
             >
-              <Image
-                src="/img1.jpg"
-                alt="Luxury property"
-                fill
-                priority
-                quality={90}
-                sizes="70vw"
+              <p
                 className="
-                  object-cover
-                  object-center
+                  text-[8px]
+                  font-semibold
+                  uppercase
+                  tracking-[2.4px]
+                  text-[#9a8358]
                 "
-              />
+              >
+                PROPERTY BOUQUET
+              </p>
 
-              <div
+              <p
                 className="
-                  absolute
-                  inset-0
-                  bg-gradient-to-t
-                  from-[#102f27]/15
-                  to-transparent
+                  mt-[7px]
+                  max-w-[210px]
+                  font-serif
+                  text-[20px]
+                  leading-[1.05]
+                  tracking-[-0.5px]
+                  text-[#173a31]
                 "
-              />
+                style={{
+                  fontFamily:
+                    "Georgia, 'Times New Roman', serif",
+                }}
+              >
+                Curated properties.
+                <br />
+                Considered investments.
+              </p>
             </div>
 
-            {/* =================================================
-                TOP-RIGHT IMAGE
+            {/* Small decorative leaf */}
 
-                DESKTOP:
-                /img2.jpg
-
-                MOBILE:
-                SAME /img2.jpg
-            ================================================= */}
-
-            <div
+            <span
               className="
                 absolute
-                right-0
-                top-0
-                z-30
-                h-[105px]
-                w-[39%]
-                overflow-hidden
-                rounded-[14px]
-                border
-                border-white
-                bg-white
-                shadow-[0_13px_30px_rgba(22,46,38,0.14)]
-
-                sm:h-[120px]
-                sm:w-[38%]
-              "
-            >
-              <Image
-                src="/img2.jpg"
-                alt="Luxury residential development"
-                fill
-                quality={85}
-                sizes="40vw"
-                className="
-                  object-cover
-                  object-[68%_35%]
-                "
-              />
-            </div>
-
-            {/* =================================================
-                BOTTOM-RIGHT IMAGE
-
-                DESKTOP:
-                /img3.jpg
-
-                MOBILE:
-                SAME /img3.jpg
-            ================================================= */}
-
-            <div
-              className="
-                absolute
-                bottom-0
-                right-0
-                z-30
-                h-[105px]
-                w-[42%]
-                overflow-hidden
-                rounded-[14px]
-                border
-                border-white
-                bg-white
-                shadow-[0_13px_30px_rgba(22,46,38,0.14)]
-
-                sm:h-[120px]
-                sm:w-[40%]
-              "
-            >
-              <Image
-                src="/img3.jpg"
-                alt="Premium property landscape"
-                fill
-                quality={85}
-                sizes="42vw"
-                className="
-                  object-cover
-                  object-[30%_75%]
-                "
-              />
-            </div>
-
-            {/* =================================================
-                GOLD HANDWRITTEN LABEL
-            ================================================= */}
-
-            <div
-              className="
-                absolute
-                right-[2px]
-                top-[108px]
-                z-40
-                rotate-[-5deg]
-                text-right
-                text-[13px]
-                italic
-                leading-[1.05]
-                text-[#c89d58]
-                opacity-90
-
-                sm:right-[4px]
-                sm:top-[122px]
-                sm:text-[15px]
-              "
-              style={{
-                fontFamily:
-                  "'Brush Script MT', 'Segoe Script', cursive",
-              }}
-            >
-              Luxury
-              <br />
-              Living
-              <br />
-              Redefined
-            </div>
-
-            {/* =================================================
-                GOLD LINE
-            ================================================= */}
-
-            <div
-              className="
-                absolute
-                left-[42%]
-                top-[41px]
-                z-10
-                h-px
-                w-[27%]
-                bg-[#c89d58]
-                opacity-80
-              "
-            />
-
-            {/* =================================================
-                LEAF DETAIL
-            ================================================= */}
-
-            <div
-              className="
-                absolute
-                bottom-[-2px]
-                left-[2px]
-                z-30
-                text-[34px]
+                bottom-[4px]
+                right-[14px]
+                text-[22px]
                 leading-none
-                opacity-50
+                opacity-35
               "
+              aria-hidden="true"
             >
               🌿
-            </div>
+            </span>
           </motion.div>
 
           {/* =================================================
@@ -868,7 +766,7 @@ export default function HeroSectionMobile() {
       {/* ======================================================
           MOBILE CATEGORY SECTION
 
-          Uses EXACT SAME CATEGORY IMAGE FILES as DESKTOP.
+          CATEGORY IMAGES ARE KEPT.
 
           /img4.webp
           /img5.webp
@@ -1174,8 +1072,13 @@ function CategorySkeleton() {
    /properties?propertyType=...
 
    IMAGE SOURCE:
-   EXACT SAME /img4.webp → /img7.webp
-   ASSIGNED BY CATEGORY POSITION
+
+   /img4.webp → /img7.webp
+
+   NOTE:
+   These are NOT hero images.
+   They remain because they belong to the
+   Explore By Category section.
 ============================================================ */
 
 function CategoryCard({
@@ -1204,12 +1107,16 @@ function CategoryCard({
         sm:h-[125px]
       "
     >
-      <Image
+      <img
         src={image}
         alt={`${title} properties`}
-        fill
-        sizes="50vw"
+        loading="lazy"
+        decoding="async"
         className="
+          absolute
+          inset-0
+          h-full
+          w-full
           object-cover
           transition-transform
           duration-700

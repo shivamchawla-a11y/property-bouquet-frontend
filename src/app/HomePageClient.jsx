@@ -3,11 +3,18 @@
 import dynamic from "next/dynamic";
 
 import Navbar from "@/components/home/Navbar";
+import NavbarMobile from "@/components/home/NavbarMobile";
+
 import HeroSection from "@/components/home/HeroSection";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
+
 import NavbarConsultationModal from "@/components/home/NavbarConsultationModal";
 
 import { useState } from "react";
+
+// =========================================================
+// LAZY LOADED SECTIONS
+// =========================================================
 
 const RecommendedProjects = dynamic(() =>
   import("@/components/home/RecommendedProperties")
@@ -45,71 +52,144 @@ const Footer = dynamic(() =>
   import("@/components/home/Footer")
 );
 
-export default function HomePage() {
+// =========================================================
+// HOME PAGE
+// =========================================================
 
+export default function HomePage() {
   const [showConsultation, setShowConsultation] =
     useState(false);
+
   return (
     <main className="bg-[#f6f6f6] overflow-hidden">
 
-      <Navbar forceSolid
+      {/* ===================================================== */}
+      {/* DESKTOP NAVBAR */}
+      {/* ===================================================== */}
+      {/*
+        IMPORTANT:
+        The existing Navbar.jsx is completely untouched.
+
+        It is rendered only on desktop/tablet.
+        Mobile gets its own dedicated NavbarMobile.jsx.
+      */}
+
+      <div className="hidden md:block">
+        <Navbar
+          forceSolid
+          onConsultationClick={() =>
+            setShowConsultation(true)
+          }
+        />
+      </div>
+
+      {/* ===================================================== */}
+      {/* MOBILE NAVBAR */}
+      {/* ===================================================== */}
+      {/*
+        Dedicated mobile navbar.
+
+        This keeps the desktop Navbar.jsx completely isolated
+        from mobile styling and behaviour.
+      */}
+
+      <div className="block md:hidden">
+        <NavbarMobile
+          forceSolid
+          onConsultationClick={() =>
+            setShowConsultation(true)
+          }
+        />
+      </div>
+
+      {/* ===================================================== */}
+      {/* CONSULTATION MODAL */}
+      {/* ===================================================== */}
+
+      <NavbarConsultationModal
+        open={showConsultation}
+        onClose={() =>
+          setShowConsultation(false)
+        }
+      />
+
+      {/* ===================================================== */}
+      {/* DESKTOP HERO */}
+      {/* ===================================================== */}
+
+      <div className="hidden md:block">
+        <HeroSection />
+      </div>
+
+      {/* ===================================================== */}
+      {/* MOBILE HERO */}
+      {/* ===================================================== */}
+
+      <div className="block md:hidden">
+        <HeroSectionMobile />
+      </div>
+
+      {/* ===================================================== */}
+      {/* RECOMMENDED PROJECTS */}
+      {/* ===================================================== */}
+
+      <RecommendedProjects />
+
+      {/* ===================================================== */}
+      {/* FEATURED PROJECTS */}
+      {/* ===================================================== */}
+
+      {/* DESKTOP */}
+      <div className="hidden lg:block">
+        <FeaturedProjects />
+      </div>
+
+      {/* MOBILE / TABLET */}
+      <div className="block lg:hidden">
+        <FeaturedProjectsMobile />
+      </div>
+
+      {/* ===================================================== */}
+      {/* TRENDING PROJECTS */}
+      {/* ===================================================== */}
+
+      {/* DESKTOP */}
+      <div className="hidden lg:block">
+        <TrendingProjects />
+      </div>
+
+      {/* MOBILE / TABLET */}
+      <div className="block lg:hidden">
+        <TrendingProjectsMobile />
+      </div>
+
+      {/* ===================================================== */}
+      {/* EXPLORE LOCATIONS */}
+      {/* ===================================================== */}
+
+      <ExploreLocations />
+
+      {/* ===================================================== */}
+      {/* PREMIUM PARTNERS */}
+      {/* ===================================================== */}
+
+      <PremiumPartners />
+
+      {/* ===================================================== */}
+      {/* LUXURY INSIGHTS */}
+      {/* ===================================================== */}
+
+      <LuxuryInsightsSection
         onConsultationClick={() =>
           setShowConsultation(true)
         }
       />
 
-      <NavbarConsultationModal
-  open={showConsultation}
-  onClose={() =>
-    setShowConsultation(false)
-  }
-/>
+      {/* ===================================================== */}
+      {/* FOOTER */}
+      {/* ===================================================== */}
 
-      {/* DESKTOP HERO */}
-      <div className="hidden md:block">
-        <HeroSection />
-      </div>
-
-      {/* MOBILE HERO */}
-      <div className="block md:hidden">
-        <HeroSectionMobile />
-      </div>
-
-      <RecommendedProjects/>
-
-      {/* FEATURED */}
-      {/* FEATURED DESKTOP */}
-<div className="hidden lg:block">
-  <FeaturedProjects />
-</div>
-
-{/* FEATURED MOBILE */}
-<div className="block lg:hidden">
-  <FeaturedProjectsMobile />
-</div>
-
-      {/* TRENDING */}
-      {/* DESKTOP */}
-<div className="hidden lg:block">
-  <TrendingProjects />
-</div>
-
-{/* MOBILE */}
-<div className="block lg:hidden">
-  <TrendingProjectsMobile />
-</div>
-
-      <ExploreLocations />
-
-      <PremiumPartners />
- 
-      <LuxuryInsightsSection
-  onConsultationClick={() =>
-    setShowConsultation(true)
-  }
-/>
-
-      <Footer/>
+      <Footer />
 
     </main>
   );
