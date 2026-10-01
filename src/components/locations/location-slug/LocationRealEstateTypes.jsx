@@ -25,23 +25,33 @@ export default function LocationRealEstateTypes({
     pageContent?.realEstateTypes || {};
 
   const customEyebrow =
-    customContent?.eyebrow?.trim() ||
-    "REAL ESTATE TYPES";
+    typeof customContent?.eyebrow === "string" &&
+    customContent.eyebrow.trim()
+      ? customContent.eyebrow.trim()
+      : "REAL ESTATE TYPES";
 
   const customTitle =
-    customContent?.title?.trim() ||
-    "Find a Home That Fits Your Lifestyle";
+    typeof customContent?.title === "string" &&
+    customContent.title.trim()
+      ? customContent.title.trim()
+      : "Find a Home That Fits Your Lifestyle";
 
   const customDescription =
-    customContent?.description?.trim() ||
-    `Whether you are looking for a premium apartment, an independent floor, residential land or a commercial opportunity, the real estate landscape in ${locationName} offers different formats for different lifestyles, ownership objectives and investment requirements. Explore the available property categories and identify the format that best matches your needs.`;
+    typeof customContent?.description === "string" &&
+    customContent.description.trim()
+      ? customContent.description.trim()
+      : `Whether you are looking for a premium apartment, an independent floor, residential land or a commercial opportunity, the real estate landscape in ${locationName} offers different formats for different lifestyles, ownership objectives and investment requirements. Explore the available property categories and identify the format that best matches your needs.`;
 
   // ============================================================
   // RICH TEXT HELPERS
   //
-  // ONLY realEstateTypes.description uses rich text.
+  // Supports BOTH:
+  // 1. Plain text
+  // 2. Rich HTML from RichTextEditor
   //
-  // Card descriptions remain plain text.
+  // Used for:
+  // - Section-level realEstateTypes.description
+  // - Individual real estate type card descriptions
   // ============================================================
 
   const normalizeRichText = (text) => {
@@ -58,8 +68,178 @@ export default function LocationRealEstateTypes({
   };
 
   const isRichText = (text) => {
+    if (typeof text !== "string") {
+      return false;
+    }
+
     return /<\s*[a-z][^>]*>/i.test(text);
   };
+
+  // ============================================================
+  // COMMON RICH TEXT CLASS
+  // ============================================================
+
+  const richTextClasses = `
+    [&_p]:m-0
+    [&_p]:mb-4
+    [&_p:last-child]:mb-0
+
+    [&_strong]:font-semibold
+    [&_b]:font-semibold
+
+    [&_em]:italic
+
+    [&_u]:underline
+    [&_u]:underline-offset-2
+
+    [&_a]:font-medium
+    [&_a]:text-[#8F7335]
+    [&_a]:underline
+    [&_a]:underline-offset-2
+    [&_a]:transition-colors
+    [&_a:hover]:text-[#17342d]
+
+    [&_ul]:my-4
+    [&_ul]:list-disc
+    [&_ul]:pl-5
+
+    [&_ol]:my-4
+    [&_ol]:list-decimal
+    [&_ol]:pl-5
+
+    [&_li]:mb-1.5
+
+    [&_h1]:mb-3
+    [&_h1]:font-playfair
+    [&_h1]:text-2xl
+    [&_h1]:font-medium
+    [&_h1]:leading-tight
+    [&_h1]:text-[#17342d]
+
+    [&_h2]:mb-3
+    [&_h2]:font-playfair
+    [&_h2]:text-xl
+    [&_h2]:font-medium
+    [&_h2]:leading-tight
+    [&_h2]:text-[#17342d]
+
+    [&_h3]:mb-2
+    [&_h3]:font-playfair
+    [&_h3]:text-lg
+    [&_h3]:font-medium
+    [&_h3]:leading-tight
+    [&_h3]:text-[#17342d]
+
+    [&_h4]:mb-2
+    [&_h4]:font-semibold
+    [&_h4]:text-[#17342d]
+
+    [&_blockquote]:my-4
+    [&_blockquote]:border-l-2
+    [&_blockquote]:border-[#C89D58]
+    [&_blockquote]:pl-4
+    [&_blockquote]:italic
+
+    [&_img]:my-4
+    [&_img]:max-w-full
+    [&_img]:rounded-xl
+  `;
+
+  // ============================================================
+  // RENDER DESCRIPTION
+  //
+  // This helper is intentionally reusable for:
+  // - section description
+  // - individual card descriptions
+  //
+  // Plain text:
+  //     "Some normal description..."
+  //
+  // Rich text:
+  //     "<p>Some <strong>formatted</strong> description.</p>"
+  // ============================================================
+
+  const renderDescription = (
+    description,
+    options = {}
+  ) => {
+    const {
+      wrapperClassName = "",
+      textClassName = "",
+    } = options;
+
+    const normalized =
+      normalizeRichText(description);
+
+    if (!normalized) {
+      return null;
+    }
+
+    // ==========================================================
+    // RICH TEXT
+    // ==========================================================
+
+    if (isRichText(normalized)) {
+      return (
+        <div
+          className={`
+            ${wrapperClassName}
+            ${textClassName}
+            ${richTextClasses}
+          `}
+          dangerouslySetInnerHTML={{
+            __html: normalized,
+          }}
+        />
+      );
+    }
+
+    // ==========================================================
+    // PLAIN TEXT
+    //
+    // Preserve paragraph breaks from existing content.
+    // ==========================================================
+
+    const paragraphs =
+      normalized.split(/\n\s*\n/);
+
+    return (
+      <div
+        className={`
+          ${wrapperClassName}
+          ${textClassName}
+        `}
+      >
+        {paragraphs.map(
+          (paragraph, index) => {
+            const trimmed =
+              paragraph.trim();
+
+            if (!trimmed) {
+              return null;
+            }
+
+            return (
+              <p
+                key={index}
+                className="
+                  m-0
+                  mb-4
+                  last:mb-0
+                "
+              >
+                {trimmed}
+              </p>
+            );
+          }
+        )}
+      </div>
+    );
+  };
+
+  // ============================================================
+  // SECTION DESCRIPTION
+  // ============================================================
 
   const normalizedDescription =
     normalizeRichText(
@@ -87,7 +267,8 @@ export default function LocationRealEstateTypes({
 
     if (!type) return;
 
-    const normalized = String(type).trim();
+    const normalized =
+      String(type).trim();
 
     if (!normalized) return;
 
@@ -114,16 +295,19 @@ export default function LocationRealEstateTypes({
       size={20}
       strokeWidth={1.7}
     />,
+
     <Home
       key="home"
       size={20}
       strokeWidth={1.7}
     />,
+
     <Trees
       key="trees"
       size={20}
       strokeWidth={1.7}
     />,
+
     <BriefcaseBusiness
       key="briefcase"
       size={20}
@@ -138,8 +322,10 @@ export default function LocationRealEstateTypes({
   const fallbackTypes = [
     {
       title: "Luxury Apartments",
+
       description:
         "Premium residences designed around contemporary living, refined amenities and thoughtfully planned community environments.",
+
       icon: (
         <Building2
           size={20}
@@ -147,10 +333,13 @@ export default function LocationRealEstateTypes({
         />
       ),
     },
+
     {
       title: "Independent Floors",
+
       description:
         "Spacious floor residences offering greater privacy, generous layouts and a more independent residential experience.",
+
       icon: (
         <Home
           size={20}
@@ -158,10 +347,13 @@ export default function LocationRealEstateTypes({
         />
       ),
     },
+
     {
       title: "Plots & Land",
+
       description:
         "Residential land opportunities for buyers seeking flexibility in planning, construction and long-term ownership.",
+
       icon: (
         <Trees
           size={20}
@@ -169,10 +361,13 @@ export default function LocationRealEstateTypes({
         />
       ),
     },
+
     {
       title: "Commercial Spaces",
+
       description:
         "Commercial opportunities suited to businesses, investors and buyers evaluating property for income-generating purposes.",
+
       icon: (
         <BriefcaseBusiness
           size={20}
@@ -184,6 +379,10 @@ export default function LocationRealEstateTypes({
 
   // ============================================================
   // ADMIN-CUSTOMIZED CARDS
+  //
+  // Card descriptions now support BOTH:
+  // - plain text
+  // - rich text HTML
   // ============================================================
 
   const customCards =
@@ -213,9 +412,10 @@ export default function LocationRealEstateTypes({
               title,
 
               /*
-               * IMPORTANT:
-               * Card descriptions stay plain text.
+               * Card description supports both
+               * plain text and RichTextEditor HTML.
                */
+
               description:
                 String(
                   card.description || ""
@@ -240,6 +440,7 @@ export default function LocationRealEstateTypes({
   // FINAL CARD DATA
   //
   // PRIORITY:
+  //
   // 1. ADMIN CUSTOMIZED CARDS
   // 2. DYNAMICALLY DISCOVERED PROPERTY TYPES
   // 3. STATIC FALLBACK CARDS
@@ -254,8 +455,11 @@ export default function LocationRealEstateTypes({
             title: name,
 
             /*
-             * Card descriptions remain plain text.
+             * Dynamically generated descriptions
+             * are plain text, but the renderer below
+             * supports rich text if HTML is ever supplied.
              */
+
             description:
               `Explore ${name.toLowerCase()} opportunities available across ${locationName}, including curated projects listed through Property Bouquet.`,
 
@@ -411,11 +615,12 @@ export default function LocationRealEstateTypes({
 
           <div className="mt-5 flex items-center gap-2">
             <div className="h-[2px] w-14 bg-[#C89D58]" />
+
             <div className="h-[2px] w-2 bg-[#D4AF37]/40" />
           </div>
 
           {/* ====================================================
-              DESCRIPTION
+              SECTION DESCRIPTION
 
               Supports BOTH:
               1. Plain text
@@ -424,73 +629,17 @@ export default function LocationRealEstateTypes({
 
           {hasRichDescription ? (
             <div
-              className="
+              className={`
                 mt-5
                 max-w-[820px]
                 text-[13px]
                 leading-[1.8]
                 text-[#59635e]
-
                 sm:text-[13.5px]
                 md:text-[14px]
                 lg:text-[14.5px]
-
-                [&_p]:m-0
-                [&_p]:mb-4
-                [&_p:last-child]:mb-0
-
-                [&_strong]:font-semibold
-                [&_b]:font-semibold
-
-                [&_em]:italic
-
-                [&_u]:underline
-                [&_u]:underline-offset-2
-
-                [&_a]:font-medium
-                [&_a]:text-[#8F7335]
-                [&_a]:underline
-                [&_a]:underline-offset-2
-
-                [&_ul]:my-4
-                [&_ul]:list-disc
-                [&_ul]:pl-5
-
-                [&_ol]:my-4
-                [&_ol]:list-decimal
-                [&_ol]:pl-5
-
-                [&_li]:mb-1.5
-
-                [&_h1]:mb-3
-                [&_h1]:font-playfair
-                [&_h1]:text-2xl
-                [&_h1]:font-medium
-                [&_h1]:leading-tight
-                [&_h1]:text-[#17342d]
-
-                [&_h2]:mb-3
-                [&_h2]:font-playfair
-                [&_h2]:text-xl
-                [&_h2]:font-medium
-                [&_h2]:leading-tight
-                [&_h2]:text-[#17342d]
-
-                [&_h3]:mb-2
-                [&_h3]:font-playfair
-                [&_h3]:text-lg
-                [&_h3]:font-medium
-                [&_h3]:leading-tight
-                [&_h3]:text-[#17342d]
-
-                [&_h4]:mb-2
-                [&_h4]:font-semibold
-                [&_h4]:text-[#17342d]
-
-                [&_img]:my-4
-                [&_img]:max-w-full
-                [&_img]:rounded-xl
-              "
+                ${richTextClasses}
+              `}
               dangerouslySetInnerHTML={{
                 __html:
                   normalizedDescription,
@@ -787,23 +936,30 @@ export default function LocationRealEstateTypes({
                   {/* ==================================================
                       CARD DESCRIPTION
 
-                      INTENTIONALLY PLAIN TEXT.
-                      Only the section-level description above
-                      supports Rich Text.
+                      Supports BOTH:
+                      1. Plain text
+                      2. Rich HTML from RichTextEditor
+
+                      This is the important change for the
+                      individual Real Estate Type cards.
                   ================================================== */}
 
-                  <p
-                    className="
-                      mt-3
-                      min-h-[76px]
-                      text-[12px]
-                      leading-[1.75]
-                      text-[#68716d]
-                      sm:text-[12.5px]
-                    "
-                  >
-                    {item.description}
-                  </p>
+                  {renderDescription(
+                    item.description,
+                    {
+                      wrapperClassName: `
+                        mt-3
+                        min-h-[76px]
+                      `,
+
+                      textClassName: `
+                        text-[12px]
+                        leading-[1.75]
+                        text-[#68716d]
+                        sm:text-[12.5px]
+                      `,
+                    }
+                  )}
 
                   {/* CTA */}
 

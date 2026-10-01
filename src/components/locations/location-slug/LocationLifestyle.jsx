@@ -36,6 +36,176 @@ export default function LocationLifestyle({
   };
 
   /* ============================================================
+     RICH TEXT HELPERS
+     
+     Supports:
+     - Rich HTML saved by RichTextEditor
+     - Existing plain-text descriptions
+     - Empty paragraphs
+     - NBSP entities
+  ============================================================ */
+
+  const normalizeRichText = (text) => {
+    if (typeof text !== "string") {
+      return "";
+    }
+
+    return text
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&#160;/gi, " ")
+      .replace(/&#xA0;/gi, " ")
+      .replace(/\u00a0/g, " ")
+      .replace(/<p>\s*<\/p>/gi, "");
+  };
+
+  const hasRichText = (text) => {
+    if (typeof text !== "string") {
+      return false;
+    }
+
+    return /<\s*[a-z][^>]*>/i.test(text);
+  };
+
+  /* ============================================================
+     RENDER SECTION DESCRIPTION
+     
+     If HTML exists:
+       Render as rich text.
+     
+     If no HTML exists:
+       Render as normal plain text.
+  ============================================================ */
+
+  const renderDescription = (
+    description,
+    className = ""
+  ) => {
+    const normalized =
+      normalizeRichText(description);
+
+    if (!normalized) {
+      return null;
+    }
+
+    /* ==========================================================
+       RICH TEXT
+    ========================================================== */
+
+    if (hasRichText(normalized)) {
+      return (
+        <div
+          className={`
+            ${className}
+            [&_p]:m-0
+            [&_p]:mb-4
+            [&_p:last-child]:mb-0
+
+            [&_strong]:font-semibold
+            [&_b]:font-semibold
+
+            [&_em]:italic
+
+            [&_u]:underline
+            [&_u]:underline-offset-2
+
+            [&_a]:font-medium
+            [&_a]:text-[#8F7335]
+            [&_a]:underline
+            [&_a]:underline-offset-2
+            [&_a]:transition-colors
+            [&_a:hover]:text-[#17342d]
+
+            [&_ul]:my-4
+            [&_ul]:list-disc
+            [&_ul]:pl-5
+
+            [&_ol]:my-4
+            [&_ol]:list-decimal
+            [&_ol]:pl-5
+
+            [&_li]:mb-1.5
+
+            [&_h1]:mb-3
+            [&_h1]:font-playfair
+            [&_h1]:text-2xl
+            [&_h1]:font-medium
+            [&_h1]:leading-tight
+            [&_h1]:text-[#17342d]
+
+            [&_h2]:mb-3
+            [&_h2]:font-playfair
+            [&_h2]:text-xl
+            [&_h2]:font-medium
+            [&_h2]:leading-tight
+            [&_h2]:text-[#17342d]
+
+            [&_h3]:mb-2
+            [&_h3]:font-playfair
+            [&_h3]:text-lg
+            [&_h3]:font-medium
+            [&_h3]:leading-tight
+            [&_h3]:text-[#17342d]
+
+            [&_h4]:mb-2
+            [&_h4]:font-semibold
+            [&_h4]:text-[#17342d]
+
+            [&_blockquote]:my-4
+            [&_blockquote]:border-l-2
+            [&_blockquote]:border-[#C89D58]
+            [&_blockquote]:pl-4
+            [&_blockquote]:italic
+
+            [&_img]:my-4
+            [&_img]:max-w-full
+            [&_img]:rounded-xl
+          `}
+          dangerouslySetInnerHTML={{
+            __html: normalized,
+          }}
+        />
+      );
+    }
+
+    /* ==========================================================
+       PLAIN TEXT
+       
+       Preserve paragraph breaks from old database content.
+    ========================================================== */
+
+    const paragraphs =
+      normalized.split(/\n\s*\n/);
+
+    return (
+      <div className={className}>
+        {paragraphs.map(
+          (paragraph, index) => {
+            const trimmed =
+              paragraph.trim();
+
+            if (!trimmed) {
+              return null;
+            }
+
+            return (
+              <p
+                key={index}
+                className="
+                  m-0
+                  mb-4
+                  last:mb-0
+                "
+              >
+                {trimmed}
+              </p>
+            );
+          }
+        )}
+      </div>
+    );
+  };
+
+  /* ============================================================
      HEADER DEFAULTS
   ============================================================ */
 
@@ -201,8 +371,6 @@ export default function LocationLifestyle({
         ];
 
       /*
-       * IMPORTANT BEHAVIOUR
-       *
        * If there is NO custom content for this group:
        * use the complete static/default group.
        *
@@ -212,10 +380,6 @@ export default function LocationLifestyle({
        * In that case:
        * - custom items -> show custom items
        * - no custom items -> show NO bullet items
-       *
-       * This prevents unrelated default bullets such as:
-       * "Hospitals and medical centres"
-       * from appearing underneath a custom description.
        */
 
       const groupHasCustomContent =
@@ -263,7 +427,12 @@ export default function LocationLifestyle({
          *
          * If no custom items exist, intentionally return
          * an empty array instead of fallback.items.
+         *
+         * This prevents unrelated default bullets such as:
+         * "Hospitals and medical centres"
+         * from appearing underneath a custom description.
          */
+
         finalItems = hasCustomItems
           ? customItems
           : [];
@@ -272,6 +441,7 @@ export default function LocationLifestyle({
       /*
        * Only add a group if it has meaningful content.
        */
+
       if (
         finalTitle ||
         finalDescription ||
@@ -417,10 +587,18 @@ export default function LocationLifestyle({
 
             <div className="mt-5 h-[2px] w-16 bg-[#C89D58]" />
 
-            {/* DESCRIPTION */}
+            {/* ==================================================
+                DESCRIPTION
 
-            <p
-              className="
+                Supports BOTH:
+
+                1. Rich HTML from RichTextEditor
+                2. Existing plain text from database
+            ================================================== */}
+
+            {renderDescription(
+              customDescription,
+              `
                 mt-5
                 max-w-[850px]
                 text-[13px]
@@ -428,10 +606,8 @@ export default function LocationLifestyle({
                 text-[#59635e]
                 sm:text-[14px]
                 md:text-[15px]
-              "
-            >
-              {customDescription}
-            </p>
+              `
+            )}
 
             {/* ==================================================
                 LIFESTYLE CARDS

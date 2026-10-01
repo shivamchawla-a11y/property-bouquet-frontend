@@ -2180,28 +2180,33 @@ export default function LocationPageEditor() {
             />
 
             <div className="mt-3">
-              <TextAreaField
-                label="Card Description"
-                value={card.description}
-                onChange={(value) =>
-                  setContent((prev) => ({
-                    ...prev,
-                    realEstateTypes: {
-                      ...prev.realEstateTypes,
-                      cards:
-                        prev.realEstateTypes.cards.map(
-                          (item, i) =>
-                            i === index
-                              ? {
-                                  ...item,
-                                  description: value,
-                                }
-                              : item
-                        ),
-                    },
-                  }))
-                }
-              />
+              <div className="mt-3">
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Card Description
+  </label>
+
+  <RichTextEditor
+    value={card.description}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        realEstateTypes: {
+          ...prev.realEstateTypes,
+          cards:
+            prev.realEstateTypes.cards.map(
+              (item, i) =>
+                i === index
+                  ? {
+                      ...item,
+                      description: value,
+                    }
+                  : item
+            ),
+        },
+      }))
+    }
+  />
+</div>
             </div>
           </div>
         ))}
@@ -2483,19 +2488,24 @@ export default function LocationPageEditor() {
       }
     />
 
-    <TextAreaField
-      label="Description"
-      value={content.lifestyle.description}
-      onChange={(value) =>
-        setContent((prev) => ({
-          ...prev,
-          lifestyle: {
-            ...prev.lifestyle,
-            description: value,
-          },
-        }))
-      }
-    />
+    <div>
+  <label className="block text-sm font-semibold text-gray-800 mb-2">
+    Description
+  </label>
+
+  <RichTextEditor
+    value={content.lifestyle.description}
+    onChange={(value) =>
+      setContent((prev) => ({
+        ...prev,
+        lifestyle: {
+          ...prev.lifestyle,
+          description: value,
+        },
+      }))
+    }
+  />
+</div>
 
     <div className="grid gap-4">
       {content.lifestyle.groups.map(
