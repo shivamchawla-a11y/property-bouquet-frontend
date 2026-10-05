@@ -713,30 +713,26 @@ const handleDeveloperImageUpload =
 
                         <div className="flex justify-end items-center gap-2">
 
-                          {/* VIEW */}
-                          <Link
-                            href={`/developers/${dev.slug}`}
-                            target="_blank"
-                            className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition"
-                          >
-                            <Eye
-                              size={
-                                14
-                              }
-                            />
-                          </Link>
+                          {/* VIEW PUBLIC DEVELOPER PAGE */}
+<Link
+  href={`/developers/${
+    dev.publicSlug || dev.slug
+  }`}
+  target="_blank"
+  className="h-9 w-9 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition"
+  title="View Public Developer Page"
+>
+  <Eye size={14} />
+</Link>
 
-                          {/* EDIT */}
-                          <button
-                            onClick={() =>
-                              editDeveloper(
-                                dev
-                              )
-                            }
-                            className="h-9 w-9 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition"
-                          >
-                            ✎
-                          </button>
+                          {/* EDIT DEVELOPER PAGE */}
+<Link
+  href={`/admin/developers/${dev._id}/edit`}
+  className="h-9 w-9 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition"
+  title="Edit Developer Page"
+>
+  ✎
+</Link>
 
                           {/* DELETE */}
                           <button
