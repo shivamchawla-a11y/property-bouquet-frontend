@@ -36,6 +36,18 @@ export default function DeveloperSlugClient({
       />
 
       {/* ==================================================
+          PROJECTS
+      ================================================== */}
+
+      <DeveloperProjects
+        developer={developer}
+        properties={properties}
+        slug={slug}
+        pageContent={pageContent}
+      />
+
+
+      {/* ==================================================
           ABOUT
       ================================================== */}
 
@@ -54,17 +66,6 @@ export default function DeveloperSlugClient({
 
       <DeveloperStats
         developer={developer}
-        pageContent={pageContent}
-      />
-
-      {/* ==================================================
-          PROJECTS
-      ================================================== */}
-
-      <DeveloperProjects
-        developer={developer}
-        properties={properties}
-        slug={slug}
         pageContent={pageContent}
       />
 

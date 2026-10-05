@@ -1,20 +1,29 @@
-import { notFound, permanentRedirect } from "next/navigation";
+import {
+  notFound,
+  permanentRedirect,
+} from "next/navigation";
 
 import DeveloperSlugClient from "./DeveloperSlugClient";
+
+/* ============================================================
+   SITE CONFIG
+============================================================ */
 
 const SITE_URL = "https://propertybouquet.com";
 const API = "https://propertybouquet.com";
 
-// ============================================================
-// TEXT HELPERS
-// ============================================================
+/* ============================================================
+   TEXT HELPERS
+============================================================ */
 
 function cleanText(value) {
   if (!value || typeof value !== "string") {
     return "";
   }
 
-  return value.replace(/\s+/g, " ").trim();
+  return value
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function truncateDescription(text, maxLength = 160) {
@@ -33,82 +42,146 @@ function truncateDescription(text, maxLength = 160) {
     .trim()}...`;
 }
 
-// ============================================================
-// PUBLIC DEVELOPER SLUG
-// ============================================================
+/* ============================================================
+   ABSOLUTE URL HELPER
+============================================================ */
 
-function buildPublicDeveloperSlug(developerSlug) {
-  if (!developerSlug) {
+function toAbsoluteUrl(value, fallback = "") {
+  if (!value || typeof value !== "string") {
+    return fallback;
+  }
+
+  const cleanValue = value.trim();
+
+  if (!cleanValue) {
+    return fallback;
+  }
+
+  if (
+    cleanValue.startsWith("http://") ||
+    cleanValue.startsWith("https://")
+  ) {
+    return cleanValue;
+  }
+
+  if (cleanValue.startsWith("//")) {
+    return `https:${cleanValue}`;
+  }
+
+  if (cleanValue.startsWith("/")) {
+    return `${SITE_URL}${cleanValue}`;
+  }
+
+  return cleanValue;
+}
+
+/* ============================================================
+   PUBLIC DEVELOPER SLUG
+============================================================ */
+
+function cleanSlugValue(value) {
+  if (!value) {
     return "";
   }
 
-  const cleanSlug = String(developerSlug)
+  return String(value)
     .trim()
     .toLowerCase()
     .replace(/^\/+|\/+$/g, "");
+}
+
+function buildPublicDeveloperSlug(developerSlug) {
+  const cleanSlug = cleanSlugValue(
+    developerSlug
+  );
 
   if (!cleanSlug) {
     return "";
   }
 
-  // Already complete public slug
+  /*
+   * Already complete public slug
+   */
   if (
-    cleanSlug.endsWith("-developer-projects") ||
-    cleanSlug.endsWith("-developers-projects")
+    cleanSlug.endsWith(
+      "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
+    )
   ) {
     return cleanSlug;
   }
 
-  // Backend slug already ends with -developer
-  if (cleanSlug.endsWith("-developer")) {
+  /*
+   * Backend slug already ends with -developer
+   */
+  if (
+    cleanSlug.endsWith("-developer")
+  ) {
     return `${cleanSlug}-projects`;
   }
 
-  // Backend slug already ends with -developers
-  if (cleanSlug.endsWith("-developers")) {
+  /*
+   * Backend slug already ends with -developers
+   */
+  if (
+    cleanSlug.endsWith("-developers")
+  ) {
     return `${cleanSlug}-projects`;
   }
 
-  // Normal backend slug
+  /*
+   * Normal backend slug
+   */
   return `${cleanSlug}-developer-projects`;
 }
 
-// ============================================================
-// VALIDATE PUBLIC URL
-// ============================================================
+/* ============================================================
+   VALIDATE PUBLIC URL
+============================================================ */
 
 function isValidPublicDeveloperSlug(slug) {
-  if (!slug) {
+  const cleanSlug = cleanSlugValue(slug);
+
+  if (!cleanSlug) {
     return false;
   }
 
-  const cleanSlug = String(slug)
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
-
   return (
-    cleanSlug.length > 0 &&
-    (
-      cleanSlug.endsWith("-developer-projects") ||
-      cleanSlug.endsWith("-developers-projects")
+    cleanSlug.endsWith(
+      "-developer-projects"
+    ) ||
+    cleanSlug.endsWith(
+      "-developers-projects"
     )
   );
 }
 
-// ============================================================
-// DEVELOPER NAME → SEO DISPLAY NAME
-// ============================================================
+/* ============================================================
+   DEVELOPER NAME → SEO DISPLAY NAME
+============================================================ */
 
-function getSeoDeveloperName(developerName) {
-  const cleanName = cleanText(developerName);
+function getSeoDeveloperName(
+  developerName
+) {
+  const cleanName = cleanText(
+    developerName
+  );
 
   if (!cleanName) {
     return "Real Estate Developer";
   }
 
+  /*
+   * Prevent:
+   * "ABC Developer Developer"
+   */
   const baseName = cleanName
-    .replace(/(?:\s+developer)+$/i, "")
+    .replace(
+      /(?:\s+developer)+$/i,
+      ""
+    )
     .trim();
 
   if (!baseName) {
@@ -118,40 +191,38 @@ function getSeoDeveloperName(developerName) {
   return `${baseName} Developer`;
 }
 
-// ============================================================
-// PROPERTY URL
-// ============================================================
+/* ============================================================
+   PROPERTY URL
+============================================================ */
 
 function buildPropertyUrl(slug) {
-  if (!slug) {
+  const cleanSlug = cleanText(slug);
+
+  if (!cleanSlug) {
     return "";
   }
 
-  return `${SITE_URL}/${encodeURIComponent(slug)}`;
+  return `${SITE_URL}/${encodeURIComponent(
+    cleanSlug
+  )}`;
 }
 
-// ============================================================
-// FETCH DEVELOPER DATA
-// ============================================================
-//
-// IMPORTANT:
-// The public API returns:
-//
-// developer
-// properties
-// backendSlug
-// publicSlug
-//
-// We keep the existing public API architecture.
-//
-// ============================================================
+/* ============================================================
+   FETCH DEVELOPER DATA
+============================================================ */
 
-async function getDeveloper(publicSlug) {
+async function getDeveloper(
+  publicSlug
+) {
   if (!publicSlug) {
     return null;
   }
 
-  if (!isValidPublicDeveloperSlug(publicSlug)) {
+  if (
+    !isValidPublicDeveloperSlug(
+      publicSlug
+    )
+  ) {
     console.warn(
       `Rejected old/invalid developer URL: "${publicSlug}"`
     );
@@ -161,10 +232,8 @@ async function getDeveloper(publicSlug) {
     };
   }
 
-  const cleanPublicSlug = String(publicSlug)
-    .trim()
-    .toLowerCase()
-    .replace(/^\/+|\/+$/g, "");
+  const cleanPublicSlug =
+    cleanSlugValue(publicSlug);
 
   try {
     const res = await fetch(
@@ -196,16 +265,20 @@ async function getDeveloper(publicSlug) {
       return null;
     }
 
-    const publishedProperties = Array.isArray(
-      data.properties
-    )
-      ? data.properties.filter(
-          (property) =>
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.deletedFromStatus !== "trash"
-        )
-      : [];
+    /*
+     * Only expose published, non-deleted properties.
+     */
+    const publishedProperties =
+      Array.isArray(data.properties)
+        ? data.properties.filter(
+            (property) =>
+              property?.status ===
+                "published" &&
+              property?.isDeleted !== true &&
+              property?.deletedFromStatus !==
+                "trash"
+          )
+        : [];
 
     const backendSlug =
       data.backendSlug ||
@@ -214,16 +287,18 @@ async function getDeveloper(publicSlug) {
 
     const publicCanonicalSlug =
       data.publicSlug ||
-      buildPublicDeveloperSlug(backendSlug);
+      buildPublicDeveloperSlug(
+        backendSlug
+      );
 
     return {
-      developer: data.developer,
-
-      properties: publishedProperties,
-
+      developer:
+        data.developer,
+      properties:
+        publishedProperties,
       backendSlug,
-
-      publicSlug: publicCanonicalSlug,
+      publicSlug:
+        publicCanonicalSlug,
     };
   } catch (error) {
     console.error(
@@ -235,28 +310,49 @@ async function getDeveloper(publicSlug) {
   }
 }
 
-// ============================================================
-// GET PROJECT LOCATION NAMES
-// ============================================================
+/* ============================================================
+   GET PROJECT LOCATION NAMES
+============================================================ */
 
-function getPropertyLocation(property) {
+function getPropertyLocation(
+  property
+) {
   const locations = [];
 
-  const locationData = property?.locationData;
+  const locationData =
+    property?.locationData;
 
   if (locationData?.locationName) {
-    locations.push(
-      cleanText(locationData.locationName)
+    const locationName = cleanText(
+      locationData.locationName
     );
+
+    if (locationName) {
+      locations.push(locationName);
+    }
   }
 
   if (locationData?.customLocation) {
-    locations.push(
-      cleanText(locationData.customLocation)
+    const customLocation = cleanText(
+      locationData.customLocation
     );
+
+    if (
+      customLocation &&
+      !locations.some(
+        (existing) =>
+          existing.toLowerCase() ===
+          customLocation.toLowerCase()
+      )
+    ) {
+      locations.push(
+        customLocation
+      );
+    }
   }
 
-  let current = locationData?.locationRef;
+  let current =
+    locationData?.locationRef;
 
   const visited = new Set();
 
@@ -275,7 +371,9 @@ function getPropertyLocation(property) {
     }
 
     if (current?.name) {
-      const name = cleanText(current.name);
+      const name = cleanText(
+        current.name
+      );
 
       if (
         name &&
@@ -295,17 +393,21 @@ function getPropertyLocation(property) {
   return locations.filter(Boolean);
 }
 
-// ============================================================
-// DEVELOPER LOCATION SUMMARY
-// ============================================================
+/* ============================================================
+   DEVELOPER LOCATION SUMMARY
+============================================================ */
 
-function getDeveloperLocations(properties) {
+function getDeveloperLocations(
+  properties
+) {
   const locations = [];
   const seen = new Set();
 
   for (const property of properties) {
     const propertyLocations =
-      getPropertyLocation(property);
+      getPropertyLocation(
+        property
+      );
 
     for (const location of propertyLocations) {
       const normalized =
@@ -325,11 +427,13 @@ function getDeveloperLocations(properties) {
   return locations;
 }
 
-// ============================================================
-// PROJECT NAMES
-// ============================================================
+/* ============================================================
+   PROJECT NAMES
+============================================================ */
 
-function getProjectNames(properties) {
+function getProjectNames(
+  properties
+) {
   return properties
     .map((property) =>
       cleanText(
@@ -339,101 +443,167 @@ function getProjectNames(properties) {
     .filter(Boolean);
 }
 
-// ============================================================
-// SEO METADATA
-// ============================================================
+/* ============================================================
+   SEO LOCATION PHRASE
+============================================================ */
 
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
+function buildLocationPhrase(
+  locations
+) {
+  if (!Array.isArray(locations)) {
+    return "";
+  }
 
-  // ==========================================================
-  // OLD / INVALID URL
-  // ==========================================================
+  if (locations.length === 1) {
+    return ` in ${locations[0]}`;
+  }
 
-  if (!isValidPublicDeveloperSlug(slug)) {
-    if (slug) {
-      try {
-        const cleanSlug = String(slug)
-          .trim()
-          .toLowerCase()
-          .replace(/^\/+|\/+$/g, "");
+  if (locations.length === 2) {
+    return ` in ${locations[0]} and ${locations[1]}`;
+  }
 
-        const res = await fetch(
-          `${API}/api/developers/${encodeURIComponent(
-            cleanSlug
-          )}`,
-          {
-            next: {
-              revalidate: 300,
-            },
-          }
-        );
+  if (locations.length > 2) {
+    return ` across ${locations
+      .slice(0, 3)
+      .join(", ")}`;
+  }
 
-        if (res.ok) {
-          const data = await res.json();
+  return "";
+}
 
-          if (data?.developer) {
-            const publicSlug =
-              buildPublicDeveloperSlug(
-                data.developer.slug
-              );
+/* ============================================================
+   OLD SLUG → PUBLIC SLUG REDIRECT
+============================================================ */
 
-            permanentRedirect(
-              `/developers/${encodeURIComponent(
-                publicSlug
-              )}`
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Old developer URL redirect lookup error:",
-          error
-        );
+async function redirectOldDeveloperSlug(
+  slug
+) {
+  const cleanSlug =
+    cleanSlugValue(slug);
+
+  if (!cleanSlug) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/api/developers/${encodeURIComponent(
+        cleanSlug
+      )}`,
+      {
+        next: {
+          revalidate: 300,
+        },
       }
+    );
+
+    if (!res.ok) {
+      return false;
     }
 
-    return {
-      metadataBase: new URL(SITE_URL),
+    const data = await res.json();
 
-      title:
-        "Developer Not Found | Property Bouquet",
+    if (!data?.developer) {
+      return false;
+    }
 
-      description:
-        "The requested real estate developer could not be found on Property Bouquet.",
+    const publicSlug =
+      buildPublicDeveloperSlug(
+        data.developer.slug
+      );
 
-      robots: {
-        index: false,
-        follow: true,
-      },
-    };
+    if (!publicSlug) {
+      return false;
+    }
+
+    permanentRedirect(
+      `/developers/${encodeURIComponent(
+        publicSlug
+      )}`
+    );
+  } catch (error) {
+    console.error(
+      "Old developer URL redirect lookup error:",
+      error
+    );
   }
 
-  // ==========================================================
-  // FETCH
-  // ==========================================================
+  return false;
+}
 
-  const data = await getDeveloper(slug);
+/* ============================================================
+   NOT FOUND METADATA
+============================================================ */
+
+function getNotFoundMetadata() {
+  return {
+    metadataBase: new URL(
+      SITE_URL
+    ),
+
+    title:
+      "Developer Not Found | Property Bouquet",
+
+    description:
+      "The requested real estate developer could not be found on Property Bouquet.",
+
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
+
+/* ============================================================
+   SEO METADATA
+============================================================ */
+
+export async function generateMetadata({
+  params,
+}) {
+  const { slug } = await params;
+
+  /*
+   * OLD / INVALID URL
+   */
+  if (
+    !isValidPublicDeveloperSlug(
+      slug
+    )
+  ) {
+    if (slug) {
+      await redirectOldDeveloperSlug(
+        slug
+      );
+    }
+
+    return getNotFoundMetadata();
+  }
+
+  /*
+   * FETCH PUBLIC DEVELOPER
+   */
+  const data =
+    await getDeveloper(slug);
 
   if (!data?.developer) {
-    return {
-      metadataBase: new URL(SITE_URL),
-
-      title:
-        "Developer Not Found | Property Bouquet",
-
-      description:
-        "The requested real estate developer could not be found on Property Bouquet.",
-
-      robots: {
-        index: false,
-        follow: true,
-      },
-    };
+    return getNotFoundMetadata();
   }
 
-  const developer = data.developer;
-  const properties = data.properties || [];
+  const developer =
+    data.developer;
+
+  const properties =
+    data.properties || [];
+
+  const pageContent =
+    developer?.pageContent || {};
+
+  const seo =
+    pageContent?.seo || {};
+
+  const hero =
+    pageContent?.hero || {};
 
   const publicSlug =
     data.publicSlug ||
@@ -441,26 +611,32 @@ export async function generateMetadata({ params }) {
       data.backendSlug
     );
 
-  // ==========================================================
-  // DEVELOPER NAME
-  // ==========================================================
-
+  /*
+   * DEVELOPER NAME
+   */
   const developerName =
-    cleanText(developer?.name) ||
+    cleanText(
+      developer?.name
+    ) ||
     "Real Estate Developer";
 
   const seoDeveloperName =
-    getSeoDeveloperName(developerName);
+    getSeoDeveloperName(
+      developerName
+    );
 
-  // ==========================================================
-  // PROJECT DATA
-  // ==========================================================
-
+  /*
+   * PROJECT DATA
+   */
   const projectNames =
-    getProjectNames(properties);
+    getProjectNames(
+      properties
+    );
 
   const locations =
-    getDeveloperLocations(properties);
+    getDeveloperLocations(
+      properties
+    );
 
   const projectCount =
     properties.length;
@@ -470,138 +646,216 @@ export async function generateMetadata({ params }) {
       ? "1 project"
       : `${projectCount} projects`;
 
-  // ==========================================================
-  // LOCATION PHRASE
-  // ==========================================================
+  /*
+   * LOCATION PHRASE
+   */
+  const locationPhrase =
+    buildLocationPhrase(
+      locations
+    );
 
-  let locationPhrase = "";
-
-  if (locations.length === 1) {
-    locationPhrase =
-      ` in ${locations[0]}`;
-  } else if (locations.length === 2) {
-    locationPhrase =
-      ` in ${locations[0]} and ${locations[1]}`;
-  } else if (locations.length > 2) {
-    locationPhrase =
-      ` across ${locations
-        .slice(0, 3)
-        .join(", ")}`;
-  }
-
-  // ==========================================================
-  // TITLE
-  // ==========================================================
-
-  const title =
+  /*
+   * DEFAULT TITLE
+   */
+  const defaultTitle =
     `${seoDeveloperName}: All Projects | Residential & Commercial`;
 
-  // ==========================================================
-  // DESCRIPTION
-  // ==========================================================
-
-  let description =
+  /*
+   * DEFAULT DESCRIPTION
+   */
+  let defaultDescription =
     `Explore ${seoDeveloperName} projects on Property Bouquet. Browse all ${projectCountText} with residential and commercial properties, prices, floor plans, amenities, locations and detailed project information`;
 
   if (locationPhrase) {
-    description += locationPhrase;
+    defaultDescription +=
+      locationPhrase;
   }
 
-  description += ".";
+  defaultDescription += ".";
+
+  /*
+   * CMS SEO OVERRIDES
+   */
+  const title =
+    cleanText(
+      seo?.metaTitle
+    ) ||
+    cleanText(
+      hero?.title
+    ) ||
+    defaultTitle;
+
+  const rawDescription =
+    cleanText(
+      seo?.metaDescription
+    ) ||
+    cleanText(
+      hero?.description
+    ) ||
+    cleanText(
+      developer?.description
+    ) ||
+    defaultDescription;
 
   const metaDescription =
     truncateDescription(
-      description,
+      rawDescription,
       160
     );
 
-  // ==========================================================
-  // CANONICAL
-  // ==========================================================
-
+  /*
+   * CANONICAL
+   */
   const canonicalUrl =
     `${SITE_URL}/developers/${encodeURIComponent(
       publicSlug
     )}`;
 
-  // ==========================================================
-  // IMAGE
-  // ==========================================================
-
+  /*
+   * IMAGE
+   *
+   * Priority:
+   * 1. CMS SEO OG image
+   * 2. CMS hero image
+   * 3. developer image
+   * 4. developer logo
+   * 5. site fallback
+   */
   const developerImage =
-    developer?.image ||
-    developer?.logo ||
-    `${SITE_URL}/og-image.jpg`;
+    toAbsoluteUrl(
+      seo?.ogImage ||
+        hero?.image ||
+        developer?.image ||
+        developer?.logo,
+      `${SITE_URL}/og-image.jpg`
+    );
 
-  // ==========================================================
-  // KEYWORDS
-  // ==========================================================
+  /*
+   * OG TITLE
+   */
+  const ogTitle =
+    cleanText(
+      seo?.ogTitle
+    ) ||
+    title;
 
-  const keywords = [
-    `${developerName} developer`,
-    `${developerName} projects`,
-    `${developerName} properties`,
-    `${developerName} real estate`,
+  /*
+   * OG DESCRIPTION
+   */
+  const ogDescription =
+    truncateDescription(
+      cleanText(
+        seo?.ogDescription
+      ) ||
+        metaDescription,
+      160
+    );
 
-    `${seoDeveloperName} projects`,
-    `${seoDeveloperName} properties`,
-    `${seoDeveloperName} real estate`,
+  /*
+   * KEYWORDS
+   */
+  const cmsKeywords = cleanText(
+    seo?.keywords
+  );
 
-    `${developerName} residential projects`,
-    `${developerName} residential properties`,
-    `${developerName} apartments`,
-    `${developerName} flats`,
-    `${developerName} villas`,
-    `${developerName} plots`,
+  const keywordArray =
+    cmsKeywords
+      ? cmsKeywords
+          .split(",")
+          .map((keyword) =>
+            cleanText(keyword)
+          )
+          .filter(Boolean)
+      : [];
 
-    `${developerName} commercial projects`,
-    `${developerName} commercial properties`,
-    `${developerName} commercial real estate`,
+  const keywords = Array.from(
+    new Set([
+      ...keywordArray,
 
-    `${developerName} project prices`,
-    `${developerName} property prices`,
-    `${developerName} floor plans`,
-    `${developerName} project details`,
-    `${developerName} project locations`,
-    `${developerName} amenities`,
+      `${developerName} developer`,
+      `${developerName} projects`,
+      `${developerName} properties`,
+      `${developerName} real estate`,
+      `${seoDeveloperName} projects`,
+      `${seoDeveloperName} properties`,
+      `${seoDeveloperName} real estate`,
 
-    ...locations
-      .slice(0, 10)
-      .map(
-        (location) =>
-          `${developerName} projects in ${location}`
-      ),
+      `${developerName} residential projects`,
+      `${developerName} residential properties`,
+      `${developerName} apartments`,
+      `${developerName} flats`,
+      `${developerName} villas`,
+      `${developerName} plots`,
 
-    ...projectNames.slice(0, 15),
+      `${developerName} commercial projects`,
+      `${developerName} commercial properties`,
+      `${developerName} commercial real estate`,
 
-    "developer projects",
-    "real estate developer projects",
-    "residential and commercial projects",
-    "luxury real estate developers",
-    "property developers",
-    "real estate projects",
+      `${developerName} project prices`,
+      `${developerName} property prices`,
+      `${developerName} floor plans`,
+      `${developerName} project details`,
+      `${developerName} project locations`,
+      `${developerName} amenities`,
 
-    "Property Bouquet",
-    "Property Bouquet developers",
-  ];
+      ...locations
+        .slice(0, 10)
+        .map(
+          (location) =>
+            `${developerName} projects in ${location}`
+        ),
 
-  // ==========================================================
-  // METADATA
-  // ==========================================================
+      ...projectNames.slice(0, 15),
+
+      "developer projects",
+      "real estate developer projects",
+      "residential and commercial projects",
+      "luxury real estate developers",
+      "property developers",
+      "real estate projects",
+      "Property Bouquet",
+      "Property Bouquet developers",
+    ])
+  );
+
+  /*
+   * CANONICAL OVERRIDE
+   *
+   * The CMS canonical is accepted only if it is
+   * an absolute URL. Otherwise the generated
+   * canonical remains authoritative.
+   */
+  const cmsCanonical =
+    toAbsoluteUrl(
+      seo?.canonical
+    );
+
+  const finalCanonical =
+    cmsCanonical &&
+    cmsCanonical.startsWith(
+      SITE_URL
+    )
+      ? cmsCanonical
+      : canonicalUrl;
 
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(
+      SITE_URL
+    ),
 
     title,
 
-    description: metaDescription,
+    description:
+      metaDescription,
 
     keywords,
 
-    applicationName: "Property Bouquet",
+    applicationName:
+      "Property Bouquet",
 
     alternates: {
-      canonical: canonicalUrl,
+      canonical:
+        finalCanonical,
     },
 
     robots: {
@@ -612,7 +866,8 @@ export async function generateMetadata({ params }) {
         index: true,
         follow: true,
         noimageindex: false,
-        "max-image-preview": "large",
+        "max-image-preview":
+          "large",
         "max-snippet": -1,
         "max-video-preview": -1,
       },
@@ -621,27 +876,33 @@ export async function generateMetadata({ params }) {
     openGraph: {
       type: "website",
       locale: "en_IN",
-      url: canonicalUrl,
-      siteName: "Property Bouquet",
-      title,
-      description: metaDescription,
+      url: finalCanonical,
+      siteName:
+        "Property Bouquet",
+
+      title: ogTitle,
+
+      description:
+        ogDescription,
 
       images: [
         {
           url: developerImage,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: ogTitle,
         },
       ],
     },
 
     twitter: {
-      card: "summary_large_image",
+      card:
+        "summary_large_image",
 
-      title,
+      title: ogTitle,
 
-      description: metaDescription,
+      description:
+        ogDescription,
 
       images: [
         developerImage,
@@ -650,79 +911,121 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// ============================================================
-// JSON-LD SAFE STRINGIFY
-// ============================================================
+/* ============================================================
+   JSON-LD SAFE STRINGIFY
+============================================================ */
 
 function safeJsonLd(data) {
-  return JSON.stringify(data).replace(
-    /</g,
-    "\\u003c"
-  );
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
 }
 
-// ============================================================
-// PAGE
-// ============================================================
+/* ============================================================
+   FAQ SCHEMA
+============================================================ */
+
+function buildFaqSchema(
+  pageContent
+) {
+  const faq =
+    pageContent?.faq;
+
+  if (
+    !faq ||
+    faq.enabled === false ||
+    !Array.isArray(faq.items)
+  ) {
+    return null;
+  }
+
+  const questions =
+    faq.items
+      .map((item) => {
+        const question =
+          cleanText(
+            item?.question
+          );
+
+        const answer =
+          cleanText(
+            item?.answer
+          );
+
+        if (
+          !question ||
+          !answer
+        ) {
+          return null;
+        }
+
+        return {
+          "@type":
+            "Question",
+
+          name:
+            question,
+
+          acceptedAnswer: {
+            "@type":
+              "Answer",
+
+            text:
+              answer,
+          },
+        };
+      })
+      .filter(Boolean);
+
+  if (
+    questions.length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    "@context":
+      "https://schema.org",
+
+    "@type":
+      "FAQPage",
+
+    mainEntity:
+      questions,
+  };
+}
+
+/* ============================================================
+   PAGE
+============================================================ */
 
 export default async function DeveloperSlugPage({
   params,
 }) {
   const { slug } = await params;
 
-  // ==========================================================
-  // OLD BACKEND SLUG → PUBLIC SEO URL
-  // ==========================================================
+  /* ==========================================================
+     OLD BACKEND SLUG → PUBLIC SEO URL
+  ========================================================== */
 
-  if (!isValidPublicDeveloperSlug(slug)) {
+  if (
+    !isValidPublicDeveloperSlug(
+      slug
+    )
+  ) {
     if (slug) {
-      try {
-        const cleanSlug = String(slug)
-          .trim()
-          .toLowerCase()
-          .replace(/^\/+|\/+$/g, "");
-
-        const res = await fetch(
-          `${API}/api/developers/${encodeURIComponent(
-            cleanSlug
-          )}`,
-          {
-            next: {
-              revalidate: 300,
-            },
-          }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-
-          if (data?.developer) {
-            const publicSlug =
-              buildPublicDeveloperSlug(
-                data.developer.slug
-              );
-
-            permanentRedirect(
-              `/developers/${encodeURIComponent(
-                publicSlug
-              )}`
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Old developer URL redirect error:",
-          error
-        );
-      }
+      await redirectOldDeveloperSlug(
+        slug
+      );
     }
 
     notFound();
   }
 
-  // ==========================================================
-  // PUBLIC SLUG FETCH
-  // ==========================================================
+  /* ==========================================================
+     PUBLIC SLUG FETCH
+  ========================================================== */
 
   const data =
     await getDeveloper(slug);
@@ -731,9 +1034,9 @@ export default async function DeveloperSlugPage({
     notFound();
   }
 
-  // ==========================================================
-  // BASIC DATA
-  // ==========================================================
+  /* ==========================================================
+     BASIC DATA
+  ========================================================== */
 
   const developer =
     data.developer;
@@ -741,15 +1044,18 @@ export default async function DeveloperSlugPage({
   const properties =
     data.properties || [];
 
+  const pageContent =
+    developer?.pageContent || {};
+
   const publicSlug =
     data.publicSlug ||
     buildPublicDeveloperSlug(
       data.backendSlug
     );
 
-  // ==========================================================
-  // DEVELOPER NAME
-  // ==========================================================
+  /* ==========================================================
+     DEVELOPER NAME
+  ========================================================== */
 
   const developerName =
     cleanText(
@@ -762,65 +1068,76 @@ export default async function DeveloperSlugPage({
       developerName
     );
 
-  // ==========================================================
-  // CANONICAL URL
-  // ==========================================================
+  /* ==========================================================
+     CANONICAL URL
+  ========================================================== */
 
   const canonicalUrl =
     `${SITE_URL}/developers/${encodeURIComponent(
       publicSlug
     )}`;
 
-  // ==========================================================
-  // DEVELOPER DESCRIPTION
-  // ==========================================================
+  /* ==========================================================
+     DEVELOPER DESCRIPTION
+  ========================================================== */
 
   const developerDescription =
     cleanText(
       developer?.description
     ) ||
+    cleanText(
+      pageContent?.hero?.description
+    ) ||
     `Explore premium real estate projects and luxury properties by ${seoDeveloperName} on Property Bouquet.`;
 
-  // ==========================================================
-  // DEVELOPER IMAGE
-  // ==========================================================
+  /* ==========================================================
+     DEVELOPER IMAGE
+  ========================================================== */
 
   const developerImage =
-    developer?.image ||
-    developer?.logo ||
-    `${SITE_URL}/og-image.jpg`;
+    toAbsoluteUrl(
+      pageContent?.seo?.ogImage ||
+        pageContent?.hero?.image ||
+        developer?.image ||
+        developer?.logo,
+      `${SITE_URL}/og-image.jpg`
+    );
 
-  // ==========================================================
-  // LOCATIONS
-  // ==========================================================
+  /* ==========================================================
+     LOCATIONS
+  ========================================================== */
 
   const locations =
     getDeveloperLocations(
       properties
     );
 
-  // ==========================================================
-  // LOCATION DESCRIPTION
-  // ==========================================================
+  /* ==========================================================
+     LOCATION DESCRIPTION
+  ========================================================== */
 
   let locationDescription = "";
 
   if (locations.length === 1) {
     locationDescription =
       ` Projects are available in ${locations[0]}.`;
-  } else if (locations.length === 2) {
+  } else if (
+    locations.length === 2
+  ) {
     locationDescription =
       ` Projects are available in ${locations[0]} and ${locations[1]}.`;
-  } else if (locations.length > 2) {
+  } else if (
+    locations.length > 2
+  ) {
     locationDescription =
       ` Projects are available across ${locations
         .slice(0, 5)
         .join(", ")}.`;
   }
 
-  // ==========================================================
-  // ORGANIZATION SCHEMA
-  // ==========================================================
+  /* ==========================================================
+     ORGANIZATION SCHEMA
+  ========================================================== */
 
   const developerSchema = {
     "@context":
@@ -848,27 +1165,32 @@ export default async function DeveloperSlugPage({
               "ImageObject",
 
             url:
-              developer.logo,
+              toAbsoluteUrl(
+                developer.logo
+              ),
           },
         }
       : {}),
 
-    ...(developer?.image
-      ? {
-          image: {
-            "@type":
-              "ImageObject",
+    image: {
+      "@type":
+        "ImageObject",
 
-            url:
-              developer.image,
-          },
-        }
-      : {}),
+      url:
+        developerImage,
+    },
   };
 
-  // ==========================================================
-  // WEB PAGE SCHEMA
-  // ==========================================================
+  /* ==========================================================
+     WEBSITE SCHEMA REFERENCE
+  ========================================================== */
+
+  const websiteId =
+    `${SITE_URL}/#website`;
+
+  /* ==========================================================
+     WEB PAGE SCHEMA
+  ========================================================== */
 
   const webPageSchema = {
     "@context":
@@ -900,7 +1222,7 @@ export default async function DeveloperSlugPage({
         "WebSite",
 
       "@id":
-        `${SITE_URL}/#website`,
+        websiteId,
 
       name:
         "Property Bouquet",
@@ -918,11 +1240,19 @@ export default async function DeveloperSlugPage({
       "@id":
         `${canonicalUrl}#organization`,
     },
+
+    primaryImageOfPage: {
+      "@type":
+        "ImageObject",
+
+      url:
+        developerImage,
+    },
   };
 
-  // ==========================================================
-  // BREADCRUMB SCHEMA
-  // ==========================================================
+  /* ==========================================================
+     BREADCRUMB SCHEMA
+  ========================================================== */
 
   const breadcrumbSchema = {
     "@context":
@@ -973,9 +1303,9 @@ export default async function DeveloperSlugPage({
     ],
   };
 
-  // ==========================================================
-  // PROJECT ITEM LIST
-  // ==========================================================
+  /* ==========================================================
+     PROJECT ITEM LIST
+  ========================================================== */
 
   const projectItems =
     properties
@@ -1005,9 +1335,11 @@ export default async function DeveloperSlugPage({
             );
 
           const heroImage =
-            property
-              ?.media
-              ?.heroImageUrl;
+            toAbsoluteUrl(
+              property
+                ?.media
+                ?.heroImageUrl
+            );
 
           return {
             "@type":
@@ -1047,9 +1379,9 @@ export default async function DeveloperSlugPage({
       )
       .filter(Boolean);
 
-  // ==========================================================
-  // COLLECTION PAGE SCHEMA
-  // ==========================================================
+  /* ==========================================================
+     COLLECTION PAGE SCHEMA
+  ========================================================== */
 
   const collectionSchema = {
     "@context":
@@ -1081,7 +1413,7 @@ export default async function DeveloperSlugPage({
         "WebSite",
 
       "@id":
-        `${SITE_URL}/#website`,
+        websiteId,
 
       name:
         "Property Bouquet",
@@ -1125,12 +1457,25 @@ export default async function DeveloperSlugPage({
       : {}),
   };
 
-  // ==========================================================
-  // SERVER HTML
-  // ==========================================================
+  /* ==========================================================
+     FAQ SCHEMA
+  ========================================================== */
+
+  const faqSchema =
+    buildFaqSchema(
+      pageContent
+    );
+
+  /* ==========================================================
+     SERVER HTML
+  ========================================================== */
 
   return (
     <>
+      {/* ======================================================
+          ORGANIZATION
+      ====================================================== */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -1140,6 +1485,10 @@ export default async function DeveloperSlugPage({
             ),
         }}
       />
+
+      {/* ======================================================
+          WEB PAGE
+      ====================================================== */}
 
       <script
         type="application/ld+json"
@@ -1151,6 +1500,10 @@ export default async function DeveloperSlugPage({
         }}
       />
 
+      {/* ======================================================
+          BREADCRUMB
+      ====================================================== */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -1161,6 +1514,10 @@ export default async function DeveloperSlugPage({
         }}
       />
 
+      {/* ======================================================
+          COLLECTION / PROJECTS
+      ====================================================== */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -1170,6 +1527,26 @@ export default async function DeveloperSlugPage({
             ),
         }}
       />
+
+      {/* ======================================================
+          FAQ
+      ====================================================== */}
+
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html:
+              safeJsonLd(
+                faqSchema
+              ),
+          }}
+        />
+      )}
+
+      {/* ======================================================
+          CLIENT PAGE
+      ====================================================== */}
 
       <DeveloperSlugClient
         developer={developer}

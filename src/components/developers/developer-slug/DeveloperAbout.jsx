@@ -1,31 +1,22 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 import {
-  Building2,
+  ArrowRight,
+  ArrowUp,
   BadgeCheck,
+  Building2,
+  MapPin,
+  ShieldCheck,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 
 /* ============================================================
-   RICH TEXT HELPERS
+   DEVELOPER ABOUT
+   Same visual language + behavior as AboutLocation
 ============================================================ */
-
-function normalizeRichText(text) {
-  if (typeof text !== "string") return "";
-
-  return text
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&#160;/gi, " ")
-    .replace(/&#xA0;/gi, " ")
-    .replace(/\u00a0/g, " ")
-    .replace(/<p>\s*<\/p>/gi, "")
-    .trim();
-}
-
-function hasRichText(text) {
-  if (typeof text !== "string") return false;
-
-  return /<\s*[a-z][^>]*>/i.test(text);
-}
 
 export default function DeveloperAbout({
   developer,
@@ -36,30 +27,60 @@ export default function DeveloperAbout({
     return null;
   }
 
-  /* ============================================================
-      CMS + EXISTING FALLBACK VALUES
-
-      IMPORTANT:
-      CMS values are used only when actually populated.
-
-      If the admin has not edited the About section yet,
-      the existing Developer description continues to work.
-  ============================================================ */
-
   const about = pageContent?.about || {};
 
-  const aboutEyebrow =
-    typeof about.eyebrow === "string" && about.eyebrow.trim()
-      ? about.eyebrow.trim()
-      : "About The Developer";
+  /* ============================================================
+     READ MORE STATE
+  ============================================================ */
 
-  const aboutTitle =
-    typeof about.title === "string" && about.title.trim()
-      ? about.title.trim()
-      : developer?.name || "About The Developer";
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  /* ============================================================
+     HELPER
+  ============================================================ */
+
+  const value = (customValue, fallback) => {
+    return typeof customValue === "string" && customValue.trim()
+      ? customValue.trim()
+      : fallback;
+  };
+
+  /* ============================================================
+     RICH TEXT HELPERS
+  ============================================================ */
+
+  const normalizeRichText = (text) => {
+    if (typeof text !== "string") {
+      return "";
+    }
+
+    return text
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&#160;/gi, " ")
+      .replace(/&#xA0;/gi, " ")
+      .replace(/\u00a0/g, " ")
+      .replace(/<p>\s*<\/p>/gi, "")
+      .trim();
+  };
+
+  const hasRichText = (text) => {
+    if (typeof text !== "string") {
+      return false;
+    }
+
+    return /<\s*[a-z][^>]*>/i.test(text);
+  };
+
+  /* ============================================================
+     ABOUT CONTENT
+     
+     Priority:
+     1. pageContent.about.content
+     2. existing developer.description
+  ============================================================ */
 
   const cmsAboutContent =
-    typeof about.content === "string"
+    typeof about?.content === "string"
       ? normalizeRichText(about.content)
       : "";
 
@@ -68,380 +89,930 @@ export default function DeveloperAbout({
       ? normalizeRichText(developer.description)
       : "";
 
-  /*
-    Priority:
-
-    1. CMS About content
-    2. Existing developer.description
-  */
-  const aboutContent = cmsAboutContent || developerDescription;
+  const aboutContent =
+    cmsAboutContent || developerDescription;
 
   /*
-    Preserve the previous behavior:
-    if there is absolutely no About content available,
-    don't render an empty About section.
+    Preserve existing behavior:
+    if there is no content at all,
+    don't render the section.
   */
+
   if (!aboutContent) {
     return null;
   }
 
   /* ============================================================
-      EXISTING COMPANY HIGHLIGHTS
-      These remain untouched because they are not part of the
-      new CMS rich-text migration.
+     ABOUT HEADING
   ============================================================ */
 
-  const companyHighlights = [
-    "Luxury Residential Developments",
-    "Premium Construction Quality",
-    "Prime Investment Locations",
-    "Trusted Developer Reputation",
-    "RERA Registered Projects",
-    "Customer-Centric Experience",
+  const aboutEyebrow = value(
+    about?.eyebrow,
+    "ABOUT THE DEVELOPER"
+  );
+
+  const aboutTitle = value(
+    about?.title,
+    developer?.name || "About The Developer"
+  );
+
+  /* ============================================================
+     DEVELOPER IMAGE
+     
+     Priority:
+     1. developer.image
+     2. developer.logo
+     3. first project's hero image
+     4. first project's regular image
+  ============================================================ */
+
+  const resolvedImage = useMemo(() => {
+    const candidates = [
+      developer?.image,
+      developer?.logo,
+
+      properties?.[0]?.media?.heroImageUrl,
+
+      properties?.[0]?.media?.images?.[0]?.url,
+
+      properties?.[0]?.media?.images?.[0],
+
+      properties?.[0]?.image,
+
+      properties?.[0]?.imageUrl,
+    ];
+
+    return (
+      candidates.find(
+        (image) =>
+          typeof image === "string" &&
+          image.trim()
+      ) || ""
+    );
+  }, [developer, properties]);
+
+  /* ============================================================
+     PROJECT COUNT
+  ============================================================ */
+
+  const projectCount = properties.length;
+
+  /* ============================================================
+     PROPERTY TYPES
+  ============================================================ */
+
+  const propertyTypes = useMemo(() => {
+    const types = new Set();
+
+    properties.forEach((property) => {
+      const values = [
+        property?.categoryData?.categoryName,
+        property?.category?.name,
+        property?.propertyType,
+        property?.propertyCategory,
+        property?.coreDetails?.propertyType,
+      ];
+
+      values.forEach((item) => {
+        if (
+          typeof item === "string" &&
+          item.trim()
+        ) {
+          types.add(item.trim());
+        }
+      });
+    });
+
+    return Array.from(types);
+  }, [properties]);
+
+  /* ============================================================
+     LOCATIONS / PROJECT LOCATIONS
+  ============================================================ */
+
+  const projectLocations = useMemo(() => {
+    const locations = new Set();
+
+    properties.forEach((property) => {
+      const values = [
+        property?.locationName,
+        property?.location?.name,
+        property?.locationData?.name,
+        property?.coreDetails?.location,
+        property?.coreDetails?.locationName,
+        property?.locationHierarchy,
+      ];
+
+      values.forEach((item) => {
+        if (
+          typeof item === "string" &&
+          item.trim()
+        ) {
+          locations.add(item.trim());
+        }
+      });
+    });
+
+    return Array.from(locations);
+  }, [properties]);
+
+  /* ============================================================
+     DEVELOPER STATUS
+  ============================================================ */
+
+  const developerStatus = value(
+    about?.status,
+    "Verified Developer"
+  );
+
+  /* ============================================================
+     DEFAULT SNAPSHOT CARDS
+     
+     These are intentionally dynamic, similar to
+     AboutLocation's Property Types / Developer Presence /
+     Price Positioning cards.
+  ============================================================ */
+
+  const defaultHighlights = [
+    {
+      title: "Portfolio",
+      description:
+        projectCount > 0
+          ? `${projectCount}+ ${
+              projectCount === 1
+                ? "project"
+                : "projects"
+            } available through Property Bouquet.`
+          : "Curated premium developments available through Property Bouquet.",
+    },
+
+    {
+      title: "Property Types",
+      description: propertyTypes.length
+        ? propertyTypes
+            .slice(0, 3)
+            .join(", ")
+        : "Premium residential developments",
+    },
+
+    {
+      title: "Developer Status",
+      description: developerStatus,
+    },
   ];
+
+  /* ============================================================
+     OPTIONAL CMS HIGHLIGHTS
+     
+     If pageContent.about.highlights exists, use it.
+     Otherwise dynamic defaults remain active.
+  ============================================================ */
+
+  const customHighlights = Array.isArray(
+    about?.highlights
+  )
+    ? about.highlights
+    : [];
+
+  const highlightLength = Math.max(
+    defaultHighlights.length,
+    customHighlights.length
+  );
+
+  const highlights = Array.from(
+    {
+      length: highlightLength,
+    },
+    (_, index) => {
+      const fallback =
+        defaultHighlights[index] || {
+          title: "",
+          description: "",
+        };
+
+      const customItem =
+        customHighlights[index] &&
+        typeof customHighlights[index] === "object"
+          ? customHighlights[index]
+          : {};
+
+      return {
+        title: value(
+          customItem?.title,
+          fallback.title
+        ),
+
+        description: value(
+          customItem?.description,
+          fallback.description
+        ),
+      };
+    }
+  ).filter(
+    (item) =>
+      item.title ||
+      item.description
+  );
+
+  /* ============================================================
+     ABOUT CONTENT CLEANUP
+  ============================================================ */
+
+  const normalizedContent =
+    normalizeRichText(aboutContent);
+
+  const contentHasRichText =
+    hasRichText(normalizedContent);
+
+  /* ============================================================
+     ABOUT TEXT LENGTH
+     
+     Used for Read More / Read Less.
+     
+     Works for both:
+     - plain text
+     - rich HTML
+  ============================================================ */
+
+  const plainTextLength =
+    normalizedContent
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .length;
+
+  const needsReadMore =
+    plainTextLength > 420;
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
     <section
+      id="about-developer"
       className="
         relative
         overflow-hidden
-        bg-white
-        py-24
+        bg-[#f7f7f7]
+        py-16
+        sm:py-20
+        lg:py-24
       "
     >
-      {/* ==================================================
-          BACKGROUND GLOW
-      ================================================== */}
+      {/* ======================================================
+          SOFT DECORATIVE GLOW
+      ====================================================== */}
 
       <div
         className="
+          pointer-events-none
           absolute
-          right-0
-          top-0
-          h-[450px]
-          w-[450px]
+          -right-32
+          -top-32
+          h-[420px]
+          w-[420px]
           rounded-full
-          bg-[#D4AF37]/8
+          bg-[#D4AF37]/[0.06]
           blur-[120px]
         "
         aria-hidden="true"
       />
 
-      {/* ==================================================
-          CONTENT
-      ================================================== */}
+      {/* ======================================================
+          MAIN CONTAINER
+      ====================================================== */}
 
       <div
         className="
-          relative
-          z-10
           mx-auto
+          w-full
           max-w-[1450px]
-          px-6
+          px-5
+          sm:px-6
+          md:px-8
+          lg:px-10
         "
       >
+        {/* ====================================================
+            MAIN GRID
+        ==================================================== */}
+
         <div
           className="
             grid
+            w-full
+            min-w-0
             items-start
-            gap-16
-            lg:grid-cols-[1.4fr_420px]
+            gap-10
+            lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.75fr)]
+            lg:gap-12
+            xl:gap-16
+            2xl:gap-20
           "
         >
           {/* ==================================================
-              LEFT — DESCRIPTION
+              LEFT CONTENT COLUMN
           ================================================== */}
 
-          <div>
-            {/* EYEBROW */}
+          <div
+            className="
+              min-w-0
+              w-full
+              max-w-full
+            "
+          >
+            {/* ==================================================
+                EYEBROW
+            ================================================== */}
 
-            <span
+            <div
               className="
-                inline-flex
+                mb-4
+                flex
+                min-w-0
+                max-w-full
                 items-center
-                rounded-full
-                bg-[#0B221B]
-                px-5
-                py-2
-                text-[11px]
+                gap-2.5
+                text-[9px]
+                font-semibold
                 uppercase
-                tracking-[0.28em]
-                text-[#D4AF37]
+                tracking-[0.22em]
+                text-[#A47A2B]
+                sm:text-[10px]
+                md:text-[11px]
               "
             >
-              {aboutEyebrow}
-            </span>
+              <span
+                className="
+                  h-px
+                  w-8
+                  shrink-0
+                  bg-[#C89D58]
+                "
+              />
 
-            {/* TITLE */}
+              <span
+                className="
+                  min-w-0
+                  max-w-full
+                  break-words
+                  [overflow-wrap:anywhere]
+                "
+              >
+                {aboutEyebrow}
+              </span>
+            </div>
+
+            {/* ==================================================
+                TITLE
+            ================================================== */}
 
             <h2
               className="
-                mt-7
+                m-0
+                max-w-full
+                break-words
                 font-playfair
-                text-4xl
-                leading-tight
-                text-[#0B221B]
-                md:text-5xl
+                text-[34px]
+                font-semibold
+                leading-[1.08]
+                tracking-[-0.025em]
+                text-[#17342d]
+                [overflow-wrap:anywhere]
+                sm:text-[40px]
+                md:text-[46px]
+                lg:text-[52px]
               "
             >
               {aboutTitle}
             </h2>
 
+            {/* GOLD DIVIDER */}
+
             <div
               className="
-                mt-6
-                h-[2px]
-                w-28
-                bg-[#D4AF37]
+                mt-5
+                h-px
+                w-20
+                bg-[#C89D58]
               "
               aria-hidden="true"
             />
 
             {/* ==================================================
-                CONTENT
-
-                CMS rich text is rendered as HTML.
-
-                If CMS content is plain text, it still renders
-                safely as normal text.
-
-                If CMS is empty, developer.description is used.
+                DESCRIPTION
             ================================================== */}
 
             <div
-              className="
-                mt-10
-                text-[17px]
-                leading-[2.05]
-                text-[#4d4d4d]
-
-                [&_p]:m-0
-                [&_p]:mb-5
-                [&_p:last-child]:mb-0
-
-                [&_strong]:font-semibold
-                [&_b]:font-semibold
-
-                [&_em]:italic
-
-                [&_u]:underline
-                [&_u]:underline-offset-2
-
-                [&_a]:font-medium
-                [&_a]:text-[#B58B2D]
-                [&_a]:underline
-                [&_a]:underline-offset-2
-
-                [&_ul]:my-5
-                [&_ul]:list-disc
-                [&_ul]:pl-6
-
-                [&_ol]:my-5
-                [&_ol]:list-decimal
-                [&_ol]:pl-6
-
-                [&_li]:mb-2
-
-                [&_h1]:mb-4
-                [&_h1]:font-playfair
-                [&_h1]:text-3xl
-                [&_h1]:font-medium
-                [&_h1]:leading-tight
-                [&_h1]:text-[#0B221B]
-
-                [&_h2]:mb-4
-                [&_h2]:font-playfair
-                [&_h2]:text-2xl
-                [&_h2]:font-medium
-                [&_h2]:leading-tight
-                [&_h2]:text-[#0B221B]
-
-                [&_h3]:mb-3
-                [&_h3]:font-playfair
-                [&_h3]:text-xl
-                [&_h3]:font-medium
-                [&_h3]:leading-tight
-                [&_h3]:text-[#0B221B]
-
-                [&_h4]:mb-3
-                [&_h4]:font-semibold
-                [&_h4]:text-[#0B221B]
-
-                [&_blockquote]:my-5
-                [&_blockquote]:border-l-2
-                [&_blockquote]:border-[#D4AF37]
-                [&_blockquote]:pl-5
-                [&_blockquote]:italic
-
-                [&_img]:my-5
-                [&_img]:max-w-full
-                [&_img]:rounded-2xl
-              "
+              className={`
+                relative
+                mt-6
+                min-w-0
+                w-full
+                max-w-full
+                ${
+                  !isExpanded &&
+                  needsReadMore
+                    ? "max-h-[178px] overflow-hidden"
+                    : "overflow-visible"
+                }
+              `}
             >
-              {hasRichText(aboutContent) ? (
+              {contentHasRichText ? (
                 <div
+                  className="
+                    min-w-0
+                    w-full
+                    max-w-full
+                    break-words
+                    text-[13px]
+                    leading-7
+                    text-[#47545a]
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
+
+                    [&_*]:max-w-full
+
+                    [&_p]:m-0
+                    [&_p]:mb-4
+                    [&_p:last-child]:mb-0
+                    [&_p]:break-words
+                    [&_p]:[overflow-wrap:anywhere]
+
+                    [&_strong]:font-semibold
+                    [&_strong]:text-[#263832]
+
+                    [&_b]:font-semibold
+                    [&_b]:text-[#263832]
+
+                    [&_em]:italic
+
+                    [&_u]:underline
+                    [&_u]:underline-offset-2
+
+                    [&_a]:font-medium
+                    [&_a]:text-[#A47A2B]
+                    [&_a]:underline
+                    [&_a]:underline-offset-2
+
+                    [&_ul]:mb-4
+                    [&_ul]:ml-5
+                    [&_ul]:max-w-full
+                    [&_ul]:list-disc
+
+                    [&_ol]:mb-4
+                    [&_ol]:ml-5
+                    [&_ol]:max-w-full
+                    [&_ol]:list-decimal
+
+                    [&_li]:mb-1
+                    [&_li]:break-words
+                    [&_li]:[overflow-wrap:anywhere]
+
+                    [&_h1]:max-w-full
+                    [&_h2]:max-w-full
+                    [&_h3]:max-w-full
+                    [&_h4]:max-w-full
+                    [&_h5]:max-w-full
+                    [&_h6]:max-w-full
+
+                    [&_h1]:font-playfair
+                    [&_h2]:font-playfair
+                    [&_h3]:font-playfair
+                    [&_h4]:font-playfair
+
+                    [&_h1]:text-[#17342d]
+                    [&_h2]:text-[#17342d]
+                    [&_h3]:text-[#17342d]
+                    [&_h4]:text-[#17342d]
+
+                    [&_h1]:mb-4
+                    [&_h2]:mb-4
+                    [&_h3]:mb-3
+                    [&_h4]:mb-2
+
+                    [&_h3]:mt-5
+                    [&_h4]:mt-4
+
+                    [&_h3]:text-xl
+                    [&_h3]:font-semibold
+
+                    [&_h4]:font-semibold
+
+                    [&_blockquote]:my-4
+                    [&_blockquote]:border-l-2
+                    [&_blockquote]:border-[#C89D58]
+                    [&_blockquote]:pl-4
+                    [&_blockquote]:italic
+
+                    [&_img]:my-4
+                    [&_img]:h-auto
+                    [&_img]:max-w-full
+                    [&_img]:rounded-xl
+
+                    sm:text-[14px]
+                    sm:leading-7
+
+                    md:text-[15px]
+                  "
                   dangerouslySetInnerHTML={{
-                    __html: aboutContent,
+                    __html: normalizedContent,
                   }}
                 />
               ) : (
-                <p className="whitespace-pre-line">
-                  {aboutContent}
-                </p>
+                <div
+                  className="
+                    min-w-0
+                    w-full
+                    max-w-full
+                    space-y-4
+                    break-words
+                    text-[13px]
+                    leading-7
+                    text-[#47545a]
+                    [overflow-wrap:anywhere]
+                    [word-break:break-word]
+                    sm:text-[14px]
+                    sm:leading-7
+                    md:text-[15px]
+                  "
+                >
+                  {normalizedContent
+                    .split(/\n\s*\n/)
+                    .map(
+                      (
+                        paragraph,
+                        index
+                      ) => (
+                        <p
+                          key={index}
+                          className="
+                            m-0
+                            max-w-full
+                            break-words
+                            [overflow-wrap:anywhere]
+                          "
+                        >
+                          {paragraph.trim()}
+                        </p>
+                      )
+                    )}
+                </div>
               )}
+
+              {/* ==================================================
+                  COLLAPSED FADE
+              ================================================== */}
+
+              {!isExpanded &&
+                needsReadMore && (
+                  <div
+                    className="
+                      pointer-events-none
+                      absolute
+                      inset-x-0
+                      bottom-0
+                      h-20
+                      bg-gradient-to-t
+                      from-[#f7f7f7]
+                      via-[#f7f7f7]/90
+                      to-transparent
+                    "
+                  />
+                )}
             </div>
+
+            {/* ==================================================
+                READ MORE
+            ================================================== */}
+
+            {needsReadMore && (
+              <button
+                type="button"
+                onClick={() =>
+                  setIsExpanded(
+                    (previous) =>
+                      !previous
+                  )
+                }
+                aria-expanded={isExpanded}
+                className="
+                  mt-5
+                  inline-flex
+                  items-center
+                  gap-2
+                  border-0
+                  bg-transparent
+                  p-0
+                  text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.12em]
+                  text-[#17342d]
+                  transition-all
+                  duration-300
+                  hover:text-[#A47A2B]
+                  focus:outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-[#C89D58]/50
+                  focus-visible:ring-offset-4
+                "
+              >
+                <span>
+                  {isExpanded
+                    ? "Read Less"
+                    : "Read More"}
+                </span>
+
+                {isExpanded ? (
+                  <ArrowUp
+                    size={14}
+                    className="shrink-0"
+                  />
+                ) : (
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0"
+                  />
+                )}
+              </button>
+            )}
+
+            {!needsReadMore && (
+              <div className="h-1" />
+            )}
           </div>
 
           {/* ==================================================
-              RIGHT — COMPANY HIGHLIGHTS
+              RIGHT IMAGE COLUMN
           ================================================== */}
 
-          <div>
-            <div
-              className="
-                rounded-[32px]
-                border
-                border-[#eadfcb]
-                bg-white
-                p-8
-                shadow-[0_20px_70px_rgba(0,0,0,0.06)]
-                lg:sticky
-                lg:top-28
-              "
-            >
-              {/* HEADER */}
-
-              <div className="flex items-center gap-3">
+          <div
+            className="
+              relative
+              min-w-0
+              w-full
+              max-w-full
+              self-start
+            "
+          >
+            {resolvedImage ? (
+              <div
+                className="
+                  relative
+                  w-full
+                  min-w-0
+                  max-w-full
+                  overflow-hidden
+                  rounded-[28px]
+                  border
+                  border-[#17342d]/10
+                  bg-white
+                  shadow-[0_24px_70px_rgba(23,52,45,0.12)]
+                "
+              >
                 <div
                   className="
-                    flex
-                    h-14
-                    w-14
-                    items-center
-                    justify-center
-                    rounded-2xl
-                    bg-[#0B221B]
-                    text-[#D4AF37]
+                    relative
+                    aspect-[4/3]
+                    w-full
+                    min-w-0
+                    max-w-full
+                    overflow-hidden
                   "
                 >
-                  <Building2
-                    size={24}
-                    aria-hidden="true"
+                  <img
+                    src={resolvedImage}
+                    alt={`${developer.name} developer projects`}
+                    className="
+                      block
+                      h-full
+                      w-full
+                      max-w-full
+                      object-cover
+                      transition-transform
+                      duration-700
+                      hover:scale-[1.03]
+                    "
                   />
                 </div>
 
-                <div>
-                  <p
-                    className="
-                      text-[11px]
-                      uppercase
-                      tracking-[0.25em]
-                      text-[#B58B2D]
-                    "
-                  >
-                    Company Highlights
-                  </p>
+                {/* ==================================================
+                    IMAGE OVERLAY
+                ================================================== */}
 
-                  <h3
-                    className="
-                      mt-1
-                      text-2xl
-                      font-semibold
-                      text-[#0B221B]
-                    "
-                  >
-                    Why Choose {developer.name}
-                  </h3>
-                </div>
-              </div>
-
-              {/* HIGHLIGHTS */}
-
-              <div className="mt-8 space-y-5">
-                {companyHighlights.map((item) => (
+                <div
+                  className="
+                    absolute
+                    inset-x-0
+                    bottom-0
+                    bg-gradient-to-t
+                    from-[#061811]/95
+                    via-[#061811]/50
+                    to-transparent
+                    px-5
+                    pb-5
+                    pt-20
+                  "
+                >
                   <div
-                    key={item}
                     className="
                       flex
-                      items-start
-                      gap-4
+                      min-w-0
+                      items-center
+                      gap-2
                     "
                   >
-                    <div
+                    <Building2
+                      size={14}
                       className="
-                        mt-1
-                        flex
-                        h-8
-                        w-8
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-[#D4AF37]/15
+                        shrink-0
+                        text-[#D4AF37]
                       "
-                    >
-                      <BadgeCheck
-                        size={16}
-                        className="text-[#B58B2D]"
-                        aria-hidden="true"
-                      />
-                    </div>
+                    />
 
-                    <p
+                    <span
                       className="
-                        text-[15px]
-                        leading-7
-                        text-[#555]
+                        min-w-0
+                        max-w-full
+                        break-words
+                        text-[9px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.16em]
+                        text-white/75
+                        [overflow-wrap:anywhere]
                       "
                     >
-                      {item}
-                    </p>
+                      Developer Portfolio
+                    </span>
                   </div>
-                ))}
+
+                  <p
+                    className="
+                      mt-1
+                      max-w-full
+                      break-words
+                      font-playfair
+                      text-[22px]
+                      font-semibold
+                      leading-tight
+                      text-white
+                      [overflow-wrap:anywhere]
+                    "
+                  >
+                    {developer.name}
+                  </p>
+                </div>
               </div>
-
-              {/* PORTFOLIO */}
-
+            ) : (
               <div
                 className="
-                  mt-10
-                  rounded-2xl
-                  bg-gradient-to-r
-                  from-[#0B221B]
-                  to-[#123126]
-                  p-6
+                  flex
+                  aspect-[4/3]
+                  w-full
+                  min-w-0
+                  max-w-full
+                  items-center
+                  justify-center
+                  overflow-hidden
+                  rounded-[28px]
+                  bg-[#17342d]
+                  text-white/60
                 "
               >
-                <p
-                  className="
-                    text-[11px]
-                    uppercase
-                    tracking-[0.2em]
-                    text-[#D4AF37]
-                  "
-                >
-                  Portfolio
-                </p>
-
-                <h4
-                  className="
-                    mt-2
-                    text-4xl
-                    font-bold
-                    text-white
-                  "
-                >
-                  {properties.length}+
-                </h4>
-
-                <p className="mt-2 text-white/70">
-                  Signature luxury developments available
-                  through Property Bouquet.
-                </p>
+                <Building2
+                  size={30}
+                  className="text-[#D4AF37]"
+                />
               </div>
-            </div>
+            )}
           </div>
         </div>
+
+        {/* ======================================================
+            SNAPSHOT CARDS
+        ====================================================== */}
+
+        {highlights.length > 0 && (
+          <div
+            className="
+              mt-10
+              grid
+              min-w-0
+              w-full
+              gap-3
+              sm:grid-cols-3
+              lg:mt-14
+              lg:gap-4
+            "
+          >
+            {highlights.map(
+              (item, index) => (
+                <SnapshotCard
+                  key={`${index}-${item.title}`}
+                  icon={
+                    index === 0 ? (
+                      <Building2 size={16} />
+                    ) : index === 1 ? (
+                      <TrendingUp size={16} />
+                    ) : (
+                      <ShieldCheck size={16} />
+                    )
+                  }
+                  title={item.title}
+                  description={
+                    item.description
+                  }
+                />
+              )
+            )}
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+/* ============================================================
+   SNAPSHOT CARD
+============================================================ */
+
+function SnapshotCard({
+  icon,
+  title,
+  description,
+}) {
+  return (
+    <div
+      className="
+        min-w-0
+        w-full
+        overflow-hidden
+        rounded-[20px]
+        border
+        border-[#17342d]/10
+        bg-white
+        p-5
+        shadow-[0_12px_35px_rgba(23,52,45,0.05)]
+        transition-all
+        duration-300
+        hover:-translate-y-0.5
+        hover:shadow-[0_18px_45px_rgba(23,52,45,0.09)]
+      "
+    >
+      {/* ICON */}
+
+      <div
+        className="
+          flex
+          h-9
+          w-9
+          shrink-0
+          items-center
+          justify-center
+          rounded-full
+          bg-[#17342d]
+          text-[#D4AF37]
+        "
+      >
+        {icon}
+      </div>
+
+      {/* TITLE */}
+
+      <p
+        className="
+          mt-4
+          max-w-full
+          break-words
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.14em]
+          text-[#17342d]
+          [overflow-wrap:anywhere]
+        "
+      >
+        {title}
+      </p>
+
+      {/* DESCRIPTION */}
+
+      <p
+        className="
+          mt-2
+          max-w-full
+          break-words
+          text-[12px]
+          leading-5
+          text-[#667078]
+          [overflow-wrap:anywhere]
+        "
+      >
+        {description}
+      </p>
+    </div>
   );
 }
