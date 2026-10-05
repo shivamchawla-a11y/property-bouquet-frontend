@@ -12,10 +12,33 @@ import DeveloperMobileFilters from "./DeveloperMobileFilters";
 
 const CARDS_PER_PAGE = 9;
 
+/* ============================================================
+   RICH TEXT HELPERS
+============================================================ */
+
+function normalizeRichText(text) {
+  if (typeof text !== "string") return "";
+
+  return text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#160;/gi, " ")
+    .replace(/&#xA0;/gi, " ")
+    .replace(/\u00a0/g, " ")
+    .replace(/<p>\s*<\/p>/gi, "")
+    .trim();
+}
+
+function hasRichText(text) {
+  if (typeof text !== "string") return false;
+
+  return /<\s*[a-z][^>]*>/i.test(text);
+}
+
 export default function DeveloperProjects({
   developer,
   properties = [],
   slug,
+  pageContent = {},
 }) {
   const searchParams = useSearchParams();
 
@@ -30,6 +53,42 @@ export default function DeveloperProjects({
 
   const [showFilters, setShowFilters] =
     useState(false);
+
+  /* ==========================================================
+      CMS + EXISTING FALLBACK VALUES
+  ========================================================== */
+
+  const projectsContent =
+    pageContent?.projects || {};
+
+  const projectsEyebrow =
+    typeof projectsContent.eyebrow === "string" &&
+    projectsContent.eyebrow.trim()
+      ? projectsContent.eyebrow.trim()
+      : "Exclusive Collection";
+
+  const projectsTitle =
+    typeof projectsContent.title === "string" &&
+    projectsContent.title.trim()
+      ? projectsContent.title.trim()
+      : `Projects by ${developer?.name || "Developer"}`;
+
+  /*
+    Existing hardcoded description is preserved as the fallback.
+  */
+
+  const existingProjectsDescription = `Browse an exclusive portfolio of luxury residences, premium apartments and investment opportunities developed by ${developer?.name || "this developer"}.`;
+
+  const cmsProjectsDescription =
+    typeof projectsContent.description === "string"
+      ? normalizeRichText(
+          projectsContent.description
+        )
+      : "";
+
+  const projectsDescription =
+    cmsProjectsDescription ||
+    existingProjectsDescription;
 
   /* ==========================================================
       URL FILTERS
@@ -495,7 +554,7 @@ export default function DeveloperProjects({
                     text-[#D4AF37]
                   "
                 >
-                  Exclusive Collection
+                  {projectsEyebrow}
                 </span>
 
                 <h2
@@ -508,7 +567,7 @@ export default function DeveloperProjects({
                     md:text-5xl
                   "
                 >
-                  Projects by {developer.name}
+                  {projectsTitle}
                 </h2>
 
                 <div
@@ -521,21 +580,97 @@ export default function DeveloperProjects({
                   aria-hidden="true"
                 />
 
-                <p
+                {/* ==================================================
+                    PROJECT DESCRIPTION
+
+                    CMS rich text is supported.
+
+                    If CMS is empty, the original hardcoded
+                    description is used.
+                ================================================== */}
+
+                <div
                   className="
                     mt-6
                     max-w-2xl
                     text-[17px]
                     leading-8
                     text-[#666]
+
+                    [&_p]:m-0
+                    [&_p]:mb-4
+                    [&_p:last-child]:mb-0
+
+                    [&_strong]:font-semibold
+                    [&_b]:font-semibold
+
+                    [&_em]:italic
+
+                    [&_u]:underline
+                    [&_u]:underline-offset-2
+
+                    [&_a]:font-medium
+                    [&_a]:text-[#B58B2D]
+                    [&_a]:underline
+                    [&_a]:underline-offset-2
+
+                    [&_ul]:my-4
+                    [&_ul]:list-disc
+                    [&_ul]:pl-6
+
+                    [&_ol]:my-4
+                    [&_ol]:list-decimal
+                    [&_ol]:pl-6
+
+                    [&_li]:mb-2
+
+                    [&_h1]:mb-3
+                    [&_h1]:font-playfair
+                    [&_h1]:text-3xl
+                    [&_h1]:font-medium
+                    [&_h1]:leading-tight
+                    [&_h1]:text-[#081c15]
+
+                    [&_h2]:mb-3
+                    [&_h2]:font-playfair
+                    [&_h2]:text-2xl
+                    [&_h2]:font-medium
+                    [&_h2]:leading-tight
+                    [&_h2]:text-[#081c15]
+
+                    [&_h3]:mb-2
+                    [&_h3]:font-playfair
+                    [&_h3]:text-xl
+                    [&_h3]:font-medium
+                    [&_h3]:leading-tight
+                    [&_h3]:text-[#081c15]
+
+                    [&_blockquote]:my-4
+                    [&_blockquote]:border-l-2
+                    [&_blockquote]:border-[#D4AF37]
+                    [&_blockquote]:pl-4
+                    [&_blockquote]:italic
+
+                    [&_img]:my-4
+                    [&_img]:max-w-full
+                    [&_img]:rounded-xl
                   "
                 >
-                  Browse an exclusive portfolio
-                  of luxury residences, premium
-                  apartments and investment
-                  opportunities developed by{" "}
-                  {developer.name}.
-                </p>
+                  {hasRichText(
+                    projectsDescription
+                  ) ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          projectsDescription,
+                      }}
+                    />
+                  ) : (
+                    <p>
+                      {projectsDescription}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">

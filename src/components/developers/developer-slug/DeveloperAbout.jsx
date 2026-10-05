@@ -5,13 +5,100 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
+/* ============================================================
+   RICH TEXT HELPERS
+============================================================ */
+
+function normalizeRichText(text) {
+  if (typeof text !== "string") return "";
+
+  return text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#160;/gi, " ")
+    .replace(/&#xA0;/gi, " ")
+    .replace(/\u00a0/g, " ")
+    .replace(/<p>\s*<\/p>/gi, "")
+    .trim();
+}
+
+function hasRichText(text) {
+  if (typeof text !== "string") return false;
+
+  return /<\s*[a-z][^>]*>/i.test(text);
+}
+
 export default function DeveloperAbout({
   developer,
   properties = [],
+  pageContent = {},
 }) {
-  if (!developer?.description) {
+  if (!developer) {
     return null;
   }
+
+  /* ============================================================
+      CMS + EXISTING FALLBACK VALUES
+
+      IMPORTANT:
+      CMS values are used only when actually populated.
+
+      If the admin has not edited the About section yet,
+      the existing Developer description continues to work.
+  ============================================================ */
+
+  const about = pageContent?.about || {};
+
+  const aboutEyebrow =
+    typeof about.eyebrow === "string" && about.eyebrow.trim()
+      ? about.eyebrow.trim()
+      : "About The Developer";
+
+  const aboutTitle =
+    typeof about.title === "string" && about.title.trim()
+      ? about.title.trim()
+      : developer?.name || "About The Developer";
+
+  const cmsAboutContent =
+    typeof about.content === "string"
+      ? normalizeRichText(about.content)
+      : "";
+
+  const developerDescription =
+    typeof developer?.description === "string"
+      ? normalizeRichText(developer.description)
+      : "";
+
+  /*
+    Priority:
+
+    1. CMS About content
+    2. Existing developer.description
+  */
+  const aboutContent = cmsAboutContent || developerDescription;
+
+  /*
+    Preserve the previous behavior:
+    if there is absolutely no About content available,
+    don't render an empty About section.
+  */
+  if (!aboutContent) {
+    return null;
+  }
+
+  /* ============================================================
+      EXISTING COMPANY HIGHLIGHTS
+      These remain untouched because they are not part of the
+      new CMS rich-text migration.
+  ============================================================ */
+
+  const companyHighlights = [
+    "Luxury Residential Developments",
+    "Premium Construction Quality",
+    "Prime Investment Locations",
+    "Trusted Developer Reputation",
+    "RERA Registered Projects",
+    "Customer-Centric Experience",
+  ];
 
   return (
     <section
@@ -66,6 +153,8 @@ export default function DeveloperAbout({
           ================================================== */}
 
           <div>
+            {/* EYEBROW */}
+
             <span
               className="
                 inline-flex
@@ -80,8 +169,10 @@ export default function DeveloperAbout({
                 text-[#D4AF37]
               "
             >
-              About The Developer
+              {aboutEyebrow}
             </span>
+
+            {/* TITLE */}
 
             <h2
               className="
@@ -93,7 +184,7 @@ export default function DeveloperAbout({
                 md:text-5xl
               "
             >
-              {developer.name}
+              {aboutTitle}
             </h2>
 
             <div
@@ -106,17 +197,98 @@ export default function DeveloperAbout({
               aria-hidden="true"
             />
 
+            {/* ==================================================
+                CONTENT
+
+                CMS rich text is rendered as HTML.
+
+                If CMS content is plain text, it still renders
+                safely as normal text.
+
+                If CMS is empty, developer.description is used.
+            ================================================== */}
+
             <div
               className="
                 mt-10
                 text-[17px]
                 leading-[2.05]
                 text-[#4d4d4d]
+
+                [&_p]:m-0
+                [&_p]:mb-5
+                [&_p:last-child]:mb-0
+
+                [&_strong]:font-semibold
+                [&_b]:font-semibold
+
+                [&_em]:italic
+
+                [&_u]:underline
+                [&_u]:underline-offset-2
+
+                [&_a]:font-medium
+                [&_a]:text-[#B58B2D]
+                [&_a]:underline
+                [&_a]:underline-offset-2
+
+                [&_ul]:my-5
+                [&_ul]:list-disc
+                [&_ul]:pl-6
+
+                [&_ol]:my-5
+                [&_ol]:list-decimal
+                [&_ol]:pl-6
+
+                [&_li]:mb-2
+
+                [&_h1]:mb-4
+                [&_h1]:font-playfair
+                [&_h1]:text-3xl
+                [&_h1]:font-medium
+                [&_h1]:leading-tight
+                [&_h1]:text-[#0B221B]
+
+                [&_h2]:mb-4
+                [&_h2]:font-playfair
+                [&_h2]:text-2xl
+                [&_h2]:font-medium
+                [&_h2]:leading-tight
+                [&_h2]:text-[#0B221B]
+
+                [&_h3]:mb-3
+                [&_h3]:font-playfair
+                [&_h3]:text-xl
+                [&_h3]:font-medium
+                [&_h3]:leading-tight
+                [&_h3]:text-[#0B221B]
+
+                [&_h4]:mb-3
+                [&_h4]:font-semibold
+                [&_h4]:text-[#0B221B]
+
+                [&_blockquote]:my-5
+                [&_blockquote]:border-l-2
+                [&_blockquote]:border-[#D4AF37]
+                [&_blockquote]:pl-5
+                [&_blockquote]:italic
+
+                [&_img]:my-5
+                [&_img]:max-w-full
+                [&_img]:rounded-2xl
               "
             >
-              <p className="whitespace-pre-line">
-                {developer.description}
-              </p>
+              {hasRichText(aboutContent) ? (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: aboutContent,
+                  }}
+                />
+              ) : (
+                <p className="whitespace-pre-line">
+                  {aboutContent}
+                </p>
+              )}
             </div>
           </div>
 
@@ -186,14 +358,7 @@ export default function DeveloperAbout({
               {/* HIGHLIGHTS */}
 
               <div className="mt-8 space-y-5">
-                {[
-                  "Luxury Residential Developments",
-                  "Premium Construction Quality",
-                  "Prime Investment Locations",
-                  "Trusted Developer Reputation",
-                  "RERA Registered Projects",
-                  "Customer-Centric Experience",
-                ].map((item) => (
+                {companyHighlights.map((item) => (
                   <div
                     key={item}
                     className="

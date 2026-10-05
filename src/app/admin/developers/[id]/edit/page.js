@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -17,8 +17,6 @@ import {
   Loader2,
   Building2,
   Image as ImageIcon,
-  Search,
-  Sparkles,
   BarChart3,
   FolderKanban,
   ShieldCheck,
@@ -26,6 +24,8 @@ import {
   HelpCircle,
   Globe,
   Layers3,
+  Search,
+  Sparkles,
 } from "lucide-react";
 
 import RichTextEditor from "@/app/admin/RichTextEditor";
@@ -33,7 +33,7 @@ import RichTextEditor from "@/app/admin/RichTextEditor";
 
 /* ============================================================
    DEFAULT PAGE CONTENT
-   ============================================================ */
+============================================================ */
 
 const DEFAULT_PAGE_CONTENT = {
   hero: {
@@ -58,7 +58,7 @@ const DEFAULT_PAGE_CONTENT = {
   projects: {
     enabled: true,
     eyebrow: "THE PORTFOLIO",
-    title: "",
+    title: "Featured Projects",
     description: "",
   },
 
@@ -99,8 +99,8 @@ const DEFAULT_PAGE_CONTENT = {
 
 
 /* ============================================================
-   SAFE DEEP MERGE
-   ============================================================ */
+   SAFE PAGE CONTENT NORMALIZER
+============================================================ */
 
 function buildPageContent(value) {
   const source =
@@ -169,19 +169,18 @@ function buildPageContent(value) {
       ...(source.seo || {}),
     },
 
-    customSections:
-      Array.isArray(
-        source.customSections
-      )
-        ? source.customSections
-        : [],
+    customSections: Array.isArray(
+      source.customSections
+    )
+      ? source.customSections
+      : [],
   };
 }
 
 
 /* ============================================================
-   SMALL FIELD COMPONENT
-   ============================================================ */
+   FIELD
+============================================================ */
 
 function Field({
   label,
@@ -192,13 +191,28 @@ function Field({
   rows,
   hint,
 }) {
-  const common =
-    "w-full border border-gray-300 bg-white text-sm text-gray-800 placeholder:text-gray-400 rounded-xl px-4 py-2.5 outline-none transition focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/10";
+  const inputClass = `
+    w-full
+    rounded-xl
+    border
+    border-gray-300
+    bg-white
+    px-4
+    py-2.5
+    text-sm
+    text-gray-800
+    outline-none
+    transition
+    placeholder:text-gray-400
+    focus:border-[#0f3b2e]
+    focus:ring-2
+    focus:ring-[#0f3b2e]/10
+  `;
 
   return (
     <div>
       {label && (
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
+        <label className="mb-2 block text-sm font-semibold text-gray-800">
           {label}
         </label>
       )}
@@ -206,27 +220,27 @@ function Field({
       {rows ? (
         <textarea
           value={value || ""}
-          onChange={(e) =>
-            onChange(e.target.value)
+          onChange={(event) =>
+            onChange(event.target.value)
           }
           placeholder={placeholder}
           rows={rows}
-          className={`${common} resize-y`}
+          className={`${inputClass} resize-y`}
         />
       ) : (
         <input
           type={type}
           value={value || ""}
-          onChange={(e) =>
-            onChange(e.target.value)
+          onChange={(event) =>
+            onChange(event.target.value)
           }
           placeholder={placeholder}
-          className={common}
+          className={inputClass}
         />
       )}
 
       {hint && (
-        <p className="text-[11px] text-gray-500 mt-1.5">
+        <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">
           {hint}
         </p>
       )}
@@ -237,7 +251,7 @@ function Field({
 
 /* ============================================================
    SECTION WRAPPER
-   ============================================================ */
+============================================================ */
 
 function EditorSection({
   icon,
@@ -248,14 +262,37 @@ function EditorSection({
   children,
 }) {
   return (
-    <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-gray-50 transition"
+        className="
+          flex
+          w-full
+          items-center
+          justify-between
+          gap-4
+          px-5
+          py-4
+          text-left
+          transition
+          hover:bg-gray-50
+        "
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e] flex items-center justify-center">
+        <div className="flex min-w-0 items-center gap-3">
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-[#0f3b2e]/10
+              text-[#0f3b2e]
+            "
+          >
             {icon}
           </div>
 
@@ -265,7 +302,7 @@ function EditorSection({
             </h2>
 
             {description && (
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="mt-0.5 text-xs text-gray-500">
                 {description}
               </p>
             )}
@@ -275,12 +312,12 @@ function EditorSection({
         {open ? (
           <ChevronUp
             size={18}
-            className="text-gray-500 shrink-0"
+            className="shrink-0 text-gray-500"
           />
         ) : (
           <ChevronDown
             size={18}
-            className="text-gray-500 shrink-0"
+            className="shrink-0 text-gray-500"
           />
         )}
       </button>
@@ -297,7 +334,7 @@ function EditorSection({
 
 /* ============================================================
    ENABLE TOGGLE
-   ============================================================ */
+============================================================ */
 
 function EnableToggle({
   enabled,
@@ -306,14 +343,22 @@ function EnableToggle({
   return (
     <button
       type="button"
-      onClick={() =>
-        onChange(!enabled)
-      }
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
-        enabled
-          ? "bg-[#0f3b2e]"
-          : "bg-gray-300"
-      }`}
+      onClick={() => onChange(!enabled)}
+      className={`
+        relative
+        inline-flex
+        h-6
+        w-11
+        shrink-0
+        items-center
+        rounded-full
+        transition
+        ${
+          enabled
+            ? "bg-[#0f3b2e]"
+            : "bg-gray-300"
+        }
+      `}
       aria-label={
         enabled
           ? "Disable section"
@@ -321,11 +366,21 @@ function EnableToggle({
       }
     >
       <span
-        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
-          enabled
-            ? "translate-x-5"
-            : "translate-x-0.5"
-        }`}
+        className={`
+          inline-block
+          h-5
+          w-5
+          transform
+          rounded-full
+          bg-white
+          shadow
+          transition
+          ${
+            enabled
+              ? "translate-x-5"
+              : "translate-x-0.5"
+          }
+        `}
       />
     </button>
   );
@@ -333,8 +388,54 @@ function EnableToggle({
 
 
 /* ============================================================
+   ENABLE ROW
+============================================================ */
+
+function EnableRow({
+  title,
+  description,
+  enabled,
+  onChange,
+}) {
+  return (
+    <div
+      className="
+        flex
+        items-center
+        justify-between
+        gap-5
+        rounded-xl
+        border
+        border-gray-200
+        bg-gray-50
+        px-4
+        py-3.5
+      "
+    >
+      <div>
+        <p className="text-sm font-semibold text-gray-800">
+          {title}
+        </p>
+
+        {description && (
+          <p className="mt-0.5 text-xs text-gray-500">
+            {description}
+          </p>
+        )}
+      </div>
+
+      <EnableToggle
+        enabled={enabled}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+
+/* ============================================================
    IMAGE UPLOAD
-   ============================================================ */
+============================================================ */
 
 function ImageUpload({
   label,
@@ -342,6 +443,7 @@ function ImageUpload({
   onChange,
   uploading,
   setUploading,
+  hint,
 }) {
   const handleUpload = async (file) => {
     if (!file) return;
@@ -353,10 +455,7 @@ function ImageUpload({
       return;
     }
 
-    if (
-      file.size >
-      5 * 1024 * 1024
-    ) {
+    if (file.size > 5 * 1024 * 1024) {
       toast.error(
         "Maximum file size is 5MB ❌"
       );
@@ -366,15 +465,14 @@ function ImageUpload({
     try {
       setUploading(true);
 
-      const formData =
-        new FormData();
+      const formData = new FormData();
 
       formData.append(
         "file",
         file
       );
 
-      const res = await fetch(
+      const response = await fetch(
         "/api/upload-developer",
         {
           method: "POST",
@@ -383,15 +481,15 @@ function ImageUpload({
       );
 
       const result =
-        await res.json();
+        await response.json();
 
       if (
-        !res.ok ||
-        !result.url
+        !response.ok ||
+        !result?.url
       ) {
         throw new Error(
-          result.message ||
-            "Upload failed"
+          result?.message ||
+            "Image upload failed"
         );
       }
 
@@ -401,10 +499,13 @@ function ImageUpload({
         "Image uploaded successfully ✅"
       );
     } catch (error) {
-      console.error(error);
+      console.error(
+        "DEVELOPER IMAGE UPLOAD ERROR:",
+        error
+      );
 
       toast.error(
-        error.message ||
+        error?.message ||
           "Image upload failed ❌"
       );
     } finally {
@@ -414,21 +515,55 @@ function ImageUpload({
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-800 mb-2">
+      <label className="mb-2 block text-sm font-semibold text-gray-800">
         {label}
       </label>
 
-      <div className="grid md:grid-cols-[1fr_auto] gap-3">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto]">
         <input
           value={value || ""}
-          onChange={(e) =>
-            onChange(e.target.value)
+          onChange={(event) =>
+            onChange(event.target.value)
           }
           placeholder="https://..."
-          className="w-full border border-gray-300 bg-white text-sm text-gray-800 placeholder:text-gray-400 rounded-xl px-4 py-2.5 outline-none focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/10"
+          className="
+            w-full
+            rounded-xl
+            border
+            border-gray-300
+            bg-white
+            px-4
+            py-2.5
+            text-sm
+            text-gray-800
+            outline-none
+            placeholder:text-gray-400
+            focus:border-[#0f3b2e]
+            focus:ring-2
+            focus:ring-[#0f3b2e]/10
+          "
         />
 
-        <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#f5f7f6] border border-gray-200 text-sm font-semibold text-[#17342d] hover:bg-[#eaf0ed] transition">
+        <label
+          className="
+            inline-flex
+            cursor-pointer
+            items-center
+            justify-center
+            gap-2
+            rounded-xl
+            border
+            border-gray-200
+            bg-[#f5f7f6]
+            px-4
+            py-2.5
+            text-sm
+            font-semibold
+            text-[#17342d]
+            transition
+            hover:bg-[#eaf0ed]
+          "
+        >
           {uploading ? (
             <Loader2
               size={15}
@@ -447,23 +582,34 @@ function ImageUpload({
             hidden
             accept="image/*"
             disabled={uploading}
-            onChange={(e) => {
+            onChange={(event) => {
               handleUpload(
-                e.target.files?.[0]
+                event.target.files?.[0]
               );
 
-              e.target.value = "";
+              event.target.value = "";
             }}
           />
         </label>
       </div>
 
+      {hint && (
+        <p className="mt-1.5 text-[11px] text-gray-500">
+          {hint}
+        </p>
+      )}
+
       {value && (
-        <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+        <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 p-3">
           <img
             src={value}
             alt=""
-            className="h-28 w-full object-cover rounded-lg"
+            className="
+              h-32
+              w-full
+              rounded-lg
+              object-cover
+            "
           />
         </div>
       )}
@@ -473,8 +619,39 @@ function ImageUpload({
 
 
 /* ============================================================
+   RICH TEXT FIELD
+============================================================ */
+
+function RichField({
+  label,
+  value,
+  onChange,
+  hint,
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-gray-800">
+        {label}
+      </label>
+
+      <RichTextEditor
+        value={value || ""}
+        onChange={onChange}
+      />
+
+      {hint && (
+        <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">
+          {hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
+/* ============================================================
    MAIN PAGE
-   ============================================================ */
+============================================================ */
 
 export default function DeveloperEditPage() {
   const params = useParams();
@@ -487,7 +664,7 @@ export default function DeveloperEditPage() {
 
   const [pageContent, setPageContent] =
     useState(
-      DEFAULT_PAGE_CONTENT
+      buildPageContent({})
     );
 
   const [loading, setLoading] =
@@ -515,114 +692,175 @@ export default function DeveloperEditPage() {
 
 
   /* ==========================================================
-     FETCH DEVELOPER
-     ========================================================== */
+     LOAD DEVELOPER
+  ========================================================== */
 
   useEffect(() => {
     if (!id) return;
 
-    const loadDeveloper =
-      async () => {
-        try {
-          setLoading(true);
+    let cancelled = false;
 
-          const res =
-            await fetch(
-              `/api/developers/${id}`,
-              {
-                cache: "no-store",
-              }
-            );
+    const loadDeveloper = async () => {
+      try {
+        setLoading(true);
 
-          const data =
-            await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              data.message ||
-                "Failed to load developer"
-            );
+        const response = await fetch(
+          `/api/developers/${id}`,
+          {
+            cache: "no-store",
           }
+        );
 
-          const loaded =
-            data.developer;
+        const data =
+          await response.json();
 
-          if (!loaded) {
-            throw new Error(
-              "Developer data not found"
-            );
-          }
-
-          setDeveloper(
-            loaded
+        if (!response.ok) {
+          throw new Error(
+            data?.message ||
+              "Failed to load developer"
           );
+        }
 
-          setPageContent(
-            buildPageContent(
-              loaded.pageContent
-            )
-          );
-        } catch (error) {
-          console.error(
-            error
-          );
+        /*
+          Our controller returns the developer
+          object directly.
 
+          This also supports older response
+          formats just in case.
+        */
+
+        const loaded =
+          data?.developer ||
+          data?.data ||
+          data;
+
+        if (
+          !loaded ||
+          !loaded._id
+        ) {
+          throw new Error(
+            "Developer data not found"
+          );
+        }
+
+        if (cancelled) return;
+
+        setDeveloper(loaded);
+
+        setPageContent(
+          buildPageContent(
+            loaded.pageContent
+          )
+        );
+      } catch (error) {
+        console.error(
+          "LOAD DEVELOPER ERROR:",
+          error
+        );
+
+        if (!cancelled) {
           toast.error(
-            error.message ||
+            error?.message ||
               "Failed to load developer ❌"
           );
-        } finally {
+        }
+      } finally {
+        if (!cancelled) {
           setLoading(false);
         }
-      };
+      }
+    };
 
     loadDeveloper();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
 
   /* ==========================================================
-     UPDATE HELPERS
-     ========================================================== */
+     UPDATE BASIC DEVELOPER FIELD
+  ========================================================== */
 
   const updateDeveloper = (
     key,
     value
   ) => {
-    setDeveloper(
-      (prev) => ({
-        ...prev,
-        [key]: value,
-      })
-    );
+    setDeveloper((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
   };
+
+
+  /* ==========================================================
+     UPDATE PAGE CONTENT
+  ========================================================== */
 
   const updatePage = (
     section,
     key,
     value
   ) => {
-    setPageContent(
-      (prev) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [key]: value,
-        },
-      })
-    );
+    setPageContent((previous) => ({
+      ...previous,
+
+      [section]: {
+        ...(previous[section] || {}),
+        [key]: value,
+      },
+    }));
+  };
+
+
+  /* ==========================================================
+     TOGGLE SECTION
+  ========================================================== */
+
+  const toggleSection = (
+    section
+  ) => {
+    setOpenSections((previous) => ({
+      ...previous,
+
+      [section]:
+        !previous[section],
+    }));
   };
 
 
   /* ==========================================================
      SAVE
-     ========================================================== */
+  ========================================================== */
 
   const saveDeveloper =
     async () => {
-      if (!developer) return;
+      if (!developer || !id) {
+        return;
+      }
+
+      if (saving) {
+        return;
+      }
 
       try {
         setSaving(true);
+
+        /*
+          Clone the content before sending it.
+          This prevents accidental state-reference
+          mutations.
+        */
+
+        const cleanPageContent =
+          JSON.parse(
+            JSON.stringify(
+              buildPageContent(
+                pageContent
+              )
+            )
+          );
 
         const payload = {
           name:
@@ -635,13 +873,13 @@ export default function DeveloperEditPage() {
             developer.image || "",
 
           description:
-            developer.description ||
-            "",
+            developer.description || "",
 
-          pageContent,
+          pageContent:
+            cleanPageContent,
         };
 
-        const res =
+        const response =
           await fetch(
             `/api/developers/${id}`,
             {
@@ -649,6 +887,9 @@ export default function DeveloperEditPage() {
 
               headers: {
                 "Content-Type":
+                  "application/json",
+
+                Accept:
                   "application/json",
               },
 
@@ -660,36 +901,62 @@ export default function DeveloperEditPage() {
           );
 
         const data =
-          await res.json();
+          await response.json();
 
-        if (!res.ok) {
+        if (!response.ok) {
           throw new Error(
-            data.message ||
+            data?.message ||
               "Failed to save developer"
           );
         }
 
-        setDeveloper(
-          data.data
-        );
+        /*
+          Our controller returns:
 
-        setPageContent(
-          buildPageContent(
-            data.data
-              ?.pageContent
-          )
-        );
+          {
+            message,
+            developer
+          }
+
+          But this also safely supports
+          older response formats.
+        */
+
+        const saved =
+          data?.developer ||
+          data?.data ||
+          data;
+
+        if (
+          saved &&
+          saved._id
+        ) {
+          setDeveloper(saved);
+
+          setPageContent(
+            buildPageContent(
+              saved.pageContent
+            )
+          );
+        } else {
+          setPageContent(
+            buildPageContent(
+              cleanPageContent
+            )
+          );
+        }
 
         toast.success(
           "Developer page saved successfully ✅"
         );
       } catch (error) {
         console.error(
+          "SAVE DEVELOPER ERROR:",
           error
         );
 
         toast.error(
-          error.message ||
+          error?.message ||
             "Failed to save developer ❌"
         );
       } finally {
@@ -699,34 +966,16 @@ export default function DeveloperEditPage() {
 
 
   /* ==========================================================
-     TOGGLE SECTION
-     ========================================================== */
-
-  const toggleSection =
-    (section) => {
-      setOpenSections(
-        (prev) => ({
-          ...prev,
-          [section]:
-            !prev[section],
-        })
-      );
-    };
-
-
-  /* ==========================================================
      STATS
-     ========================================================== */
+  ========================================================== */
 
   const addStat = () => {
     updatePage(
       "stats",
       "items",
       [
-        ...(
-          pageContent.stats
-            ?.items || []
-        ),
+        ...(pageContent.stats
+          ?.items || []),
 
         {
           label: "",
@@ -777,28 +1026,25 @@ export default function DeveloperEditPage() {
 
 
   /* ==========================================================
-     WHY CHOOSE ITEMS
-     ========================================================== */
+     WHY CHOOSE
+  ========================================================== */
 
-  const addWhyItem =
-    () => {
-      updatePage(
-        "whyChoose",
-        "items",
-        [
-          ...(
-            pageContent
-              .whyChoose
-              ?.items || []
-          ),
+  const addWhyItem = () => {
+    updatePage(
+      "whyChoose",
+      "items",
+      [
+        ...(pageContent
+          .whyChoose
+          ?.items || []),
 
-          {
-            title: "",
-            description: "",
-          },
-        ]
-      );
-    };
+        {
+          title: "",
+          description: "",
+        },
+      ]
+    );
+  };
 
   const updateWhyItem = (
     index,
@@ -842,18 +1088,16 @@ export default function DeveloperEditPage() {
 
 
   /* ==========================================================
-     FAQ ITEMS
-     ========================================================== */
+     FAQ
+  ========================================================== */
 
   const addFaq = () => {
     updatePage(
       "faq",
       "items",
       [
-        ...(
-          pageContent.faq
-            ?.items || []
-        ),
+        ...(pageContent.faq
+          ?.items || []),
 
         {
           question: "",
@@ -905,35 +1149,31 @@ export default function DeveloperEditPage() {
 
   /* ==========================================================
      CUSTOM SECTIONS
-     ========================================================== */
+  ========================================================== */
 
   const addCustomSection =
     () => {
-      setPageContent(
-        (prev) => ({
-          ...prev,
+      setPageContent((previous) => ({
+        ...previous,
 
-          customSections: [
-            ...(
-              prev.customSections ||
-              []
-            ),
+        customSections: [
+          ...(previous.customSections ||
+            []),
 
-            {
-              id: `section-${Date.now()}`,
-              type: "content",
-              enabled: true,
-              eyebrow: "",
-              title: "",
-              subtitle: "",
-              content: "",
-              image: "",
-              imagePosition:
-                "right",
-            },
-          ],
-        })
-      );
+          {
+            id: `section-${Date.now()}`,
+            type: "content",
+            enabled: true,
+            eyebrow: "",
+            title: "",
+            subtitle: "",
+            content: "",
+            image: "",
+            imagePosition:
+              "right",
+          },
+        ],
+      }));
     };
 
   const updateCustomSection =
@@ -942,89 +1182,111 @@ export default function DeveloperEditPage() {
       key,
       value
     ) => {
-      setPageContent(
-        (prev) => {
-          const sections = [
-            ...(prev.customSections ||
-              []),
-          ];
+      setPageContent((previous) => {
+        const sections = [
+          ...(previous.customSections ||
+            []),
+        ];
 
-          sections[index] = {
-            ...sections[index],
-            [key]: value,
-          };
+        sections[index] = {
+          ...sections[index],
+          [key]: value,
+        };
 
-          return {
-            ...prev,
-            customSections:
-              sections,
-          };
-        }
-      );
+        return {
+          ...previous,
+          customSections:
+            sections,
+        };
+      });
     };
 
   const removeCustomSection =
     (index) => {
-      setPageContent(
-        (prev) => {
-          const sections = [
-            ...(prev.customSections ||
-              []),
-          ];
+      setPageContent((previous) => {
+        const sections = [
+          ...(previous.customSections ||
+            []),
+        ];
 
-          sections.splice(
-            index,
-            1
-          );
+        sections.splice(
+          index,
+          1
+        );
 
-          return {
-            ...prev,
-            customSections:
-              sections,
-          };
-        }
-      );
+        return {
+          ...previous,
+          customSections:
+            sections,
+        };
+      });
     };
 
 
   /* ==========================================================
      LOADING
-     ========================================================== */
+  ========================================================== */
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center bg-[#f7f8f7]">
+      <div className="flex min-h-screen items-center justify-center bg-[#f7f8f7]">
         <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
           <Loader2
             size={18}
             className="animate-spin"
           />
-          Loading developer...
+
+          Loading developer page...
         </div>
       </div>
     );
   }
 
 
+  /* ==========================================================
+     NOT FOUND
+  ========================================================== */
+
   if (!developer) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#f7f8f7] px-5">
-        <Building2
-          size={40}
-          className="text-gray-400 mb-4"
-        />
+      <div className="flex min-h-screen items-center justify-center bg-[#f7f8f7] px-5">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <Building2 size={21} />
+          </div>
 
-        <h1 className="text-xl font-bold text-[#17342d]">
-          Developer not found
-        </h1>
+          <h1 className="text-xl font-bold text-[#17342d]">
+            Developer not found
+          </h1>
 
-        <Link
-          href="/admin/developers"
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f3b2e] text-white text-sm font-semibold"
-        >
-          <ArrowLeft size={15} />
-          Back to Developers
-        </Link>
+          <p className="mt-2 text-sm text-gray-500">
+            The requested developer could not
+            be loaded.
+          </p>
+
+          <Link
+            href="/admin/developers"
+            className="
+              mt-6
+              inline-flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-[#0f3b2e]
+              px-5
+              py-2.5
+              text-sm
+              font-semibold
+              text-white
+              transition
+              hover:bg-[#17342d]
+            "
+          >
+            <ArrowLeft size={15} />
+
+            Back to Developers
+          </Link>
+        </div>
       </div>
     );
   }
@@ -1032,71 +1294,113 @@ export default function DeveloperEditPage() {
 
   /* ==========================================================
      PAGE
-     ========================================================== */
+  ========================================================== */
 
   return (
     <div className="min-h-screen bg-[#f7f8f7]">
-
       {/* ======================================================
           STICKY HEADER
-          ====================================================== */}
+      ====================================================== */}
 
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200">
+      <div className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto max-w-[1500px] px-4 py-3 sm:px-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            {/* LEFT */}
 
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-3">
-
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-
-            <div className="flex items-center gap-3 min-w-0">
-
+            <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/admin/developers"
-                className="h-9 w-9 shrink-0 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
-                title="Back"
+                className="
+                  flex
+                  h-9
+                  w-9
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-xl
+                  border
+                  border-gray-200
+                  bg-white
+                  text-gray-600
+                  transition
+                  hover:bg-gray-50
+                "
+                title="Back to Developers"
               >
                 <ArrowLeft size={16} />
               </Link>
 
               <div className="min-w-0">
-
                 <div className="flex items-center gap-2">
-
-                  <h1 className="text-lg sm:text-xl font-bold text-[#17342d] truncate">
+                  <h1 className="truncate text-lg font-bold text-[#17342d] sm:text-xl">
                     Edit Developer Page
                   </h1>
 
-                  <span className="hidden sm:inline-flex px-2 py-1 rounded-full bg-[#0f3b2e]/10 text-[#0f3b2e] text-[10px] font-bold uppercase tracking-wider">
+                  <span className="hidden rounded-full bg-[#0f3b2e]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0f3b2e] sm:inline-flex">
                     CMS
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-500 truncate">
+                <p className="truncate text-xs text-gray-500">
                   {developer.name}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* RIGHT */}
 
+            <div className="flex items-center gap-2">
               <Link
                 href={`/developers/${
                   developer.publicSlug ||
                   developer.slug
                 }`}
                 target="_blank"
-                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm font-semibold transition"
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-xl
+                  border
+                  border-gray-200
+                  bg-white
+                  px-3.5
+                  py-2
+                  text-xs
+                  font-semibold
+                  text-gray-700
+                  transition
+                  hover:bg-gray-50
+                "
               >
                 <Eye size={15} />
-                <span className="hidden sm:inline">
-                  View Page
-                </span>
+
+                Preview
               </Link>
 
               <button
                 type="button"
                 onClick={saveDeveloper}
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f3b2e] hover:bg-[#145240] text-white text-sm font-semibold transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-xl
+                  bg-[#0f3b2e]
+                  px-4
+                  py-2
+                  text-xs
+                  font-bold
+                  text-white
+                  shadow-sm
+                  transition
+                  hover:bg-[#17342d]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
+                "
               >
                 {saving ? (
                   <Loader2
@@ -1109,7 +1413,7 @@ export default function DeveloperEditPage() {
 
                 {saving
                   ? "Saving..."
-                  : "Save Changes"}
+                  : "Save Page"}
               </button>
             </div>
           </div>
@@ -1118,43 +1422,59 @@ export default function DeveloperEditPage() {
 
 
       {/* ======================================================
-          CONTENT
-          ====================================================== */}
+          MAIN CONTENT
+      ====================================================== */}
 
-      <main className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6">
+      <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 sm:py-8">
+        {/* ====================================================
+            INTRO
+        ==================================================== */}
 
-        <div className="grid xl:grid-cols-[minmax(0,1fr)_320px] gap-6">
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#A68142]">
+            <Sparkles size={13} />
 
+            Developer Content Management
+          </div>
+
+          <h2 className="text-2xl font-bold tracking-tight text-[#17342d] sm:text-3xl">
+            {developer.name}
+          </h2>
+
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-500">
+            Manage the public developer page,
+            editorial content, project section,
+            FAQs and SEO from one place.
+          </p>
+        </div>
+
+
+        {/* ====================================================
+            EDITOR STACK
+        ==================================================== */}
+
+        <div className="space-y-4">
           {/* ==================================================
-              MAIN EDITOR
-              ================================================== */}
+              BASIC INFORMATION
+          ================================================== */}
 
-          <div className="space-y-4">
-
-            {/* ==================================================
-                BASIC INFORMATION
-                ================================================== */}
-
-            <EditorSection
-              icon={
-                <Building2
-                  size={18}
-                />
-              }
-              title="Basic Developer Information"
-              description="Existing developer information used throughout the website."
-              open={
-                openSections.basic
-              }
-              onToggle={() =>
-                toggleSection(
-                  "basic"
-                )
-              }
-            >
-
-              <div className="grid md:grid-cols-2 gap-5">
-
+          <EditorSection
+            icon={
+              <Building2 size={18} />
+            }
+            title="Basic Developer Information"
+            description="Core developer information retained for the existing system."
+            open={
+              openSections.basic
+            }
+            onToggle={() =>
+              toggleSection(
+                "basic"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <div className="grid gap-5 md:grid-cols-2">
                 <Field
                   label="Developer Name"
                   value={
@@ -1170,354 +1490,405 @@ export default function DeveloperEditPage() {
                 />
 
                 <Field
-                  label="Existing Description"
+                  label="Legacy Slug"
                   value={
-                    developer.description
+                    developer.slug
                   }
                   onChange={(value) =>
                     updateDeveloper(
-                      "description",
+                      "slug",
                       value
                     )
                   }
-                  placeholder="Existing developer description"
-                  rows={5}
-                  hint="This legacy description is preserved for backward compatibility."
+                  hint="The backend automatically regenerates the slug from the developer name when saved."
                 />
-
-                <ImageUpload
-                  label="Developer Logo"
-                  value={
-                    developer.logo
-                  }
-                  onChange={(value) =>
-                    updateDeveloper(
-                      "logo",
-                      value
-                    )
-                  }
-                  uploading={
-                    uploading
-                  }
-                  setUploading={
-                    setUploading
-                  }
-                />
-
-                <ImageUpload
-                  label="Developer Cover Image"
-                  value={
-                    developer.image
-                  }
-                  onChange={(value) =>
-                    updateDeveloper(
-                      "image",
-                      value
-                    )
-                  }
-                  uploading={
-                    uploading
-                  }
-                  setUploading={
-                    setUploading
-                  }
-                />
-
               </div>
-            </EditorSection>
+
+              <ImageUpload
+                label="Developer Logo"
+                value={
+                  developer.logo
+                }
+                onChange={(value) =>
+                  updateDeveloper(
+                    "logo",
+                    value
+                  )
+                }
+                uploading={
+                  uploading
+                }
+                setUploading={
+                  setUploading
+                }
+              />
+
+              <ImageUpload
+                label="Legacy Developer Image"
+                value={
+                  developer.image
+                }
+                onChange={(value) =>
+                  updateDeveloper(
+                    "image",
+                    value
+                  )
+                }
+                uploading={
+                  uploading
+                }
+                setUploading={
+                  setUploading
+                }
+              />
+
+              <Field
+                label="Legacy Description"
+                value={
+                  developer.description
+                }
+                onChange={(value) =>
+                  updateDeveloper(
+                    "description",
+                    value
+                  )
+                }
+                rows={5}
+                hint="This field is retained for compatibility with existing developer components. The dedicated About section below is the new CMS content."
+              />
+            </div>
+          </EditorSection>
 
 
-            {/* ==================================================
-                HERO
-                ================================================== */}
+          {/* ==================================================
+              HERO
+          ================================================== */}
 
-            <EditorSection
-              icon={
-                <Sparkles
-                  size={18}
+          <EditorSection
+            icon={
+              <ImageIcon size={18} />
+            }
+            title="Hero Section"
+            description="The primary introduction at the top of the developer page."
+            open={
+              openSections.hero
+            }
+            onToggle={() =>
+              toggleSection(
+                "hero"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent.hero
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "hero",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="LUXURY DEVELOPER COLLECTION"
                 />
-              }
-              title="Hero Section"
-              description="Controls the main developer hero presentation."
-              open={
-                openSections.hero
-              }
-              onToggle={() =>
-                toggleSection(
-                  "hero"
-                )
-              }
-            >
-
-              <div className="space-y-5">
-
-                <div className="grid md:grid-cols-2 gap-5">
-
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent.hero
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "hero",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                    placeholder="LUXURY DEVELOPER COLLECTION"
-                  />
-
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent.hero
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "hero",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="Discover the legacy behind..."
-                  />
-
-                </div>
 
                 <Field
-                  label="Hero Description"
+                  label="Title"
                   value={
                     pageContent.hero
-                      .description
+                      .title
                   }
                   onChange={(value) =>
                     updatePage(
                       "hero",
-                      "description",
+                      "title",
                       value
                     )
                   }
-                  placeholder="Short introductory description..."
-                  rows={5}
-                  hint="Hero description is plain text."
+                  placeholder="Discover the legacy behind..."
                 />
-
-                <ImageUpload
-                  label="Hero Image"
-                  value={
-                    pageContent.hero
-                      .image
-                  }
-                  onChange={(value) =>
-                    updatePage(
-                      "hero",
-                      "image",
-                      value
-                    )
-                  }
-                  uploading={
-                    uploading
-                  }
-                  setUploading={
-                    setUploading
-                  }
-                />
-
               </div>
-            </EditorSection>
+
+              <Field
+                label="Hero Description"
+                value={
+                  pageContent.hero
+                    .description
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "hero",
+                    "description",
+                    value
+                  )
+                }
+                placeholder="Short introductory description..."
+                rows={5}
+                hint="Hero description is plain text."
+              />
+
+              <ImageUpload
+                label="Hero Image"
+                value={
+                  pageContent.hero
+                    .image
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "hero",
+                    "image",
+                    value
+                  )
+                }
+                uploading={
+                  uploading
+                }
+                setUploading={
+                  setUploading
+                }
+                hint="Use a high-quality landscape image suitable for the hero."
+              />
+            </div>
+          </EditorSection>
 
 
-            {/* ==================================================
-                ABOUT
-                ================================================== */}
+          {/* ==================================================
+              ABOUT
+          ================================================== */}
 
-            <EditorSection
-              icon={
-                <Building2
-                  size={18}
+          <EditorSection
+            icon={
+              <Building2 size={18} />
+            }
+            title="About Developer"
+            description="Rich-text introduction to the developer."
+            open={
+              openSections.about
+            }
+            onToggle={() =>
+              toggleSection(
+                "about"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show About Section"
+                description="Enable or hide this section on the public page."
+                enabled={
+                  pageContent.about
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "about",
+                    "enabled",
+                    value
+                  )
+                }
+              />
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent.about
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "about",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="ABOUT THE DEVELOPER"
                 />
-              }
-              title="About Developer"
-              description="Rich-text introduction to the developer."
-              open={
-                openSections.about
-              }
-              onToggle={() =>
-                toggleSection(
-                  "about"
-                )
-              }
-            >
 
-              <div className="space-y-5">
+                <Field
+                  label="Title"
+                  value={
+                    pageContent.about
+                      .title
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "about",
+                      "title",
+                      value
+                    )
+                  }
+                  placeholder="About the developer"
+                />
+              </div>
 
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <RichField
+                label="About Content"
+                value={
+                  pageContent.about
+                    .content
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "about",
+                    "content",
+                    value
+                  )
+                }
+                hint="Supports paragraphs, bold, italic, headings, lists, links and other formatting supported by your existing RichTextEditor."
+              />
+            </div>
+          </EditorSection>
 
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show About Section
-                    </p>
 
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Enable or hide this section on the public page.
-                    </p>
-                  </div>
+          {/* ==================================================
+              STATS
+          ================================================== */}
 
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .about
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "about",
-                        "enabled",
-                        value
-                      )
-                    }
-                  />
+          <EditorSection
+            icon={
+              <BarChart3 size={18} />
+            }
+            title="Developer Stats"
+            description="Optional numbers and facts displayed as a statistics strip."
+            open={
+              openSections.stats
+            }
+            onToggle={() =>
+              toggleSection(
+                "stats"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show Statistics"
+                description="Enable or hide the statistics section."
+                enabled={
+                  pageContent.stats
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "stats",
+                    "enabled",
+                    value
+                  )
+                }
+              />
 
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-5">
-
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent
-                        .about
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "about",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                  />
-
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent
-                        .about
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "about",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="About the developer"
-                  />
-
-                </div>
-
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    About Content
-                  </label>
+                  <h3 className="text-sm font-bold text-[#17342d]">
+                    Statistics
+                  </h3>
 
-                  <RichTextEditor
-                    value={
-                      pageContent
-                        .about
-                        .content
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "about",
-                        "content",
-                        value
-                      )
-                    }
-                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Example: 30+ Years, 50+ Projects,
+                    10+ Cities.
+                  </p>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={addStat}
+                  className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    rounded-xl
+                    bg-[#0f3b2e]
+                    px-3.5
+                    py-2
+                    text-xs
+                    font-bold
+                    text-white
+                    transition
+                    hover:bg-[#17342d]
+                  "
+                >
+                  <Plus size={14} />
+
+                  Add Stat
+                </button>
               </div>
-            </EditorSection>
 
-
-            {/* ==================================================
-                STATS
-                ================================================== */}
-
-            <EditorSection
-              icon={
-                <BarChart3
-                  size={18}
-                />
-              }
-              title="Statistics"
-              description="Optional custom developer statistics."
-              open={
-                openSections.stats
-              }
-              onToggle={() =>
-                toggleSection(
-                  "stats"
-                )
-              }
-            >
-
-              <div className="space-y-4">
-
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show Statistics
-                    </p>
-
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Display custom statistics on the public page.
-                    </p>
-                  </div>
-
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .stats
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "stats",
-                        "enabled",
-                        value
-                      )
-                    }
+              {pageContent.stats
+                ?.items?.length ===
+              0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-8 text-center">
+                  <BarChart3
+                    size={22}
+                    className="mx-auto text-gray-400"
                   />
 
+                  <p className="mt-2 text-sm font-semibold text-gray-600">
+                    No statistics added
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-400">
+                    Add statistics when you want
+                    to highlight the developer's
+                    achievements.
+                  </p>
                 </div>
-
-                {pageContent.stats
-                  .items
-                  .map(
-                    (
-                      item,
-                      index
-                    ) => (
+              ) : (
+                <div className="space-y-3">
+                  {pageContent.stats.items.map(
+                    (item, index) => (
                       <div
-                        key={index}
-                        className="border border-gray-200 rounded-xl p-4 bg-gray-50"
+                        key={`stat-${index}`}
+                        className="
+                          grid
+                          gap-3
+                          rounded-xl
+                          border
+                          border-gray-200
+                          bg-gray-50
+                          p-4
+                          md:grid-cols-[1fr_1fr_auto]
+                        "
                       >
+                        <Field
+                          label="Value"
+                          value={
+                            item.value
+                          }
+                          onChange={(
+                            value
+                          ) =>
+                            updateStat(
+                              index,
+                              "value",
+                              value
+                            )
+                          }
+                          placeholder="30+"
+                        />
 
-                        <div className="flex items-center justify-between mb-3">
+                        <Field
+                          label="Label"
+                          value={
+                            item.label
+                          }
+                          onChange={(
+                            value
+                          ) =>
+                            updateStat(
+                              index,
+                              "label",
+                              value
+                            )
+                          }
+                          placeholder="Years of Excellence"
+                        />
 
-                          <p className="text-sm font-bold text-[#17342d]">
-                            Statistic{" "}
-                            {index +
-                              1}
-                          </p>
-
+                        <div className="flex items-end">
                           <button
                             type="button"
                             onClick={() =>
@@ -1525,898 +1896,904 @@ export default function DeveloperEditPage() {
                                 index
                               )
                             }
-                            className="h-8 w-8 rounded-lg bg-red-50 text-red-600 border border-red-200 flex items-center justify-center hover:bg-red-100"
+                            className="
+                              flex
+                              h-10
+                              w-10
+                              items-center
+                              justify-center
+                              rounded-xl
+                              border
+                              border-red-200
+                              bg-red-50
+                              text-red-600
+                              transition
+                              hover:bg-red-100
+                            "
+                            title="Remove statistic"
                           >
                             <Trash2
-                              size={
-                                14
-                              }
+                              size={16}
                             />
                           </button>
-
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-
-                          <Field
-                            label="Value"
-                            value={
-                              item.value
-                            }
-                            onChange={(value) =>
-                              updateStat(
-                                index,
-                                "value",
-                                value
-                              )
-                            }
-                            placeholder="25+"
-                          />
-
-                          <Field
-                            label="Label"
-                            value={
-                              item.label
-                            }
-                            onChange={(value) =>
-                              updateStat(
-                                index,
-                                "label",
-                                value
-                              )
-                            }
-                            placeholder="Years of Excellence"
-                          />
-
                         </div>
                       </div>
                     )
                   )}
+                </div>
+              )}
+            </div>
+          </EditorSection>
+
+
+          {/* ==================================================
+              PROJECTS
+          ================================================== */}
+
+          <EditorSection
+            icon={
+              <FolderKanban size={18} />
+            }
+            title="Projects / Portfolio"
+            description="Controls the heading and editorial introduction above the dynamic property projects."
+            open={
+              openSections.projects
+            }
+            onToggle={() =>
+              toggleSection(
+                "projects"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show Projects Section"
+                description="The actual projects remain dynamic from the Property collection."
+                enabled={
+                  pageContent.projects
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "projects",
+                    "enabled",
+                    value
+                  )
+                }
+              />
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent
+                      .projects
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "projects",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="THE PORTFOLIO"
+                />
+
+                <Field
+                  label="Title"
+                  value={
+                    pageContent
+                      .projects
+                      .title
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "projects",
+                      "title",
+                      value
+                    )
+                  }
+                  placeholder="Featured Projects"
+                />
+              </div>
+
+              <RichField
+                label="Projects Description"
+                value={
+                  pageContent
+                    .projects
+                    .description
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "projects",
+                    "description",
+                    value
+                  )
+                }
+                hint="This is editorial content only. Projects themselves continue to come from active properties linked to this developer."
+              />
+            </div>
+          </EditorSection>
+
+
+          {/* ==================================================
+              WHY CHOOSE
+          ================================================== */}
+
+          <EditorSection
+            icon={
+              <ShieldCheck size={18} />
+            }
+            title="Why Choose This Developer"
+            description="Create a premium editorial section explaining the developer's strengths."
+            open={
+              openSections
+                .whyChoose
+            }
+            onToggle={() =>
+              toggleSection(
+                "whyChoose"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show Why Choose Section"
+                description="Enable or hide this section on the public page."
+                enabled={
+                  pageContent
+                    .whyChoose
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "whyChoose",
+                    "enabled",
+                    value
+                  )
+                }
+              />
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent
+                      .whyChoose
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "whyChoose",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="WHY CHOOSE THIS DEVELOPER"
+                />
+
+                <Field
+                  label="Title"
+                  value={
+                    pageContent
+                      .whyChoose
+                      .title
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "whyChoose",
+                      "title",
+                      value
+                    )
+                  }
+                  placeholder="A legacy built around trust"
+                />
+              </div>
+
+              <RichField
+                label="Introduction"
+                value={
+                  pageContent
+                    .whyChoose
+                    .description
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "whyChoose",
+                    "description",
+                    value
+                  )
+                }
+              />
+
+              <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-5">
+                <div>
+                  <h3 className="text-sm font-bold text-[#17342d]">
+                    Reasons
+                  </h3>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Add individual reasons or
+                    strengths.
+                  </p>
+                </div>
 
                 <button
                   type="button"
-                  onClick={addStat}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f3b2e] text-white text-sm font-semibold hover:bg-[#145240] transition"
+                  onClick={addWhyItem}
+                  className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    rounded-xl
+                    bg-[#0f3b2e]
+                    px-3.5
+                    py-2
+                    text-xs
+                    font-bold
+                    text-white
+                    transition
+                    hover:bg-[#17342d]
+                  "
                 >
-                  <Plus size={15} />
-                  Add Statistic
+                  <Plus size={14} />
+
+                  Add Reason
                 </button>
-
               </div>
-            </EditorSection>
 
-
-            {/* ==================================================
-                PROJECTS
-                ================================================== */}
-
-            <EditorSection
-              icon={
-                <FolderKanban
-                  size={18}
-                />
-              }
-              title="Projects Section"
-              description="Controls the introduction above the dynamic project listings."
-              open={
-                openSections.projects
-              }
-              onToggle={() =>
-                toggleSection(
-                  "projects"
-                )
-              }
-            >
-
-              <div className="space-y-5">
-
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show Projects Section
-                    </p>
-
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Projects themselves remain automatically loaded from the Property collection.
-                    </p>
-                  </div>
-
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .projects
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "projects",
-                        "enabled",
-                        value
-                      )
-                    }
+              {pageContent
+                .whyChoose?.items
+                ?.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-8 text-center">
+                  <ShieldCheck
+                    size={22}
+                    className="mx-auto text-gray-400"
                   />
 
+                  <p className="mt-2 text-sm font-semibold text-gray-600">
+                    No reasons added
+                  </p>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  {pageContent.whyChoose.items.map(
+                    (item, index) => (
+                      <div
+                        key={`why-${index}`}
+                        className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                      >
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A68142]">
+                            Reason {index + 1}
+                          </span>
 
-                <div className="grid md:grid-cols-2 gap-5">
-
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent
-                        .projects
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "projects",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                  />
-
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent
-                        .projects
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "projects",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="Explore Projects"
-                  />
-
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Projects Description
-                  </label>
-
-                  <RichTextEditor
-                    value={
-                      pageContent
-                        .projects
-                        .description
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "projects",
-                        "description",
-                        value
-                      )
-                    }
-                  />
-                </div>
-
-              </div>
-            </EditorSection>
-
-
-            {/* ==================================================
-                WHY CHOOSE
-                ================================================== */}
-
-            <EditorSection
-              icon={
-                <ShieldCheck
-                  size={18}
-                />
-              }
-              title="Why Choose This Developer"
-              description="Create reasons and rich descriptions explaining the developer's strengths."
-              open={
-                openSections
-                  .whyChoose
-              }
-              onToggle={() =>
-                toggleSection(
-                  "whyChoose"
-                )
-              }
-            >
-
-              <div className="space-y-5">
-
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show Why Choose Section
-                    </p>
-                  </div>
-
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .whyChoose
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "whyChoose",
-                        "enabled",
-                        value
-                      )
-                    }
-                  />
-
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-5">
-
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent
-                        .whyChoose
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "whyChoose",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                  />
-
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent
-                        .whyChoose
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "whyChoose",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="Why choose this developer?"
-                  />
-
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Section Description
-                  </label>
-
-                  <RichTextEditor
-                    value={
-                      pageContent
-                        .whyChoose
-                        .description
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "whyChoose",
-                        "description",
-                        value
-                      )
-                    }
-                  />
-                </div>
-
-                <div className="border-t border-gray-200 pt-5">
-
-                  <div className="flex items-center justify-between mb-4">
-
-                    <div>
-                      <h3 className="text-sm font-bold text-[#17342d]">
-                        Reasons
-                      </h3>
-
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Each reason supports rich-text descriptions.
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={
-                        addWhyItem
-                      }
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0f3b2e] text-white text-xs font-semibold"
-                    >
-                      <Plus
-                        size={14}
-                      />
-                      Add Reason
-                    </button>
-
-                  </div>
-
-                  <div className="space-y-4">
-
-                    {pageContent
-                      .whyChoose
-                      .items
-                      .map(
-                        (
-                          item,
-                          index
-                        ) => (
-                          <div
-                            key={index}
-                            className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeWhyItem(
+                                index
+                              )
+                            }
+                            className="
+                              flex
+                              h-8
+                              w-8
+                              items-center
+                              justify-center
+                              rounded-lg
+                              border
+                              border-red-200
+                              bg-red-50
+                              text-red-600
+                              hover:bg-red-100
+                            "
+                            title="Remove reason"
                           >
+                            <Trash2
+                              size={14}
+                            />
+                          </button>
+                        </div>
 
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="space-y-4">
+                          <Field
+                            label="Title"
+                            value={
+                              item.title
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateWhyItem(
+                                index,
+                                "title",
+                                value
+                              )
+                            }
+                            placeholder="Trusted track record"
+                          />
 
-                              <p className="text-sm font-bold text-[#17342d]">
-                                Reason{" "}
-                                {index +
-                                  1}
-                              </p>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeWhyItem(
-                                    index
-                                  )
-                                }
-                                className="h-8 w-8 rounded-lg bg-red-50 text-red-600 border border-red-200 flex items-center justify-center"
-                              >
-                                <Trash2
-                                  size={
-                                    14
-                                  }
-                                />
-                              </button>
-
-                            </div>
-
-                            <div className="space-y-4">
-
-                              <Field
-                                label="Title"
-                                value={
-                                  item.title
-                                }
-                                onChange={(value) =>
-                                  updateWhyItem(
-                                    index,
-                                    "title",
-                                    value
-                                  )
-                                }
-                                placeholder="Trusted Legacy"
-                              />
-
-                              <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                  Description
-                                </label>
-
-                                <RichTextEditor
-                                  value={
-                                    item.description
-                                  }
-                                  onChange={(value) =>
-                                    updateWhyItem(
-                                      index,
-                                      "description",
-                                      value
-                                    )
-                                  }
-                                />
-                              </div>
-
-                            </div>
-                          </div>
-                        )
-                      )}
-
-                  </div>
-
+                          <RichField
+                            label="Description"
+                            value={
+                              item.description
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateWhyItem(
+                                index,
+                                "description",
+                                value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
+              )}
+            </div>
+          </EditorSection>
 
-              </div>
-            </EditorSection>
 
+          {/* ==================================================
+              PRESENCE
+          ================================================== */}
 
-            {/* ==================================================
-                PRESENCE
-                ================================================== */}
+          <EditorSection
+            icon={
+              <MapPin size={18} />
+            }
+            title="Market Presence"
+            description="Editorial section describing the developer's geographic or market footprint."
+            open={
+              openSections.presence
+            }
+            onToggle={() =>
+              toggleSection(
+                "presence"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show Market Presence"
+                description="Enable or hide this section."
+                enabled={
+                  pageContent
+                    .presence
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "presence",
+                    "enabled",
+                    value
+                  )
+                }
+              />
 
-            <EditorSection
-              icon={
-                <MapPin
-                  size={18}
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent
+                      .presence
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "presence",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="DEVELOPER PRESENCE"
                 />
-              }
-              title="Developer Presence"
-              description="Describe the locations and markets where the developer operates."
-              open={
-                openSections
-                  .presence
-              }
-              onToggle={() =>
-                toggleSection(
-                  "presence"
-                )
-              }
-            >
 
-              <div className="space-y-5">
+                <Field
+                  label="Title"
+                  value={
+                    pageContent
+                      .presence
+                      .title
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "presence",
+                      "title",
+                      value
+                    )
+                  }
+                  placeholder="A growing presence across India's key markets"
+                />
+              </div>
 
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <RichField
+                label="Market Presence Description"
+                value={
+                  pageContent
+                    .presence
+                    .description
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "presence",
+                    "description",
+                    value
+                  )
+                }
+              />
+            </div>
+          </EditorSection>
 
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show Presence Section
-                    </p>
-                  </div>
 
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .presence
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "presence",
-                        "enabled",
-                        value
-                      )
-                    }
-                  />
+          {/* ==================================================
+              FAQ
+          ================================================== */}
 
-                </div>
+          <EditorSection
+            icon={
+              <HelpCircle size={18} />
+            }
+            title="Frequently Asked Questions"
+            description="Create developer-specific FAQ questions with rich-text answers."
+            open={
+              openSections.faq
+            }
+            onToggle={() =>
+              toggleSection(
+                "faq"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <EnableRow
+                title="Show FAQ Section"
+                description="Enable or hide the FAQ section."
+                enabled={
+                  pageContent.faq
+                    .enabled
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "faq",
+                    "enabled",
+                    value
+                  )
+                }
+              />
 
-                <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Eyebrow"
+                  value={
+                    pageContent.faq
+                      .eyebrow
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "faq",
+                      "eyebrow",
+                      value
+                    )
+                  }
+                  placeholder="FREQUENTLY ASKED QUESTIONS"
+                />
 
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent
-                        .presence
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "presence",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                  />
+                <Field
+                  label="Title"
+                  value={
+                    pageContent.faq
+                      .title
+                  }
+                  onChange={(value) =>
+                    updatePage(
+                      "faq",
+                      "title",
+                      value
+                    )
+                  }
+                  placeholder="Frequently Asked Questions"
+                />
+              </div>
 
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent
-                        .presence
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "presence",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="A growing presence across India"
-                  />
-
-                </div>
-
+              <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Presence Description
-                  </label>
+                  <h3 className="text-sm font-bold text-[#17342d]">
+                    FAQ Items
+                  </h3>
 
-                  <RichTextEditor
-                    value={
-                      pageContent
-                        .presence
-                        .description
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "presence",
-                        "description",
-                        value
-                      )
-                    }
-                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Answers support rich text.
+                  </p>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={addFaq}
+                  className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    rounded-xl
+                    bg-[#0f3b2e]
+                    px-3.5
+                    py-2
+                    text-xs
+                    font-bold
+                    text-white
+                    transition
+                    hover:bg-[#17342d]
+                  "
+                >
+                  <Plus size={14} />
+
+                  Add FAQ
+                </button>
               </div>
-            </EditorSection>
+
+              {pageContent.faq
+                ?.items?.length ===
+              0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-8 text-center">
+                  <HelpCircle
+                    size={22}
+                    className="mx-auto text-gray-400"
+                  />
+
+                  <p className="mt-2 text-sm font-semibold text-gray-600">
+                    No FAQ items added
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pageContent.faq.items.map(
+                    (item, index) => (
+                      <div
+                        key={`faq-${index}`}
+                        className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                      >
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A68142]">
+                            FAQ {index + 1}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeFaq(
+                                index
+                              )
+                            }
+                            className="
+                              flex
+                              h-8
+                              w-8
+                              items-center
+                              justify-center
+                              rounded-lg
+                              border
+                              border-red-200
+                              bg-red-50
+                              text-red-600
+                              hover:bg-red-100
+                            "
+                            title="Remove FAQ"
+                          >
+                            <Trash2
+                              size={14}
+                            />
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          <Field
+                            label="Question"
+                            value={
+                              item.question
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateFaq(
+                                index,
+                                "question",
+                                value
+                              )
+                            }
+                            placeholder="What projects has this developer delivered?"
+                          />
+
+                          <RichField
+                            label="Answer"
+                            value={
+                              item.answer
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateFaq(
+                                index,
+                                "answer",
+                                value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          </EditorSection>
 
 
-            {/* ==================================================
-                FAQ
-                ================================================== */}
+          {/* ==================================================
+              SEO
+          ================================================== */}
 
-            <EditorSection
-              icon={
-                <HelpCircle
-                  size={18}
-                />
-              }
-              title="Frequently Asked Questions"
-              description="Create developer-specific FAQs with rich-text answers."
-              open={
-                openSections.faq
-              }
-              onToggle={() =>
-                toggleSection(
-                  "faq"
-                )
-              }
-            >
-
-              <div className="space-y-5">
-
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <EditorSection
+            icon={
+              <Globe size={18} />
+            }
+            title="SEO & Social Metadata"
+            description="Control the developer page's search engine and social metadata."
+            open={
+              openSections.seo
+            }
+            onToggle={() =>
+              toggleSection(
+                "seo"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <div className="rounded-xl border border-[#C89D58]/20 bg-[#C89D58]/5 p-4">
+                <div className="flex gap-3">
+                  <Search
+                    size={17}
+                    className="mt-0.5 shrink-0 text-[#A68142]"
+                  />
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Show FAQ Section
+                    <p className="text-sm font-semibold text-[#17342d]">
+                      Custom SEO overrides
+                    </p>
+
+                    <p className="mt-1 text-xs leading-relaxed text-gray-600">
+                      Leave fields empty to allow
+                      the automatic developer SEO
+                      fallback to be used.
                     </p>
                   </div>
-
-                  <EnableToggle
-                    enabled={
-                      pageContent
-                        .faq
-                        .enabled
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "faq",
-                        "enabled",
-                        value
-                      )
-                    }
-                  />
-
                 </div>
-
-                <div className="grid md:grid-cols-2 gap-5">
-
-                  <Field
-                    label="Eyebrow"
-                    value={
-                      pageContent
-                        .faq
-                        .eyebrow
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "faq",
-                        "eyebrow",
-                        value
-                      )
-                    }
-                  />
-
-                  <Field
-                    label="Title"
-                    value={
-                      pageContent
-                        .faq
-                        .title
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "faq",
-                        "title",
-                        value
-                      )
-                    }
-                    placeholder="Frequently Asked Questions"
-                  />
-
-                </div>
-
-                <div className="border-t border-gray-200 pt-5">
-
-                  <div className="flex items-center justify-between mb-4">
-
-                    <div>
-                      <h3 className="text-sm font-bold text-[#17342d]">
-                        Questions
-                      </h3>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={addFaq}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0f3b2e] text-white text-xs font-semibold"
-                    >
-                      <Plus
-                        size={14}
-                      />
-                      Add FAQ
-                    </button>
-
-                  </div>
-
-                  <div className="space-y-4">
-
-                    {pageContent.faq
-                      .items
-                      .map(
-                        (
-                          item,
-                          index
-                        ) => (
-                          <div
-                            key={index}
-                            className="rounded-xl border border-gray-200 bg-gray-50 p-4"
-                          >
-
-                            <div className="flex items-center justify-between mb-4">
-
-                              <p className="text-sm font-bold text-[#17342d]">
-                                FAQ{" "}
-                                {index +
-                                  1}
-                              </p>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeFaq(
-                                    index
-                                  )
-                                }
-                                className="h-8 w-8 rounded-lg bg-red-50 text-red-600 border border-red-200 flex items-center justify-center"
-                              >
-                                <Trash2
-                                  size={
-                                    14
-                                  }
-                                />
-                              </button>
-
-                            </div>
-
-                            <div className="space-y-4">
-
-                              <Field
-                                label="Question"
-                                value={
-                                  item.question
-                                }
-                                onChange={(value) =>
-                                  updateFaq(
-                                    index,
-                                    "question",
-                                    value
-                                  )
-                                }
-                                placeholder="What projects does this developer offer?"
-                              />
-
-                              <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                  Answer
-                                </label>
-
-                                <RichTextEditor
-                                  value={
-                                    item.answer
-                                  }
-                                  onChange={(value) =>
-                                    updateFaq(
-                                      index,
-                                      "answer",
-                                      value
-                                    )
-                                  }
-                                />
-                              </div>
-
-                            </div>
-
-                          </div>
-                        )
-                      )}
-
-                  </div>
-
-                </div>
-
               </div>
-            </EditorSection>
 
+              <Field
+                label="Meta Title"
+                value={
+                  pageContent.seo
+                    .metaTitle
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "seo",
+                    "metaTitle",
+                    value
+                  )
+                }
+                placeholder="M3M: All Projects | Residential & Commercial"
+                hint={`${(
+                  pageContent.seo
+                    .metaTitle || ""
+                ).length} characters`}
+              />
 
-            {/* ==================================================
-                SEO
-                ================================================== */}
+              <Field
+                label="Meta Description"
+                value={
+                  pageContent.seo
+                    .metaDescription
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "seo",
+                    "metaDescription",
+                    value
+                  )
+                }
+                placeholder="Discover projects, developments and property opportunities..."
+                rows={4}
+                hint={`${(
+                  pageContent.seo
+                    .metaDescription ||
+                  ""
+                ).length} characters`}
+              />
 
-            <EditorSection
-              icon={
-                <Search
-                  size={18}
-                />
-              }
-              title="SEO"
-              description="Optional manual SEO values. Automatic SEO remains the fallback."
-              open={
-                openSections.seo
-              }
-              onToggle={() =>
-                toggleSection(
-                  "seo"
-                )
-              }
-            >
+              <Field
+                label="Keywords"
+                value={
+                  pageContent.seo
+                    .keywords
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "seo",
+                    "keywords",
+                    value
+                  )
+                }
+                placeholder="developer projects, luxury real estate, Gurgaon properties"
+              />
 
-              <div className="space-y-5">
+              <Field
+                label="Canonical URL"
+                value={
+                  pageContent.seo
+                    .canonical
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "seo",
+                    "canonical",
+                    value
+                  )
+                }
+                placeholder="https://propertybouquet.com/developers/..."
+              />
 
+              <div className="grid gap-5 md:grid-cols-2">
                 <Field
-                  label="Meta Title"
+                  label="Open Graph Title"
                   value={
                     pageContent.seo
-                      .metaTitle
+                      .ogTitle
                   }
                   onChange={(value) =>
                     updatePage(
                       "seo",
-                      "metaTitle",
+                      "ogTitle",
                       value
                     )
                   }
-                  placeholder="Developer Name: All Projects | Property Bouquet"
-                  hint="Leave empty to use automatic SEO."
+                  placeholder="Developer Projects | Property Bouquet"
                 />
 
                 <Field
-                  label="Meta Description"
+                  label="Open Graph Description"
                   value={
                     pageContent.seo
-                      .metaDescription
+                      .ogDescription
                   }
                   onChange={(value) =>
                     updatePage(
                       "seo",
-                      "metaDescription",
+                      "ogDescription",
                       value
                     )
                   }
-                  placeholder="Explore premium projects by..."
-                  rows={4}
-                  hint="Leave empty to use automatic SEO."
+                  rows={3}
+                  placeholder="Discover premium developer projects..."
                 />
+              </div>
 
-                <Field
-                  label="Keywords"
-                  value={
-                    pageContent.seo
-                      .keywords
-                  }
-                  onChange={(value) =>
-                    updatePage(
-                      "seo",
-                      "keywords",
-                      value
-                    )
-                  }
-                  placeholder="developer projects, luxury properties, ..."
-                />
+              <ImageUpload
+                label="Open Graph Image"
+                value={
+                  pageContent.seo
+                    .ogImage
+                }
+                onChange={(value) =>
+                  updatePage(
+                    "seo",
+                    "ogImage",
+                    value
+                  )
+                }
+                uploading={
+                  uploading
+                }
+                setUploading={
+                  setUploading
+                }
+              />
+            </div>
+          </EditorSection>
 
-                <Field
-                  label="Canonical URL"
-                  value={
-                    pageContent.seo
-                      .canonical
-                  }
-                  onChange={(value) =>
-                    updatePage(
-                      "seo",
-                      "canonical",
-                      value
-                    )
-                  }
-                  placeholder="https://propertybouquet.com/developers/..."
-                />
 
-                <div className="grid md:grid-cols-2 gap-5">
+          {/* ==================================================
+              CUSTOM SECTIONS
+          ================================================== */}
 
-                  <Field
-                    label="Open Graph Title"
-                    value={
-                      pageContent.seo
-                        .ogTitle
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "seo",
-                        "ogTitle",
-                        value
-                      )
-                    }
-                  />
+          <EditorSection
+            icon={
+              <Layers3 size={18} />
+            }
+            title="Custom Sections"
+            description="Build additional rich editorial sections without changing the database structure."
+            open={
+              openSections.custom
+            }
+            onToggle={() =>
+              toggleSection(
+                "custom"
+              )
+            }
+          >
+            <div className="space-y-5">
+              <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-[#17342d]">
+                    Flexible Content Blocks
+                  </h3>
 
-                  <Field
-                    label="Open Graph Description"
-                    value={
-                      pageContent.seo
-                        .ogDescription
-                    }
-                    onChange={(value) =>
-                      updatePage(
-                        "seo",
-                        "ogDescription",
-                        value
-                      )
-                    }
-                    rows={4}
-                  />
-
+                  <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                    Add additional editorial sections
+                    such as legacy, philosophy,
+                    sustainability, awards or
+                    investment outlook.
+                  </p>
                 </div>
 
-                <ImageUpload
-                  label="Open Graph Image"
-                  value={
-                    pageContent.seo
-                      .ogImage
+                <button
+                  type="button"
+                  onClick={
+                    addCustomSection
                   }
-                  onChange={(value) =>
-                    updatePage(
-                      "seo",
-                      "ogImage",
-                      value
-                    )
-                  }
-                  uploading={
-                    uploading
-                  }
-                  setUploading={
-                    setUploading
-                  }
-                />
+                  className="
+                    inline-flex
+                    shrink-0
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-xl
+                    bg-[#0f3b2e]
+                    px-4
+                    py-2.5
+                    text-xs
+                    font-bold
+                    text-white
+                    transition
+                    hover:bg-[#17342d]
+                  "
+                >
+                  <Plus size={14} />
 
+                  Add Section
+                </button>
               </div>
-            </EditorSection>
 
+              {pageContent
+                .customSections
+                ?.length ===
+              0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center">
+                  <Layers3
+                    size={24}
+                    className="mx-auto text-gray-400"
+                  />
 
-            {/* ==================================================
-                CUSTOM SECTIONS
-                ================================================== */}
+                  <p className="mt-2 text-sm font-semibold text-gray-600">
+                    No custom sections
+                  </p>
 
-            <EditorSection
-              icon={
-                <Layers3
-                  size={18}
-                />
-              }
-              title="Custom Sections"
-              description="Add additional rich-text sections without changing the developer schema again."
-              open={
-                openSections.custom
-              }
-              onToggle={() =>
-                toggleSection(
-                  "custom"
-                )
-              }
-            >
-
-              <div className="space-y-5">
-
-                {pageContent
-                  .customSections
-                  .map(
+                  <p className="mt-1 text-xs text-gray-400">
+                    Add a section whenever you need
+                    content beyond the standard
+                    developer page structure.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {pageContent.customSections.map(
                     (
                       section,
                       index
@@ -2424,77 +2801,101 @@ export default function DeveloperEditPage() {
                       <div
                         key={
                           section.id ||
-                          index
+                          `custom-${index}`
                         }
-                        className="border border-gray-200 rounded-2xl bg-gray-50 p-5"
+                        className="
+                          rounded-2xl
+                          border
+                          border-gray-200
+                          bg-white
+                          p-5
+                          shadow-sm
+                        "
                       >
-
-                        <div className="flex items-center justify-between mb-5">
-
-                          <div>
-                            <p className="text-sm font-bold text-[#17342d]">
-                              Custom Section{" "}
-                              {index +
-                                1}
-                            </p>
-
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Additional developer page content.
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-
-                            <EnableToggle
-                              enabled={
-                                section.enabled
-                              }
-                              onChange={(value) =>
-                                updateCustomSection(
-                                  index,
-                                  "enabled",
-                                  value
-                                )
-                              }
-                            />
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeCustomSection(
-                                  index
-                                )
-                              }
-                              className="h-8 w-8 rounded-lg bg-red-50 text-red-600 border border-red-200 flex items-center justify-center"
-                            >
-                              <Trash2
-                                size={
-                                  14
-                                }
+                        <div className="mb-5 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e]">
+                              <Layers3
+                                size={17}
                               />
-                            </button>
+                            </div>
 
+                            <div>
+                              <p className="text-sm font-bold text-[#17342d]">
+                                Custom Section{" "}
+                                {index + 1}
+                              </p>
+
+                              <p className="text-[11px] text-gray-500">
+                                {section.id}
+                              </p>
+                            </div>
                           </div>
 
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeCustomSection(
+                                index
+                              )
+                            }
+                            className="
+                              flex
+                              h-9
+                              w-9
+                              items-center
+                              justify-center
+                              rounded-xl
+                              border
+                              border-red-200
+                              bg-red-50
+                              text-red-600
+                              transition
+                              hover:bg-red-100
+                            "
+                            title="Delete custom section"
+                          >
+                            <Trash2
+                              size={15}
+                            />
+                          </button>
                         </div>
 
                         <div className="space-y-5">
+                          <EnableRow
+                            title="Show Section"
+                            description="Disable it temporarily without deleting its content."
+                            enabled={
+                              section.enabled !==
+                              false
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateCustomSection(
+                                index,
+                                "enabled",
+                                value
+                              )
+                            }
+                          />
 
-                          <div className="grid md:grid-cols-2 gap-5">
-
+                          <div className="grid gap-5 md:grid-cols-2">
                             <Field
                               label="Eyebrow"
                               value={
                                 section.eyebrow
                               }
-                              onChange={(value) =>
+                              onChange={(
+                                value
+                              ) =>
                                 updateCustomSection(
                                   index,
                                   "eyebrow",
                                   value
                                 )
                               }
-                              placeholder="INSIGHTS"
+                              placeholder="OUR LEGACY"
                             />
 
                             <Field
@@ -2502,16 +2903,17 @@ export default function DeveloperEditPage() {
                               value={
                                 section.title
                               }
-                              onChange={(value) =>
+                              onChange={(
+                                value
+                              ) =>
                                 updateCustomSection(
                                   index,
                                   "title",
                                   value
                                 )
                               }
-                              placeholder="A distinctive legacy"
+                              placeholder="Building landmarks for generations"
                             />
-
                           </div>
 
                           <Field
@@ -2519,41 +2921,42 @@ export default function DeveloperEditPage() {
                             value={
                               section.subtitle
                             }
-                            onChange={(value) =>
+                            onChange={(
+                              value
+                            ) =>
                               updateCustomSection(
                                 index,
                                 "subtitle",
                                 value
                               )
                             }
-                            placeholder="Optional supporting subtitle"
+                            placeholder="Optional supporting statement"
                           />
 
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                              Content
-                            </label>
-
-                            <RichTextEditor
-                              value={
-                                section.content
-                              }
-                              onChange={(value) =>
-                                updateCustomSection(
-                                  index,
-                                  "content",
-                                  value
-                                )
-                              }
-                            />
-                          </div>
+                          <RichField
+                            label="Content"
+                            value={
+                              section.content
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              updateCustomSection(
+                                index,
+                                "content",
+                                value
+                              )
+                            }
+                          />
 
                           <ImageUpload
                             label="Section Image"
                             value={
                               section.image
                             }
-                            onChange={(value) =>
+                            onChange={(
+                              value
+                            ) =>
                               updateCustomSection(
                                 index,
                                 "image",
@@ -2568,224 +2971,130 @@ export default function DeveloperEditPage() {
                             }
                           />
 
-                          <div className="grid md:grid-cols-2 gap-5">
+                          <div>
+                            <label className="mb-2 block text-sm font-semibold text-gray-800">
+                              Image Position
+                            </label>
 
-                            <Field
-                              label="Section Type"
+                            <select
                               value={
-                                section.type
+                                section.imagePosition ||
+                                "right"
                               }
-                              onChange={(value) =>
+                              onChange={(
+                                event
+                              ) =>
                                 updateCustomSection(
                                   index,
-                                  "type",
-                                  value
+                                  "imagePosition",
+                                  event
+                                    .target
+                                    .value
                                 )
                               }
-                              placeholder="content"
-                            />
+                              className="
+                                w-full
+                                rounded-xl
+                                border
+                                border-gray-300
+                                bg-white
+                                px-4
+                                py-2.5
+                                text-sm
+                                text-gray-800
+                                outline-none
+                                focus:border-[#0f3b2e]
+                                focus:ring-2
+                                focus:ring-[#0f3b2e]/10
+                              "
+                            >
+                              <option value="left">
+                                Image Left
+                              </option>
 
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                Image Position
-                              </label>
+                              <option value="right">
+                                Image Right
+                              </option>
 
-                              <select
-                                value={
-                                  section.imagePosition ||
-                                  "right"
-                                }
-                                onChange={(e) =>
-                                  updateCustomSection(
-                                    index,
-                                    "imagePosition",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full border border-gray-300 bg-white text-sm text-gray-800 rounded-xl px-4 py-2.5 outline-none focus:border-[#0f3b2e] focus:ring-2 focus:ring-[#0f3b2e]/10"
-                              >
-                                <option value="left">
-                                  Left
-                                </option>
+                              <option value="top">
+                                Image Top
+                              </option>
 
-                                <option value="right">
-                                  Right
-                                </option>
-
-                                <option value="top">
-                                  Top
-                                </option>
-
-                                <option value="bottom">
-                                  Bottom
-                                </option>
-                              </select>
-                            </div>
-
+                              <option value="bottom">
+                                Image Bottom
+                              </option>
+                            </select>
                           </div>
-
                         </div>
                       </div>
                     )
                   )}
-
-                <button
-                  type="button"
-                  onClick={
-                    addCustomSection
-                  }
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f3b2e] text-white text-sm font-semibold hover:bg-[#145240] transition"
-                >
-                  <Plus size={15} />
-                  Add Custom Section
-                </button>
-
-              </div>
-            </EditorSection>
-
-          </div>
-
-
-          {/* ==================================================
-              SIDEBAR
-              ================================================== */}
-
-          <aside className="space-y-4 xl:sticky xl:top-[90px] xl:self-start">
-
-            {/* STATUS CARD */}
-
-            <div className="bg-[#17342d] rounded-2xl p-5 text-white shadow-sm">
-
-              <div className="flex items-center gap-2 mb-4">
-                <Globe
-                  size={17}
-                />
-
-                <h3 className="font-bold">
-                  Public Page
-                </h3>
-              </div>
-
-              <p className="text-xs text-white/70 leading-5">
-                Your CMS content will appear on the public developer page after saving.
-              </p>
-
-              <Link
-                href={`/developers/${
-                  developer.publicSlug ||
-                  developer.slug
-                }`}
-                target="_blank"
-                className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-[#D4AF37] hover:text-white transition"
-              >
-                Open Public Page
-                <Eye size={13} />
-              </Link>
-
-            </div>
-
-
-            {/* DEVELOPER INFO */}
-
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-
-              <h3 className="font-bold text-[#17342d] text-sm mb-4">
-                Developer Details
-              </h3>
-
-              <div className="space-y-3 text-xs">
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">
-                    Name
-                  </span>
-
-                  <span className="font-semibold text-gray-800 text-right">
-                    {developer.name}
-                  </span>
                 </div>
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">
-                    Backend Slug
-                  </span>
-
-                  <span className="font-semibold text-gray-800 text-right break-all">
-                    {developer.slug}
-                  </span>
-                </div>
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">
-                    Public Slug
-                  </span>
-
-                  <span className="font-semibold text-gray-800 text-right break-all">
-                    {developer.publicSlug ||
-                      developer.slug}
-                  </span>
-                </div>
-
-              </div>
-
+              )}
             </div>
-
-
-            {/* SAVE REMINDER */}
-
-            <div className="bg-[#f7f3ee] border border-[#e5d7bf] rounded-2xl p-5">
-
-              <div className="flex items-center gap-2 text-[#8F7335] mb-2">
-                <Save
-                  size={16}
-                />
-
-                <h3 className="text-sm font-bold">
-                  Remember to save
-                </h3>
-              </div>
-
-              <p className="text-xs text-[#6d6250] leading-5">
-                Changes are kept in this editor until you click Save Changes.
-              </p>
-
-            </div>
-
-          </aside>
-
+          </EditorSection>
         </div>
 
+
+        {/* ====================================================
+            BOTTOM SAVE BAR
+        ==================================================== */}
+
+        <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e]">
+              <Save size={16} />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold text-[#17342d]">
+                Ready to publish your changes?
+              </p>
+
+              <p className="text-xs text-gray-500">
+                Save the developer page after
+                editing any section.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={saveDeveloper}
+            disabled={saving}
+            className="
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              bg-[#0f3b2e]
+              px-5
+              py-2.5
+              text-sm
+              font-bold
+              text-white
+              transition
+              hover:bg-[#17342d]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
+          >
+            {saving ? (
+              <Loader2
+                size={16}
+                className="animate-spin"
+              />
+            ) : (
+              <Save size={16} />
+            )}
+
+            {saving
+              ? "Saving..."
+              : "Save Developer Page"}
+          </button>
+        </div>
       </main>
-
-
-      {/* ======================================================
-          MOBILE SAVE BAR
-          ====================================================== */}
-
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 p-3">
-
-        <button
-          type="button"
-          onClick={saveDeveloper}
-          disabled={saving}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#0f3b2e] text-white text-sm font-bold shadow-lg disabled:opacity-60"
-        >
-          {saving ? (
-            <Loader2
-              size={16}
-              className="animate-spin"
-            />
-          ) : (
-            <Save size={16} />
-          )}
-
-          {saving
-            ? "Saving..."
-            : "Save Developer Page"}
-        </button>
-
-      </div>
-
     </div>
   );
 }

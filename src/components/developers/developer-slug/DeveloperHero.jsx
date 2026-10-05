@@ -29,9 +29,44 @@ function optimizeImageUrl(src, width) {
 export default function DeveloperHero({
   developer,
   properties = [],
+  pageContent = {},
 }) {
+  if (!developer) {
+    return null;
+  }
+
+  /* ==================================================
+      CMS + EXISTING FALLBACK VALUES
+  ================================================== */
+
+  const hero = pageContent?.hero || {};
+
+  const heroEyebrow =
+    typeof hero.eyebrow === "string" && hero.eyebrow.trim()
+      ? hero.eyebrow.trim()
+      : "Luxury Developer Collection";
+
+  const heroTitle =
+    typeof hero.title === "string" && hero.title.trim()
+      ? hero.title.trim()
+      : developer?.name || "Premium Real Estate Developer";
+
+  const heroDescription =
+    typeof hero.description === "string" && hero.description.trim()
+      ? hero.description.trim()
+      : `Explore iconic luxury residences, landmark developments, and investment opportunities by ${developer.name}, one of India's trusted names in premium real estate.`;
+
+  const heroImage =
+    typeof hero.image === "string" && hero.image.trim()
+      ? hero.image.trim()
+      : developer?.image || "";
+
+  /* ==================================================
+      EXISTING IMAGE OPTIMIZATION
+  ================================================== */
+
   const optimizedDeveloperImage = optimizeImageUrl(
-    developer?.image,
+    heroImage,
     HERO_IMAGE_WIDTH
   );
 
@@ -39,10 +74,6 @@ export default function DeveloperHero({
     developer?.logo,
     LOGO_IMAGE_WIDTH
   );
-
-  if (!developer) {
-    return null;
-  }
 
   return (
     <section
@@ -214,12 +245,14 @@ export default function DeveloperHero({
                 text-[#F3E5AB]
               "
             >
-              Luxury Developer Collection
+              {heroEyebrow}
             </span>
           </div>
 
           {/* ==================================================
               LOGO
+              Logo intentionally remains the existing developer
+              logo because the CMS hero image is separate.
           ================================================== */}
 
           <div className="mt-10">
@@ -285,7 +318,7 @@ export default function DeveloperHero({
               md:text-7xl
             "
           >
-            {developer.name}
+            {heroTitle}
           </h1>
 
           <div
@@ -314,18 +347,12 @@ export default function DeveloperHero({
               text-white/75
             "
           >
-            Explore iconic luxury residences,
-            landmark developments, and
-            investment opportunities by{" "}
-            <span className="font-semibold text-[#F3D98A]">
-              {developer.name}
-            </span>
-            , one of India's trusted names
-            in premium real estate.
+            {heroDescription}
           </p>
 
           {/* ==================================================
               STATS
+              Existing behavior preserved.
           ================================================== */}
 
           <div
