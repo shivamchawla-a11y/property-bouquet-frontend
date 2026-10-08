@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +10,9 @@ import {
   X,
   ChevronDown,
   Phone,
+  Search,
+  ArrowRight,
+  MapPin,
 } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,26 +89,6 @@ const navItems = [
 
 // =========================================================
 // PUBLIC DEVELOPER URL
-//
-// Examples:
-//
-// m3m
-// → /developers/m3m-developer-projects
-//
-// signature-global
-// → /developers/signature-global-developer-projects
-//
-// spiti-developer
-// → /developers/spiti-developer-projects
-//
-// spiti-developers
-// → /developers/spiti-developers-projects
-//
-// spiti-developer-projects
-// → unchanged
-//
-// spiti-developers-projects
-// → unchanged
 // =========================================================
 
 const getDeveloperProjectUrl = (slug) => {
@@ -145,12 +129,6 @@ const getDeveloperProjectUrl = (slug) => {
 
 // =========================================================
 // LOCATION PREPOSITION
-//
-// Roads / Expressways / Highways etc.
-// → "on"
-//
-// Sectors / Cities / Localities etc.
-// → "in"
 // =========================================================
 
 const getLocationPreposition = (location) => {
@@ -197,26 +175,6 @@ const slugifyLocation = (value) => {
 
 // =========================================================
 // FIND LOCATION + MOST-PARENT LOCATION
-//
-// IMPORTANT:
-//
-// The /api/locations/tree endpoint already contains
-// the hierarchy through "children".
-//
-// Example:
-//
-// Gurgaon
-//   └── Farukhnagar
-//
-// When Farukhnagar is found:
-//
-// {
-//   location: Farukhnagar,
-//   root: Gurgaon
-// }
-//
-// This is more reliable than trying to use
-// location.parent on the frontend.
 // =========================================================
 
 const findLocationInTree = (
@@ -233,8 +191,6 @@ const findLocationInTree = (
     .toLowerCase();
 
   for (const location of tree) {
-    // The first location at the current hierarchy level
-    // becomes the most-parent/root location.
     const currentRoot = root || location;
 
     const currentName = String(
@@ -243,7 +199,6 @@ const findLocationInTree = (
       .trim()
       .toLowerCase();
 
-    // Found requested location
     if (currentName === target) {
       return {
         location,
@@ -251,7 +206,6 @@ const findLocationInTree = (
       };
     }
 
-    // Search children recursively
     const found = findLocationInTree(
       location?.children || [],
       locationName,
@@ -268,29 +222,6 @@ const findLocationInTree = (
 
 // =========================================================
 // PUBLIC LOCATION SEO URL
-//
-// CURRENT LOCATION + MOST-PARENT LOCATION ONLY
-//
-// Examples:
-//
-// Gurgaon
-// → /locations/properties-in-gurgaon
-//
-// Farukhnagar
-// → /locations/properties-in-farukhnagar-gurgaon
-//
-// Sector 56
-// → /locations/properties-in-sector-56-gurgaon
-//
-// Golf Course Road
-// → /locations/properties-on-golf-course-road-gurgaon
-//
-// Dwarka Expressway
-// → /locations/properties-on-dwarka-expressway-gurgaon
-//
-// IMPORTANT:
-//
-// Intermediate parents are NOT included.
 // =========================================================
 
 const getPublicLocationUrl = (
@@ -320,27 +251,12 @@ const getPublicLocationUrl = (
   const preposition =
     getLocationPreposition(location);
 
-  // -------------------------------------------------------
-  // Child location
-  //
-  // Current + most-parent
-  //
-  // Farukhnagar + Gurgaon
-  // -------------------------------------------------------
-
   if (
     rootSlug &&
     rootSlug !== currentSlug
   ) {
     return `/locations/properties-${preposition}-${currentSlug}-${rootSlug}`;
   }
-
-  // -------------------------------------------------------
-  // Root location
-  //
-  // Gurgaon
-  // → /locations/properties-in-gurgaon
-  // -------------------------------------------------------
 
   return `/locations/properties-${preposition}-${currentSlug}`;
 };
@@ -390,6 +306,16 @@ export default function Navbar({
   const [developerSearch, setDeveloperSearch] =
     useState("");
 
+  const [mounted, setMounted] = useState(false);
+
+  // =========================================================
+  // MOUNT
+  // =========================================================
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // =========================================================
   // SCROLL
   // =========================================================
@@ -419,190 +345,384 @@ export default function Navbar({
   // =========================================================
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    const fetchNavbarData = async () => {
       try {
-        const res = await fetch(
-          "/api/properties"
-        );
+        const [
+          propertiesResponse,
+          developersResponse,
+          locationResponse,
+        ] = await Promise.all([
+          fetch("/api/properties"),
+          
+          // IMPORTANT:
+          // Developers come directly from the developer API.
+          // They are NOT derived from /api/properties.
+          fetch("/api/developers?limit=10000"),
 
-        const data = await res.json();
+          fetch("/api/locations/tree"),
+        ]);
 
-        if (!res.ok) {
+        // =====================================================
+        // PARSE PROPERTIES
+        // =====================================================
+
+        let propertyDataResponse = {};
+
+        try {
+          propertyDataResponse =
+            await propertiesResponse.json();
+        } catch {
+          propertyDataResponse = {};
+        }
+
+        // =====================================================
+        // PARSE DEVELOPERS
+        // =====================================================
+
+        let developerDataResponse = {};
+
+        try {
+          developerDataResponse =
+            await developersResponse.json();
+        } catch {
+          developerDataResponse = {};
+        }
+
+        // =====================================================
+        // PARSE LOCATIONS
+        // =====================================================
+
+        let locationDataResponse = {};
+
+        try {
+          locationDataResponse =
+            await locationResponse.json();
+        } catch {
+          locationDataResponse = {};
+        }
+
+        // =====================================================
+        // PROPERTIES
+        // =====================================================
+
+        if (!propertiesResponse.ok) {
           throw new Error(
-            `Failed to fetch properties: ${res.status}`
+            `Failed to fetch properties: ${propertiesResponse.status}`
           );
         }
 
-        const propertyData =
-          data?.data || [];
+        const propertyData = Array.isArray(
+          propertyDataResponse?.data
+        )
+          ? propertyDataResponse.data
+          : Array.isArray(
+              propertyDataResponse
+            )
+          ? propertyDataResponse
+          : [];
 
         setProperties(propertyData);
 
         // =====================================================
-        // LOCATION TREE
+        // LOCATIONS
         // =====================================================
 
-        try {
-          const locationRes =
-            await fetch(
-              "/api/locations/tree"
-            );
+        if (locationResponse.ok) {
+          const tree = Array.isArray(
+            locationDataResponse?.data
+          )
+            ? locationDataResponse.data
+            : Array.isArray(
+                locationDataResponse
+              )
+            ? locationDataResponse
+            : [];
 
-          const locationData =
-            await locationRes.json();
-
-          if (locationRes.ok) {
-            setLocationTree(
-              locationData?.data || []
-            );
-          }
-        } catch (locationError) {
-          console.error(
-            "Navbar location tree error:",
-            locationError
-          );
+          setLocationTree(tree);
         }
 
         // =====================================================
-        // LOCATIONS
-        //
-        // Existing location names are preserved.
-        // This does NOT change location search/filter logic.
+        // UNIQUE LOCATIONS
         // =====================================================
 
         const uniqueLocations = [
           ...new Set(
-            propertyData.flatMap(
-              (property) => {
-                const location =
-                  property
-                    ?.locationData
-                    ?.locationName;
+            propertyData.flatMap((property) => {
+              const location =
+                property?.locationData
+                  ?.locationName;
 
-                if (!location) {
-                  return [];
-                }
-
-                return location
-                  .split(">")
-                  .map((item) =>
-                    item.trim()
-                  )
-                  .filter(Boolean);
+              if (!location) {
+                return [];
               }
-            )
+
+              return String(location)
+                .split(">")
+                .map((item) =>
+                  item.trim()
+                )
+                .filter(Boolean);
+            })
           ),
         ].sort();
 
-        setLocations(
-          uniqueLocations
-        );
+        setLocations(uniqueLocations);
+
+        // =====================================================
+        // PROPERTY DEVELOPER COUNTS
+        //
+        // IMPORTANT:
+        //
+        // These counts are ONLY used for displaying
+        // how many properties belong to a developer.
+        //
+        // They DO NOT decide which developers appear
+        // in the developer directory.
+        // =====================================================
+
+        const developerCountsById =
+          new Map();
+
+        const developerCountsByName =
+          new Map();
+
+        propertyData.forEach((property) => {
+          const developerName =
+            property?.coreDetails
+              ?.developerName?.trim();
+
+          const developerRef =
+            property?.coreDetails
+              ?.developerRef;
+
+          const developerId =
+            developerRef?._id ||
+            developerRef?.id ||
+            (typeof developerRef ===
+            "string"
+              ? developerRef
+              : null);
+
+          // Count by ID
+          if (developerId) {
+            const idKey =
+              String(developerId);
+
+            developerCountsById.set(
+              idKey,
+              (developerCountsById.get(
+                idKey
+              ) || 0) + 1
+            );
+          }
+
+          // Count by name
+          if (developerName) {
+            const nameKey =
+              developerName.toLowerCase();
+
+            developerCountsByName.set(
+              nameKey,
+              (developerCountsByName.get(
+                nameKey
+              ) || 0) + 1
+            );
+          }
+        });
 
         // =====================================================
         // DEVELOPERS
         //
-        // Sorted by:
-        // 1. Property count
-        // 2. Alphabetical tie-break
+        // THIS IS THE IMPORTANT FIX.
+        //
+        // The complete developer directory comes directly
+        // from /api/developers.
+        //
+        // /api/properties is NOT the source of developers.
         // =====================================================
 
-        const developerMap =
-          new Map();
+        if (!developersResponse.ok) {
+          console.error(
+            `Failed to fetch developers: ${developersResponse.status}`
+          );
 
-        propertyData.forEach(
-          (property) => {
-            const developerName =
-              property
-                ?.coreDetails
-                ?.developerName;
+          setDevelopers([]);
+        } else {
+          // ---------------------------------------------------
+          // Your Developers page currently uses:
+          //
+          // response.data
+          //
+          // This code also safely supports:
+          //
+          // response.developers
+          // response.data.data
+          // direct array
+          // ---------------------------------------------------
 
-            if (!developerName) {
-              return;
-            }
+          let rawDevelopers = [];
 
-            const developer =
-              property
-                ?.coreDetails
-                ?.developerRef;
+          if (
+            Array.isArray(
+              developerDataResponse
+            )
+          ) {
+            rawDevelopers =
+              developerDataResponse;
+          } else if (
+            Array.isArray(
+              developerDataResponse?.data
+            )
+          ) {
+            rawDevelopers =
+              developerDataResponse.data;
+          } else if (
+            Array.isArray(
+              developerDataResponse
+                ?.data?.data
+            )
+          ) {
+            rawDevelopers =
+              developerDataResponse
+                .data.data;
+          } else if (
+            Array.isArray(
+              developerDataResponse?.developers
+            )
+          ) {
+            rawDevelopers =
+              developerDataResponse.developers;
+          }
 
-            const existing =
-              developerMap.get(
+          // ---------------------------------------------------
+          // DEDUPLICATE DEVELOPERS
+          //
+          // Prefer ID.
+          // Fall back to slug/name.
+          // ---------------------------------------------------
+
+          const developerMap =
+            new Map();
+
+          rawDevelopers.forEach(
+            (developer) => {
+              if (
+                !developer ||
+                typeof developer.name !==
+                  "string" ||
+                !developer.name.trim()
+              ) {
+                return;
+              }
+
+              const developerName =
+                developer.name.trim();
+
+              const developerId =
+                developer?._id ||
+                developer?.id ||
+                null;
+
+              const slug =
+                developer?.slug ||
+                developer?.publicSlug ||
                 developerName
-              );
+                  .toLowerCase()
+                  .trim()
+                  .replace(
+                    /[^a-z0-9]+/g,
+                    "-"
+                  )
+                  .replace(
+                    /^-+|-+$/g,
+                    "");
 
-            // -------------------------------------------------
-            // Existing developer
-            // -------------------------------------------------
+              const key =
+                developerId
+                  ? `id:${String(
+                      developerId
+                    )}`
+                  : `slug:${String(
+                      slug
+                    ).toLowerCase()}`;
 
-            if (existing) {
-              existing.propertyCount += 1;
-              return;
-            }
+              const countById =
+                developerId
+                  ? developerCountsById.get(
+                      String(
+                        developerId
+                      )
+                    ) || 0
+                  : 0;
 
-            // -------------------------------------------------
-            // Developer slug
-            // -------------------------------------------------
+              const countByName =
+                developerCountsByName.get(
+                  developerName.toLowerCase()
+                ) || 0;
 
-            const developerSlug =
-              developer?.slug ||
-              developerName
-                .toLowerCase()
-                .trim()
-                .replace(
-                  /[^a-z0-9]+/g,
-                  "-"
-                )
-                .replace(
-                  /^-+|-+$/g,
-                  "");
+              const logo =
+                developer?.logo ||
+                developer?.image ||
+                "/placeholder.jpg";
 
-            // -------------------------------------------------
-            // First property for developer
-            // -------------------------------------------------
+              developerMap.set(key, {
+                ...developer,
 
-            developerMap.set(
-              developerName,
-              {
                 name: developerName,
 
-                slug: developerSlug,
+                slug,
 
-                logo:
-                  developer?.logo ||
-                  developer?.image ||
-                  property
-                    .coreDetails
-                    ?.developerLogo ||
-                  property
-                    .coreDetails
-                    ?.developerImage ||
-                  "/placeholder.jpg",
+                logo,
 
-                propertyCount: 1,
-              }
+                propertyCount:
+                  countById > 0
+                    ? countById
+                    : countByName,
+              });
+            }
+          );
+
+          const allDevelopers =
+            Array.from(
+              developerMap.values()
             );
-          }
-        );
 
-        // -----------------------------------------------------
-        // SORT DEVELOPERS
-        // -----------------------------------------------------
+          // ---------------------------------------------------
+          // SORT
+          //
+          // Developers with properties first.
+          // Zero-property developers remain visible.
+          // ---------------------------------------------------
 
-        const uniqueDevelopers =
-          Array.from(
-            developerMap.values()
-          ).sort(
+          allDevelopers.sort(
             (a, b) =>
-              b.propertyCount -
-                a.propertyCount ||
+              (b.propertyCount || 0) -
+                (a.propertyCount || 0) ||
               a.name.localeCompare(
                 b.name
               )
           );
 
-        setDevelopers(
-          uniqueDevelopers
-        );
+          setDevelopers(
+            allDevelopers
+          );
+
+          // ---------------------------------------------------
+          // DEBUG
+          //
+          // You can remove this later.
+          // ---------------------------------------------------
+
+          console.log(
+            "Navbar developers from /api/developers:",
+            allDevelopers
+          );
+
+          console.log(
+            "Navbar developer count:",
+            allDevelopers.length
+          );
+        }
 
         // =====================================================
         // PROPERTY TYPES
@@ -613,8 +733,7 @@ export default function Navbar({
             propertyData
               .map(
                 (property) =>
-                  property
-                    ?.categoryData
+                  property?.categoryData
                     ?.categoryName
               )
               .filter(Boolean)
@@ -626,13 +745,13 @@ export default function Navbar({
         );
       } catch (err) {
         console.error(
-          "Navbar property fetch error:",
+          "Navbar data fetch error:",
           err
         );
       }
     };
 
-    fetchProperties();
+    fetchNavbarData();
   }, []);
 
   // =========================================================
@@ -645,13 +764,15 @@ export default function Navbar({
         item.items || [];
 
       if (
-        item.key === "properties"
+        item.key ===
+        "properties"
       ) {
         items = propertyTypes;
       }
 
       if (
-        item.key === "locations"
+        item.key ===
+        "locations"
       ) {
         items = [
           ...locations.slice(0, 5),
@@ -660,7 +781,8 @@ export default function Navbar({
       }
 
       if (
-        item.key === "developers"
+        item.key ===
+        "developers"
       ) {
         items = [
           ...developers
@@ -701,7 +823,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "properties"
+      item.key ===
+      "properties"
     ) {
       closeMobileMenu();
 
@@ -719,12 +842,9 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "locations"
+      item.key ===
+      "locations"
     ) {
-      // -----------------------------------------------------
-      // VIEW ALL
-      // -----------------------------------------------------
-
       if (
         sub ===
         "View All Locations →"
@@ -739,11 +859,6 @@ export default function Navbar({
 
         return;
       }
-
-      // -----------------------------------------------------
-      // Find location and its
-      // most-parent/root location
-      // -----------------------------------------------------
 
       const locationData =
         findLocationInTree(
@@ -761,7 +876,6 @@ export default function Navbar({
           )
         );
       } else {
-        // Safe fallback
         router.push(
           `/properties?location=${encodeURIComponent(
             sub
@@ -777,12 +891,9 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "developers"
+      item.key ===
+      "developers"
     ) {
-      // -----------------------------------------------------
-      // VIEW ALL
-      // -----------------------------------------------------
-
       if (
         sub ===
         "View All Developers →"
@@ -797,10 +908,6 @@ export default function Navbar({
 
         return;
       }
-
-      // -----------------------------------------------------
-      // Find developer
-      // -----------------------------------------------------
 
       const developer =
         developers.find(
@@ -826,11 +933,14 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "knowledge"
+      item.key ===
+      "knowledge"
     ) {
       closeMobileMenu();
 
-      router.push("/knowledge");
+      router.push(
+        "/knowledge"
+      );
 
       return;
     }
@@ -840,11 +950,14 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "insights"
+      item.key ===
+      "insights"
     ) {
       closeMobileMenu();
 
-      router.push("/insights");
+      router.push(
+        "/insights"
+      );
 
       return;
     }
@@ -854,7 +967,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "tools"
+      item.key ===
+      "tools"
     ) {
       const routes = {
         "ROI Calculator":
@@ -884,12 +998,9 @@ export default function Navbar({
   const handleMobileItemClick = (
     item
   ) => {
-    // -------------------------------------------------------
-    // TOOLS
-    // -------------------------------------------------------
-
     if (
-      item.key === "tools"
+      item.key ===
+      "tools"
     ) {
       closeMobileMenu();
 
@@ -897,10 +1008,6 @@ export default function Navbar({
 
       return;
     }
-
-    // -------------------------------------------------------
-    // DIRECT LINKS
-    // -------------------------------------------------------
 
     if (
       item.key === "about" ||
@@ -915,10 +1022,6 @@ export default function Navbar({
       return;
     }
 
-    // -------------------------------------------------------
-    // No dropdown
-    // -------------------------------------------------------
-
     if (
       !item.items ||
       item.items.length === 0
@@ -931,10 +1034,6 @@ export default function Navbar({
 
       return;
     }
-
-    // -------------------------------------------------------
-    // Toggle dropdown
-    // -------------------------------------------------------
 
     setMobileDropdown(
       mobileDropdown ===
@@ -955,14 +1054,16 @@ export default function Navbar({
       item.items || [];
 
     if (
-      item.key === "properties"
+      item.key ===
+      "properties"
     ) {
       dropdownItems =
         propertyTypes;
     }
 
     if (
-      item.key === "locations"
+      item.key ===
+      "locations"
     ) {
       dropdownItems = [
         ...locations.slice(0, 5),
@@ -971,7 +1072,8 @@ export default function Navbar({
     }
 
     if (
-      item.key === "developers"
+      item.key ===
+      "developers"
     ) {
       dropdownItems = [
         ...developers
@@ -1000,7 +1102,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "properties"
+      item.key ===
+      "properties"
     ) {
       router.push(
         `/properties?propertyType=${encodeURIComponent(
@@ -1016,12 +1119,9 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "locations"
+      item.key ===
+      "locations"
     ) {
-      // -----------------------------------------------------
-      // VIEW ALL
-      // -----------------------------------------------------
-
       if (
         sub ===
         "View All Locations →"
@@ -1037,10 +1137,6 @@ export default function Navbar({
         return;
       }
 
-      // -----------------------------------------------------
-      // Find location + root
-      // -----------------------------------------------------
-
       const locationData =
         findLocationInTree(
           locationTree,
@@ -1055,7 +1151,6 @@ export default function Navbar({
           )
         );
       } else {
-        // Safe fallback
         router.push(
           `/properties?location=${encodeURIComponent(
             sub
@@ -1073,12 +1168,9 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "developers"
+      item.key ===
+      "developers"
     ) {
-      // -----------------------------------------------------
-      // VIEW ALL
-      // -----------------------------------------------------
-
       if (
         sub ===
         "View All Developers →"
@@ -1093,10 +1185,6 @@ export default function Navbar({
 
         return;
       }
-
-      // -----------------------------------------------------
-      // Find developer
-      // -----------------------------------------------------
 
       const developer =
         developers.find(
@@ -1122,7 +1210,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "knowledge"
+      item.key ===
+      "knowledge"
     ) {
       router.push(
         "/knowledge"
@@ -1138,7 +1227,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "insights"
+      item.key ===
+      "insights"
     ) {
       router.push(
         "/insights"
@@ -1154,7 +1244,8 @@ export default function Navbar({
     // =======================================================
 
     if (
-      item.key === "tools"
+      item.key ===
+      "tools"
     ) {
       const routes = {
         "ROI Calculator":
@@ -1168,9 +1259,7 @@ export default function Navbar({
         routes[sub];
 
       if (route) {
-        router.push(
-          route
-        );
+        router.push(route);
       }
 
       setActive(null);
@@ -1180,353 +1269,1823 @@ export default function Navbar({
   };
 
   // =========================================================
+  // FILTERED DEVELOPERS
+  // =========================================================
+
+  const filteredDevelopers =
+    developers.filter(
+      (developer) => {
+        const name = String(
+          developer?.name || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const search = String(
+          developerSearch || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        return name.includes(
+          search
+        );
+      }
+    );
+
+// =========================================================
+// DEVELOPER MODAL
+// =========================================================
+
+const developerModal =
+  mounted &&
+  createPortal(
+    <AnimatePresence>
+      {showDeveloperModal && (
+        <motion.div
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          transition={{
+            duration: 0.22,
+            ease: "easeOut",
+          }}
+          className="
+            fixed
+            inset-0
+            z-[999999]
+            flex
+            items-center
+            justify-center
+            bg-black/55
+            backdrop-blur-[7px]
+            px-4
+            py-6
+            sm:px-6
+            sm:py-8
+          "
+          onClick={() =>
+            setShowDeveloperModal(false)
+          }
+        >
+          {/* =====================================================
+              MODAL
+          ====================================================== */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0.975,
+              y: 12,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.975,
+              y: 12,
+            }}
+            transition={{
+              duration: 0.24,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+            className="
+              relative
+              w-full
+              max-w-[820px]
+              h-[455px]
+              max-h-[calc(100vh-40px)]
+              rounded-[25px]
+              border
+              border-[#a77b35]
+              bg-[#080b0a]
+              shadow-[0_30px_90px_rgba(0,0,0,0.70)]
+              overflow-hidden
+              flex
+              flex-col
+            "
+          >
+            {/* =================================================
+                CLOSE BUTTON
+            ================================================== */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowDeveloperModal(false)
+              }
+              aria-label="Close developer directory"
+              className="
+                absolute
+                right-4
+                top-4
+                z-30
+                w-[42px]
+                h-[42px]
+                rounded-full
+                bg-[#171a19]
+                border
+                border-white/[0.025]
+                text-white/65
+                flex
+                items-center
+                justify-center
+                transition-all
+                duration-200
+                hover:bg-[#222624]
+                hover:text-white
+              "
+            >
+              <X
+                size={21}
+                strokeWidth={1.6}
+              />
+            </button>
+
+            {/* =================================================
+                HEADER
+            ================================================== */}
+
+            <div
+              className="
+                relative
+                shrink-0
+                px-5
+                pt-5
+                pb-3
+                sm:px-6
+                sm:pt-5
+                sm:pb-3
+              "
+            >
+              <div
+                className="
+                  text-[#c89d58]
+                  text-[10px]
+                  sm:text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.24em]
+                  leading-none
+                  mb-2.5
+                "
+              >
+                Developer Directory
+              </div>
+
+              <h3
+                className="
+                  pr-14
+                  text-white
+                  text-[29px]
+                  sm:text-[32px]
+                  font-medium
+                  tracking-[-0.03em]
+                  leading-[1]
+                "
+              >
+                Select Developer
+              </h3>
+
+              <p
+                className="
+                  text-[#929997]
+                  text-[14px]
+                  sm:text-[15px]
+                  font-normal
+                  mt-2
+                  leading-[1.2]
+                "
+              >
+                Browse all developer partners
+              </p>
+            </div>
+
+            {/* =================================================
+                SEARCH
+            ================================================== */}
+
+            <div
+              className="
+                shrink-0
+                px-5
+                sm:px-6
+                pb-3.5
+              "
+            >
+              <div
+                className="
+                  relative
+                  w-full
+                  h-[62px]
+                  rounded-[21px]
+                  border
+                  border-[#a77b35]
+                  bg-[#101413]
+                  transition-all
+                  duration-200
+                  focus-within:border-[#c89d58]
+                  focus-within:shadow-[0_0_0_1px_rgba(200,157,88,0.10)]
+                "
+              >
+                <Search
+                  size={23}
+                  strokeWidth={1.7}
+                  className="
+                    absolute
+                    left-4.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-white
+                  "
+                />
+
+                <input
+                  type="text"
+                  value={developerSearch}
+                  onChange={(e) =>
+                    setDeveloperSearch(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Search developer..."
+                  aria-label="Search developer"
+                  autoComplete="off"
+                  className="
+                    w-full
+                    h-full
+                    rounded-[21px]
+                    bg-transparent
+                    pl-[56px]
+                    pr-5
+                    text-white
+                    text-[15px]
+                    sm:text-[16px]
+                    font-normal
+                    outline-none
+                    placeholder:text-[#858b89]
+                    placeholder:font-normal
+                  "
+                />
+              </div>
+            </div>
+
+            {/* =================================================
+                DEVELOPER LIST
+            ================================================== */}
+
+            <div
+              className="
+                flex-1
+                min-h-0
+                overflow-y-auto
+                overscroll-contain
+              "
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor:
+                  "rgba(255,255,255,0.25) transparent",
+              }}
+            >
+              {filteredDevelopers.length > 0 ? (
+                <div>
+                  {filteredDevelopers.map(
+                    (developer, index) => (
+                      <button
+                        key={
+                          developer?._id ||
+                          developer?.id ||
+                          developer?.slug ||
+                          developer?.name ||
+                          index
+                        }
+                        type="button"
+                        onClick={() => {
+                          setShowDeveloperModal(
+                            false
+                          );
+
+                          setDeveloperSearch(
+                            ""
+                          );
+
+                          const developerSlug =
+                            developer?.slug ||
+                            developer?.publicSlug ||
+                            developer?.name;
+
+                          if (
+                            developerSlug
+                          ) {
+                            router.push(
+                              getDeveloperProjectUrl(
+                                developerSlug
+                              )
+                            );
+                          }
+                        }}
+                        className="
+                          group
+                          w-full
+                          min-h-[82px]
+                          px-5
+                          sm:px-6
+                          py-2
+                          flex
+                          items-center
+                          gap-3.5
+                          text-left
+                          border-t
+                          border-white/[0.075]
+                          bg-transparent
+                          hover:bg-white/[0.025]
+                          transition-all
+                          duration-200
+                        "
+                      >
+                        {/* =====================================
+                            LOGO
+                        ====================================== */}
+
+                        <div
+                          className="
+                            w-[68px]
+                            h-[68px]
+                            shrink-0
+                            rounded-[15px]
+                            bg-white
+                            border
+                            border-white/[0.08]
+                            overflow-hidden
+                            flex
+                            items-center
+                            justify-center
+                            shadow-[0_4px_14px_rgba(0,0,0,0.15)]
+                          "
+                        >
+                          <img
+                            src={
+                              developer?.logo ||
+                              developer?.image ||
+                              "/placeholder.jpg"
+                            }
+                            alt={
+                              developer?.name ||
+                              "Developer"
+                            }
+                            onError={(
+                              e
+                            ) => {
+                              e.currentTarget.src =
+                                "/placeholder.jpg";
+                            }}
+                            className="
+                              w-full
+                              h-full
+                              object-contain
+                              p-1.5
+                            "
+                          />
+                        </div>
+
+                        {/* =====================================
+                            INFORMATION
+                        ====================================== */}
+
+                        <div
+                          className="
+                            flex-1
+                            min-w-0
+                          "
+                        >
+                          <p
+                            className="
+                              text-[#f3f3f1]
+                              text-[18px]
+                              sm:text-[19px]
+                              font-medium
+                              leading-[1.15]
+                              tracking-[-0.01em]
+                              truncate
+                            "
+                          >
+                            {developer?.name ||
+                              "Developer"}
+                          </p>
+
+                          <p
+                            className="
+                              text-[#858d8a]
+                              text-[13px]
+                              sm:text-[14px]
+                              font-normal
+                              mt-1
+                              leading-[1.2]
+                            "
+                          >
+                            Developer Partner
+                          </p>
+                        </div>
+
+                        {/* =====================================
+                            ARROW
+                        ====================================== */}
+
+                        <div
+                          className="
+                            shrink-0
+                            w-[34px]
+                            h-[34px]
+                            flex
+                            items-center
+                            justify-center
+                            text-[#c89d58]
+                            group-hover:text-[#e0b86d]
+                            group-hover:translate-x-1
+                            transition-all
+                            duration-200
+                          "
+                        >
+                          <ArrowRight
+                            size={25}
+                            strokeWidth={1.35}
+                          />
+                        </div>
+                      </button>
+                    )
+                  )}
+                </div>
+              ) : (
+                /* =============================================
+                   NO RESULTS
+                ============================================== */
+
+                <div
+                  className="
+                    min-h-[190px]
+                    flex
+                    items-center
+                    justify-center
+                    px-5
+                  "
+                >
+                  <div className="text-center">
+                    <div
+                      className="
+                        w-[46px]
+                        h-[46px]
+                        rounded-full
+                        border
+                        border-white/10
+                        bg-white/[0.03]
+                        flex
+                        items-center
+                        justify-center
+                        mx-auto
+                        mb-3
+                      "
+                    >
+                      <Search
+                        size={18}
+                        strokeWidth={1.5}
+                        className="text-white/35"
+                      />
+                    </div>
+
+                    <p
+                      className="
+                        text-white/50
+                        text-[14px]
+                      "
+                    >
+                      No developers found
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  );
+
+// =========================================================
+// LOCATION MODAL
+// =========================================================
+
+/*
+  Build a hierarchy-aware location list.
+
+  The modal still uses your existing `locations` array as the
+  source of locations that should be displayed, while the
+  locationTree is used to determine parent/root relationships.
+*/
+
+const hierarchicalLocations = (() => {
+  const result = [];
+  const seen = new Set();
+
+  const normalize = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  const allowedLocations = new Set(
+    locations.map((location) =>
+      normalize(location)
+    )
+  );
+
+  const getChildren = (node) => {
+    if (!node) return [];
+
+    if (Array.isArray(node.children)) {
+      return node.children;
+    }
+
+    if (Array.isArray(node.locations)) {
+      return node.locations;
+    }
+
+    if (Array.isArray(node.subLocations)) {
+      return node.subLocations;
+    }
+
+    if (Array.isArray(node.descendants)) {
+      return node.descendants;
+    }
+
+    return [];
+  };
+
+  const getName = (node) => {
+    if (!node) return "";
+
+    return (
+      node.name ||
+      node.locationName ||
+      node.title ||
+      node.label ||
+      ""
+    );
+  };
+
+  const walk = (
+    nodes,
+    parents = [],
+    root = null
+  ) => {
+    if (!Array.isArray(nodes)) return;
+
+    nodes.forEach((node) => {
+      const name = getName(node);
+
+      if (!name) return;
+
+      const currentRoot =
+        root || node;
+
+      const normalizedName =
+        normalize(name);
+
+      const parent =
+        parents.length > 0
+          ? parents[
+              parents.length - 1
+            ]
+          : null;
+
+      /*
+        Only show locations that are actually
+        present in the existing property/location
+        dataset.
+
+        This prevents the directory from becoming
+        an enormous CMS tree containing unused
+        locations.
+      */
+      if (
+        allowedLocations.has(
+          normalizedName
+        ) &&
+        !seen.has(normalizedName)
+      ) {
+        seen.add(normalizedName);
+
+        result.push({
+          name,
+          location: node,
+          root: currentRoot,
+          parentName: parent
+            ? getName(parent)
+            : null,
+          parents: [...parents],
+          depth: parents.length,
+        });
+      }
+
+      walk(
+        getChildren(node),
+        [...parents, node],
+        currentRoot
+      );
+    });
+  };
+
+  /*
+    Preferred tree structure.
+  */
+  if (Array.isArray(locationTree)) {
+    walk(locationTree);
+  } else if (
+    Array.isArray(locationTree?.data)
+  ) {
+    walk(locationTree.data);
+  } else if (
+    Array.isArray(
+      locationTree?.locations
+    )
+  ) {
+    walk(locationTree.locations);
+  } else if (
+    Array.isArray(
+      locationTree?.children
+    )
+  ) {
+    walk(locationTree.children);
+  }
+
+  /*
+    Safety fallback:
+    Any location that wasn't found in the
+    hierarchy is still displayed.
+  */
+  locations.forEach((location) => {
+    const normalized =
+      normalize(location);
+
+    if (!seen.has(normalized)) {
+      result.push({
+        name: location,
+        location: null,
+        root: null,
+        parentName: null,
+        parents: [],
+        depth: 0,
+      });
+    }
+  });
+
+  /*
+    Keep hierarchy order, but make sure the
+    parent/root locations appear before children.
+  */
+  return result;
+})();
+
+
+/* =========================================================
+   FILTER LOCATIONS
+========================================================= */
+
+const normalizedLocationSearch =
+  locationSearch
+    .trim()
+    .toLowerCase();
+
+const filteredLocations =
+  hierarchicalLocations.filter(
+    (item) => {
+      if (
+        !normalizedLocationSearch
+      ) {
+        return true;
+      }
+
+      const hierarchyText =
+        [
+          item.name,
+          item.parentName,
+          ...(item.parents || []).map(
+            (parent) =>
+              parent?.name ||
+              parent?.locationName ||
+              parent?.title ||
+              parent?.label ||
+              ""
+          ),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+      return hierarchyText.includes(
+        normalizedLocationSearch
+      );
+    }
+  );
+
+
+/* =========================================================
+   LOCATION MODAL
+========================================================= */
+
+const locationModal =
+  mounted &&
+  createPortal(
+    <AnimatePresence>
+      {showLocationModal && (
+        <motion.div
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          transition={{
+            duration: 0.22,
+            ease: "easeOut",
+          }}
+          className="
+            fixed
+            inset-0
+            z-[999999]
+            flex
+            items-center
+            justify-center
+            bg-black/55
+            backdrop-blur-[7px]
+            px-4
+            py-6
+            sm:px-6
+            sm:py-8
+          "
+          onClick={() =>
+            setShowLocationModal(
+              false
+            )
+          }
+        >
+          {/* =================================================
+              MODAL
+          ================================================== */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0.975,
+              y: 12,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.975,
+              y: 12,
+            }}
+            transition={{
+              duration: 0.24,
+              ease: [
+                0.22,
+                1,
+                0.36,
+                1,
+              ],
+            }}
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+            className="
+              relative
+              w-full
+              max-w-[820px]
+              h-[455px]
+              max-h-[calc(100vh-40px)]
+              rounded-[25px]
+              border
+              border-[#a77b35]
+              bg-[#080b0a]
+              shadow-[0_30px_90px_rgba(0,0,0,0.70)]
+              overflow-hidden
+              flex
+              flex-col
+            "
+          >
+            {/* =================================================
+                CLOSE BUTTON
+            ================================================== */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowLocationModal(
+                  false
+                )
+              }
+              aria-label="Close location directory"
+              className="
+                absolute
+                right-4
+                top-4
+                z-30
+                w-[42px]
+                h-[42px]
+                rounded-full
+                bg-[#171a19]
+                border
+                border-white/[0.025]
+                text-white/65
+                flex
+                items-center
+                justify-center
+                transition-all
+                duration-200
+                hover:bg-[#222624]
+                hover:text-white
+              "
+            >
+              <X
+                size={21}
+                strokeWidth={1.6}
+              />
+            </button>
+
+            {/* =================================================
+                HEADER
+            ================================================== */}
+
+            <div
+              className="
+                relative
+                shrink-0
+                px-5
+                pt-5
+                pb-3
+                sm:px-6
+                sm:pt-5
+                sm:pb-3
+              "
+            >
+              <div
+                className="
+                  text-[#c89d58]
+                  text-[10px]
+                  sm:text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.24em]
+                  leading-none
+                  mb-2.5
+                "
+              >
+                Location Directory
+              </div>
+
+              <h3
+                className="
+                  pr-14
+                  text-white
+                  text-[29px]
+                  sm:text-[32px]
+                  font-medium
+                  tracking-[-0.03em]
+                  leading-[1]
+                "
+              >
+                Select Location
+              </h3>
+
+              <p
+                className="
+                  text-[#929997]
+                  text-[14px]
+                  sm:text-[15px]
+                  font-normal
+                  mt-2
+                  leading-[1.2]
+                "
+              >
+                Browse locations by
+                hierarchy
+              </p>
+            </div>
+
+            {/* =================================================
+                SEARCH
+            ================================================== */}
+
+            <div
+              className="
+                shrink-0
+                px-5
+                sm:px-6
+                pb-3.5
+              "
+            >
+              <div
+                className="
+                  relative
+                  w-full
+                  h-[62px]
+                  rounded-[21px]
+                  border
+                  border-[#a77b35]
+                  bg-[#101413]
+                  transition-all
+                  duration-200
+                  focus-within:border-[#c89d58]
+                  focus-within:shadow-[0_0_0_1px_rgba(200,157,88,0.10)]
+                "
+              >
+                <Search
+                  size={23}
+                  strokeWidth={1.7}
+                  className="
+                    absolute
+                    left-4.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-white
+                  "
+                />
+
+                <input
+                  type="text"
+                  value={locationSearch}
+                  onChange={(e) =>
+                    setLocationSearch(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Search location..."
+                  aria-label="Search location"
+                  autoComplete="off"
+                  className="
+                    w-full
+                    h-full
+                    rounded-[21px]
+                    bg-transparent
+                    pl-[56px]
+                    pr-5
+                    text-white
+                    text-[15px]
+                    sm:text-[16px]
+                    font-normal
+                    outline-none
+                    placeholder:text-[#858b89]
+                    placeholder:font-normal
+                  "
+                />
+              </div>
+            </div>
+
+            {/* =================================================
+                LOCATION LIST
+            ================================================== */}
+
+            <div
+              className="
+                flex-1
+                min-h-0
+                overflow-y-auto
+                overscroll-contain
+              "
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor:
+                  "rgba(255,255,255,0.25) transparent",
+              }}
+            >
+              {filteredLocations.length >
+              0 ? (
+                <div>
+                  {filteredLocations.map(
+                    (
+                      item,
+                      index
+                    ) => {
+                      const isRoot =
+                        item.depth === 0;
+
+                      const isChild =
+                        item.depth > 0;
+
+                      const hierarchyParent =
+                        item.parentName;
+
+                      return (
+                        <button
+                          key={`${item.name}-${index}`}
+                          type="button"
+                          onClick={() => {
+                            setShowLocationModal(
+                              false
+                            );
+
+                            setLocationSearch(
+                              ""
+                            );
+
+                            /*
+                              Prefer the existing
+                              location-tree routing.
+                            */
+                            if (
+                              item.location &&
+                              item.root
+                            ) {
+                              router.push(
+                                getPublicLocationUrl(
+                                  item.location,
+                                  item.root
+                                )
+                              );
+
+                              return;
+                            }
+
+                            /*
+                              Fallback for locations
+                              that aren't represented
+                              in the tree.
+                            */
+                            const locationData =
+                              findLocationInTree(
+                                locationTree,
+                                item.name
+                              );
+
+                            if (
+                              locationData
+                            ) {
+                              router.push(
+                                getPublicLocationUrl(
+                                  locationData.location,
+                                  locationData.root
+                                )
+                              );
+                            } else {
+                              router.push(
+                                `/properties?location=${encodeURIComponent(
+                                  item.name
+                                )}`
+                              );
+                            }
+                          }}
+                          className={`
+                            group
+                            relative
+                            w-full
+                            min-h-[68px]
+                            px-5
+                            sm:px-6
+                            py-2.5
+                            flex
+                            items-center
+                            text-left
+                            border-t
+                            border-white/[0.075]
+                            bg-transparent
+                            hover:bg-white/[0.025]
+                            transition-all
+                            duration-200
+                            ${
+                              isRoot
+                                ? "pl-5 sm:pl-6"
+                                : "pl-10 sm:pl-12"
+                            }
+                          `}
+                        >
+                          {/* =====================================
+                              HIERARCHY INDICATOR
+                          ====================================== */}
+
+                          {isChild && (
+                            <div
+                              className="
+                                absolute
+                                left-5
+                                sm:left-6
+                                top-0
+                                bottom-0
+                                flex
+                                items-center
+                              "
+                            >
+                              <div
+                                className="
+                                  h-[34px]
+                                  w-px
+                                  bg-white/[0.10]
+                                "
+                              />
+                            </div>
+                          )}
+
+                          {/* =====================================
+                              LOCATION ICON
+                          ====================================== */}
+
+                          <div
+                            className={`
+                              shrink-0
+                              mr-3
+                              flex
+                              items-center
+                              justify-center
+                              rounded-full
+                              transition-all
+                              duration-200
+                              ${
+                                isRoot
+                                  ? "w-[34px] h-[34px] bg-[#c89d58]/[0.10] text-[#c89d58]"
+                                  : "w-[28px] h-[28px] bg-white/[0.035] text-[#777f7c]"
+                              }
+                            `}
+                          >
+                            <MapPin
+                              size={
+                                isRoot
+                                  ? 17
+                                  : 14
+                              }
+                              strokeWidth={
+                                1.6
+                              }
+                            />
+                          </div>
+
+                          {/* =====================================
+                              LOCATION INFORMATION
+                          ====================================== */}
+
+                          <div
+                            className="
+                              min-w-0
+                              flex-1
+                            "
+                          >
+                            <p
+                              className={`
+                                truncate
+                                leading-[1.2]
+                                tracking-[-0.01em]
+                                ${
+                                  isRoot
+                                    ? "text-[#f3f3f1] text-[17px] sm:text-[18px] font-medium"
+                                    : "text-[#e2e4e2] text-[15px] sm:text-[16px] font-normal"
+                                }
+                              `}
+                            >
+                              {item.name}
+                            </p>
+
+                            {isChild &&
+                              hierarchyParent && (
+                                <p
+                                  className="
+                                    mt-1
+                                    truncate
+                                    text-[12px]
+                                    sm:text-[13px]
+                                    font-normal
+                                    text-[#737b78]
+                                  "
+                                >
+                                  {hierarchyParent}
+                                </p>
+                              )}
+
+                            {isRoot && (
+                              <p
+                                className="
+                                  mt-1
+                                  text-[12px]
+                                  sm:text-[13px]
+                                  font-normal
+                                  text-[#737b78]
+                                "
+                              >
+                                Primary location
+                              </p>
+                            )}
+                          </div>
+
+                          {/* =====================================
+                              ARROW
+                          ====================================== */}
+
+                          <div
+                            className="
+                              shrink-0
+                              w-[34px]
+                              h-[34px]
+                              flex
+                              items-center
+                              justify-center
+                              text-[#c89d58]
+                              group-hover:text-[#e0b86d]
+                              group-hover:translate-x-1
+                              transition-all
+                              duration-200
+                            "
+                          >
+                            <ArrowRight
+                              size={24}
+                              strokeWidth={1.35}
+                            />
+                          </div>
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              ) : (
+                /* =================================================
+                   NO RESULTS
+                ================================================== */
+
+                <div
+                  className="
+                    min-h-[190px]
+                    flex
+                    items-center
+                    justify-center
+                    px-5
+                  "
+                >
+                  <div className="text-center">
+                    <div
+                      className="
+                        w-[46px]
+                        h-[46px]
+                        rounded-full
+                        border
+                        border-white/10
+                        bg-white/[0.03]
+                        flex
+                        items-center
+                        justify-center
+                        mx-auto
+                        mb-3
+                      "
+                    >
+                      <Search
+                        size={18}
+                        strokeWidth={1.5}
+                        className="text-white/35"
+                      />
+                    </div>
+
+                    <p
+                      className="
+                        text-white/50
+                        text-[14px]
+                      "
+                    >
+                      No locations found
+                    </p>
+
+                    {locationSearch && (
+                      <p
+                        className="
+                          mt-1.5
+                          text-white/25
+                          text-[12px]
+                        "
+                      >
+                        Try another location
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  );
+
+  // =========================================================
   // PAGE
   // =========================================================
 
   return (
-    <header
-      className={`fixed top-0 left-0 w-full z-[999] transition-all duration-500 ${
-        lightNavbar
-          ? "bg-[#0b0b0b]/90 backdrop-blur-xl border-b border-white/10"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
-        <div className="h-[72px] flex items-center justify-between">
-
-          {/* ================================================= */}
-          {/* LEFT */}
-          {/* ================================================= */}
-
-          <div className="flex items-center gap-10">
+    <>
+      <header
+        className={`fixed top-0 left-0 w-full z-[999] transition-all duration-500 ${
+          lightNavbar
+            ? "bg-[#0b0b0b]/90 backdrop-blur-xl border-b border-white/10"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-[1450px] mx-auto px-5 xl:px-8">
+          <div className="h-[72px] flex items-center justify-between">
 
             {/* ================================================= */}
-            {/* LOGO */}
+            {/* LEFT */}
             {/* ================================================= */}
 
-            <Link
-              href="/"
-              className="
-                flex
-                items-center
-                gap-4
-                shrink-0
-                group
-                transition-all
-                duration-500
-              "
-            >
-              <Image
-                src="/logo.webp"
-                alt="Property Bouquet"
-                width={52}
-                height={52}
-                priority
+            <div className="flex items-center gap-10">
+
+              {/* ================================================= */}
+              {/* LOGO */}
+              {/* ================================================= */}
+
+              <Link
+                href="/"
                 className="
-                  w-[46px]
-                  h-[46px]
-                  xl:w-[52px]
-                  xl:h-[52px]
-                  object-contain
+                  flex
+                  items-center
+                  gap-4
+                  shrink-0
+                  group
                   transition-all
                   duration-500
-                  group-hover:scale-105
-                  drop-shadow-[0_6px_14px_rgba(0,0,0,.3)]
                 "
-              />
-
-              <div className="flex flex-col leading-none">
-
-                <h2
+              >
+                <Image
+                  src="/logo.webp"
+                  alt="Property Bouquet"
+                  width={52}
+                  height={52}
+                  priority
                   className="
-                    text-[24px]
-                    xl:text-[27px]
-                    font-light
-                    tracking-[0.08em]
-                    text-white
-                    uppercase
-                    drop-shadow-[0_2px_12px_rgba(0,0,0,.35)]
+                    w-[46px]
+                    h-[46px]
+                    xl:w-[52px]
+                    xl:h-[52px]
+                    object-contain
+                    transition-all
+                    duration-500
+                    group-hover:scale-105
+                    drop-shadow-[0_6px_14px_rgba(0,0,0,.3)]
                   "
-                  style={{
-                    fontFamily:
-                      "Cormorant Garamond, serif",
-                  }}
-                >
-                  PROPERTY
-                </h2>
+                />
 
-                <div className="flex items-center gap-3 shrink-0">
-
-                  <div
+                <div className="flex flex-col leading-none">
+                  <h2
                     className="
-                      h-px
-                      w-8
-                      bg-gradient-to-r
-                      from-transparent
-                      via-[#D4AF37]
-                      to-[#D4AF37]
-                    "
-                  />
-
-                  <span
-                    className="
-                      mx-3
-                      text-[#D4AF37]
-                      text-[10px]
-                      tracking-[0.38em]
+                      text-[24px]
+                      xl:text-[27px]
+                      font-light
+                      tracking-[0.08em]
+                      text-white
                       uppercase
-                      font-semibold
+                      drop-shadow-[0_2px_12px_rgba(0,0,0,.35)]
                     "
+                    style={{
+                      fontFamily:
+                        "Cormorant Garamond, serif",
+                    }}
                   >
-                    BOUQUET
-                  </span>
+                    PROPERTY
+                  </h2>
 
-                  <div
-                    className="
-                      h-px
-                      flex-1
-                      bg-gradient-to-l
-                      from-transparent
-                      via-[#D4AF37]
-                      to-[#D4AF37]
-                    "
-                  />
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div
+                      className="
+                        h-px
+                        w-8
+                        bg-gradient-to-r
+                        from-transparent
+                        via-[#D4AF37]
+                        to-[#D4AF37]
+                      "
+                    />
 
+                    <span
+                      className="
+                        mx-3
+                        text-[#D4AF37]
+                        text-[10px]
+                        tracking-[0.38em]
+                        uppercase
+                        font-semibold
+                      "
+                    >
+                      BOUQUET
+                    </span>
+
+                    <div
+                      className="
+                        h-px
+                        flex-1
+                        bg-gradient-to-l
+                        from-transparent
+                        via-[#D4AF37]
+                        to-[#D4AF37]
+                      "
+                    />
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
 
-            {/* ================================================= */}
-            {/* DESKTOP MENU */}
-            {/* ================================================= */}
+              {/* ================================================= */}
+              {/* DESKTOP MENU */}
+              {/* ================================================= */}
 
-            <nav className="hidden xl:flex items-center gap-[2px]">
+              <nav className="hidden xl:flex items-center gap-[2px]">
+                {navItems.map((item) => {
+                  const dropdownItems =
+                    getDesktopDropdownItems(
+                      item
+                    );
 
-              {navItems.map((item) => {
-                const dropdownItems =
-                  getDesktopDropdownItems(
-                    item
-                  );
+                  const hasDropdown =
+                    dropdownItems.length >
+                    0;
 
-                const hasDropdown =
-                  dropdownItems.length >
-                  0;
-
-                return (
-                  <div
-                    key={item.title}
-                    className="relative"
-                    onMouseEnter={() =>
-                      hasDropdown
-                        ? setActive(
-                            item.title
-                          )
-                        : setActive(null)
-                    }
-                    onMouseLeave={() =>
-                      setActive(null)
-                    }
-                  >
-
-                    {/* MENU TITLE */}
-
-                    <div className="flex items-center h-9">
-
-                      <Link
-                        href={
-                          item.href ??
-                          "/"
-                        }
-                        className="
-                          flex
-                          items-center
-                          text-white/85
-                          hover:text-[#d6aa53]
-                          transition
-                          text-[10px]
-                          xl:text-[11px]
-                          font-medium
-                          tracking-[0.08em]
-                          pl-2.5
-                        "
-                      >
-                        {item.title}
-                      </Link>
-
-                      {/* ONLY SHOW ARROW IF DROPDOWN */}
-
-                      {hasDropdown && (
-                        <button
-                          type="button"
-                          aria-label={`Open ${item.title} menu`}
-                          onClick={() =>
-                            setActive(
-                              active ===
-                                item.title
-                                ? null
-                                : item.title
+                  return (
+                    <div
+                      key={
+                        item.title
+                      }
+                      className="relative"
+                      onMouseEnter={() =>
+                        hasDropdown
+                          ? setActive(
+                              item.title
                             )
+                          : setActive(
+                              null
+                            )
+                      }
+                      onMouseLeave={() =>
+                        setActive(
+                          null
+                        )
+                      }
+                    >
+                      <div className="flex items-center h-9">
+                        <Link
+                          href={
+                            item.href ??
+                            "/"
                           }
                           className="
-                            px-1
+                            flex
+                            items-center
                             text-white/85
                             hover:text-[#d6aa53]
+                            transition
+                            text-[10px]
+                            xl:text-[11px]
+                            font-medium
+                            tracking-[0.08em]
+                            pl-2.5
                           "
                         >
-                          <ChevronDown
-                            size={13}
-                            className={`transition duration-300 ${
-                              active ===
-                              item.title
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </button>
-                      )}
+                          {
+                            item.title
+                          }
+                        </Link>
 
-                    </div>
-
-                    {/* DESKTOP DROPDOWN */}
-
-                    <AnimatePresence>
-                      {hasDropdown &&
-                        active ===
-                          item.title && (
-                          <motion.div
-                            initial={{
-                              opacity: 0,
-                              y: 12,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                            }}
-                            exit={{
-                              opacity: 0,
-                              y: 8,
-                            }}
-                            transition={{
-                              duration: 0.2,
-                            }}
+                        {hasDropdown && (
+                          <button
+                            type="button"
+                            aria-label={`Open ${item.title} menu`}
+                            onClick={() =>
+                              setActive(
+                                active ===
+                                  item.title
+                                  ? null
+                                  : item.title
+                              )
+                            }
                             className="
-                              absolute
-                              top-[48px]
-                              left-0
-                              w-[240px]
+                              px-1
+                              text-white/85
+                              hover:text-[#d6aa53]
                             "
                           >
-                            <div
+                            <ChevronDown
+                              size={
+                                13
+                              }
+                              className={`transition duration-300 ${
+                                active ===
+                                item.title
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* DESKTOP DROPDOWN */}
+
+                      <AnimatePresence>
+                        {hasDropdown &&
+                          active ===
+                            item.title && (
+                            <motion.div
+                              initial={{
+                                opacity: 0,
+                                y: 12,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                              }}
+                              exit={{
+                                opacity: 0,
+                                y: 8,
+                              }}
+                              transition={{
+                                duration: 0.2,
+                              }}
                               className="
-                                rounded-[22px]
-                                border
-                                border-white/10
-                                bg-[#0b0b0b]/95
-                                backdrop-blur-2xl
-                                p-3
-                                shadow-[0_20px_80px_rgba(0,0,0,0.4)]
+                                absolute
+                                top-[48px]
+                                left-0
+                                w-[240px]
                               "
                             >
-                              <div className="space-y-1">
-
-                                {dropdownItems.map(
-                                  (sub) => (
-                                    <button
-                                      key={sub}
-                                      type="button"
-                                      onClick={() =>
-                                        handleDesktopSubNavigation(
-                                          item,
+                              <div
+                                className="
+                                  rounded-[22px]
+                                  border
+                                  border-white/10
+                                  bg-[#0b0b0b]/95
+                                  backdrop-blur-2xl
+                                  p-3
+                                  shadow-[0_20px_80px_rgba(0,0,0,0.4)]
+                                "
+                              >
+                                <div className="space-y-1">
+                                  {dropdownItems.map(
+                                    (
+                                      sub
+                                    ) => (
+                                      <button
+                                        key={
                                           sub
-                                        )
-                                      }
-                                      className="
-                                        w-full
-                                        text-left
-                                        px-4
-                                        py-3
-                                        rounded-xl
-                                        text-white/75
-                                        hover:bg-white/5
-                                        hover:text-[#d6aa53]
-                                        transition
-                                        text-[13px]
-                                      "
-                                    >
-                                      {sub}
-                                    </button>
-                                  )
-                                )}
-
+                                        }
+                                        type="button"
+                                        onClick={() =>
+                                          handleDesktopSubNavigation(
+                                            item,
+                                            sub
+                                          )
+                                        }
+                                        className="
+                                          w-full
+                                          text-left
+                                          px-4
+                                          py-3
+                                          rounded-xl
+                                          text-white/75
+                                          hover:bg-white/5
+                                          hover:text-[#d6aa53]
+                                          transition
+                                          text-[13px]
+                                        "
+                                      >
+                                        {
+                                          sub
+                                        }
+                                      </button>
+                                    )
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                  </div>
-                );
-              })}
-
-            </nav>
-          </div>
-
-          {/* ================================================= */}
-          {/* RIGHT */}
-          {/* ================================================= */}
-
-          <div className="flex items-center gap-3 relative">
+                            </motion.div>
+                          )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </nav>
+            </div>
 
             {/* ================================================= */}
-            {/* CONSULTATION BUTTON */}
+            {/* RIGHT */}
             {/* ================================================= */}
 
-            <button
-              type="button"
-              onClick={
-                onConsultationClick
-              }
-              className="
-                hidden
-                lg:flex
-                items-center
-                gap-2
-                h-[44px]
-                px-4
-                rounded-xl
-                bg-gradient-to-b
-                from-[#d9b061]
-                to-[#b8862e]
-                text-black
-                shadow-[0_10px_35px_rgba(0,0,0,0.35)]
-                hover:scale-[1.03]
-                transition
-              "
-            >
-              <Phone
-                size={16}
-                strokeWidth={2.4}
-              />
+            <div className="flex items-center gap-3 relative">
 
-              <span className="font-bold text-[13px] tracking-[0.05em]">
-                9090 106 101
-              </span>
-            </button>
-
-            {/* ================================================= */}
-            {/* DESKTOP ACCOUNT MENU */}
-            {/* ================================================= */}
-
-            <div className="relative hidden xl:block">
+              {/* CONSULTATION */}
 
               <button
                 type="button"
-                onClick={() =>
-                  setAccountDropdown(
-                    !accountDropdown
-                  )
+                onClick={
+                  onConsultationClick
                 }
                 className="
+                  hidden
+                  lg:flex
+                  items-center
+                  gap-2
+                  h-[44px]
+                  px-4
+                  rounded-xl
+                  bg-gradient-to-b
+                  from-[#d9b061]
+                  to-[#b8862e]
+                  text-black
+                  shadow-[0_10px_35px_rgba(0,0,0,0.35)]
+                  hover:scale-[1.03]
+                  transition
+                "
+              >
+                <Phone
+                  size={16}
+                  strokeWidth={2.4}
+                />
+
+                <span className="font-bold text-[13px] tracking-[0.05em]">
+                  9090 106 101
+                </span>
+              </button>
+
+              {/* DESKTOP ACCOUNT */}
+
+              <div className="relative hidden xl:block">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAccountDropdown(
+                      !accountDropdown
+                    )
+                  }
+                  className="
+                    w-[46px]
+                    h-[46px]
+                    rounded-full
+                    border
+                    border-[#b8862e]/40
+                    bg-black/30
+                    backdrop-blur-xl
+                    flex
+                    items-center
+                    justify-center
+                    text-[#d9b061]
+                    hover:bg-[#d9b061]
+                    hover:text-black
+                    transition-all
+                    duration-300
+                  "
+                >
+                  <Menu size={18} />
+                </button>
+
+                <AnimatePresence>
+                  {accountDropdown && (
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                        y: 10,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: 10,
+                      }}
+                      transition={{
+                        duration: 0.2,
+                      }}
+                      className="
+                        absolute
+                        right-0
+                        top-[58px]
+                        w-[260px]
+                        rounded-[24px]
+                        border
+                        border-white/10
+                        bg-[#0b0b0b]/95
+                        backdrop-blur-2xl
+                        p-3
+                        shadow-[0_20px_80px_rgba(0,0,0,0.45)]
+                      "
+                    >
+                      <div className="space-y-3">
+
+                        <div
+                          className="
+                            rounded-2xl
+                            border
+                            border-[#d9b061]/20
+                            bg-gradient-to-br
+                            from-[#d9b061]/10
+                            via-transparent
+                            to-transparent
+                            p-5
+                          "
+                        >
+                          <p className="text-white text-base font-semibold">
+                            Welcome to Property Bouquet
+                          </p>
+
+                          <p className="text-white/60 text-sm mt-2 leading-6">
+                            India's luxury real estate marketplace
+                            for premium buyers, investors and
+                            property owners.
+                          </p>
+                        </div>
+
+                        <Link
+                          href="/auth"
+                          className="
+                            flex
+                            items-center
+                            justify-center
+                            h-[48px]
+                            rounded-xl
+                            border
+                            border-white/10
+                            text-white
+                            hover:bg-white/5
+                            hover:text-[#d9b061]
+                            transition
+                          "
+                        >
+                          Login
+                        </Link>
+
+                        <Link
+                          href="/auth"
+                          className="
+                            flex
+                            items-center
+                            justify-center
+                            h-[48px]
+                            rounded-xl
+                            bg-white
+                            text-black
+                            font-semibold
+                            hover:scale-[1.02]
+                            transition
+                          "
+                        >
+                          Create Account
+                        </Link>
+
+                        <Link
+                          href="/contact"
+                          className="
+                            flex
+                            items-center
+                            justify-center
+                            h-[48px]
+                            rounded-xl
+                            border
+                            border-white/10
+                            text-white
+                            hover:bg-white/5
+                            hover:text-[#d9b061]
+                            transition
+                          "
+                        >
+                          Contact Us
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* MOBILE MENU */}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(
+                    !mobileMenuOpen
+                  );
+
+                  setMobileDropdown(
+                    null
+                  );
+                }}
+                className="
+                  xl:hidden
                   w-[46px]
                   h-[46px]
                   rounded-full
@@ -1543,83 +3102,301 @@ export default function Navbar({
                   transition-all
                   duration-300
                 "
+                aria-label="Toggle mobile menu"
               >
-                <Menu size={18} />
+                {mobileMenuOpen ? (
+                  <X size={18} />
+                ) : (
+                  <Menu size={18} />
+                )}
               </button>
+            </div>
+          </div>
+        </div>
 
-              <AnimatePresence>
-                {accountDropdown && (
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: 10,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: 10,
-                    }}
-                    transition={{
-                      duration: 0.2,
-                    }}
+        {/* ===================================================== */}
+        {/* MOBILE MENU */}
+        {/* ===================================================== */}
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.div
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                exit={{
+                  opacity: 0,
+                }}
+                onClick={
+                  closeMobileMenu
+                }
+                className="
+                  fixed
+                  inset-0
+                  bg-black/70
+                  backdrop-blur-md
+                  z-[998]
+                  xl:hidden
+                "
+              />
+
+              <motion.div
+                initial={{
+                  x: "100%",
+                }}
+                animate={{
+                  x: 0,
+                }}
+                exit={{
+                  x: "100%",
+                }}
+                transition={{
+                  type: "spring",
+                  damping: 28,
+                  stiffness: 250,
+                }}
+                className="
+                  fixed
+                  top-0
+                  right-0
+                  h-screen
+                  w-[90%]
+                  max-w-[380px]
+                  bg-[#0b0b0b]
+                  border-l
+                  border-white/10
+                  z-[999]
+                  overflow-y-auto
+                  xl:hidden
+                "
+              >
+                {/* HEADER */}
+
+                <div
+                  className="
+                    sticky
+                    top-0
+                    z-30
+                    bg-[#0b0b0b]
+                    border-b
+                    border-white/10
+                    px-6
+                    py-5
+                    flex
+                    items-center
+                    justify-between
+                  "
+                >
+                  <h3
                     className="
-                      absolute
-                      right-0
-                      top-[58px]
-                      w-[260px]
-                      rounded-[24px]
-                      border
-                      border-white/10
-                      bg-[#0b0b0b]/95
-                      backdrop-blur-2xl
-                      p-3
-                      shadow-[0_20px_80px_rgba(0,0,0,0.45)]
+                      text-white
+                      font-semibold
+                      text-lg
                     "
                   >
-                    <div className="space-y-3">
+                    Menu
+                  </h3>
 
-                      {/* PREMIUM CARD */}
+                  <button
+                    type="button"
+                    onClick={
+                      closeMobileMenu
+                    }
+                    className="
+                      w-10
+                      h-10
+                      rounded-full
+                      bg-white/5
+                      text-white
+                      flex
+                      items-center
+                      justify-center
+                    "
+                    aria-label="Close menu"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
 
-                      <div
-                        className="
-                          rounded-2xl
-                          border
-                          border-[#d9b061]/20
-                          bg-gradient-to-br
-                          from-[#d9b061]/10
-                          via-transparent
-                          to-transparent
-                          p-5
-                        "
-                      >
-                        <p className="text-white text-base font-semibold">
-                          Welcome to Property Bouquet
-                        </p>
+                {/* NAV ITEMS */}
 
-                        <p className="text-white/60 text-sm mt-2 leading-6">
-                          India's luxury real estate marketplace
-                          for premium buyers, investors and
-                          property owners.
-                        </p>
-                      </div>
+                <div className="p-4">
+                  {mobileItems.map(
+                    (item) => {
+                      const hasDropdown =
+                        item.items &&
+                        item.items.length >
+                          0;
 
+                      const isOpen =
+                        mobileDropdown ===
+                        item.title;
+
+                      return (
+                        <div
+                          key={
+                            item.title
+                          }
+                          className="border-b border-white/10"
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleMobileItemClick(
+                                item
+                              )
+                            }
+                            className="
+                              w-full
+                              flex
+                              items-center
+                              justify-between
+                              py-5
+                              text-left
+                              text-white
+                              font-medium
+                            "
+                          >
+                            <span>
+                              {
+                                item.title
+                              }
+                            </span>
+
+                            {hasDropdown && (
+                              <ChevronDown
+                                size={15}
+                                className={`transition duration-300 ${
+                                  isOpen
+                                    ? "rotate-180 text-[#d6aa53]"
+                                    : "text-white/70"
+                                }`}
+                              />
+                            )}
+                          </button>
+
+                          <AnimatePresence>
+                            {hasDropdown &&
+                              isOpen && (
+                                <motion.div
+                                  initial={{
+                                    height: 0,
+                                    opacity: 0,
+                                  }}
+                                  animate={{
+                                    height:
+                                      "auto",
+                                    opacity: 1,
+                                  }}
+                                  exit={{
+                                    height: 0,
+                                    opacity: 0,
+                                  }}
+                                  transition={{
+                                    duration: 0.2,
+                                  }}
+                                  className="overflow-hidden pb-4"
+                                >
+                                  {item.items.map(
+                                    (
+                                      sub
+                                    ) => (
+                                      <button
+                                        key={
+                                          sub
+                                        }
+                                        type="button"
+                                        onClick={() =>
+                                          handleMobileNavigation(
+                                            item,
+                                            sub
+                                          )
+                                        }
+                                        className="
+                                          block
+                                          w-full
+                                          text-left
+                                          px-4
+                                          py-3
+                                          rounded-xl
+                                          text-white/70
+                                          hover:bg-white/5
+                                          hover:text-[#d6aa53]
+                                          transition
+                                        "
+                                      >
+                                        {
+                                          sub
+                                        }
+                                      </button>
+                                    )
+                                  )}
+                                </motion.div>
+                              )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    }
+                  )}
+
+                  {/* MOBILE CALL */}
+
+                  <button
+                    type="button"
+                    onClick={
+                      onConsultationClick
+                    }
+                    className="
+                      w-full
+                      mt-6
+                      h-[52px]
+                      rounded-xl
+                      bg-gradient-to-b
+                      from-[#d9b061]
+                      to-[#b8862e]
+                      text-black
+                      shadow-[0_10px_35px_rgba(0,0,0,0.35)]
+                      hover:scale-[1.02]
+                      transition-all
+                      duration-300
+                      flex
+                      items-center
+                      justify-center
+                      gap-2
+                    "
+                  >
+                    <Phone
+                      size={18}
+                      strokeWidth={2.4}
+                    />
+
+                    <span className="font-bold text-[15px] tracking-[0.04em]">
+                      +91 9090 106 101
+                    </span>
+                  </button>
+
+                  {/* AUTH */}
+
+                  <div className="space-y-3 mt-6 mb-8">
+                    <div className="grid grid-cols-2 gap-3">
                       <Link
                         href="/auth"
+                        onClick={
+                          closeMobileMenu
+                        }
                         className="
-                          flex
-                          items-center
-                          justify-center
                           h-[48px]
                           rounded-xl
                           border
                           border-white/10
+                          flex
+                          items-center
+                          justify-center
                           text-white
-                          hover:bg-white/5
-                          hover:text-[#d9b061]
-                          transition
                         "
                       >
                         Login
@@ -1627,376 +3404,26 @@ export default function Navbar({
 
                       <Link
                         href="/auth"
+                        onClick={
+                          closeMobileMenu
+                        }
                         className="
-                          flex
-                          items-center
-                          justify-center
                           h-[48px]
                           rounded-xl
                           bg-white
                           text-black
                           font-semibold
-                          hover:scale-[1.02]
-                          transition
-                        "
-                      >
-                        Create Account
-                      </Link>
-
-                      <Link
-                        href="/contact"
-                        className="
                           flex
                           items-center
                           justify-center
-                          h-[48px]
-                          rounded-xl
-                          border
-                          border-white/10
-                          text-white
-                          hover:bg-white/5
-                          hover:text-[#d9b061]
-                          transition
                         "
                       >
-                        Contact Us
+                        Sign Up
                       </Link>
-
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* ================================================= */}
-            {/* MOBILE MENU BUTTON */}
-            {/* ================================================= */}
-
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(
-                  !mobileMenuOpen
-                );
-
-                setMobileDropdown(
-                  null
-                );
-              }}
-              className="
-                xl:hidden
-                w-[46px]
-                h-[46px]
-                rounded-full
-                border
-                border-[#b8862e]/40
-                bg-black/30
-                backdrop-blur-xl
-                flex
-                items-center
-                justify-center
-                text-[#d9b061]
-                hover:bg-[#d9b061]
-                hover:text-black
-                transition-all
-                duration-300
-              "
-              aria-label="Toggle mobile menu"
-            >
-              {mobileMenuOpen ? (
-                <X size={18} />
-              ) : (
-                <Menu size={18} />
-              )}
-            </button>
-
-          </div>
-        </div>
-      </div>
-
-      {/* ===================================================== */}
-      {/* MOBILE MENU */}
-      {/* ===================================================== */}
-
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            {/* BACKDROP */}
-
-            <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              onClick={
-                closeMobileMenu
-              }
-              className="
-                fixed
-                inset-0
-                bg-black/70
-                backdrop-blur-md
-                z-[998]
-                xl:hidden
-              "
-            />
-
-            {/* DRAWER */}
-
-            <motion.div
-              initial={{
-                x: "100%",
-              }}
-              animate={{
-                x: 0,
-              }}
-              exit={{
-                x: "100%",
-              }}
-              transition={{
-                type: "spring",
-                damping: 28,
-                stiffness: 250,
-              }}
-              className="
-                fixed
-                top-0
-                right-0
-                h-screen
-                w-[90%]
-                max-w-[380px]
-                bg-[#0b0b0b]
-                border-l
-                border-white/10
-                z-[999]
-                overflow-y-auto
-                xl:hidden
-              "
-            >
-
-              {/* HEADER */}
-
-              <div
-                className="
-                  sticky
-                  top-0
-                  z-30
-                  bg-[#0b0b0b]
-                  border-b
-                  border-white/10
-                  px-6
-                  py-5
-                  flex
-                  items-center
-                  justify-between
-                "
-              >
-                <h3
-                  className="
-                    text-white
-                    font-semibold
-                    text-lg
-                  "
-                >
-                  Menu
-                </h3>
-
-                <button
-                  type="button"
-                  onClick={
-                    closeMobileMenu
-                  }
-                  className="
-                    w-10
-                    h-10
-                    rounded-full
-                    bg-white/5
-                    text-white
-                    flex
-                    items-center
-                    justify-center
-                  "
-                  aria-label="Close menu"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* NAV ITEMS */}
-
-              <div className="p-4">
-
-                {mobileItems.map(
-                  (item) => {
-                    const hasDropdown =
-                      item.items &&
-                      item.items.length >
-                        0;
-
-                    const isOpen =
-                      mobileDropdown ===
-                      item.title;
-
-                    return (
-                      <div
-                        key={
-                          item.title
-                        }
-                        className="border-b border-white/10"
-                      >
-
-                        {/* MAIN MOBILE ITEM */}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleMobileItemClick(
-                              item
-                            )
-                          }
-                          className="
-                            w-full
-                            flex
-                            items-center
-                            justify-between
-                            py-5
-                            text-left
-                            text-white
-                            font-medium
-                          "
-                        >
-                          <span>
-                            {item.title}
-                          </span>
-
-                          {hasDropdown && (
-                            <ChevronDown
-                              size={15}
-                              className={`transition duration-300 ${
-                                isOpen
-                                  ? "rotate-180 text-[#d6aa53]"
-                                  : "text-white/70"
-                              }`}
-                            />
-                          )}
-                        </button>
-
-                        {/* SUBMENU */}
-
-                        <AnimatePresence>
-                          {hasDropdown &&
-                            isOpen && (
-                              <motion.div
-                                initial={{
-                                  height: 0,
-                                  opacity: 0,
-                                }}
-                                animate={{
-                                  height:
-                                    "auto",
-                                  opacity: 1,
-                                }}
-                                exit={{
-                                  height: 0,
-                                  opacity: 0,
-                                }}
-                                transition={{
-                                  duration: 0.2,
-                                }}
-                                className="overflow-hidden pb-4"
-                              >
-                                {item.items.map(
-                                  (sub) => (
-                                    <button
-                                      key={
-                                        sub
-                                      }
-                                      type="button"
-                                      onClick={() =>
-                                        handleMobileNavigation(
-                                          item,
-                                          sub
-                                        )
-                                      }
-                                      className="
-                                        block
-                                        w-full
-                                        text-left
-                                        px-4
-                                        py-3
-                                        rounded-xl
-                                        text-white/70
-                                        hover:bg-white/5
-                                        hover:text-[#d6aa53]
-                                        transition
-                                      "
-                                    >
-                                      {sub}
-                                    </button>
-                                  )
-                                )}
-                              </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                      </div>
-                    );
-                  }
-                )}
-
-                {/* ================================================= */}
-                {/* MOBILE CALL BUTTON */}
-                {/* ================================================= */}
-
-                <button
-                  type="button"
-                  onClick={
-                    onConsultationClick
-                  }
-                  className="
-                    w-full
-                    mt-6
-                    h-[52px]
-                    rounded-xl
-                    bg-gradient-to-b
-                    from-[#d9b061]
-                    to-[#b8862e]
-                    text-black
-                    shadow-[0_10px_35px_rgba(0,0,0,0.35)]
-                    hover:scale-[1.02]
-                    transition-all
-                    duration-300
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                  "
-                >
-                  <Phone
-                    size={18}
-                    strokeWidth={2.4}
-                  />
-
-                  <span className="font-bold text-[15px] tracking-[0.04em]">
-                    +91 9090 106 101
-                  </span>
-                </button>
-
-                {/* ================================================= */}
-                {/* AUTH BUTTONS */}
-                {/* ================================================= */}
-
-                <div className="space-y-3 mt-6 mb-8">
-
-                  <div className="grid grid-cols-2 gap-3">
 
                     <Link
-                      href="/auth"
+                      href="/contact"
                       onClick={
                         closeMobileMenu
                       }
@@ -2011,628 +3438,23 @@ export default function Navbar({
                         text-white
                       "
                     >
-                      Login
+                      Contact Us
                     </Link>
-
-                    <Link
-                      href="/auth"
-                      onClick={
-                        closeMobileMenu
-                      }
-                      className="
-                        h-[48px]
-                        rounded-xl
-                        bg-white
-                        text-black
-                        font-semibold
-                        flex
-                        items-center
-                        justify-center
-                      "
-                    >
-                      Sign Up
-                    </Link>
-
                   </div>
-
-                  <Link
-                    href="/contact"
-                    onClick={
-                      closeMobileMenu
-                    }
-                    className="
-                      h-[48px]
-                      rounded-xl
-                      border
-                      border-white/10
-                      flex
-                      items-center
-                      justify-center
-                      text-white
-                    "
-                  >
-                    Contact Us
-                  </Link>
-
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </header>
 
       {/* ===================================================== */}
-      {/* DEVELOPER MODAL */}
+      {/* PORTALED MODALS */}
       {/* ===================================================== */}
 
-      <AnimatePresence>
-        {showDeveloperModal && (
-          <motion.div
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-            className="
-              fixed
-              inset-0
-              z-[999999]
-              bg-black/45
-              backdrop-blur-[5px]
-              flex
-              items-start
-              justify-center
-              pt-[110px]
-              pb-8
-              px-4
-            "
-            onClick={() =>
-              setShowDeveloperModal(
-                false
-              )
-            }
-          >
-            <motion.div
-              initial={{
-                opacity: 0,
-                scale: 0.96,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.96,
-                y: 20,
-              }}
-              transition={{
-                duration: 0.25,
-              }}
-              onClick={(e) =>
-                e.stopPropagation()
-              }
-              className="
-                relative
-                w-full
-                max-w-[540px]
-                rounded-[28px]
-                border
-                border-[#c89d58]/15
-                bg-[#0b0b0b]
-                shadow-[0_40px_120px_rgba(0,0,0,0.65)]
-                overflow-hidden
-              "
-            >
+      {developerModal}
 
-              {/* GOLD TOP LINE */}
-
-              <div
-                className="
-                  h-[2px]
-                  bg-gradient-to-r
-                  from-transparent
-                  via-[#c89d58]
-                  to-transparent
-                "
-              />
-
-              {/* HEADER */}
-
-              <div
-                className="
-                  sticky
-                  top-0
-                  z-20
-                  bg-[#0b0b0b]
-                  border-b
-                  border-white/10
-                  px-6
-                  py-5
-                "
-              >
-                <div className="flex items-start justify-between">
-
-                  <div>
-
-                    <p
-                      className="
-                        text-[#c89d58]
-                        text-[10px]
-                        uppercase
-                        tracking-[3px]
-                        mb-2
-                      "
-                    >
-                      Developer Directory
-                    </p>
-
-                    <h3
-                      className="
-                        text-white
-                        text-[22px]
-                        font-semibold
-                        leading-none
-                      "
-                    >
-                      Select Developer
-                    </h3>
-
-                    <p
-                      className="
-                        text-white/45
-                        text-[13px]
-                        mt-2
-                      "
-                    >
-                      Browse all developer partners
-                    </p>
-
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowDeveloperModal(
-                        false
-                      )
-                    }
-                    className="
-                      w-9
-                      h-9
-                      rounded-full
-                      bg-white/5
-                      hover:bg-white/10
-                      text-white/60
-                      transition-all
-                      flex
-                      items-center
-                      justify-center
-                    "
-                  >
-                    ✕
-                  </button>
-
-                </div>
-              </div>
-
-              {/* SEARCH */}
-
-              <div
-                className="
-                  sticky
-                  top-[104px]
-                  z-10
-                  bg-[#0b0b0b]
-                  p-5
-                  border-b
-                  border-white/10
-                "
-              >
-                <input
-                  value={
-                    developerSearch
-                  }
-                  onChange={(e) =>
-                    setDeveloperSearch(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Search developer..."
-                  className="
-                    w-full
-                    h-[50px]
-                    rounded-[16px]
-                    bg-white/[0.04]
-                    border
-                    border-white/10
-                    px-5
-                    text-white
-                    placeholder:text-white/35
-                    outline-none
-                    focus:border-[#c89d58]/40
-                    transition-all
-                  "
-                />
-              </div>
-
-              {/* LIST */}
-
-              <div
-                className="
-                  max-h-[260px]
-                  overflow-y-auto
-                  scrollbar-thin
-                  scrollbar-thumb-white/10
-                "
-              >
-                {developers
-                  .filter(
-                    (developer) =>
-                      developer.name
-                        .toLowerCase()
-                        .includes(
-                          developerSearch.toLowerCase()
-                        )
-                  )
-                  .map(
-                    (developer) => (
-                      <button
-                        key={
-                          developer.name
-                        }
-                        type="button"
-                        onClick={() => {
-                          setShowDeveloperModal(
-                            false
-                          );
-
-                          if (
-                            developer?.slug
-                          ) {
-                            router.push(
-                              getDeveloperProjectUrl(
-                                developer.slug
-                              )
-                            );
-                          }
-                        }}
-                        className="
-                          w-full
-                          px-6
-                          py-4
-                          flex
-                          items-center
-                          gap-4
-                          border-b
-                          border-white/[0.04]
-                          hover:bg-white/[0.03]
-                          transition-all
-                          text-left
-                          group
-                        "
-                      >
-                        <img
-                          src={
-                            developer.logo
-                          }
-                          alt={
-                            developer.name
-                          }
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/placeholder.jpg";
-                          }}
-                          className="
-                            w-12
-                            h-12
-                            rounded-xl
-                            object-cover
-                            border
-                            border-white/10
-                            bg-white/5
-                            shrink-0
-                          "
-                        />
-
-                        <div className="flex-1">
-
-                          <p
-                            className="
-                              text-white
-                              text-[15px]
-                              font-medium
-                              group-hover:text-[#c89d58]
-                              transition-colors
-                            "
-                          >
-                            {
-                              developer.name
-                            }
-                          </p>
-
-                          <p
-                            className="
-                              text-white/40
-                              text-[12px]
-                              mt-0.5
-                            "
-                          >
-                            Developer Partner
-                          </p>
-
-                        </div>
-                      </button>
-                    )
-                  )}
-
-                {developers.filter(
-                  (developer) =>
-                    developer.name
-                      .toLowerCase()
-                      .includes(
-                        developerSearch.toLowerCase()
-                      )
-                ).length === 0 && (
-                  <div className="py-14 text-center">
-                    <p className="text-white/40">
-                      No developers found
-                    </p>
-                  </div>
-                )}
-
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* =================================================== */}
-        {/* LOCATION MODAL */}
-        {/* =================================================== */}
-
-        {showLocationModal && (
-          <motion.div
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-            className="
-              fixed
-              inset-0
-              z-[999999]
-              bg-black/45
-              backdrop-blur-[5px]
-              flex
-              items-start
-              justify-center
-              pt-[110px]
-              pb-8
-              px-4
-            "
-            onClick={() =>
-              setShowLocationModal(
-                false
-              )
-            }
-          >
-            <motion.div
-              initial={{
-                opacity: 0,
-                scale: 0.96,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.96,
-                y: 20,
-              }}
-              transition={{
-                duration: 0.25,
-              }}
-              onClick={(e) =>
-                e.stopPropagation()
-              }
-              className="
-                relative
-                w-full
-                max-w-[540px]
-                rounded-[28px]
-                border
-                border-[#c89d58]/15
-                bg-[#0b0b0b]
-                shadow-[0_40px_120px_rgba(0,0,0,0.65)]
-                overflow-hidden
-              "
-            >
-
-              {/* TOP LINE */}
-
-              <div
-                className="
-                  h-[2px]
-                  bg-gradient-to-r
-                  from-transparent
-                  via-[#c89d58]
-                  to-transparent
-                "
-              />
-
-              {/* HEADER */}
-
-              <div
-                className="
-                  px-6
-                  py-5
-                  border-b
-                  border-white/10
-                "
-              >
-                <p
-                  className="
-                    text-[#c89d58]
-                    text-[10px]
-                    uppercase
-                    tracking-[3px]
-                    mb-2
-                  "
-                >
-                  Location Directory
-                </p>
-
-                <h3 className="text-white text-[22px] font-semibold">
-                  Select Location
-                </h3>
-
-                <p className="text-white/45 text-[13px] mt-2">
-                  Browse all available locations
-                </p>
-              </div>
-
-              {/* SEARCH */}
-
-              <div className="p-5 border-b border-white/10">
-
-                <input
-                  value={
-                    locationSearch
-                  }
-                  onChange={(e) =>
-                    setLocationSearch(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Search location..."
-                  className="
-                    w-full
-                    h-[50px]
-                    rounded-[16px]
-                    bg-white/[0.04]
-                    border
-                    border-white/10
-                    px-5
-                    text-white
-                    placeholder:text-white/35
-                    outline-none
-                    focus:border-[#c89d58]/40
-                  "
-                />
-
-              </div>
-
-              {/* LIST */}
-
-              <div className="max-h-[260px] overflow-y-auto">
-
-                {locations
-                  .filter(
-                    (location) =>
-                      location
-                        .toLowerCase()
-                        .includes(
-                          locationSearch.toLowerCase()
-                        )
-                  )
-                  .map(
-                    (location) => (
-                      <button
-                        key={
-                          location
-                        }
-                        type="button"
-                        onClick={() => {
-
-                          setShowLocationModal(
-                            false
-                          );
-
-                          // -------------------------------------------------
-                          // Find location + most-parent/root
-                          // -------------------------------------------------
-
-                          const locationData =
-                            findLocationInTree(
-                              locationTree,
-                              location
-                            );
-
-                          if (
-                            locationData
-                          ) {
-                            router.push(
-                              getPublicLocationUrl(
-                                locationData.location,
-                                locationData.root
-                              )
-                            );
-                          } else {
-                            // Safe fallback
-                            router.push(
-                              `/properties?location=${encodeURIComponent(
-                                location
-                              )}`
-                            );
-                          }
-                        }}
-                        className="
-                          w-full
-                          px-6
-                          py-4
-                          flex
-                          items-center
-                          justify-between
-                          border-b
-                          border-white/[0.04]
-                          hover:bg-white/[0.03]
-                          transition-all
-                          text-left
-                        "
-                      >
-                        <span className="text-white text-[14px]">
-                          {location}
-                        </span>
-
-                        <span className="text-[#c89d58] text-[16px]">
-                          →
-                        </span>
-                      </button>
-                    )
-                  )}
-
-                {locations.filter(
-                  (location) =>
-                    location
-                      .toLowerCase()
-                      .includes(
-                        locationSearch.toLowerCase()
-                      )
-                ).length === 0 && (
-                  <div className="py-14 text-center text-white/40">
-                    No locations found
-                  </div>
-                )}
-
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-      </AnimatePresence>
-    </header>
+      {locationModal}
+    </>
   );
 }
