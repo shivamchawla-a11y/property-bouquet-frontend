@@ -859,6 +859,68 @@ const stripItems =
         },
       ];
 
+
+      const getSafeMapEmbedUrl = (value) => {
+  if (!value || typeof value !== "string") return "";
+
+  let url = value.trim();
+
+  // Decode common HTML entities that may come from CMS
+  url = url
+    .replace(/&quot;/gi, '"')
+    .replace(/&#34;/gi, '"')
+    .replace(/&amp;/gi, "&")
+    .replace(/&#38;/gi, "&")
+    .replace(/&#x2F;/gi, "/")
+    .replace(/&#47;/gi, "/")
+    .trim();
+
+  /*
+   * If CMS contains a complete iframe instead of only the URL,
+   * extract the src attribute.
+   */
+  const iframeMatch = url.match(
+    /<iframe[^>]+src=["']([^"']+)["'][^>]*>/i
+  );
+
+  if (iframeMatch?.[1]) {
+    url = iframeMatch[1].trim();
+  }
+
+  // Remove accidental wrapping quotes
+  url = url.replace(/^["']|["']$/g, "").trim();
+
+  /*
+   * Only allow actual map providers.
+   * This prevents Property Bouquet pages from accidentally
+   * being loaded inside the map iframe.
+   */
+  const isGoogleMaps =
+    /^https?:\/\/(www\.)?(google\.com|google\.co\.in)\/maps\/embed/i.test(
+      url
+    );
+
+  const isGoogleMapsDomain =
+    /^https?:\/\/(www\.)?google\.[^/]+\/maps/i.test(url);
+
+  const isGoogleMapsEmbed =
+    /^https?:\/\/maps\.googleapis\.com/i.test(url);
+
+  const isOpenStreetMap =
+    /^https?:\/\/(www\.)?openstreetmap\.org/i.test(url);
+
+  if (
+    !isGoogleMaps &&
+    !isGoogleMapsDomain &&
+    !isGoogleMapsEmbed &&
+    !isOpenStreetMap
+  ) {
+    return "";
+  }
+
+  return url;
+};
+
   return (
     <div className="relative overflow-hidden bg-black">
 
@@ -5814,59 +5876,142 @@ else {
         {/* MAP */}
         <div className="relative flex-1 min-h-[420px] sm:min-h-[520px] md:min-h-[720px]">
 
-          {locationData.mapEmbedUrl ? (
-            <iframe
-              src={locationData.mapEmbedUrl}
-              title={
-                locationData.mapSectionTitle ||
-                "Interactive location map"
-              }
-              className="absolute inset-0 w-full h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-              style={{
-                border: 0,
-                filter:
-                  "grayscale(0.15) contrast(1.05) brightness(0.98)",
-                pointerEvents: "auto",
-              }}
-            />
-          ) : (
-            <div className="h-[420px] sm:h-[520px] md:h-[750px] flex items-center justify-center bg-[#08211c] text-white text-sm sm:text-base">
-              Map Not Available
-            </div>
-          )}
+  {(() => {
+    const safeMapUrl = getSafeMapEmbedUrl(
+      locationData?.mapEmbedUrl
+    );
 
-          {/* FLOATING INFO CARD */}
-          <div
-            className="absolute left-3 right-3 sm:left-6 sm:right-auto bottom-4 sm:bottom-8 z-20 sm:max-w-sm backdrop-blur-xl bg-white/90 border border-white/60 rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
-          >
+    return safeMapUrl ? (
+      <iframe
+        src={safeMapUrl}
+        title={
+          locationData?.mapSectionTitle ||
+          "Interactive location map"
+        }
+        className="absolute inset-0 w-full h-full"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
+        style={{
+          border: 0,
+          filter:
+            "grayscale(0.15) contrast(1.05) brightness(0.98)",
+          pointerEvents: "auto",
+        }}
+      />
+    ) : (
+      <div className="absolute inset-0 flex items-center justify-center bg-[#08211c] text-white text-sm sm:text-base text-center px-6">
+        <div>
+          <p className="text-[#d4b071] uppercase tracking-[3px] text-xs mb-3">
+            Location Map
+          </p>
 
-            <div className="flex items-start gap-3 sm:gap-4">
-
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#08211c] to-[#0f3a30] text-[#d4b071] flex items-center justify-center shadow-lg flex-shrink-0 text-lg sm:text-xl">
-                ✦
-              </div>
-
-              <div>
-                <p className="uppercase tracking-[2px] sm:tracking-[3px] text-[#b58b47] text-[10px] sm:text-[11px] font-semibold mb-2">
-                  {locationData.floatingCardTag || "Signature Address"}
-                </p>
-
-                <h4 className="text-[#17342d] text-[18px] sm:text-xl font-semibold leading-tight">
-                  {locationData.floatingCardTitle ||
-                    "Prime Sector Connectivity"}
-                </h4>
-
-                <p className="text-[#666] text-[12px] sm:text-sm mt-3 leading-relaxed">
-                  {locationData.floatingCardDescription ||
-                    "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations."}
-                </p>
-              </div>
-            </div>
-          </div>
+          <p className="text-white/80">
+            Map Not Available
+          </p>
         </div>
+      </div>
+    );
+  })()}
+
+  {/* FLOATING INFO CARD */}
+  <div
+    className="
+      absolute
+      left-3
+      right-3
+      sm:left-6
+      sm:right-auto
+      bottom-4
+      sm:bottom-8
+      z-20
+      sm:max-w-sm
+      backdrop-blur-xl
+      bg-white/90
+      border
+      border-white/60
+      rounded-[22px]
+      sm:rounded-[28px]
+      p-4
+      sm:p-6
+      shadow-[0_10px_40px_rgba(0,0,0,0.18)]
+    "
+  >
+
+    <div className="flex items-start gap-3 sm:gap-4">
+
+      <div
+        className="
+          w-12
+          h-12
+          sm:w-14
+          sm:h-14
+          rounded-xl
+          sm:rounded-2xl
+          bg-gradient-to-br
+          from-[#08211c]
+          to-[#0f3a30]
+          text-[#d4b071]
+          flex
+          items-center
+          justify-center
+          shadow-lg
+          flex-shrink-0
+          text-lg
+          sm:text-xl
+        "
+      >
+        ✦
+      </div>
+
+      <div>
+        <p
+          className="
+            uppercase
+            tracking-[2px]
+            sm:tracking-[3px]
+            text-[#b58b47]
+            text-[10px]
+            sm:text-[11px]
+            font-semibold
+            mb-2
+          "
+        >
+          {locationData?.floatingCardTag ||
+            "Signature Address"}
+        </p>
+
+        <h4
+          className="
+            text-[#17342d]
+            text-[18px]
+            sm:text-xl
+            font-semibold
+            leading-tight
+          "
+        >
+          {locationData?.floatingCardTitle ||
+            "Prime Sector Connectivity"}
+        </h4>
+
+        <p
+          className="
+            text-[#666]
+            text-[12px]
+            sm:text-sm
+            mt-3
+            leading-relaxed
+          "
+        >
+          {locationData?.floatingCardDescription ||
+            "Positioned in one of the fastest growing luxury corridors with seamless access to major destinations."}
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
       </div>
     </div>
 
