@@ -242,8 +242,7 @@ function normalizeUrl(path) {
     try {
       const parsed = new URL(value);
 
-      const hostname =
-        parsed.hostname.toLowerCase();
+      const hostname = parsed.hostname.toLowerCase();
 
       if (
         hostname !== "propertybouquet.com" &&
@@ -254,19 +253,16 @@ function normalizeUrl(path) {
 
       parsed.protocol = "https:";
       parsed.hostname = "propertybouquet.com";
-
       parsed.search = "";
       parsed.hash = "";
 
-      let pathname =
-        parsed.pathname || "/";
+      let pathname = parsed.pathname || "/";
 
       if (
         pathname !== "/" &&
         pathname.endsWith("/")
       ) {
-        pathname =
-          pathname.slice(0, -1);
+        pathname = pathname.slice(0, -1);
       }
 
       parsed.pathname = pathname;
