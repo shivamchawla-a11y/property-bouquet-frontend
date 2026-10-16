@@ -3217,336 +3217,270 @@ if (loading) {
 
 </div>
  
-     {/* ================= KEY METRICS ================= */}
- {/* <div className="mt-6">
-   <h3 className="font-semibold mb-2 text-white">
-     Key Metrics
-   </h3>
- 
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- 
-     <input
-       className="input"
-       placeholder="Starting Price (e.g. ₹2 Cr)"
-       value={form.coreDetails.startingPrice}
-       onChange={(e) =>
-         handleChange(
-           "coreDetails",
-           "startingPrice",
-           e.target.value
-         )
-       }
-     />
- 
-     <input
-       className="input"
-       placeholder="Max Price (e.g. ₹10 Cr)"
-       value={form.coreDetails.maxPrice}
-       onChange={(e) =>
-         handleChange(
-           "coreDetails",
-           "maxPrice",
-           e.target.value
-         )
-       }
-     />
- 
-     <input
-       className="input"
-       placeholder="Possession (e.g. 2028)"
-       value={form.keyMetrics.possession}
-       onChange={(e) =>
-         handleChange(
-           "keyMetrics",
-           "possession",
-           e.target.value
-         )
-       }
-     />
- 
-     <input
-       className="input"
-       placeholder="Land Area (e.g. 10 Acres)"
-       value={form.keyMetrics.landArea}
-       onChange={(e) =>
-         handleChange(
-           "keyMetrics",
-           "landArea",
-           e.target.value
-         )
-       }
-     />
- 
-     <input
-       className="input"
-       placeholder="Total Units"
-       value={form.keyMetrics.totalUnits || ""}
-       onChange={(e) =>
-         handleChange(
-           "keyMetrics",
-           "totalUnits",
-           e.target.value
-         )
-       }
-     />
- 
-     <input
-       className="input"
-       placeholder="Total Towers"
-       value={form.keyMetrics.totalTowers || ""}
-       onChange={(e) =>
-         handleChange(
-           "keyMetrics",
-           "totalTowers",
-           e.target.value
-         )
-       }
-     />
- 
-   </div>
- </div> */}
- 
- {/* ================= CUSTOM KEY METRICS ================= */}
- 
- <div className="glass p-6 rounded-2xl border border-white/10 mb-8">
- 
-   <div className="mb-5">
-     <h3 className="font-semibold text-xl text-white">
-       Key Metrics
-     </h3>
-   </div>
- 
-  {(form.keyMetrics.customMetrics || []).map(
-   (item, index) => {
- 
-     const SelectedIcon =
-       ICONS[item.icon] || FaIcons.FaBuilding;
- 
-     const isOpen =
-       expandedMetric === index;
- 
-     return (
-       <div
-         key={index}
-         className="
-           rounded-2xl
-           mb-4
-           overflow-hidden
-           border
-           border-white/10
-           bg-white/5
-         "
-       >
- 
-         {/* COLLAPSED HEADER */}
-         <button
-           type="button"
-           onClick={() =>
-             setExpandedMetric(
-               isOpen ? null : index
-             )
-           }
-           className="
-             w-full
-             flex
-             items-center
-             justify-between
-             p-4
-             text-left
-           "
-         >
- 
-           <div className="flex items-center gap-4">
- 
-             <div
-               className="
-                 h-12
-                 w-12
-                 rounded-xl
-                 bg-[#D4AF37]/20
-                 border
-                 border-[#D4AF37]/30
-                 flex
-                 items-center
-                 justify-center
-               "
-             >
-               <SelectedIcon
-                 size={20}
-                 className="text-[#D4AF37]"
-               />
-             </div>
- 
-             <div>
- 
-               <h4 className="text-white font-medium">
-                 {item.label ||
-                   `Metric #${index + 1}`}
-               </h4>
- 
-               <p className="text-white/50 text-sm">
-                 {item.value ||
-                   "No value entered"}
-               </p>
- 
-             </div>
- 
-           </div>
- 
-           <div className="text-white/60 text-xl">
-             {isOpen ? "−" : "+"}
-           </div>
- 
-         </button>
- 
-         {/* EXPANDED CONTENT */}
-         {isOpen && (
-           <div className="px-4 pb-4">
- 
-             <input
-               className="input mb-4"
-               placeholder="Metric Label"
-               value={item.label || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...(form.keyMetrics
-                     .customMetrics || [])
-                 ];
- 
-                 updated[index].label =
-                   e.target.value;
- 
-                 handleChange(
-                   "keyMetrics",
-                   "customMetrics",
-                   updated
-                 );
-               }}
-             />
- 
-             <input
-               className="input mb-4"
-               placeholder="Metric Value"
-               value={item.value || ""}
-               onChange={(e) => {
- 
-                 const updated = [
-                   ...(form.keyMetrics
-                     .customMetrics || [])
-                 ];
- 
-                 updated[index].value =
-                   e.target.value;
- 
-                 handleChange(
-                   "keyMetrics",
-                   "customMetrics",
-                   updated
-                 );
-               }}
-             />
- 
-             <div className="flex gap-3">
- 
-               <button
-                 type="button"
-                 onClick={() => {
-                   setActiveMetricIndex(index);
-                   setShowIconPicker(true);
-                 }}
-                 className="
-                   px-4
-                   py-2
-                   rounded-xl
-                   bg-[#D4AF37]
-                   text-black
-                   font-medium
-                 "
-               >
-                 Change Icon
-               </button>
- 
-               <button
-                 type="button"
-                 onClick={() => {
- 
-                   const updated =
-                     form.keyMetrics.customMetrics.filter(
-                       (_, i) => i !== index
-                     );
- 
-                   handleChange(
-                     "keyMetrics",
-                     "customMetrics",
-                     updated
-                   );
- 
-                   if (
-                     expandedMetric === index
-                   ) {
-                     setExpandedMetric(null);
-                   }
-                 }}
-                 className="
-                   px-4
-                   py-2
-                   rounded-xl
-                   bg-red-500
-                   text-white
-                 "
-               >
-                 Delete
-               </button>
- 
-             </div>
- 
-           </div>
-         )}
- 
-       </div>
-     );
-   }
- )}
- 
-   <button
-   type="button"
-   onClick={() => {
- 
-     const updated = [
-       ...(form.keyMetrics.customMetrics || []),
-       {
-         label: "",
-         value: "",
-         icon: "FaBuilding",
-       },
-     ];
- 
-     handleChange(
-       "keyMetrics",
-       "customMetrics",
-       updated
-     );
- 
-     // Open only newly created metric
-     setExpandedMetric(updated.length - 1);
-   }}
-   className="
-     w-full
-     py-4
-     rounded-2xl
-     bg-[#D4AF37]
-     text-black
-     font-semibold
-     text-lg
-     hover:opacity-90
-     transition
-   "
- >
-   + Add Metric
- </button>
- 
- </div>
+
+{/* ================= KEY METRICS ================= */}
+<div className="glass p-6 rounded-2xl border border-white/10 mb-8">
+  <div className="mb-5">
+    <h3 className="font-semibold text-xl text-white">
+      Key Metrics
+    </h3>
+    <p className="text-sm text-white/50 mt-1">
+      Edit the project's primary facts and add additional metrics below.
+    </p>
+  </div>
+
+  {/* EXISTING DATABASE METRICS */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Land Area
+      </label>
+      <input
+        className="input"
+        placeholder="e.g. Approx. 11.26 acres"
+        value={form.keyMetrics?.landArea || ""}
+        onChange={(e) =>
+          handleChange("keyMetrics", "landArea", e.target.value)
+        }
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Possession
+      </label>
+      <input
+        className="input"
+        placeholder="e.g. Expected possession: 2028"
+        value={form.keyMetrics?.possession || ""}
+        onChange={(e) =>
+          handleChange("keyMetrics", "possession", e.target.value)
+        }
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Project Status
+      </label>
+      <input
+        className="input"
+        placeholder="e.g. Under Construction"
+        value={form.keyMetrics?.status || ""}
+        onChange={(e) =>
+          handleChange("keyMetrics", "status", e.target.value)
+        }
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Floors / Towers Description
+      </label>
+      <input
+        className="input"
+        placeholder="e.g. Multiple high-rise towers"
+        value={form.keyMetrics?.floors || ""}
+        onChange={(e) =>
+          handleChange("keyMetrics", "floors", e.target.value)
+        }
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Total Units
+      </label>
+      <input
+        type="number"
+        min="0"
+        className="input"
+        placeholder="Unknown? Leave blank"
+        value={form.keyMetrics?.totalUnits ?? ""}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "totalUnits",
+            e.target.value === "" ? null : Number(e.target.value)
+          )
+        }
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm text-white/70 mb-2">
+        Total Towers
+      </label>
+      <input
+        type="number"
+        min="0"
+        className="input"
+        placeholder="Unknown? Leave blank"
+        value={form.keyMetrics?.totalTowers ?? ""}
+        onChange={(e) =>
+          handleChange(
+            "keyMetrics",
+            "totalTowers",
+            e.target.value === "" ? null : Number(e.target.value)
+          )
+        }
+      />
+    </div>
+
+    <div className="md:col-span-2">
+      <label className="block text-sm text-white/70 mb-2">
+        RERA Registration Number(s)
+      </label>
+      <textarea
+        className="input min-h-[100px]"
+        placeholder="Enter verified RERA registration references"
+        value={form.keyMetrics?.reraNumber || ""}
+        onChange={(e) =>
+          handleChange("keyMetrics", "reraNumber", e.target.value)
+        }
+      />
+    </div>
+  </div>
+
+  {/* CUSTOM KEY METRICS */}
+  <div className="mt-8 pt-6 border-t border-white/10">
+    <h4 className="font-semibold text-lg text-white mb-2">
+      Additional Metrics
+    </h4>
+    <p className="text-sm text-white/50 mb-5">
+      Add extra facts that do not fit the standard fields above.
+    </p>
+
+    {(form.keyMetrics?.customMetrics || []).map((item, index) => {
+      const SelectedIcon =
+        ICONS[item.icon] || FaIcons.FaBuilding;
+
+      const isOpen = expandedMetric === index;
+
+      return (
+        <div
+          key={item._id || index}
+          className="rounded-2xl mb-4 overflow-hidden border border-white/10 bg-white/5"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              setExpandedMetric(isOpen ? null : index)
+            }
+            className="w-full flex items-center justify-between p-4 text-left"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center">
+                <SelectedIcon size={20} className="text-[#D4AF37]" />
+              </div>
+
+              <div>
+                <h5 className="text-white font-medium">
+                  {item.label || `Metric #${index + 1}`}
+                </h5>
+                <p className="text-white/50 text-sm">
+                  {item.value || "No value entered"}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-white/60 text-xl">
+              {isOpen ? "−" : "+"}
+            </span>
+          </button>
+
+          {isOpen && (
+            <div className="px-4 pb-4">
+              <input
+                className="input mb-4"
+                placeholder="Metric Label"
+                value={item.label || ""}
+                onChange={(e) => {
+                  const updated = [
+                    ...(form.keyMetrics?.customMetrics || []),
+                  ];
+                  updated[index] = {
+                    ...updated[index],
+                    label: e.target.value,
+                  };
+                  handleChange("keyMetrics", "customMetrics", updated);
+                }}
+              />
+
+              <input
+                className="input mb-4"
+                placeholder="Metric Value"
+                value={item.value || ""}
+                onChange={(e) => {
+                  const updated = [
+                    ...(form.keyMetrics?.customMetrics || []),
+                  ];
+                  updated[index] = {
+                    ...updated[index],
+                    value: e.target.value,
+                  };
+                  handleChange("keyMetrics", "customMetrics", updated);
+                }}
+              />
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMetricIndex(index);
+                    setShowIconPicker(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium"
+                >
+                  Change Icon
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = (
+                      form.keyMetrics?.customMetrics || []
+                    ).filter((_, i) => i !== index);
+
+                    handleChange("keyMetrics", "customMetrics", updated);
+
+                    if (expandedMetric === index) {
+                      setExpandedMetric(null);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-red-500 text-white"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    })}
+
+    <button
+      type="button"
+      onClick={() => {
+        const updated = [
+          ...(form.keyMetrics?.customMetrics || []),
+          {
+            label: "",
+            value: "",
+            icon: "FaBuilding",
+          },
+        ];
+
+        handleChange("keyMetrics", "customMetrics", updated);
+        setExpandedMetric(updated.length - 1);
+      }}
+      className="w-full py-4 rounded-2xl bg-[#D4AF37] text-black font-semibold text-lg hover:opacity-90 transition"
+    >
+      + Add Metric
+    </button>
+  </div>
+</div>
+
  
      {/* ================= TAGLINES ================= */}
      <div className="mt-6">
