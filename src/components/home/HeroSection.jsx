@@ -3,160 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
 
-import {
-  ArrowRight,
-  Building2,
-  Home,
-  MapPin,
-  ShieldCheck,
-  Target,
-  Landmark,
-  Trees,
-} from "lucide-react";
+const FEATURED_API = "/api/properties?propertyTag=Featured";
+const ROTATION_MS = 5000;
 
-import { motion } from "framer-motion";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
-/* ============================================================
-   PROPERTY BOUQUET — DESKTOP HERO
-
-   HERO PROJECT CAROUSEL
-   ------------------------------------------------------------
-   Automatic circular movement:
-
-       TOP
-        ↓
-      CENTER
-        ↓
-      BOTTOM
-        ↓
-       TOP
-
-   Therefore on every rotation:
-
-     TOP PROJECT    → CENTER
-     CENTER PROJECT → BOTTOM
-     BOTTOM PROJECT → TOP
-
-   No arrows.
-   No manual carousel controls.
-   Real Featured properties.
-============================================================ */
-
-
-/* ============================================================
-   SEARCH PANEL
-   ------------------------------------------------------------
-   Loaded separately so SearchPanel does not block the initial
-   hero render.
-============================================================ */
-
-const SearchPanel = dynamic(
-  () => import("./SearchPanel"),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="
-          h-[72px]
-          w-full
-          animate-pulse
-          rounded-[18px]
-          border
-          border-[#e8e2d7]
-          bg-white/80
-        "
-      />
-    ),
-  }
-);
-
-
-/* ============================================================
-   CONSTANTS
-============================================================ */
-
-const FEATURED_API =
-  "/api/properties?propertyTag=Featured";
-
-/*
- * Time between carousel movements.
- *
- * 4200ms gives the user enough time to see the project while
- * still making the hero feel alive.
- */
-const HERO_ROTATION_MS = 4200;
-
-/*
- * The actual movement duration.
- *
- * This is deliberately longer than a normal fade so the user
- * can SEE the project physically move between positions.
- */
-const HERO_ANIMATION_MS = 1150;
-
-
-/*
- * Only keep a small number of featured projects in memory.
- *
- * We don't need 30/50/100 properties in the hero carousel.
- */
-const MAX_HERO_PROPERTIES = 8;
-
-
-const FALLBACK_IMAGES = [
-  "/img1.jpg",
-  "/img2.jpg",
-  "/img3.jpg",
-];
-
-
-/* ============================================================
-   RANDOM SHUFFLE
-============================================================ */
-
-function shuffleArray(array) {
-  const shuffled = [...array];
-
-  for (
-    let i = shuffled.length - 1;
-    i > 0;
-    i -= 1
-  ) {
-    const j = Math.floor(
-      Math.random() * (i + 1)
-    );
-
-    [
-      shuffled[i],
-      shuffled[j],
-    ] = [
-      shuffled[j],
-      shuffled[i],
-    ];
-  }
-
-  return shuffled;
-}
-
-
-/* ============================================================
-   PROPERTY ID
-   ------------------------------------------------------------
-   Important for Framer Motion.
-
-   The same property must keep the same React key when it moves
-   from TOP → CENTER → BOTTOM.
-
-   That is what makes the movement physical rather than making
-   the old image disappear and the new image appear.
-============================================================ */
+const SearchPanel = dynamic(() => import("./SearchPanel"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[64px] w-full animate-pulse rounded-[16px] border border-[#e8e0d1] bg-white" />
+  ),
+});
 
 function getPropertyKey(property) {
   return (
@@ -164,47 +23,34 @@ function getPropertyKey(property) {
     property?.id ||
     property?.slug ||
     property?.coreDetails?.title ||
-    Math.random()
+    "featured-property"
   );
 }
 
+function getPropertyImage(property) {
+  const candidates = [
+    property?.media?.heroImageUrl,
+    property?.media?.heroImage,
+    property?.heroImageUrl,
+    property?.image,
+    property?.coreDetails?.image,
+    property?.media?.images?.[0],
+    property?.gallery?.[0],
+  ];
 
-/* ============================================================
-   PROPERTY IMAGE
-============================================================ */
+  for (const candidate of candidates) {
+    const value =
+      typeof candidate === "string"
+        ? candidate
+        : candidate?.url || candidate?.secure_url;
 
-function getPropertyImage(
-  property,
-  fallbackIndex = 0
-) {
-  const image =
-    property?.media?.heroImageUrl ||
-    property?.media?.heroImage ||
-    property?.media?.heroImage?.url ||
-    property?.heroImageUrl ||
-    property?.image ||
-    property?.coreDetails?.image;
-
-  if (
-    image &&
-    typeof image === "string"
-  ) {
-    return image;
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
   }
 
-  return (
-    FALLBACK_IMAGES[
-      Math.abs(fallbackIndex) %
-        FALLBACK_IMAGES.length
-    ] ||
-    FALLBACK_IMAGES[0]
-  );
+  return "/img1.jpg";
 }
-
-
-/* ============================================================
-   PROPERTY TITLE
-============================================================ */
 
 function getPropertyTitle(property) {
   return (
@@ -215,219 +61,174 @@ function getPropertyTitle(property) {
   );
 }
 
-
-/* ============================================================
-   PROPERTY LOCATION
-============================================================ */
-
 function getPropertyLocation(property) {
-  const location =
-    property?.locationData?.locationRef;
+  const location = property?.locationData?.locationRef;
 
-  if (!location) {
-    return (
-      property?.locationData?.customLocation ||
-      property?.locationData?.locationName ||
-      property?.location ||
-      "Prime Location"
-    );
-  }
+  if (location) {
+    const parts = [
+      location?.name,
+      location?.parent?.name,
+      location?.parent?.parent?.name,
+    ].filter(Boolean);
 
-  const parts = [];
-
-  if (location?.name) {
-    parts.push(location.name);
-  }
-
-  if (location?.parent?.name) {
-    parts.push(
-      location.parent.name
-    );
-  }
-
-  if (
-    location?.parent?.parent?.name
-  ) {
-    parts.push(
-      location.parent.parent.name
-    );
+    if (parts.length) return [...new Set(parts)].join(", ");
   }
 
   return (
-    parts.join(", ") ||
+    property?.locationData?.customLocation ||
     property?.locationData?.locationName ||
-    "Prime Location"
+    property?.location ||
+    property?.address ||
+    "Explore the location"
   );
 }
 
+function getPropertyConfiguration(property) {
+  const core = property?.coreDetails || {};
+  const configuration = property?.configurationData || {};
 
-/* ============================================================
-   COMPONENT
-============================================================ */
+  const value =
+    core?.configuration ||
+    core?.configurations ||
+    core?.bedrooms ||
+    core?.bhk ||
+    configuration?.configuration ||
+    configuration?.configurations ||
+    configuration?.bedroom ||
+    configuration?.bhk ||
+    property?.configurations;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) =>
+        typeof item === "string"
+          ? item
+          : item?.label || item?.name || item?.configuration
+      )
+      .filter(Boolean)
+      .join(" / ");
+  }
+
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return `${value} BHK`;
+
+  return "";
+}
+
+function formatPrice(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount) || amount <= 0) return "";
+
+  if (amount >= 10000000) {
+    return `₹${(amount / 10000000).toFixed(2).replace(/\.?0+$/, "")} Cr`;
+  }
+
+  if (amount >= 100000) {
+    return `₹${(amount / 100000).toFixed(2).replace(/\.?0+$/, "")} Lac`;
+  }
+
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+function getStartingPrice(property) {
+  if (
+    property?.coreDetails?.priceOnRequest === true ||
+    property?.pricing?.priceOnRequest === true
+  ) {
+    return "Price on Request";
+  }
+
+  const candidates = [
+    property?.pricing?.startingPrice,
+    property?.pricing?.minPrice,
+    property?.pricing?.priceFrom,
+    property?.coreDetails?.startingPrice,
+    property?.coreDetails?.minPrice,
+    property?.startingPrice,
+    property?.minPrice,
+    property?.priceRange?.min,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "number" && value > 0) {
+      return formatPrice(value);
+    }
+
+    if (typeof value === "string" && value.trim()) {
+      const cleaned = value.trim();
+
+      if (/price on request/i.test(cleaned)) {
+        return "Price on Request";
+      }
+
+      if (/\d/.test(cleaned)) {
+        const numeric = Number(cleaned.replace(/[₹,\s]/g, ""));
+
+        if (Number.isFinite(numeric) && numeric > 0) {
+          return formatPrice(numeric);
+        }
+
+        return cleaned;
+      }
+    }
+  }
+
+  return "";
+}
 
 export default function HeroSection() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  /* ==========================================================
-     FEATURED PROPERTIES
-  ========================================================== */
-
-  const [
-    featuredProperties,
-    setFeaturedProperties,
-  ] = useState([]);
-
-  const [
-    featuredLoading,
-    setFeaturedLoading,
-  ] = useState(true);
-
-  const [
-    activeIndex,
-    setActiveIndex,
-  ] = useState(0);
-
-
-  /* ==========================================================
-     CATEGORY DATA
-  ========================================================== */
-
-  const [
-    propertyCategories,
-    setPropertyCategories,
-  ] = useState([]);
-
-  const [
-    categoriesLoading,
-    setCategoriesLoading,
-  ] = useState(true);
-
-
-  /* ==========================================================
-     ROTATION REF
-  ========================================================== */
-
-  const rotationTimeoutRef =
-    useRef(null);
-
-
-  /* ==========================================================
-     FETCH FEATURED PROPERTIES
-     ----------------------------------------------------------
-     Exact Featured API:
-
-       /api/properties?propertyTag=Featured
-  ========================================================== */
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const controller =
-      new AbortController();
-
+    const controller = new AbortController();
     let mounted = true;
 
     async function fetchFeaturedProperties() {
       try {
-        setFeaturedLoading(true);
-
-        const response =
-          await fetch(
-            FEATURED_API,
-            {
-              /*
-               * Keep this request fresh because Featured
-               * properties can be changed from admin.
-               */
-              cache: "no-store",
-
-              signal:
-                controller.signal,
-            }
-          );
+        const response = await fetch(FEATURED_API, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
-          throw new Error(
-            `Featured properties request failed: ${response.status}`
-          );
+          throw new Error(`Featured properties request failed: ${response.status}`);
         }
 
-        const data =
-          await response.json();
+        const result = await response.json();
 
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
 
-        /*
-         * Expected API shape:
-         *
-         * {
-         *   success: true,
-         *   data: [...]
-         * }
-         */
-        if (!data?.success) {
-          setFeaturedProperties([]);
-          return;
-        }
+        const list = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.properties)
+            ? result.properties
+            : Array.isArray(result)
+              ? result
+              : [];
 
-        /*
-         * Keep only valid public properties.
-         */
-        const published =
-          Array.isArray(data?.data)
-            ? data.data.filter(
-                (property) =>
-                  property?.status ===
-                    "published" &&
-                  property?.isDeleted ===
-                    false &&
-                  property?.isActive ===
-                    true
-              )
-            : [];
-
-        /*
-         * Randomize once.
-         *
-         * The carousel itself does NOT randomize every rotation.
-         */
-        const randomized =
-          shuffleArray(published);
-
-        /*
-         * Keep the hero lightweight.
-         */
-        const limited =
-          randomized.slice(
-            0,
-            MAX_HERO_PROPERTIES
-          );
-
-        setFeaturedProperties(
-          limited
+        const published = list.filter(
+          (property) =>
+            property?.status === "published" &&
+            property?.isDeleted !== true &&
+            property?.isActive !== false &&
+            property?.deletedFromStatus !== "trash"
         );
 
+        setProperties(published);
         setActiveIndex(0);
       } catch (error) {
-        if (
-          error?.name !==
-          "AbortError"
-        ) {
-          console.error(
-            "Property Bouquet featured hero fetch failed:",
-            error
-          );
-
-          if (mounted) {
-            setFeaturedProperties([]);
-          }
+        if (error?.name !== "AbortError") {
+          console.error("Featured property carousel failed:", error);
+          if (mounted) setProperties([]);
         }
       } finally {
-        if (
-          mounted &&
-          !controller.signal.aborted
-        ) {
-          setFeaturedLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
 
@@ -439,2171 +240,279 @@ export default function HeroSection() {
     };
   }, []);
 
-
-  /* ==========================================================
-     FETCH CATEGORIES
-     ----------------------------------------------------------
-     Delayed so the Featured hero gets the network priority.
-  ========================================================== */
-
   useEffect(() => {
-    let cancelled = false;
+    if (properties.length < 2 || paused) return undefined;
 
-    let idleId = null;
-    let timeoutId = null;
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % properties.length);
+    }, ROTATION_MS);
 
-    async function fetchCategories() {
-      try {
-        setCategoriesLoading(true);
+    return () => window.clearInterval(timer);
+  }, [properties.length, paused]);
 
-        const response =
-          await fetch(
-            "/api/properties",
-            {
-              cache: "no-store",
-            }
-          );
+  const activeProperty = properties[activeIndex] || null;
 
-        if (!response.ok) {
-          throw new Error(
-            `Categories request failed: ${response.status}`
-          );
-        }
-
-        const data =
-          await response.json();
-
-        if (cancelled) {
-          return;
-        }
-
-        const propertyData =
-          Array.isArray(data)
-            ? data
-            : Array.isArray(
-                  data?.properties
-                )
-              ? data.properties
-              : Array.isArray(
-                    data?.data
-                  )
-                ? data.data
-                : [];
-
-        const uniqueCategories = [
-          ...new Set(
-            propertyData
-              .map(
-                (property) =>
-                  property
-                    ?.categoryData
-                    ?.categoryName
-              )
-              .filter(Boolean)
-              .map((name) =>
-                String(name).trim()
-              )
-              .filter(Boolean)
-          ),
-        ];
-
-        const getCategoryScore = (
-          name
-        ) => {
-          const value =
-            String(name)
-              .toLowerCase();
-
-          if (
-            value.includes(
-              "apartment"
-            ) ||
-            value.includes(
-              "residential"
-            ) ||
-            value.includes("flat")
-          ) {
-            return 100;
-          }
-
-          if (
-            value.includes("villa")
-          ) {
-            return 90;
-          }
-
-          if (
-            value.includes("plot") ||
-            value.includes("land")
-          ) {
-            return 80;
-          }
-
-          if (
-            value.includes(
-              "commercial"
-            ) ||
-            value.includes("office") ||
-            value.includes("retail")
-          ) {
-            return 70;
-          }
-
-          if (
-            value.includes(
-              "builder"
-            ) ||
-            value.includes("floor")
-          ) {
-            return 60;
-          }
-
-          if (
-            value.includes(
-              "penthouse"
-            )
-          ) {
-            return 55;
-          }
-
-          if (
-            value.includes(
-              "investment"
-            )
-          ) {
-            return 50;
-          }
-
-          return 10;
-        };
-
-        const sortedCategories =
-          [...uniqueCategories].sort(
-            (a, b) => {
-              const difference =
-                getCategoryScore(b) -
-                getCategoryScore(a);
-
-              if (
-                difference !== 0
-              ) {
-                return difference;
-              }
-
-              return a.localeCompare(
-                b
-              );
-            }
-          );
-
-        setPropertyCategories(
-          sortedCategories.slice(
-            0,
-            4
-          )
-        );
-      } catch (error) {
-        if (!cancelled) {
-          console.error(
-            "Property Bouquet category fetch failed:",
-            error
-          );
-
-          setPropertyCategories(
-            []
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setCategoriesLoading(
-            false
-          );
-        }
-      }
-    }
-
-
-    /*
-     * Do not make the category request compete with the hero.
-     */
-    if (
-      typeof window !==
-        "undefined" &&
-      "requestIdleCallback" in
-        window
-    ) {
-      idleId =
-        window.requestIdleCallback(
-          fetchCategories,
-          {
-            timeout: 1400,
-          }
-        );
-    } else {
-      timeoutId =
-        window.setTimeout(
-          fetchCategories,
-          350
-        );
-    }
-
-
-    return () => {
-      cancelled = true;
-
-      if (
-        idleId !== null &&
-        typeof window !==
-          "undefined" &&
-        "cancelIdleCallback" in
-          window
-      ) {
-        window.cancelIdleCallback(
-          idleId
-        );
-      }
-
-      if (
-        timeoutId !== null
-      ) {
-        clearTimeout(
-          timeoutId
-        );
-      }
-    };
-  }, []);
-
-
-  /* ==========================================================
-     AUTOMATIC CIRCULAR ROTATION
-     ----------------------------------------------------------
-
-     Current state:
-
-       TOP    = next
-       CENTER = active
-       BOTTOM = previous
-
-
-     After +1:
-
-       old TOP    → CENTER
-       old CENTER → BOTTOM
-       old BOTTOM → TOP
-
-
-     This is the actual physical circular movement.
-  ========================================================== */
-
-  useEffect(() => {
-    if (
-      featuredProperties.length <
-      3
-    ) {
-      return undefined;
-    }
-
-    let cancelled = false;
-
-
-    const scheduleNextRotation =
-      () => {
-        if (cancelled) {
-          return;
-        }
-
-        /*
-         * Do not rotate when the user has another tab open.
-         * This saves CPU and avoids unnecessary animation work.
-         */
-        if (
-          typeof document !==
-            "undefined" &&
-          document.visibilityState !==
-            "visible"
-        ) {
-          rotationTimeoutRef.current =
-            window.setTimeout(
-              scheduleNextRotation,
-              HERO_ROTATION_MS
-            );
-
-          return;
-        }
-
-        setActiveIndex(
-  (prev) =>
-    (prev - 1 + featuredProperties.length) %
-    featuredProperties.length
-);
-        rotationTimeoutRef.current =
-          window.setTimeout(
-            scheduleNextRotation,
-            HERO_ROTATION_MS
-          );
-      };
-
-
-    rotationTimeoutRef.current =
-      window.setTimeout(
-        scheduleNextRotation,
-        HERO_ROTATION_MS
-      );
-
-
-    return () => {
-      cancelled = true;
-
-      if (
-        rotationTimeoutRef.current
-      ) {
-        clearTimeout(
-          rotationTimeoutRef.current
-        );
-
-        rotationTimeoutRef.current =
-          null;
-      }
-    };
-  }, [
-    featuredProperties.length,
-  ]);
-
-
-  /* ==========================================================
-     CATEGORY ICON
-  ========================================================== */
-
-  const getCategoryIcon = (
-    categoryName
-  ) => {
-    const value =
-      String(
-        categoryName || ""
-      ).toLowerCase();
-
-    if (
-      value.includes("plot") ||
-      value.includes("land")
-    ) {
-      return Trees;
-    }
-
-    if (
-      value.includes(
-        "commercial"
-      ) ||
-      value.includes("office") ||
-      value.includes("retail")
-    ) {
-      return Landmark;
-    }
-
-    if (
-      value.includes("villa")
-    ) {
-      return Home;
-    }
-
-    return Building2;
-  };
-
-
-  /* ==========================================================
-     CATEGORY CARDS
-  ========================================================== */
-
-  const categoryCards =
-    useMemo(() => {
-      return propertyCategories.map(
-        (
-          categoryName,
-          index
-        ) => ({
-          title:
-            categoryName,
-
-          icon:
-            getCategoryIcon(
-              categoryName
-            ),
-
-          image:
-            `/img${index + 4}.webp`,
-
-          position:
-            index === 0
-              ? "center"
-              : index === 1
-                ? "65% center"
-                : index === 2
-                  ? "25% bottom"
-                  : "80% center",
-        })
-      );
-    }, [
-      propertyCategories,
-    ]);
-
-
-  /* ==========================================================
-     CAROUSEL DATA
-  ========================================================== */
-
-  const carouselProperties =
-    useMemo(() => {
-      const count =
-        featuredProperties.length;
-
-      if (count < 3) {
-        return {
-          previous: null,
-          active: null,
-          next: null,
-        };
-      }
-
-      const safeActive =
-        activeIndex % count;
-
-      const previous =
-        featuredProperties[
-          (
-            safeActive -
-            1 +
-            count
-          ) % count
-        ];
-
-      const active =
-        featuredProperties[
-          safeActive
-        ];
-
-      const next =
-        featuredProperties[
-          (safeActive + 1) %
-            count
-        ];
-
-      return {
-        previous,
-        active,
-        next,
-      };
-    }, [
-      featuredProperties,
-      activeIndex,
-    ]);
-
-
-  /* ==========================================================
-     UNIQUE VISIBLE CARDS
-     ----------------------------------------------------------
-     Stable keys are essential for the physical movement.
-  ========================================================== */
-
-  const visibleCarouselCards =
-    useMemo(() => {
-      const cards = [];
-
-      if (
-        carouselProperties.previous
-      ) {
-        cards.push({
-          property:
-            carouselProperties.previous,
-          role: "previous",
-        });
-      }
-
-      if (
-        carouselProperties.active
-      ) {
-        cards.push({
-          property:
-            carouselProperties.active,
-          role: "active",
-        });
-      }
-
-      if (
-        carouselProperties.next
-      ) {
-        cards.push({
-          property:
-            carouselProperties.next,
-          role: "next",
-        });
-      }
-
-      return cards;
-    }, [
-      carouselProperties,
-    ]);
-
-
-  const showHeroSkeleton =
-    featuredLoading &&
-    !featuredProperties.length;
-
-
-  /* ==========================================================
-     RENDER
-  ========================================================== */
-
-  return (
-    <section
-      className="
-        relative
-        z-[100]
-        overflow-visible
-        bg-[#faf9f4]
-        text-[#17342d]
-      "
-    >
-
-      {/* ======================================================
-          BACKGROUND DECORATION
-      ====================================================== */}
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          -right-[150px]
-          -top-[110px]
-          hidden
-          h-[470px]
-          w-[470px]
-          rounded-full
-          bg-[#eadfc8]/65
-          lg:block
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-[34%]
-          top-[150px]
-          hidden
-          h-[240px]
-          w-[240px]
-          rounded-full
-          bg-[#e9dfc9]/25
-          blur-[60px]
-          lg:block
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-[-120px]
-          top-[380px]
-          hidden
-          h-[280px]
-          w-[280px]
-          rounded-full
-          bg-[#e8dfcc]/25
-          blur-[70px]
-          lg:block
-        "
-      />
-
-
-      {/* ======================================================
-          DESKTOP HERO CONTENT
-      ====================================================== */}
-
-      <div
-        className="
-          relative
-          z-[110]
-          overflow-visible
-          pt-[76px]
-          lg:pt-[72px]
-          xl:pt-[76px]
-        "
-      >
-
-        <div
-          className="
-            mx-auto
-            w-full
-            max-w-[1380px]
-            overflow-visible
-            px-6
-            sm:px-7
-            lg:px-8
-            xl:px-6
-          "
-        >
-
-          {/* ==================================================
-              HERO TOP
-          ================================================== */}
-
-          <div
-            className="
-              relative
-              h-[405px]
-              overflow-visible
-              lg:h-[410px]
-              xl:h-[420px]
-            "
-          >
-
-            {/* =================================================
-                LEFT CONTENT
-            ================================================= */}
-
-            <div
-              className="
-                relative
-                z-30
-                w-[54%]
-                max-w-[665px]
-                pt-[58px]
-                lg:pt-[60px]
-                xl:pt-[62px]
-              "
-            >
-
-              {/* EYEBROW */}
-
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 12,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.55,
-                }}
-                className="
-                  mb-[14px]
-                  flex
-                  items-center
-                  gap-3
-                "
-              >
-                <span
-                  className="
-                    whitespace-nowrap
-                    text-[9px]
-                    font-semibold
-                    uppercase
-                    tracking-[3px]
-                    text-[#85877e]
-                    xl:text-[10px]
-                    xl:tracking-[3.2px]
-                  "
-                >
-                  CURATED FOR GENERATIONS OF
-                  WEALTH
-                </span>
-
-                <span
-                  className="
-                    h-px
-                    w-[100px]
-                    shrink-0
-                    bg-[#c89d58]
-                    xl:w-[108px]
-                  "
-                />
-              </motion.div>
-
-
-              {/* MAIN HEADING */}
-
-              <motion.h1
-                initial={{
-                  opacity: 0,
-                  y: 22,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.7,
-                  delay: 0.05,
-                }}
-                className="
-                  max-w-[625px]
-                  font-serif
-                  text-[47px]
-                  font-medium
-                  leading-[0.98]
-                  tracking-[-1.9px]
-                  text-[#12392f]
-
-                  lg:text-[48px]
-
-                  xl:text-[54px]
-                  xl:tracking-[-2.1px]
-
-                  2xl:text-[57px]
-                "
-                style={{
-                  fontFamily:
-                    "Georgia, 'Times New Roman', serif",
-                }}
-              >
-                Find Your Perfect
-                <br />
-
-                <span className="text-[#bd8e45]">
-                  Property in India
-                </span>
-              </motion.h1>
-
-
-              {/* DESCRIPTION */}
-
-              <motion.p
-                initial={{
-                  opacity: 0,
-                  y: 15,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.65,
-                  delay: 0.14,
-                }}
-                className="
-                  mt-[18px]
-                  max-w-[525px]
-                  text-[13px]
-                  leading-[1.65]
-                  text-[#66736e]
-
-                  xl:mt-[19px]
-                  xl:text-[14px]
-                  xl:leading-[1.7]
-                "
-              >
-                Premium residences, luxury
-                investments, and exclusive
-                opportunities across India&apos;s
-                most sought-after locations.
-              </motion.p>
-
-
-              {/* MINI FEATURES */}
-
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 12,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.65,
-                  delay: 0.23,
-                }}
-                className="
-                  mt-[27px]
-                  flex
-                  items-center
-                "
-              >
-                <MiniFeature
-                  icon={Home}
-                  title="Premium"
-                  subtitle="Properties"
-                />
-
-                <MiniFeature
-                  icon={Building2}
-                  title="Trusted"
-                  subtitle="Developers"
-                />
-
-                <MiniFeature
-                  icon={MapPin}
-                  title="Prime"
-                  subtitle="Locations"
-                />
-
-                <MiniFeature
-                  icon={ShieldCheck}
-                  title="Expert"
-                  subtitle="Guidance"
-                  last
-                />
-              </motion.div>
-
-            </div>
-
-
-            {/* =================================================
-                RIGHT IMAGE COMPOSITION
-            ================================================= */}
-
-            <div
-              className="
-                pointer-events-none
-                absolute
-                right-[-5px]
-                top-[0px]
-                z-20
-                h-[405px]
-                w-[570px]
-
-                lg:right-[-4px]
-                lg:w-[580px]
-
-                xl:right-[8px]
-                xl:h-[420px]
-                xl:w-[610px]
-              "
-            >
-
-              {/* LARGE CIRCLE */}
-
-              <div
-                className="
-                  absolute
-                  right-[48px]
-                  top-[-8px]
-                  h-[340px]
-                  w-[340px]
-                  rounded-full
-                  bg-[#eee3cb]
-
-                  xl:right-[55px]
-                  xl:h-[355px]
-                  xl:w-[355px]
-                "
-              />
-
-
-              {/* DECORATIVE GOLD LINE */}
-
-              <div
-                className="
-                  absolute
-                  right-[225px]
-                  top-[94px]
-                  z-10
-                  h-px
-                  w-[210px]
-                  bg-[#c89d58]
-                  opacity-80
-
-                  xl:right-[235px]
-                  xl:w-[225px]
-                "
-              />
-
-
-              {/* =================================================
-                  HERO PROJECT CAROUSEL
-
-                  IMPORTANT:
-
-                  We DO NOT render separate permanent TOP /
-                  CENTER / BOTTOM image elements.
-
-                  Instead, the SAME project DOM element changes
-                  role.
-
-                  Framer Motion therefore sees:
-
-                    Project A:
-                      CENTER → BOTTOM
-
-                    Project B:
-                      TOP → CENTER
-
-                    Project C:
-                      BOTTOM → TOP
-
-                  That produces the actual circular movement.
-              ================================================= */}
-
-              {showHeroSkeleton ? (
-                <HeroCarouselSkeleton />
-              ) : visibleCarouselCards.length > 0 ? (
-
-                visibleCarouselCards.map(
-                  ({
-                    property,
-                    role,
-                  }) => (
-                    <HeroProjectCard
-                      key={getPropertyKey(
-                        property
-                      )}
-                      property={
-                        property
-                      }
-                      role={role}
-                    />
-                  )
-                )
-
-              ) : (
-                <FallbackHeroImage />
-              )}
-
-
-              {/* =================================================
-                  HANDWRITTEN TEXT
-              ================================================= */}
-
-              <div
-                className="
-                  pointer-events-none
-                  absolute
-                  right-[-2px]
-                  top-[102px]
-                  z-40
-
-                  rotate-[-5deg]
-
-                  text-right
-                  font-serif
-                  text-[17px]
-                  italic
-                  leading-[1.05]
-                  text-[#c89d58]
-                  opacity-90
-
-                  xl:right-[-7px]
-                  xl:text-[18px]
-                "
-                style={{
-                  fontFamily:
-                    "'Brush Script MT', 'Segoe Script', cursive",
-                }}
-              >
-                Luxury
-                <br />
-                Living
-                <br />
-                Redefined
-              </div>
-
-
-              {/* LEAF DETAIL */}
-
-              <div
-                className="
-                  pointer-events-none
-                  absolute
-                  bottom-[4px]
-                  left-[0px]
-                  z-30
-                  text-[46px]
-                  leading-none
-                  opacity-50
-                "
-              >
-                🌿
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ==================================================
-              SEARCH PANEL
-          ================================================== */}
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 15,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.65,
-              delay: 0.32,
-            }}
-            className="
-              relative
-              z-[1000]
-              mt-0
-              w-full
-              overflow-visible
-            "
-          >
-            <SearchPanel />
-          </motion.div>
-
-
-          {/* ==================================================
-              TRUST STRIP
-          ================================================== */}
-
-          <div
-            className="
-              relative
-              z-[10]
-              mt-[20px]
-              border-b
-              border-[#e9e5dc]
-              pb-[19px]
-
-              lg:mt-[20px]
-              lg:pb-[19px]
-            "
-          >
-            <div className="grid grid-cols-4">
-
-              <TrustItem
-                icon={ShieldCheck}
-                title="Exclusive Listings"
-                subtitle="Handpicked premium properties"
-                first
-              />
-
-              <TrustItem
-                icon={Building2}
-                title="Verified Developers"
-                subtitle="Trusted & established brands"
-              />
-
-              <TrustItem
-                icon={Target}
-                title="End-to-End Support"
-                subtitle="From search to possession"
-              />
-
-              <TrustItem
-                icon={ShieldCheck}
-                title="Better Investment"
-                subtitle="Build wealth for tomorrow"
-                last
-              />
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-
-      {/* ======================================================
-          CATEGORY SECTION
-      ====================================================== */}
-
-      <section
-        className="
-          relative
-          z-[1]
-          bg-[#fbfaf6]
-          py-[28px]
-          lg:py-[29px]
-        "
-      >
-
-        <div
-          className="
-            mx-auto
-            w-full
-            max-w-[1380px]
-            px-6
-            sm:px-7
-            lg:px-8
-            xl:px-6
-          "
-        >
-
-          <div
-            className="
-              grid
-              items-center
-              gap-6
-
-              lg:grid-cols-[330px_1fr]
-              lg:gap-8
-            "
-          >
-
-            {/* CATEGORY TITLE */}
-
-            <div>
-
-              <div
-                className="
-                  mb-[8px]
-                  flex
-                  items-center
-                  gap-3
-                "
-              >
-                <span
-                  className="
-                    text-[9px]
-                    font-semibold
-                    uppercase
-                    tracking-[2.6px]
-                    text-[#888379]
-                  "
-                >
-                  EXPLORE BY CATEGORY
-                </span>
-
-                <span
-                  className="
-                    h-px
-                    w-[50px]
-                    bg-[#c89d58]
-                  "
-                />
-              </div>
-
-
-              <h2
-                className="
-                  font-serif
-                  text-[25px]
-                  leading-[1.08]
-                  tracking-[-0.6px]
-                  text-[#173a31]
-
-                  xl:text-[27px]
-                "
-                style={{
-                  fontFamily:
-                    "Georgia, 'Times New Roman', serif",
-                }}
-              >
-                Find Properties That Match
-                <br />
-                Your Dreams
-              </h2>
-
-            </div>
-
-
-            {/* CATEGORY CARDS */}
-
-            <div
-              className="
-                grid
-                grid-cols-4
-                gap-3
-              "
-            >
-
-              {categoriesLoading ? (
-                <>
-                  <CategorySkeleton />
-                  <CategorySkeleton />
-                  <CategorySkeleton />
-                  <CategorySkeleton />
-                </>
-              ) : categoryCards.length > 0 ? (
-
-                categoryCards.map(
-                  (category) => (
-                    <CategoryCard
-                      key={
-                        category.title
-                      }
-                      title={
-                        category.title
-                      }
-                      icon={
-                        category.icon
-                      }
-                      image={
-                        category.image
-                      }
-                      position={
-                        category.position
-                      }
-                    />
-                  )
-                )
-
-              ) : (
-
-                <div
-                  className="
-                    col-span-4
-                    flex
-                    min-h-[108px]
-                    items-center
-                    justify-center
-                    rounded-[13px]
-                    border
-                    border-[#e8e2d7]
-                    bg-white
-                    text-[11px]
-                    uppercase
-                    tracking-[2px]
-                    text-[#8a8f8b]
-                  "
-                >
-                  Explore our property
-                  collection
-                </div>
-
-              )}
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-    </section>
+  const image = useMemo(
+    () => (activeProperty ? getPropertyImage(activeProperty) : "/img1.jpg"),
+    [activeProperty]
   );
-}
 
+  const title = activeProperty
+    ? getPropertyTitle(activeProperty)
+    : "Discover Exceptional Properties";
 
-/* ============================================================
-   HERO PROJECT CARD
-   ------------------------------------------------------------
-   THIS IS THE IMPORTANT PART.
+  const location = activeProperty
+    ? getPropertyLocation(activeProperty)
+    : "Explore premium real estate across India";
 
-   The `key` belongs to the PROPERTY, not the ROLE.
+  const configuration = activeProperty
+    ? getPropertyConfiguration(activeProperty)
+    : "";
 
-   Example:
+  const price = activeProperty
+    ? getStartingPrice(activeProperty)
+    : "";
 
-   First state:
+  const propertyHref = activeProperty?.slug
+    ? `/${activeProperty.slug}`
+    : "/properties";
 
-     Project A = CENTER
-     Project B = TOP
-     Project C = BOTTOM
+  function goToPrevious() {
+    if (properties.length < 2) return;
 
-   Next state:
-
-     Project A = BOTTOM
-     Project B = CENTER
-     Project C = TOP
-
-   React keeps A/B/C alive.
-
-   Framer Motion detects that their layout positions changed and
-   physically animates each card to its new position.
-============================================================ */
-
-function HeroProjectCard({
-  property,
-  role,
-}) {
-  const href =
-    property?.slug
-      ? `/${property.slug}`
-      : "/properties";
-
-  const title =
-    getPropertyTitle(
-      property
+    setActiveIndex(
+      (current) => (current - 1 + properties.length) % properties.length
     );
+  }
 
-  const image =
-    getPropertyImage(
-      property
-    );
+  function goToNext() {
+    if (properties.length < 2) return;
 
-  const location =
-    getPropertyLocation(
-      property
-    );
-
-
-  /*
-   * The classes define the three physical positions.
-   *
-   * Framer Motion's `layout` animates between them.
-   */
-  const roleClasses = {
-    active: `
-      left-[28px]
-      top-[112px]
-
-      h-[245px]
-      w-[350px]
-
-      z-20
-
-      xl:left-[22px]
-      xl:top-[112px]
-      xl:h-[255px]
-      xl:w-[365px]
-    `,
-
-    next: `
-      right-[62px]
-      top-[20px]
-
-      h-[140px]
-      w-[188px]
-
-      z-30
-
-      xl:right-[58px]
-      xl:top-[20px]
-      xl:h-[150px]
-      xl:w-[200px]
-    `,
-
-    previous: `
-      right-[0px]
-      bottom-[3px]
-
-      h-[140px]
-      w-[190px]
-
-      z-30
-
-      xl:right-[0px]
-      xl:bottom-[3px]
-      xl:h-[148px]
-      xl:w-[202px]
-    `,
-  };
-
-
-  const isActive =
-    role === "active";
-
+    setActiveIndex((current) => (current + 1) % properties.length);
+  }
 
   return (
-    <motion.div
-      layout
-      initial={false}
+    <section className="relative z-[10] overflow-visible bg-[#faf9f4] text-[#17342d]">
+      {/* COMPACT FULL-WIDTH FEATURED CAROUSEL */}
 
-      /*
-       * Opacity remains high for all three cards.
-       *
-       * The important animation is layout:
-       * position + size + stacking.
-       */
-      animate={{
-        opacity:
-          isActive
-            ? 1
-            : 0.97,
-      }}
-
-      transition={{
-        layout: {
-          duration:
-            HERO_ANIMATION_MS /
-            1000,
-
-          ease: [
-            0.22,
-            1,
-            0.36,
-            1,
-          ],
-        },
-
-        opacity: {
-          duration:
-            HERO_ANIMATION_MS /
-            1000,
-          ease: "easeOut",
-        },
-      }}
-
-      className={`
-        pointer-events-auto
-        absolute
-
-        overflow-hidden
-        rounded-[17px]
-
-        border
-        border-white
-
-        bg-white
-
-        ${roleClasses[role]}
-
-        ${
-          isActive
-            ? `
-              shadow-[0_18px_42px_rgba(22,46,38,0.15)]
-            `
-            : `
-              rounded-[15px]
-              shadow-[0_15px_35px_rgba(22,46,38,0.14)]
-            `
-        }
-      `}
-    >
-
-      <Link
-        href={href}
-        aria-label={`View ${title}`}
-        className="
-          group
-          block
-          h-full
-          w-full
-        "
+      <div
+  className="
+    relative w-full overflow-hidden
+    h-[340px]
+    sm:h-[380px]
+    md:h-[420px]
+    lg:h-[440px]
+    xl:h-[460px]
+    bg-[#102c23]
+  "
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setPaused(false);
+          }
+        }}
       >
-
-        <Image
-          src={image}
-          alt={title}
-          fill
-
-          /*
-           * Only the CENTER image is prioritized.
-           *
-           * TOP and BOTTOM use lazy loading so we don't
-           * unnecessarily compete with the initial hero LCP.
-           */
-          priority={
-            isActive
-          }
-
-          loading={
-            isActive
-              ? "eager"
-              : "lazy"
-          }
-
-          quality={
-            isActive
-              ? 88
-              : 78
-          }
-
-          sizes={
-            isActive
-              ? `
-                (min-width: 1280px) 365px,
-                350px
-              `
-              : `
-                (min-width: 1280px) 202px,
-                200px
-              `
-          }
-
-          className="
-            object-cover
-            object-center
-
-            transition-transform
-            duration-[1200ms]
-            ease-out
-
-            group-hover:scale-[1.035]
-          "
-        />
-
-
-        {/* IMAGE GRADIENT */}
-
-        <div
-          className={`
-            absolute
-            inset-0
-
-            bg-gradient-to-t
-
-            ${
-              isActive
-                ? `
-                  from-[#102f27]/55
-                  via-[#102f27]/5
-                  to-transparent
-                `
-                : `
-                  from-[#102f27]/50
-                  via-transparent
-                  to-transparent
-                `
-            }
-          `}
-        />
-
-
-        {/* =================================================
-            CENTER PROJECT INFORMATION
-        ================================================= */}
-
-        {isActive ? (
-
-          <div
-            className="
-              absolute
-              bottom-3
-              left-3
-              right-3
-
-              flex
-              items-end
-              justify-between
-              gap-3
-            "
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.div
+            key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.65 }}
+            className="absolute inset-0"
           >
+            <Image
+              src={image}
+              alt={activeProperty ? title : "Luxury properties by Property Bouquet"}
+              fill
+              priority
+              sizes="100vw"
+              quality={88}
+              className="object-cover object-center"
+            />
+          </motion.div>
+        </AnimatePresence>
 
-            <div className="min-w-0">
+        {/* Luxury green image treatment */}
 
-              <p
-                className="
-                  truncate
-                  text-[11px]
-                  font-semibold
-                  tracking-[0.3px]
-                  text-white
-                  drop-shadow
-                "
-              >
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/85 via-[#0d291f]/45 to-[#0d291f]/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/80 via-transparent to-[#071b14]/15" />
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67]/80 to-transparent" />
+        <div className="pointer-events-none absolute -right-20 -top-24 h-[300px] w-[300px] rounded-full border border-[#d4af67]/20 sm:h-[360px] sm:w-[360px]" />
+        <div className="pointer-events-none absolute -right-6 -top-10 h-[230px] w-[230px] rounded-full border border-white/10 sm:h-[285px] sm:w-[285px]" />
+
+        {/* Property information: vertically compact */}
+
+        <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-end px-5 pb-[65px] sm:px-8 sm:pb-[70px] md:px-10 md:pb-[73px] lg:px-12 lg:pb-[76px] xl:px-16">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeProperty ? getPropertyKey(activeProperty) : "fallback-copy"}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
+              transition={{ duration: reduceMotion ? 0 : 0.35 }}
+              className="relative z-10 w-full max-w-[760px]"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d4af67]/55 bg-[#d4af67]/10 text-[#e5c47e]">
+                  <Sparkles size={14} strokeWidth={1.7} />
+                </span>
+
+                <span className="text-[9px] font-semibold uppercase tracking-[2.7px] text-[#f0d9a5] sm:text-[10px] sm:tracking-[3.5px]">
+                  Featured Properties
+                </span>
+
+                <span className="h-px w-10 bg-[#d4af67]/80 sm:w-14" />
+              </div>
+
+              {configuration && (
+                <p className="mb-1 font-serif text-[16px] text-[#f0d9a5] sm:text-[19px] md:text-[21px]">
+                  {configuration}
+                </p>
+              )}
+
+              <h1 className="max-w-[720px] font-serif text-[28px] font-medium leading-[1.08] tracking-[-0.5px] text-white drop-shadow sm:text-[34px] md:text-[39px] lg:text-[43px] xl:text-[47px]">
                 {title}
-              </p>
+              </h1>
 
-              <p
-                className="
-                  mt-[2px]
-                  truncate
-                  text-[8px]
-                  uppercase
-                  tracking-[1.2px]
-                  text-white/80
-                "
-              >
-                {location}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mt-4">
+                {price && (
+                  <p className="text-[12px] font-medium text-white sm:text-[14px]">
+                    <span className="text-white/75">Starting at </span>
+                    <span className="font-semibold text-[#f0c66e]">{price}</span>
+                  </p>
+                )}
 
-            </div>
+                {price && (
+                  <span className="hidden h-4 w-px bg-white/35 sm:block" />
+                )}
 
+                <p className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[1.2px] text-white/90 sm:text-[10px] sm:tracking-[1.7px]">
+                  <MapPin size={14} className="shrink-0 text-[#e6b85e]" />
+                  <span className="line-clamp-2">{location}</span>
+                </p>
+              </div>
 
-            <span
+              <div className="mt-4 sm:mt-5">
+                <Link
+                  href={propertyHref}
+                  className="
+                    inline-flex min-h-[38px] items-center gap-2.5
+                    rounded-full border border-[#e5c47e]/70
+                    bg-[#d4af67] px-4 py-2.5
+                    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
+                    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
+                    transition-colors duration-200
+                    hover:bg-[#e6c783]
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-[#f0d9a5]
+                  "
+                >
+                  Explore Property
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Carousel arrows */}
+
+        {properties.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goToPrevious}
+              aria-label="Previous featured property"
               className="
-                flex
-                h-[27px]
-                w-[27px]
-                shrink-0
-
-                items-center
-                justify-center
-
-                rounded-full
-
-                border
-                border-white/70
-
-                bg-[#17342d]/40
-
-                text-white
-
-                backdrop-blur-sm
-
-                transition-all
-                duration-300
-
-                group-hover:border-[#d4b16d]
-                group-hover:bg-[#d4b16d]
-                group-hover:text-[#17342d]
+                absolute left-3 top-1/2 z-20
+                flex h-9 w-9 -translate-y-1/2 items-center justify-center
+                rounded-full border border-white/45 bg-[#102c23]/25
+                text-white backdrop-blur-md transition-colors
+                hover:border-[#d4af67] hover:bg-[#d4af67] hover:text-[#17342d]
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e]
+                sm:left-5 sm:h-10 sm:w-10 md:left-7
               "
             >
-              <ArrowRight
-                size={12}
-                strokeWidth={2}
-              />
-            </span>
+              <ArrowLeft size={17} />
+            </button>
 
-          </div>
-
-        ) : (
-
-          /* =================================================
-             TOP / BOTTOM COMPACT LABEL
-          ================================================= */
-
-          <div
-            className="
-              absolute
-              bottom-2
-              left-2
-              right-2
-            "
-          >
-
-            <p
+            <button
+              type="button"
+              onClick={goToNext}
+              aria-label="Next featured property"
               className="
-                truncate
-                text-[9px]
-                font-semibold
-                text-white
-                drop-shadow
+                absolute right-3 top-1/2 z-20
+                flex h-9 w-9 -translate-y-1/2 items-center justify-center
+                rounded-full border border-white/45 bg-[#102c23]/25
+                text-white backdrop-blur-md transition-colors
+                hover:border-[#d4af67] hover:bg-[#d4af67] hover:text-[#17342d]
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e]
+                sm:right-5 sm:h-10 sm:w-10 md:right-7
               "
             >
-              {title}
-            </p>
-
-          </div>
-
+              <ArrowRight size={17} />
+            </button>
+          </>
         )}
 
-      </Link>
-
-    </motion.div>
-  );
-}
-
-
-/* ============================================================
-   HERO SKELETON
-============================================================ */
-
-function HeroCarouselSkeleton() {
-  return (
-    <>
-      {/* MAIN */}
-
-      <div
-        className="
-          absolute
-          left-[28px]
-          top-[112px]
-          z-20
-
-          h-[245px]
-          w-[350px]
-
-          animate-pulse
-
-          overflow-hidden
-          rounded-[17px]
-
-          border
-          border-white
-
-          bg-[#e9e5dc]
-
-          shadow-[0_18px_42px_rgba(22,46,38,0.12)]
-
-          xl:left-[22px]
-          xl:top-[112px]
-          xl:h-[255px]
-          xl:w-[365px]
-        "
-      />
-
-
-      {/* TOP */}
-
-      <div
-        className="
-          absolute
-          right-[62px]
-          top-[20px]
-          z-30
-
-          h-[140px]
-          w-[188px]
-
-          animate-pulse
-
-          rounded-[15px]
-          border
-          border-white
-
-          bg-[#e9e5dc]
-
-          xl:right-[58px]
-          xl:h-[150px]
-          xl:w-[200px]
-        "
-      />
-
-
-      {/* BOTTOM */}
-
-      <div
-        className="
-          absolute
-          bottom-[3px]
-          right-[0px]
-          z-30
-
-          h-[140px]
-          w-[190px]
-
-          animate-pulse
-
-          rounded-[15px]
-          border
-          border-white
-
-          bg-[#e9e5dc]
-
-          xl:h-[148px]
-          xl:w-[202px]
-        "
-      />
-    </>
-  );
-}
-
-
-/* ============================================================
-   FALLBACK HERO IMAGE
-============================================================ */
-
-function FallbackHeroImage() {
-  return (
-    <div
-      className="
-        absolute
-        left-[28px]
-        top-[112px]
-        z-20
-
-        h-[245px]
-        w-[350px]
-
-        overflow-hidden
-        rounded-[17px]
-
-        border
-        border-white
-
-        bg-white
-
-        shadow-[0_18px_42px_rgba(22,46,38,0.15)]
-
-        xl:left-[22px]
-        xl:top-[112px]
-        xl:h-[255px]
-        xl:w-[365px]
-      "
-    >
-
-      <Image
-        src="/img1.jpg"
-        alt="Luxury property"
-        fill
-        priority
-        quality={88}
-        sizes="
-          (min-width: 1280px) 365px,
-          350px
-        "
-        className="
-          object-cover
-          object-center
-        "
-      />
-
-      <div
-        className="
-          absolute
-          inset-0
-          bg-gradient-to-t
-          from-[#102f27]/20
-          to-transparent
-        "
-      />
-
-    </div>
-  );
-}
-
-
-/* ============================================================
-   MINI FEATURE
-============================================================ */
-
-function MiniFeature({
-  icon: Icon,
-  title,
-  subtitle,
-  last = false,
-}) {
-  return (
-    <div
-      className={`
-        flex
-        min-w-0
-        items-center
-        gap-2.5
-
-        pr-5
-        mr-4
-
-        ${
-          !last
-            ? "border-r border-[#ddd9cf]"
-            : ""
-        }
-
-        xl:pr-6
-        xl:mr-5
-      `}
-    >
-
-      <span
-        className="
-          flex
-          h-[31px]
-          w-[31px]
-          shrink-0
-
-          items-center
-          justify-center
-
-          rounded-full
-
-          border
-          border-[#d8bb82]
-
-          text-[#c0934d]
-        "
-      >
-        <Icon
-          size={16}
-          strokeWidth={1.6}
-        />
-      </span>
-
-
-      <span className="whitespace-nowrap">
-
-        <span
-          className="
-            block
-            text-[10px]
-            font-semibold
-            leading-[1.2]
-            text-[#344b44]
-
-            xl:text-[11px]
-          "
-        >
-          {title}
-        </span>
-
-        <span
-          className="
-            mt-[2px]
-            block
-            text-[9px]
-            leading-[1.2]
-            text-[#7d8782]
-          "
-        >
-          {subtitle}
-        </span>
-
-      </span>
-
-    </div>
-  );
-}
-
-
-/* ============================================================
-   TRUST ITEM
-============================================================ */
-
-function TrustItem({
-  icon: Icon,
-  title,
-  subtitle,
-  first = false,
-  last = false,
-}) {
-  return (
-    <div
-      className={`
-        flex
-        min-w-0
-        items-center
-        gap-3
-        px-2
-
-        ${
-          !first
-            ? "border-l border-[#e5e1d8]"
-            : ""
-        }
-
-        ${
-          last
-            ? "pr-0"
-            : ""
-        }
-
-        xl:px-5
-      `}
-    >
-
-      <span
-        className="
-          flex
-          h-[31px]
-          w-[31px]
-          shrink-0
-
-          items-center
-          justify-center
-
-          rounded-full
-
-          border
-          border-[#d9bd86]
-
-          text-[#bd914d]
-        "
-      >
-        <Icon
-          size={15}
-          strokeWidth={1.7}
-        />
-      </span>
-
-
-      <span className="min-w-0">
-
-        <span
-          className="
-            block
-            truncate
-            text-[10px]
-            font-semibold
-            text-[#394e47]
-
-            xl:text-[11px]
-          "
-        >
-          {title}
-        </span>
-
-        <span
-          className="
-            mt-[2px]
-            block
-            truncate
-            text-[8px]
-            text-[#8a918c]
-
-            xl:text-[9px]
-          "
-        >
-          {subtitle}
-        </span>
-
-      </span>
-
-    </div>
-  );
-}
-
-
-/* ============================================================
-   CATEGORY SKELETON
-============================================================ */
-
-function CategorySkeleton() {
-  return (
-    <div
-      className="
-        h-[108px]
-
-        animate-pulse
-
-        rounded-[13px]
-
-        border
-        border-[#e7e1d6]
-
-        bg-[#eeeae1]
-
-        xl:h-[114px]
-      "
-    />
-  );
-}
-
-
-/* ============================================================
-   CATEGORY CARD
-============================================================ */
-
-function CategoryCard({
-  title,
-  icon: Icon = Building2,
-  image,
-  position = "center",
-}) {
-  const href =
-    `/properties?propertyType=${encodeURIComponent(
-      title
-    )}`;
-
-  return (
-    <Link
-      href={href}
-      className="
-        group
-        relative
-
-        h-[108px]
-
-        overflow-hidden
-
-        rounded-[13px]
-
-        border
-        border-white
-
-        bg-[#163a31]
-
-        shadow-[0_7px_20px_rgba(22,48,40,0.08)]
-
-        xl:h-[114px]
-      "
-    >
-
-      <Image
-        src={image}
-        alt={`${title} properties`}
-        fill
-
-        /*
-         * Category images are below the hero and therefore
-         * remain lazy-loaded.
-         */
-        loading="lazy"
-
-        sizes="250px"
-
-        className="
-          object-cover
-
-          transition-transform
-          duration-700
-
-          group-hover:scale-[1.05]
-        "
-
-        style={{
-          objectPosition:
-            position,
-        }}
-      />
-
-
-      <div
-        className="
-          absolute
-          inset-0
-
-          bg-gradient-to-t
-          from-[#12392f]/95
-          via-[#12392f]/30
-          to-transparent
-        "
-      />
-
-
-      <div
-        className="
-          absolute
-          bottom-3
-          left-3
-          right-3
-
-          flex
-          items-center
-          justify-between
-        "
-      >
-
-        <div
-          className="
-            flex
-            min-w-0
-            items-center
-            gap-2
-          "
-        >
-
-          <Icon
-            size={14}
-            strokeWidth={1.7}
-            className="
-              shrink-0
-              text-[#d4b16d]
-            "
-          />
-
-          <span
-            className="
-              truncate
-              text-[9px]
-              font-medium
-              text-white
-
-              xl:text-[10px]
-            "
-          >
-            {title}
-          </span>
-
-        </div>
-
-
-        <span
-          className="
-            flex
-            h-[23px]
-            w-[23px]
-            shrink-0
-
-            items-center
-            justify-center
-
-            rounded-full
-
-            border
-            border-white/55
-
-            text-white
-
-            transition-all
-            duration-300
-
-            group-hover:border-[#d4b16d]
-            group-hover:bg-[#d4b16d]
-            group-hover:text-[#17342d]
-          "
-        >
-          <ArrowRight
-            size={11}
-            strokeWidth={2}
-          />
-        </span>
-
+        {/* Compact carousel indicators */}
+
+        {properties.length > 1 && (
+          <div className="absolute bottom-[47px] right-5 z-20 flex items-center gap-1.5 sm:bottom-[52px] sm:right-8 md:right-10">
+            {properties.map((property, index) => (
+              <button
+                key={getPropertyKey(property)}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Show featured property ${index + 1}`}
+                aria-current={activeIndex === index ? "true" : undefined}
+                className={`h-[3px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e] ${
+                  activeIndex === index
+                    ? "w-7 bg-[#e4bd70]"
+                    : "w-2.5 bg-white/55 hover:bg-white"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {loading && (
+          <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[1.8px] text-white/70 sm:left-8 md:left-10">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />
+            Discovering featured properties
+          </div>
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-    </Link>
+      {/* SEARCH PANEL: smaller overlap so more of it is visible */}
+
+      <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.45, delay: 0.1 }}
+          className="
+            rounded-[17px] border border-[#e7decd]
+            bg-[#fffefa] p-[5px]
+            shadow-[0_12px_32px_rgba(24,46,36,0.14)]
+            sm:rounded-[20px] sm:p-[6px]
+          "
+        >
+          <div className="rounded-[13px] sm:rounded-[16px]">
+            <SearchPanel />
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Controlled spacing before the next section */}
+
+      <div className="h-5 sm:h-7 lg:h-8" />
+    </section>
   );
 }
