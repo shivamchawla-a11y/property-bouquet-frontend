@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import TimedLeadPopup from "./TimedLeadPopup";
+import FloatingContactWidget from "./FloatingContactWidget";
 
 export default function ConditionalTimedLeadPopup() {
   const pathname = usePathname();
@@ -19,5 +19,5 @@ export default function ConditionalTimedLeadPopup() {
     return null;
   }
 
-  return <TimedLeadPopup />;
+  return <FloatingContactWidget />;
 }

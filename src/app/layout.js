@@ -8,7 +8,7 @@ import {
   Montserrat,
 } from "next/font/google";
 
-import FloatingContactWidget from "@/components/common/FloatingContactWidget";
+import ConditionalTimedLeadPopup from "@/components/common/ConditionalTimedLeadPopup";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -228,13 +228,7 @@ export default function RootLayout({ children }) {
 
         {children}
 
-       {/* ==================================================
-          GLOBAL FLOATING CONTACT WIDGET
-          Persistent, animated contact menu
-          Desktop and tablet only
-      ================================================== */}
-
-      <FloatingContactWidget />
+       <ConditionalTimedLeadPopup/>
 
         {/* ==================================================
             GLOBAL TOASTER
