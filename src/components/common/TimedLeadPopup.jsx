@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-
 import {
   ArrowRight,
   Mail,
@@ -11,40 +10,32 @@ import {
   UserRound,
   X,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function TimedLeadPopup() {
   const API = "/api";
-
-  // New key allows the updated popup to appear during testing.
-  const SESSION_KEY = "propertyBouquetTimedLeadPopupShown_v4";
-  const DELAY_MS = 3000;
+  const SESSION_KEY = "propertyBouquetTimedLeadPopupShown_v5";
+  const DELAY_MS = 2000;
 
   const [visible, setVisible] = useState(false);
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
-
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Display the fully expanded popup after 3 seconds.
-  // It appears once per browser session.
   useEffect(() => {
-    let alreadyShown = false;
-
     try {
-      alreadyShown =
-        sessionStorage.getItem(SESSION_KEY) === "true";
+      if (sessionStorage.getItem(SESSION_KEY) === "true") {
+        return;
+      }
     } catch (error) {
       console.warn("Unable to read popup session state:", error);
     }
 
-    if (alreadyShown) return;
-
     const timer = window.setTimeout(() => {
-      // Record that the popup has appeared.
       try {
         sessionStorage.setItem(SESSION_KEY, "true");
       } catch (error) {
@@ -57,7 +48,6 @@ export default function TimedLeadPopup() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Close the popup without affecting the WhatsApp widget.
   const handleClose = () => {
     if (submitting) return;
 
@@ -65,7 +55,6 @@ export default function TimedLeadPopup() {
     setErrorMessage("");
   };
 
-  // Submit the enquiry to the existing API.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -82,19 +71,17 @@ export default function TimedLeadPopup() {
       return;
     }
 
-    if (!phone) {
-      setErrorMessage("Please enter your mobile number.");
-      return;
-    }
-
     if (!/^[6-9]\d{9}$/.test(phone)) {
       setErrorMessage(
-        "Please enter a valid 10-digit mobile number."
+        "Please enter a valid 10-digit Indian mobile number."
       );
       return;
     }
 
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (
+      email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
       setErrorMessage("Please enter a valid email address.");
       return;
     }
@@ -102,7 +89,7 @@ export default function TimedLeadPopup() {
     try {
       setSubmitting(true);
 
-      const res = await fetch(`${API}/leads`, {
+      const response = await fetch(`${API}/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,10 +99,7 @@ export default function TimedLeadPopup() {
           phone,
           email,
           property: "Website Enquiry",
-
-          // Preserved for existing lead reporting.
-          source: "Website - 4 Second Popup",
-
+          source: "Website - 2 Second Popup",
           leadType: "Website Enquiry",
           pageUrl: window.location.href,
           pagePath: window.location.pathname,
@@ -126,14 +110,15 @@ export default function TimedLeadPopup() {
       let data = {};
 
       try {
-        data = await res.json();
+        data = await response.json();
       } catch {
         data = {};
       }
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error(
-          data?.message || `Submission failed (${res.status})`
+          data?.message ||
+            `Submission failed (${response.status})`
         );
       }
 
@@ -143,13 +128,15 @@ export default function TimedLeadPopup() {
       setLeadEmail("");
       setErrorMessage("");
 
-      // Keep the success message visible before closing.
       window.setTimeout(() => {
         setVisible(false);
         setSubmitted(false);
       }, 2500);
     } catch (error) {
-      console.error("TIMED WEBSITE LEAD SUBMISSION ERROR:", error);
+      console.error(
+        "TIMED WEBSITE LEAD SUBMISSION ERROR:",
+        error
+      );
 
       setErrorMessage(
         error?.message ||
@@ -160,271 +147,491 @@ export default function TimedLeadPopup() {
     }
   };
 
-  // Hidden on mobile and small screens.
-  if (!visible) return null;
-
   return (
     <div
       className="
         hidden md:block
-        fixed
-        right-5
-        bottom-[100px]
+        pointer-events-none
+        fixed right-4 bottom-6
         z-[9998]
-        w-[min(370px,calc(100vw-40px))]
+        w-[min(320px,calc(100vw-32px))]
       "
     >
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {visible && (
-          <motion.div
-            key="timed-lead-popup"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{
-              duration: 0.32,
-              ease: [0.22, 1, 0.36, 1],
+          <motion.section
+            key="property-bouquet-lead-popup"
+            initial={{
+              opacity: 0,
+              x: 32,
+              y: 8,
+              scale: 0.975,
+              filter: "blur(3px)",
             }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              y: 0,
+              scale: 1,
+              filter: "blur(0px)",
+            }}
+            exit={{
+              opacity: 0,
+              x: 18,
+              y: 4,
+              scale: 0.985,
+              filter: "blur(2px)",
+              transition: {
+                duration: 0.24,
+                ease: [0.4, 0, 1, 1],
+              },
+            }}
+            transition={{
+              opacity: {
+                duration: 0.42,
+                ease: "easeOut",
+              },
+              x: {
+                type: "spring",
+                stiffness: 145,
+                damping: 25,
+                mass: 0.8,
+              },
+              y: {
+                type: "spring",
+                stiffness: 130,
+                damping: 24,
+                mass: 0.8,
+              },
+              scale: {
+                duration: 0.48,
+                ease: [0.22, 1, 0.36, 1],
+              },
+              filter: {
+                duration: 0.38,
+                ease: "easeOut",
+              },
+            }}
+            aria-label="Property enquiry"
             className="
+              pointer-events-auto
               relative isolate overflow-hidden
-              max-h-[min(76dvh,620px)]
-              overflow-y-auto overscroll-contain
-              rounded-[20px]
-              border border-[#c9a64b]/30
-              bg-[#07130f]
-              shadow-[0_18px_60px_rgba(0,0,0,0.38)]
+              rounded-[18px]
+              border border-[#c9a96e]/30
+              bg-[#0a1913]
+              shadow-[0_16px_48px_rgba(0,0,0,0.32),0_3px_12px_rgba(0,0,0,0.12)]
+              [transform:translateZ(0)]
             "
           >
-            {/* Luxury background effects */}
-            <div className="pointer-events-none absolute inset-0 -z-10">
-              <div className="absolute -left-20 -top-24 h-48 w-48 rounded-full bg-[#c9a64b]/10 blur-[65px]" />
-              <div className="absolute -bottom-24 -right-20 h-48 w-48 rounded-full bg-[#0d4b3c]/25 blur-[65px]" />
+            {/* Subtle luxury background */}
+            <div
+              aria-hidden="true"
+              className="
+                pointer-events-none absolute inset-0 -z-10
+                overflow-hidden rounded-[18px]
+              "
+            >
+              <div
+                className="
+                  absolute -right-20 -top-24
+                  h-48 w-48 rounded-full
+                  bg-[#c9a96e]/[0.09] blur-[65px]
+                "
+              />
+
+              <div
+                className="
+                  absolute -bottom-24 -left-20
+                  h-40 w-40 rounded-full
+                  bg-[#1b503a]/30 blur-[55px]
+                "
+              />
+
+              <div
+                className="
+                  absolute inset-0
+                  bg-gradient-to-br
+                  from-white/[0.025] via-transparent
+                  to-[#c9a96e]/[0.035]
+                "
+              />
             </div>
 
-            {/* Header */}
-            <div className="relative z-10 border-b border-white/[0.08] px-5 pb-4 pt-5 sm:px-6">
+            {/* Fine gold accent */}
+            <div
+              aria-hidden="true"
+              className="
+                h-[2px] w-full
+                bg-gradient-to-r
+                from-transparent via-[#dfbd78] to-transparent
+              "
+            />
+
+            {/* Compact header */}
+            <header
+              className="
+                relative border-b border-white/[0.075]
+                px-4 pb-3.5 pt-4
+              "
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="h-px w-6 shrink-0 bg-[#d8b46b]" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-px w-5 bg-[#d9b875]" />
 
-                    <p className="text-[8px] font-medium uppercase tracking-[2px] text-[#d8b46b]">
-                      Curated Property Experience
+                    <p
+                      className="
+                        text-[8px] font-semibold uppercase
+                        tracking-[2px] text-[#d9b875]
+                      "
+                    >
+                      Property Bouquet
                     </p>
                   </div>
 
-                  <h2 className="mt-3 font-serif text-[25px] leading-[1.12] tracking-[-0.3px] text-white">
-                    Let Us Curate
+                  <h2
+                    className="
+                      mt-3 font-serif
+                      text-[24px] leading-[1.08]
+                      tracking-[-0.55px] text-[#fffdf7]
+                    "
+                  >
+                    Find Your
                     <br />
-                    Your Next Address.
+                    <span className="text-[#dfc38b]">
+                      Next Address.
+                    </span>
                   </h2>
 
-                  <p className="mt-2 max-w-[280px] text-[11px] leading-[1.7] text-white/55">
-                    Share your details and our property specialists
-                    will help you discover suitable opportunities.
+                  <p
+                    className="
+                      mt-2 max-w-[235px]
+                      text-[10.5px] leading-[1.7]
+                      text-[#e7e5da]/65
+                    "
+                  >
+                    Tell us what you are looking for.
+                    We’ll help you find the right property.
                   </p>
                 </div>
 
-                {/* Only close button; no expand or minimize controls */}
                 <button
                   type="button"
                   onClick={handleClose}
                   disabled={submitting}
                   aria-label="Close property enquiry popup"
                   className="
-                    flex h-8 w-8 shrink-0 items-center justify-center
-                    rounded-full text-white/55 transition
-                    hover:bg-white/10 hover:text-white
-                    disabled:cursor-not-allowed disabled:opacity-40
+                    flex h-7 w-7 shrink-0 items-center
+                    justify-center rounded-full
+                    border border-white/[0.09]
+                    bg-white/[0.035] text-white/55
+                    transition-all duration-300
+                    hover:rotate-90 hover:border-[#d9b875]/40
+                    hover:bg-[#d9b875]/10 hover:text-[#f0d49a]
+                    disabled:opacity-40
                   "
                 >
-                  <X size={17} />
+                  <X size={14} strokeWidth={1.7} />
                 </button>
               </div>
-            </div>
+            </header>
 
-            {/* Form / success state */}
-            <div className="relative z-10 px-5 py-4 sm:px-6">
-              {submitted ? (
-                <div className="py-6 text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#c9a64b]/30 bg-[#c9a64b]/10 text-[#d8b46b]">
-                    <Sparkles size={22} strokeWidth={1.5} />
-                  </div>
-
-                  <p className="mt-4 text-[9px] uppercase tracking-[2px] text-[#d8b46b]">
-                    Property Bouquet
-                  </p>
-
-                  <h3 className="mt-2 font-serif text-[25px] leading-tight text-white">
-                    Thank You!
-                  </h3>
-
-                  <p className="mt-2 text-[12px] leading-relaxed text-white/55">
-                    Your enquiry has been received. Our property
-                    specialists will connect with you shortly.
-                  </p>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-3"
-                >
-                  {/* Full name */}
-                  <div className="relative">
-                    <UserRound
-                      size={15}
-                      strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
-                    />
-
-                    <input
-                      type="text"
-                      name="name"
-                      value={leadName}
-                      onChange={(e) => setLeadName(e.target.value)}
-                      placeholder="Full Name"
-                      autoComplete="name"
-                      aria-label="Full name"
-                      disabled={submitting}
-                      required
-                      maxLength={100}
+            {/* Form and success state */}
+            <div className="relative px-4 py-3.5">
+              <AnimatePresence mode="wait" initial={false}>
+                {submitted ? (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, y: 7 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="py-3 text-center"
+                  >
+                    <div
                       className="
-                        h-11 w-full rounded-[11px] border
-                        border-white/10 bg-white/[0.04]
-                        pl-10 pr-3.5 text-[12px] text-white
-                        outline-none transition
-                        placeholder:text-white/40
-                        focus:border-[#c9a64b]/60
-                        focus:bg-white/[0.06]
-                        disabled:opacity-60
-                      "
-                    />
-                  </div>
-
-                  {/* Mobile number */}
-                  <div className="relative">
-                    <Phone
-                      size={15}
-                      strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
-                    />
-
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={leadPhone}
-                      onChange={(e) =>
-                        setLeadPhone(
-                          e.target.value.replace(/\D/g, "").slice(0, 10)
-                        )
-                      }
-                      placeholder="10-Digit Mobile Number"
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      aria-label="Mobile number"
-                      disabled={submitting}
-                      required
-                      maxLength={10}
-                      pattern="[6-9][0-9]{9}"
-                      title="Enter a valid 10-digit Indian mobile number."
-                      className="
-                        h-11 w-full rounded-[11px] border
-                        border-white/10 bg-white/[0.04]
-                        pl-10 pr-3.5 text-[12px] text-white
-                        outline-none transition
-                        placeholder:text-white/40
-                        focus:border-[#c9a64b]/60
-                        focus:bg-white/[0.06]
-                        disabled:opacity-60
-                      "
-                    />
-                  </div>
-
-                  {/* Optional email */}
-                  <div className="relative">
-                    <Mail
-                      size={15}
-                      strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
-                    />
-
-                    <input
-                      type="email"
-                      name="email"
-                      value={leadEmail}
-                      onChange={(e) => setLeadEmail(e.target.value)}
-                      placeholder="Email Address (Optional)"
-                      autoComplete="email"
-                      aria-label="Email address, optional"
-                      disabled={submitting}
-                      maxLength={254}
-                      className="
-                        h-11 w-full rounded-[11px] border
-                        border-white/10 bg-white/[0.04]
-                        pl-10 pr-3.5 text-[12px] text-white
-                        outline-none transition
-                        placeholder:text-white/40
-                        focus:border-[#c9a64b]/60
-                        focus:bg-white/[0.06]
-                        disabled:opacity-60
-                      "
-                    />
-                  </div>
-
-                  {/* Validation / API error */}
-                  {errorMessage && (
-                    <p
-                      role="alert"
-                      className="
-                        rounded-lg border border-red-400/20
-                        bg-red-400/5 px-3 py-2
-                        text-[11px] leading-relaxed text-red-300
+                        mx-auto flex h-11 w-11 items-center
+                        justify-center rounded-full
+                        border border-[#d9b875]/30
+                        bg-[#d9b875]/[0.09] text-[#e5c887]
                       "
                     >
-                      {errorMessage}
+                      <Sparkles size={20} strokeWidth={1.5} />
+                    </div>
+
+                    <p
+                      className="
+                        mt-3 text-[8px] font-medium uppercase
+                        tracking-[2px] text-[#d9b875]
+                      "
+                    >
+                      Enquiry Received
                     </p>
-                  )}
 
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="
-                      group relative mt-1 flex h-12 w-full
-                      items-center justify-center gap-2 overflow-hidden
-                      rounded-[11px] bg-[#c9a64b]
-                      text-[10px] font-semibold uppercase tracking-[1.5px]
-                      text-[#101510] transition
-                      hover:bg-[#d8b46b]
-                      active:scale-[0.99]
-                      disabled:cursor-not-allowed disabled:opacity-60
-                    "
+                    <h3 className="mt-1.5 font-serif text-[25px] text-white">
+                      Thank You.
+                    </h3>
+
+                    <p
+                      className="
+                        mx-auto mt-1.5 max-w-[230px]
+                        text-[10.5px] leading-[1.8] text-white/60
+                      "
+                    >
+                      Our property specialists will connect with
+                      you shortly.
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.form
+                    key="form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onSubmit={handleSubmit}
+                    className="space-y-2.5"
                   >
-                    <span className="pointer-events-none absolute inset-y-0 -left-[70%] w-[45%] rotate-[18deg] bg-white/20 transition-all duration-700 group-hover:left-[125%]" />
-
-                    <span className="relative z-10">
-                      {submitting
-                        ? "Submitting..."
-                        : "Get Property Assistance"}
-                    </span>
-
-                    {!submitting && (
-                      <ArrowRight
-                        size={15}
-                        strokeWidth={1.7}
-                        className="relative z-10 transition-transform group-hover:translate-x-1"
+                    {/* Full name */}
+                    <div className="group relative">
+                      <UserRound
+                        size={14}
+                        strokeWidth={1.6}
+                        className="
+                          pointer-events-none absolute left-3.5
+                          top-1/2 -translate-y-1/2
+                          text-[#c9a96e]/75
+                          transition-colors duration-200
+                          group-focus-within:text-[#e4c581]
+                        "
                       />
-                    )}
-                  </button>
 
-                  <p className="pt-1 text-center text-[9px] leading-relaxed text-white/40">
-                    Your information is kept confidential and used
-                    only to assist with your property enquiry.
-                  </p>
-                </form>
-              )}
+                      <input
+                        type="text"
+                        name="name"
+                        value={leadName}
+                        onChange={(event) =>
+                          setLeadName(event.target.value)
+                        }
+                        placeholder="Full Name"
+                        autoComplete="name"
+                        aria-label="Full name"
+                        maxLength={100}
+                        required
+                        disabled={submitting}
+                        className="
+                          h-[39px] w-full rounded-[10px]
+                          border border-white/[0.09]
+                          bg-white/[0.035]
+                          pl-10 pr-3
+                          text-[11px] text-white
+                          outline-none transition-all duration-200
+                          placeholder:text-white/40
+                          hover:border-white/[0.17]
+                          focus:border-[#c9a96e]/65
+                          focus:bg-white/[0.055]
+                          focus:ring-2 focus:ring-[#c9a96e]/[0.07]
+                          disabled:opacity-60
+                        "
+                      />
+                    </div>
+
+                    {/* Mobile number */}
+                    <div className="group relative">
+                      <Phone
+                        size={14}
+                        strokeWidth={1.6}
+                        className="
+                          pointer-events-none absolute left-3.5
+                          top-1/2 -translate-y-1/2
+                          text-[#c9a96e]/75
+                          transition-colors duration-200
+                          group-focus-within:text-[#e4c581]
+                        "
+                      />
+
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={leadPhone}
+                        onChange={(event) =>
+                          setLeadPhone(
+                            event.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 10)
+                          )
+                        }
+                        placeholder="10-Digit Mobile Number"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        aria-label="Mobile number"
+                        pattern="[6-9][0-9]{9}"
+                        title="Enter a valid 10-digit Indian mobile number."
+                        maxLength={10}
+                        required
+                        disabled={submitting}
+                        className="
+                          h-[39px] w-full rounded-[10px]
+                          border border-white/[0.09]
+                          bg-white/[0.035]
+                          pl-10 pr-3
+                          text-[11px] text-white
+                          outline-none transition-all duration-200
+                          placeholder:text-white/40
+                          hover:border-white/[0.17]
+                          focus:border-[#c9a96e]/65
+                          focus:bg-white/[0.055]
+                          focus:ring-2 focus:ring-[#c9a96e]/[0.07]
+                          disabled:opacity-60
+                        "
+                      />
+                    </div>
+
+                    {/* Optional email */}
+                    <div className="group relative">
+                      <Mail
+                        size={14}
+                        strokeWidth={1.6}
+                        className="
+                          pointer-events-none absolute left-3.5
+                          top-1/2 -translate-y-1/2
+                          text-[#c9a96e]/75
+                          transition-colors duration-200
+                          group-focus-within:text-[#e4c581]
+                        "
+                      />
+
+                      <input
+                        type="email"
+                        name="email"
+                        value={leadEmail}
+                        onChange={(event) =>
+                          setLeadEmail(event.target.value)
+                        }
+                        placeholder="Email Address (Optional)"
+                        autoComplete="email"
+                        aria-label="Email address, optional"
+                        maxLength={254}
+                        disabled={submitting}
+                        className="
+                          h-[39px] w-full rounded-[10px]
+                          border border-white/[0.09]
+                          bg-white/[0.035]
+                          pl-10 pr-3
+                          text-[11px] text-white
+                          outline-none transition-all duration-200
+                          placeholder:text-white/40
+                          hover:border-white/[0.17]
+                          focus:border-[#c9a96e]/65
+                          focus:bg-white/[0.055]
+                          focus:ring-2 focus:ring-[#c9a96e]/[0.07]
+                          disabled:opacity-60
+                        "
+                      />
+                    </div>
+
+                    {/* Validation and API errors */}
+                    <AnimatePresence initial={false}>
+                      {errorMessage && (
+                        <motion.p
+                          key="error"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          role="alert"
+                          className="
+                            overflow-hidden rounded-lg
+                            border border-red-400/20
+                            bg-red-400/[0.06]
+                            px-3 py-2 text-[10px]
+                            leading-relaxed text-red-300
+                          "
+                        >
+                          {errorMessage}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Premium CTA */}
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="
+                        group relative mt-0.5
+                        flex h-[41px] w-full
+                        items-center justify-center gap-2
+                        overflow-hidden rounded-[10px]
+                        border border-[#f0d69a]/25
+                        bg-gradient-to-r
+                        from-[#c29a4d] via-[#dfbf78] to-[#c7a054]
+                        px-3
+                        text-[9px] font-bold uppercase
+                        tracking-[1.25px] text-[#142016]
+                        shadow-[0_4px_14px_rgba(201,169,110,0.10)]
+                        transition-all duration-300
+                        hover:brightness-110
+                        hover:shadow-[0_5px_18px_rgba(201,169,110,0.20)]
+                        active:scale-[0.99]
+                        disabled:cursor-not-allowed disabled:opacity-60
+                      "
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="
+                          pointer-events-none absolute inset-y-0
+                          -left-1/2 w-1/3 rotate-[18deg]
+                          bg-white/25 blur-sm
+                          transition-all duration-700
+                          group-hover:left-[120%]
+                        "
+                      />
+
+                      <span className="relative z-10">
+                        {submitting
+                          ? "Submitting Enquiry..."
+                          : "Get Property Assistance"}
+                      </span>
+
+                      {!submitting && (
+                        <ArrowRight
+                          size={14}
+                          strokeWidth={1.8}
+                          className="
+                            relative z-10
+                            transition-transform duration-300
+                            group-hover:translate-x-1
+                          "
+                        />
+                      )}
+                    </button>
+
+                    {/* Privacy reassurance */}
+                    <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                      <ShieldCheck
+                        size={12}
+                        strokeWidth={1.5}
+                        className="shrink-0 text-[#d9b875]/75"
+                      />
+
+                      <p className="text-center text-[9px] leading-relaxed text-white/45">
+                        Your details remain confidential.
+                      </p>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
             </div>
-          </motion.div>
+
+            {/* Bottom gold hairline */}
+            <div
+              aria-hidden="true"
+              className="
+                h-px bg-gradient-to-r
+                from-transparent via-[#c9a96e]/40 to-transparent
+              "
+            />
+          </motion.section>
         )}
       </AnimatePresence>
     </div>
