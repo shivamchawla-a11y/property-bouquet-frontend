@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,6 +15,8 @@ import {
 
 export default function TimedLeadPopup() {
   const API = "/api";
+
+  // New key allows the updated popup to appear during testing.
   const SESSION_KEY = "propertyBouquetTimedLeadPopupShown_v4";
   const DELAY_MS = 3000;
 
@@ -26,42 +29,43 @@ export default function TimedLeadPopup() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Show the complete form after 3 seconds, once per browser session.
+  // Display the fully expanded popup after 3 seconds.
+  // It appears once per browser session.
   useEffect(() => {
+    let alreadyShown = false;
+
     try {
-      if (sessionStorage.getItem(SESSION_KEY) === "true") {
-        return;
-      }
+      alreadyShown =
+        sessionStorage.getItem(SESSION_KEY) === "true";
     } catch (error) {
       console.warn("Unable to read popup session state:", error);
     }
 
-    const timer = window.setTimeout(() => {
-      setVisible(true);
+    if (alreadyShown) return;
 
+    const timer = window.setTimeout(() => {
+      // Record that the popup has appeared.
       try {
         sessionStorage.setItem(SESSION_KEY, "true");
       } catch (error) {
         console.warn("Unable to save popup session state:", error);
       }
+
+      setVisible(true);
     }, DELAY_MS);
 
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Close the popup for the current browser session.
+  // Close the popup without affecting the WhatsApp widget.
   const handleClose = () => {
     if (submitting) return;
 
     setVisible(false);
     setErrorMessage("");
-    setLeadName("");
-    setLeadPhone("");
-    setLeadEmail("");
-    setSubmitted(false);
   };
 
-  // Submit using the existing Property Bouquet leads API.
+  // Submit the enquiry to the existing API.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -78,8 +82,15 @@ export default function TimedLeadPopup() {
       return;
     }
 
+    if (!phone) {
+      setErrorMessage("Please enter your mobile number.");
+      return;
+    }
+
     if (!/^[6-9]\d{9}$/.test(phone)) {
-      setErrorMessage("Please enter a valid 10-digit mobile number.");
+      setErrorMessage(
+        "Please enter a valid 10-digit mobile number."
+      );
       return;
     }
 
@@ -101,7 +112,10 @@ export default function TimedLeadPopup() {
           phone,
           email,
           property: "Website Enquiry",
+
+          // Preserved for existing lead reporting.
           source: "Website - 4 Second Popup",
+
           leadType: "Website Enquiry",
           pageUrl: window.location.href,
           pagePath: window.location.pathname,
@@ -124,13 +138,14 @@ export default function TimedLeadPopup() {
       }
 
       setSubmitted(true);
+      setLeadName("");
+      setLeadPhone("");
+      setLeadEmail("");
+      setErrorMessage("");
 
+      // Keep the success message visible before closing.
       window.setTimeout(() => {
         setVisible(false);
-        setLeadName("");
-        setLeadPhone("");
-        setLeadEmail("");
-        setErrorMessage("");
         setSubmitted(false);
       }, 2500);
     } catch (error) {
@@ -145,51 +160,53 @@ export default function TimedLeadPopup() {
     }
   };
 
+  // Hidden on mobile and small screens.
+  if (!visible) return null;
+
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          key="timed-lead-popup"
-          initial={{ opacity: 0, y: 18, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 12, scale: 0.98 }}
-          transition={{
-            duration: 0.3,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="
-            fixed
-            right-3
-            bottom-[104px]
-            z-[9990]
-            w-[min(350px,calc(100vw-24px))]
-            sm:right-5
-            sm:bottom-[104px]
-          "
-        >
-          <div
+    <div
+      className="
+        hidden md:block
+        fixed
+        right-5
+        bottom-[100px]
+        z-[9998]
+        w-[min(370px,calc(100vw-40px))]
+      "
+    >
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            key="timed-lead-popup"
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.98 }}
+            transition={{
+              duration: 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="
               relative isolate overflow-hidden
-              max-h-[min(72dvh,570px)]
+              max-h-[min(76dvh,620px)]
               overflow-y-auto overscroll-contain
               rounded-[20px]
-              border border-[#c9a64b]/25
+              border border-[#c9a64b]/30
               bg-[#07130f]
               shadow-[0_18px_60px_rgba(0,0,0,0.38)]
             "
           >
-            {/* Decorative background glow */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[20px]">
+            {/* Luxury background effects */}
+            <div className="pointer-events-none absolute inset-0 -z-10">
               <div className="absolute -left-20 -top-24 h-48 w-48 rounded-full bg-[#c9a64b]/10 blur-[65px]" />
-              <div className="absolute -bottom-24 -right-20 h-48 w-48 rounded-full bg-[#0d4b3c]/20 blur-[65px]" />
+              <div className="absolute -bottom-24 -right-20 h-48 w-48 rounded-full bg-[#0d4b3c]/25 blur-[65px]" />
             </div>
 
             {/* Header */}
-            <div className="relative z-10 border-b border-white/[0.08] px-5 pb-4 pt-4 sm:px-6">
+            <div className="relative z-10 border-b border-white/[0.08] px-5 pb-4 pt-5 sm:px-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="h-px w-6 bg-[#d8b46b]" />
+                    <div className="h-px w-6 shrink-0 bg-[#d8b46b]" />
 
                     <p className="text-[8px] font-medium uppercase tracking-[2px] text-[#d8b46b]">
                       Curated Property Experience
@@ -202,13 +219,13 @@ export default function TimedLeadPopup() {
                     Your Next Address.
                   </h2>
 
-                  <p className="mt-2 max-w-[280px] text-[10px] leading-[1.65] text-white/55">
+                  <p className="mt-2 max-w-[280px] text-[11px] leading-[1.7] text-white/55">
                     Share your details and our property specialists
                     will help you discover suitable opportunities.
                   </p>
                 </div>
 
-                {/* Close button only; no expand or collapse controls */}
+                {/* Only close button; no expand or minimize controls */}
                 <button
                   type="button"
                   onClick={handleClose}
@@ -216,12 +233,12 @@ export default function TimedLeadPopup() {
                   aria-label="Close property enquiry popup"
                   className="
                     flex h-8 w-8 shrink-0 items-center justify-center
-                    rounded-full text-white/50 transition
+                    rounded-full text-white/55 transition
                     hover:bg-white/10 hover:text-white
                     disabled:cursor-not-allowed disabled:opacity-40
                   "
                 >
-                  <X size={16} />
+                  <X size={17} />
                 </button>
               </div>
             </div>
@@ -229,35 +246,40 @@ export default function TimedLeadPopup() {
             {/* Form / success state */}
             <div className="relative z-10 px-5 py-4 sm:px-6">
               {submitted ? (
-                <div className="py-5 text-center">
+                <div className="py-6 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#c9a64b]/30 bg-[#c9a64b]/10 text-[#d8b46b]">
-                    <Sparkles size={21} strokeWidth={1.5} />
+                    <Sparkles size={22} strokeWidth={1.5} />
                   </div>
 
-                  <p className="mt-4 text-[8px] uppercase tracking-[2px] text-[#d8b46b]">
+                  <p className="mt-4 text-[9px] uppercase tracking-[2px] text-[#d8b46b]">
                     Property Bouquet
                   </p>
 
-                  <h3 className="mt-2 font-serif text-[23px] leading-tight text-white">
+                  <h3 className="mt-2 font-serif text-[25px] leading-tight text-white">
                     Thank You!
                   </h3>
 
-                  <p className="mt-2 text-[11px] leading-relaxed text-white/55">
+                  <p className="mt-2 text-[12px] leading-relaxed text-white/55">
                     Your enquiry has been received. Our property
                     specialists will connect with you shortly.
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-2.5">
-                  {/* Name */}
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-3"
+                >
+                  {/* Full name */}
                   <div className="relative">
                     <UserRound
-                      size={14}
+                      size={15}
                       strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/60"
+                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
                     />
 
                     <input
+                      type="text"
+                      name="name"
                       value={leadName}
                       onChange={(e) => setLeadName(e.target.value)}
                       placeholder="Full Name"
@@ -265,27 +287,31 @@ export default function TimedLeadPopup() {
                       aria-label="Full name"
                       disabled={submitting}
                       required
+                      maxLength={100}
                       className="
-                        h-11 w-full rounded-[10px] border
+                        h-11 w-full rounded-[11px] border
                         border-white/10 bg-white/[0.04]
                         pl-10 pr-3.5 text-[12px] text-white
                         outline-none transition
-                        placeholder:text-white/35
-                        focus:border-[#c9a64b]/50
+                        placeholder:text-white/40
+                        focus:border-[#c9a64b]/60
+                        focus:bg-white/[0.06]
                         disabled:opacity-60
                       "
                     />
                   </div>
 
-                  {/* Mobile */}
+                  {/* Mobile number */}
                   <div className="relative">
                     <Phone
-                      size={14}
+                      size={15}
                       strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/60"
+                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
                     />
 
                     <input
+                      type="tel"
+                      name="phone"
                       value={leadPhone}
                       onChange={(e) =>
                         setLeadPhone(
@@ -294,18 +320,21 @@ export default function TimedLeadPopup() {
                       }
                       placeholder="10-Digit Mobile Number"
                       inputMode="numeric"
-                      autoComplete="tel"
+                      autoComplete="tel-national"
                       aria-label="Mobile number"
                       disabled={submitting}
                       required
                       maxLength={10}
+                      pattern="[6-9][0-9]{9}"
+                      title="Enter a valid 10-digit Indian mobile number."
                       className="
-                        h-11 w-full rounded-[10px] border
+                        h-11 w-full rounded-[11px] border
                         border-white/10 bg-white/[0.04]
                         pl-10 pr-3.5 text-[12px] text-white
                         outline-none transition
-                        placeholder:text-white/35
-                        focus:border-[#c9a64b]/50
+                        placeholder:text-white/40
+                        focus:border-[#c9a64b]/60
+                        focus:bg-white/[0.06]
                         disabled:opacity-60
                       "
                     />
@@ -314,39 +343,42 @@ export default function TimedLeadPopup() {
                   {/* Optional email */}
                   <div className="relative">
                     <Mail
-                      size={14}
+                      size={15}
                       strokeWidth={1.5}
-                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/60"
+                      className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[#d8b46b]/70"
                     />
 
                     <input
+                      type="email"
+                      name="email"
                       value={leadEmail}
                       onChange={(e) => setLeadEmail(e.target.value)}
                       placeholder="Email Address (Optional)"
-                      type="email"
                       autoComplete="email"
                       aria-label="Email address, optional"
                       disabled={submitting}
+                      maxLength={254}
                       className="
-                        h-11 w-full rounded-[10px] border
+                        h-11 w-full rounded-[11px] border
                         border-white/10 bg-white/[0.04]
                         pl-10 pr-3.5 text-[12px] text-white
                         outline-none transition
-                        placeholder:text-white/35
-                        focus:border-[#c9a64b]/50
+                        placeholder:text-white/40
+                        focus:border-[#c9a64b]/60
+                        focus:bg-white/[0.06]
                         disabled:opacity-60
                       "
                     />
                   </div>
 
-                  {/* Error */}
+                  {/* Validation / API error */}
                   {errorMessage && (
                     <p
                       role="alert"
                       className="
                         rounded-lg border border-red-400/20
                         bg-red-400/5 px-3 py-2
-                        text-[10px] leading-relaxed text-red-300
+                        text-[11px] leading-relaxed text-red-300
                       "
                     >
                       {errorMessage}
@@ -358,11 +390,12 @@ export default function TimedLeadPopup() {
                     type="submit"
                     disabled={submitting}
                     className="
-                      group relative mt-1 flex h-11 w-full
+                      group relative mt-1 flex h-12 w-full
                       items-center justify-center gap-2 overflow-hidden
-                      rounded-[10px] bg-[#c9a64b]
-                      text-[9px] font-semibold uppercase tracking-[1.6px]
-                      text-[#101510] transition hover:bg-[#d8b46b]
+                      rounded-[11px] bg-[#c9a64b]
+                      text-[10px] font-semibold uppercase tracking-[1.5px]
+                      text-[#101510] transition
+                      hover:bg-[#d8b46b]
                       active:scale-[0.99]
                       disabled:cursor-not-allowed disabled:opacity-60
                     "
@@ -377,23 +410,23 @@ export default function TimedLeadPopup() {
 
                     {!submitting && (
                       <ArrowRight
-                        size={14}
+                        size={15}
                         strokeWidth={1.7}
                         className="relative z-10 transition-transform group-hover:translate-x-1"
                       />
                     )}
                   </button>
 
-                  <p className="pt-1 text-center text-[8px] leading-relaxed text-white/35">
+                  <p className="pt-1 text-center text-[9px] leading-relaxed text-white/40">
                     Your information is kept confidential and used
                     only to assist with your property enquiry.
                   </p>
                 </form>
               )}
             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
