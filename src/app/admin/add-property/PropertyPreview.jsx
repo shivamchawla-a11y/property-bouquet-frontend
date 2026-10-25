@@ -282,7 +282,9 @@ function getDeveloperImage() {
   return "";
 }
 
-  const unitConfigurations = gatedContent?.floorPlans || [];
+  const unitConfigurations = Array.isArray(form?.unitConfigurations)
+  ? form.unitConfigurations
+  : [];
   const [activePlan, setActivePlan] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [leadName, setLeadName] = useState("");
@@ -3614,16 +3616,68 @@ else {
   const configurationType =
     gatedContent?.configurationType || "Apartments";
 
-  const isPlots = configurationType === "Plots";
+  const isPlots =
+    String(configurationType).toLowerCase() === "plots";
 
-  const configurations = isPlots
-    ? gatedContent?.plotConfigurations || []
-    : gatedContent?.floorPlans || [];
+  // Safely check whether a value contains usable data.
+  const hasValue = (value) =>
+    value !== null &&
+    value !== undefined &&
+    String(value).trim() !== "";
 
-  // No configuration data = don't render section
-  if (!configurations.length) return null;
+  // Filter out empty placeholder configuration records.
+  const isValidConfiguration = (item) => {
+    if (!item || typeof item !== "object") return false;
 
-  // Prevent invalid active index
+    if (isPlots) {
+      return [
+        item.plotType,
+        item.plotArea,
+        item.price,
+        item.paymentPlan,
+        item.image,
+      ].some(hasValue);
+    }
+
+    return [
+      item.unitType,
+      item.area,
+      item.price,
+      item.bedrooms,
+      item.bathrooms,
+      item.balconies,
+      item.paymentPlan,
+      item.image,
+    ].some(hasValue);
+  };
+
+  // Get configurations from the gated-content fields.
+  const gatedSource = isPlots
+    ? gatedContent?.plotConfigurations
+    : gatedContent?.floorPlans;
+
+  const gatedConfigurations = (
+    Array.isArray(gatedSource) ? gatedSource : []
+  ).filter(isValidConfiguration);
+
+  // Get the property's actual unit configurations.
+  const propertyConfigurations = Array.isArray(form?.unitConfigurations)
+    ? form.unitConfigurations.filter(isValidConfiguration)
+    : [];
+
+  // Prefer populated gated configurations.
+  // Otherwise, use the property's unitConfigurations.
+  // Plot listings must not fall back to apartment configurations.
+  const configurations = gatedConfigurations.length > 0
+    ? gatedConfigurations
+    : isPlots
+      ? []
+      : propertyConfigurations;
+
+  // Do not render an empty configuration section.
+  if (configurations.length === 0) return null;
+
+  // Keep the active tab within the available range.
   const safeActivePlan =
     activePlan >= 0 && activePlan < configurations.length
       ? activePlan
@@ -3632,9 +3686,9 @@ else {
   const activeConfiguration =
     configurations[safeActivePlan] || {};
 
+  // Check whether a valid configuration image exists.
   const hasConfigurationImage =
-    activeConfiguration?.image &&
-    typeof activeConfiguration.image === "string" &&
+    typeof activeConfiguration?.image === "string" &&
     activeConfiguration.image.trim() !== "";
 
   return (
