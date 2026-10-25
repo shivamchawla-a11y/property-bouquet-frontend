@@ -1,97 +1,427 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+import {
+  ArrowLeft,
   ArrowRight,
+  MapPin,
+  Sparkles,
   Building2,
   Home,
-  MapPin,
   ShieldCheck,
   Target,
   Landmark,
   Trees,
 } from "lucide-react";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
-
 import SearchPanelMobile from "./SearchPanelMobile";
 
 /* ============================================================
-   PROPERTY BOUQUET — MOBILE HERO
+   PROPERTY BOUQUET — MOBILE HERO SECTION
 
-   MOBILE-FIRST VERSION
+   FEATURES
    ------------------------------------------------------------
-   - No hero images
-   - No /img1.jpg
-   - No /img2.jpg
-   - No /img3.jpg
-   - Faster mobile initial load
-   - Purely responsive mobile layout
+   - Same featured-property carousel as desktop
+   - Dynamic featured listings from the backend
+   - Automatic rotation every 5 seconds
+   - Property image, title, configuration, price and location
+   - Previous/next controls and carousel indicators
+   - Luxury green and gold visual treatment
+   - Responsive mobile typography and spacing
    - Functional SearchPanelMobile
-   - SearchPanelMobile remains in normal document flow
-   - Hero uses overflow-visible so dropdowns can escape
-   - Categories are fetched from /api/properties
-   - Uses categoryData.categoryName
-   - Category click uses ?propertyType=
-   
-   CATEGORY IMAGES
-   ------------------------------------------------------------
-   /img4.webp → Category 1
-   /img5.webp → Category 2
-   /img6.webp → Category 3
-   /img7.webp → Category 4
+   - Trust features and dynamic property categories
+   - Category images /img4.webp through /img7.webp
+   - Reduced-motion accessibility support
+============================================================ */
+
+const FEATURED_API = "/api/properties?propertyTag=Featured";
+const PROPERTIES_API = "/api/properties";
+const ROTATION_MS = 5000;
+
+/* ============================================================
+   PROPERTY HELPERS
+============================================================ */
+
+function getPropertyKey(property) {
+  return (
+    property?._id ||
+    property?.id ||
+    property?.slug ||
+    property?.coreDetails?.title ||
+    "featured-property"
+  );
+}
+
+function getPropertyImage(property) {
+  const candidates = [
+    property?.media?.heroImageUrl,
+    property?.media?.heroImage,
+    property?.heroImageUrl,
+    property?.image,
+    property?.coreDetails?.image,
+    property?.media?.images?.[0],
+    property?.gallery?.[0],
+  ];
+
+  for (const candidate of candidates) {
+    const value =
+      typeof candidate === "string"
+        ? candidate
+        : candidate?.url || candidate?.secure_url;
+
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return "/img1.jpg";
+}
+
+function getPropertyTitle(property) {
+  return (
+    property?.coreDetails?.title ||
+    property?.title ||
+    property?.name ||
+    "Featured Property"
+  );
+}
+
+function getPropertyLocation(property) {
+  const location = property?.locationData?.locationRef;
+
+  if (location) {
+    const parts = [
+      location?.name,
+      location?.parent?.name,
+      location?.parent?.parent?.name,
+    ].filter(Boolean);
+
+    if (parts.length) {
+      return [...new Set(parts)].join(", ");
+    }
+  }
+
+  return (
+    property?.locationData?.customLocation ||
+    property?.locationData?.locationName ||
+    property?.location ||
+    property?.address ||
+    "Explore the location"
+  );
+}
+
+function getPropertyConfiguration(property) {
+  const core = property?.coreDetails || {};
+  const configuration = property?.configurationData || {};
+
+  const value =
+    core?.configuration ||
+    core?.configurations ||
+    core?.bedrooms ||
+    core?.bhk ||
+    configuration?.configuration ||
+    configuration?.configurations ||
+    configuration?.bedroom ||
+    configuration?.bhk ||
+    property?.configurations;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) =>
+        typeof item === "string"
+          ? item
+          : item?.label || item?.name || item?.configuration
+      )
+      .filter(Boolean)
+      .join(" / ");
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return `${value} BHK`;
+  }
+
+  return "";
+}
+
+function formatPrice(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return "";
+  }
+
+  if (amount >= 10000000) {
+    return `₹${(amount / 10000000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Cr`;
+  }
+
+  if (amount >= 100000) {
+    return `₹${(amount / 100000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Lac`;
+  }
+
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+function getStartingPrice(property) {
+  if (
+    property?.coreDetails?.priceOnRequest === true ||
+    property?.pricing?.priceOnRequest === true
+  ) {
+    return "Price on Request";
+  }
+
+  const candidates = [
+    property?.pricing?.startingPrice,
+    property?.pricing?.minPrice,
+    property?.pricing?.priceFrom,
+    property?.coreDetails?.startingPrice,
+    property?.coreDetails?.minPrice,
+    property?.startingPrice,
+    property?.minPrice,
+    property?.priceRange?.min,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "number" && value > 0) {
+      return formatPrice(value);
+    }
+
+    if (typeof value === "string" && value.trim()) {
+      const cleaned = value.trim();
+
+      if (/price on request/i.test(cleaned)) {
+        return "Price on Request";
+      }
+
+      if (/\d/.test(cleaned)) {
+        const numeric = Number(
+          cleaned.replace(/[₹,\s]/g, "")
+        );
+
+        if (Number.isFinite(numeric) && numeric > 0) {
+          return formatPrice(numeric);
+        }
+
+        return cleaned;
+      }
+    }
+  }
+
+  return "";
+}
+
+/* ============================================================
+   CATEGORY HELPERS
+============================================================ */
+
+function getCategoryScore(name) {
+  const value = String(name || "").toLowerCase();
+
+  if (
+    value.includes("apartment") ||
+    value.includes("residential") ||
+    value.includes("flat")
+  ) {
+    return 100;
+  }
+
+  if (value.includes("villa")) return 90;
+
+  if (
+    value.includes("plot") ||
+    value.includes("land")
+  ) {
+    return 80;
+  }
+
+  if (
+    value.includes("commercial") ||
+    value.includes("office") ||
+    value.includes("retail")
+  ) {
+    return 70;
+  }
+
+  if (
+    value.includes("builder") ||
+    value.includes("floor")
+  ) {
+    return 60;
+  }
+
+  if (value.includes("penthouse")) return 55;
+
+  if (value.includes("investment")) return 50;
+
+  return 10;
+}
+
+function getCategoryIcon(categoryName) {
+  const value = String(categoryName || "").toLowerCase();
+
+  if (
+    value.includes("plot") ||
+    value.includes("land")
+  ) {
+    return Trees;
+  }
+
+  if (
+    value.includes("commercial") ||
+    value.includes("office") ||
+    value.includes("retail")
+  ) {
+    return Landmark;
+  }
+
+  if (value.includes("villa")) {
+    return Home;
+  }
+
+  return Building2;
+}
+
+/* ============================================================
+   MAIN MOBILE HERO
 ============================================================ */
 
 export default function HeroSectionMobile() {
-  /* ==========================================================
-     DYNAMIC PROPERTY CATEGORIES
-  ========================================================== */
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const [propertyCategories, setPropertyCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
+  const reduceMotion = useReducedMotion();
+
+  /* ==========================================================
+     FETCH FEATURED PROPERTIES
+  ========================================================== */
+
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
+    let mounted = true;
 
-    const fetchPropertyCategories = async () => {
+    async function fetchFeaturedProperties() {
       try {
-        setCategoriesLoading(true);
-
-        const response = await fetch("/api/properties", {
+        const response = await fetch(FEATURED_API, {
           cache: "no-store",
+          signal: controller.signal,
         });
 
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch properties: ${response.status}`
+            `Featured properties request failed: ${response.status}`
           );
         }
 
-        const data = await response.json();
+        const result = await response.json();
+
+        if (!mounted) return;
+
+        const list = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.properties)
+            ? result.properties
+            : Array.isArray(result)
+              ? result
+              : [];
+
+        const published = list.filter(
+          (property) =>
+            property?.status === "published" &&
+            property?.isDeleted !== true &&
+            property?.isActive !== false &&
+            property?.deletedFromStatus !== "trash"
+        );
+
+        setProperties(published);
+        setActiveIndex(0);
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error(
+            "Featured property carousel failed:",
+            error
+          );
+
+          if (mounted) {
+            setProperties([]);
+          }
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchFeaturedProperties();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
+
+  /* ==========================================================
+     FETCH DYNAMIC PROPERTY CATEGORIES
+  ========================================================== */
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+
+    async function fetchPropertyCategories() {
+      try {
+        const response = await fetch(PROPERTIES_API, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch property categories: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
 
         if (cancelled) return;
 
-        /*
-         * Support the same common response shapes
-         * used by the desktop HeroSection.
-         */
-        const propertyData = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.properties)
-            ? data.properties
-            : Array.isArray(data?.data)
-              ? data.data
+        const propertyData = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.properties)
+            ? result.properties
+            : Array.isArray(result?.data)
+              ? result.data
               : [];
 
-        /*
-         * EXACT SAME CATEGORY SOURCE AS DESKTOP SEARCH:
-         *
-         * property?.categoryData?.categoryName
-         */
         const uniqueCategories = [
           ...new Set(
             propertyData
+              .filter(
+                (property) =>
+                  property?.status === "published" &&
+                  property?.isDeleted !== true &&
+                  property?.isActive !== false &&
+                  property?.deletedFromStatus !== "trash"
+              )
               .map(
                 (property) =>
                   property?.categoryData?.categoryName
@@ -102,739 +432,577 @@ export default function HeroSectionMobile() {
           ),
         ];
 
-        if (!uniqueCategories.length) {
-          setPropertyCategories([]);
-          return;
-        }
-
-        /* ====================================================
-           SAME CATEGORY PRIORITY LOGIC AS DESKTOP
-        ==================================================== */
-
-        const getCategoryScore = (name) => {
-          const value = String(name || "").toLowerCase();
-
-          if (
-            value.includes("apartment") ||
-            value.includes("residential") ||
-            value.includes("flat")
-          ) {
-            return 100;
-          }
-
-          if (value.includes("villa")) {
-            return 90;
-          }
-
-          if (
-            value.includes("plot") ||
-            value.includes("land")
-          ) {
-            return 80;
-          }
-
-          if (
-            value.includes("commercial") ||
-            value.includes("office") ||
-            value.includes("retail")
-          ) {
-            return 70;
-          }
-
-          if (
-            value.includes("builder") ||
-            value.includes("floor")
-          ) {
-            return 60;
-          }
-
-          if (value.includes("penthouse")) {
-            return 55;
-          }
-
-          if (value.includes("investment")) {
-            return 50;
-          }
-
-          return 10;
-        };
-
-        const sortedCategories = [...uniqueCategories].sort(
+        const sortedCategories = uniqueCategories.sort(
           (a, b) => {
-            const scoreDifference =
-              getCategoryScore(b) -
-              getCategoryScore(a);
+            const difference =
+              getCategoryScore(b) - getCategoryScore(a);
 
-            if (scoreDifference !== 0) {
-              return scoreDifference;
-            }
-
-            return a.localeCompare(b);
+            return difference !== 0
+              ? difference
+              : a.localeCompare(b);
           }
         );
 
-        /*
-         * EXACTLY THE SAME FOUR-CATEGORY LIMIT AS DESKTOP.
-         */
         setPropertyCategories(
           sortedCategories.slice(0, 4)
         );
       } catch (error) {
-        console.error(
-          "Property Bouquet mobile category fetch failed:",
-          error
-        );
+        if (error?.name !== "AbortError") {
+          console.error(
+            "Property category fetch failed:",
+            error
+          );
 
-        if (!cancelled) {
-          setPropertyCategories([]);
+          if (!cancelled) {
+            setPropertyCategories([]);
+          }
         }
       } finally {
         if (!cancelled) {
           setCategoriesLoading(false);
         }
       }
-    };
+    }
 
     fetchPropertyCategories();
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 
   /* ==========================================================
-     CATEGORY ICON
+     AUTOMATIC CAROUSEL ROTATION
   ========================================================== */
 
-  const getCategoryIcon = (categoryName) => {
-    const value = String(categoryName || "").toLowerCase();
-
-    if (
-      value.includes("plot") ||
-      value.includes("land")
-    ) {
-      return Trees;
+  useEffect(() => {
+    if (properties.length < 2 || paused) {
+      return undefined;
     }
 
-    if (
-      value.includes("commercial") ||
-      value.includes("office") ||
-      value.includes("retail")
-    ) {
-      return Landmark;
-    }
+    const timer = window.setInterval(() => {
+      setActiveIndex(
+        (current) => (current + 1) % properties.length
+      );
+    }, ROTATION_MS);
 
-    if (value.includes("villa")) {
-      return Home;
-    }
-
-    return Building2;
-  };
+    return () => window.clearInterval(timer);
+  }, [properties.length, paused]);
 
   /* ==========================================================
-     CATEGORY CARDS
-
-     IMPORTANT
-     ----------------------------------------------------------
-     These still use the category images:
-
-     1st category → /img4.webp
-     2nd category → /img5.webp
-     3rd category → /img6.webp
-     4th category → /img7.webp
-
-     The HERO itself has NO IMAGES.
+     ACTIVE PROPERTY DATA
   ========================================================== */
 
-  const categoryCards = useMemo(() => {
-    return propertyCategories
-      .slice(0, 4)
-      .map((categoryName, index) => ({
+  const activeProperty = properties[activeIndex] || null;
+
+  const image = useMemo(
+    () =>
+      activeProperty
+        ? getPropertyImage(activeProperty)
+        : "/img1.jpg",
+    [activeProperty]
+  );
+
+  const title = activeProperty
+    ? getPropertyTitle(activeProperty)
+    : "Discover Exceptional Properties";
+
+  const location = activeProperty
+    ? getPropertyLocation(activeProperty)
+    : "Explore premium real estate across India";
+
+  const configuration = activeProperty
+    ? getPropertyConfiguration(activeProperty)
+    : "";
+
+  const price = activeProperty
+    ? getStartingPrice(activeProperty)
+    : "";
+
+  const propertyHref = activeProperty?.slug
+    ? `/${activeProperty.slug}`
+    : "/properties";
+
+  const categoryCards = useMemo(
+    () =>
+      propertyCategories.map((categoryName, index) => ({
         title: categoryName,
         icon: getCategoryIcon(categoryName),
         image: `/img${index + 4}.webp`,
-      }));
-  }, [propertyCategories]);
+      })),
+    [propertyCategories]
+  );
+
+  /* ==========================================================
+     CAROUSEL CONTROLS
+  ========================================================== */
+
+  function goToPrevious() {
+    if (properties.length < 2) return;
+
+    setActiveIndex(
+      (current) =>
+        (current - 1 + properties.length) % properties.length
+    );
+  }
+
+  function goToNext() {
+    if (properties.length < 2) return;
+
+    setActiveIndex(
+      (current) => (current + 1) % properties.length
+    );
+  }
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
-    <section
-      className="
-        relative
-        z-[100]
-        overflow-visible
-        bg-[#faf9f4]
-        text-[#17342d]
-      "
-    >
-      {/* ======================================================
-          SOFT BACKGROUND DECORATION
-      ====================================================== */}
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          right-[-150px]
-          top-[-120px]
-          h-[330px]
-          w-[330px]
-          rounded-full
-          bg-[#eadfc8]/60
-          blur-[2px]
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-[-120px]
-          top-[420px]
-          h-[260px]
-          w-[260px]
-          rounded-full
-          bg-[#e8dfcc]/30
-          blur-[70px]
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-[38%]
-          top-[330px]
-          h-[180px]
-          w-[180px]
-          rounded-full
-          bg-[#e9dfc9]/25
-          blur-[60px]
-        "
-      />
+    <section className="relative z-[100] overflow-visible bg-[#faf9f4] text-[#17342d]">
 
       {/* ======================================================
-          MAIN MOBILE CONTENT
+          FEATURED PROPERTY CAROUSEL
       ====================================================== */}
 
       <div
         className="
           relative
-          z-[110]
-          overflow-visible
-          px-4
-          pt-[82px]
-          pb-0
+          h-[365px]
+          w-full
+          overflow-hidden
+          bg-[#102c23]
 
-          sm:px-5
-          sm:pt-[88px]
+          min-[380px]:h-[390px]
+          min-[430px]:h-[410px]
+          sm:h-[430px]
         "
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={(event) => {
+          if (
+            !event.currentTarget.contains(event.relatedTarget)
+          ) {
+            setPaused(false);
+          }
+        }}
       >
+        {/* Property image with crossfade */}
+
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.div
+            key={
+              activeProperty
+                ? getPropertyKey(activeProperty)
+                : "fallback"
+            }
+            initial={{
+              opacity: reduceMotion ? 1 : 0,
+            }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.65,
+            }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={image}
+              alt={
+                activeProperty
+                  ? title
+                  : "Luxury properties by Property Bouquet"
+              }
+              fill
+              priority
+              sizes="(max-width: 639px) 100vw, 640px"
+              quality={85}
+              className="object-cover object-center"
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Premium green overlays */}
+
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/90 via-[#0d291f]/65 to-[#0d291f]/25" />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/95 via-[#071b14]/25 to-[#071b14]/20" />
+
+        {/* Gold top accent */}
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67] to-transparent" />
+
+        {/* Subtle decorative rings */}
+
+        <div className="pointer-events-none absolute -right-[100px] top-[20px] h-[260px] w-[260px] rounded-full border border-[#d4af67]/20 min-[430px]:h-[300px] min-[430px]:w-[300px]" />
+
+        <div className="pointer-events-none absolute -right-[60px] top-[60px] h-[190px] w-[190px] rounded-full border border-white/10 min-[430px]:h-[225px] min-[430px]:w-[225px]" />
+
         {/* ====================================================
-            MOBILE HERO TOP
+            PROPERTY INFORMATION
         ==================================================== */}
 
-        <div
-          className="
-            relative
-            overflow-visible
-          "
-        >
-          {/* =================================================
-              EYEBROW
-          ================================================= */}
+        <div className="relative mx-auto flex h-full w-full max-w-[640px] items-end px-5 pb-[64px] min-[380px]:px-6 min-[430px]:px-7 sm:px-8">
 
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 12,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.55,
-            }}
-            className="
-              mb-[13px]
-              flex
-              items-center
-              gap-2.5
-            "
-          >
-            <span
-              className="
-                h-px
-                w-[28px]
-                shrink-0
-                bg-[#c89d58]
-              "
-            />
-
-            <span
-              className="
-                text-[8px]
-                font-semibold
-                uppercase
-                tracking-[2.3px]
-                text-[#85877e]
-              "
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={
+                activeProperty
+                  ? getPropertyKey(activeProperty)
+                  : "fallback-copy"
+              }
+              initial={{
+                opacity: 0,
+                y: reduceMotion ? 0 : 10,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: reduceMotion ? 0 : -5,
+              }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.35,
+              }}
+              className="relative z-10 w-full"
             >
-              CURATED FOR GENERATIONS OF WEALTH
-            </span>
-          </motion.div>
+              {/* Eyebrow */}
 
-          {/* =================================================
-              MAIN HEADING
-          ================================================= */}
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#d4af67]/55 bg-[#d4af67]/10 text-[#e5c47e]">
+                  <Sparkles size={14} strokeWidth={1.7} />
+                </span>
 
-          <motion.h1
-            initial={{
-              opacity: 0,
-              y: 22,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.7,
-              delay: 0.05,
-            }}
-            className="
-              max-w-[360px]
-              font-serif
-              text-[39px]
-              font-medium
-              leading-[0.99]
-              tracking-[-1.7px]
-              text-[#12392f]
+                <span className="text-[9px] font-semibold uppercase tracking-[2.1px] text-[#f0d9a5] min-[430px]:text-[10px] min-[430px]:tracking-[2.7px]">
+                  Featured Properties
+                </span>
 
-              sm:max-w-[420px]
-              sm:text-[44px]
-              sm:tracking-[-1.9px]
-            "
-            style={{
-              fontFamily:
-                "Georgia, 'Times New Roman', serif",
-            }}
-          >
-            Find Your Perfect
-            <br />
+                <span className="h-px w-8 bg-[#d4af67]/80 min-[380px]:w-10" />
+              </div>
 
-            <span className="text-[#bd8e45]">
-              Property in India
-            </span>
-          </motion.h1>
+              {/* Configuration */}
 
-          {/* =================================================
-              DESCRIPTION
-          ================================================= */}
+              {configuration && (
+                <p className="mb-1.5 line-clamp-1 font-serif text-[15px] text-[#f0d9a5] min-[380px]:text-[17px] min-[430px]:text-[19px]">
+                  {configuration}
+                </p>
+              )}
 
-          <motion.p
-            initial={{
-              opacity: 0,
-              y: 15,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.65,
-              delay: 0.14,
-            }}
-            className="
-              mt-[15px]
-              max-w-[345px]
-              text-[12px]
-              leading-[1.7]
-              text-[#66736e]
+              {/* Main title */}
 
-              sm:max-w-[450px]
-              sm:text-[13px]
-            "
-          >
-            Premium residences, luxury investments, and
-            exclusive opportunities across India&apos;s
-            most sought-after locations.
-          </motion.p>
-
-          {/* =================================================
-              MOBILE HERO VISUAL
-
-              NO IMAGES
-
-              Removed:
-              ❌ /img1.jpg
-              ❌ /img2.jpg
-              ❌ /img3.jpg
-
-              Instead, we use a lightweight premium
-              CSS-only visual accent.
-
-              This keeps the hero:
-              - fast
-              - clean
-              - lightweight
-              - mobile-focused
-              - visually premium
-          ================================================= */}
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 14,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-              delay: 0.18,
-            }}
-            className="
-              relative
-              mt-[24px]
-              h-[105px]
-              w-full
-              overflow-visible
-            "
-          >
-            {/* Soft luxury background shape */}
-
-            <div
-              className="
-                absolute
-                right-[5px]
-                top-0
-                h-[94px]
-                w-[94px]
-                rounded-full
-                border
-                border-[#d8bb82]/35
-                bg-[#eee3cb]/45
-              "
-            />
-
-            {/* Inner ring */}
-
-            <div
-              className="
-                absolute
-                right-[21px]
-                top-[16px]
-                h-[62px]
-                w-[62px]
-                rounded-full
-                border
-                border-[#c89d58]/30
-              "
-            />
-
-            {/* Gold accent line */}
-
-            <div
-              className="
-                absolute
-                right-[10px]
-                top-[46px]
-                h-px
-                w-[145px]
-                bg-gradient-to-r
-                from-transparent
-                via-[#c89d58]
-                to-transparent
-              "
-            />
-
-            {/* Small gold point */}
-
-            <span
-              className="
-                absolute
-                right-[82px]
-                top-[43px]
-                h-[7px]
-                w-[7px]
-                rounded-full
-                bg-[#c89d58]
-                shadow-[0_0_0_5px_rgba(200,157,88,0.10)]
-              "
-            />
-
-            {/* Lightweight editorial text */}
-
-            <div
-              className="
-                absolute
-                left-0
-                top-[14px]
-                max-w-[220px]
-              "
-            >
-              <p
+              <h1
                 className="
-                  text-[8px]
-                  font-semibold
-                  uppercase
-                  tracking-[2.4px]
-                  text-[#9a8358]
-                "
-              >
-                PROPERTY BOUQUET
-              </p>
-
-              <p
-                className="
-                  mt-[7px]
-                  max-w-[210px]
+                  max-w-[520px]
                   font-serif
-                  text-[20px]
-                  leading-[1.05]
-                  tracking-[-0.5px]
-                  text-[#173a31]
+                  text-[29px]
+                  font-medium
+                  leading-[1.08]
+                  tracking-[-0.7px]
+                  text-white
+                  drop-shadow-[0_2px_12px_rgba(0,0,0,0.25)]
+
+                  min-[380px]:text-[32px]
+                  min-[430px]:text-[35px]
+                  sm:text-[39px]
                 "
-                style={{
-                  fontFamily:
-                    "Georgia, 'Times New Roman', serif",
-                }}
               >
-                Curated properties.
-                <br />
-                Considered investments.
+                {title}
+              </h1>
+
+              {/* Price */}
+
+              {price && (
+                <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-[10px] text-white/75 min-[380px]:text-[11px]">
+                    Starting at
+                  </span>
+
+                  <span className="text-[15px] font-semibold text-[#f0c66e] min-[380px]:text-[17px]">
+                    {price}
+                  </span>
+                </div>
+              )}
+
+              {/* Location */}
+
+              <p className="mt-2.5 flex max-w-full items-start gap-1.5 text-[9px] font-medium leading-[1.5] tracking-[0.7px] text-white/90 min-[380px]:text-[10px] min-[430px]:tracking-[1px]">
+                <MapPin
+                  size={14}
+                  className="mt-[1px] shrink-0 text-[#e6b85e]"
+                />
+
+                <span className="line-clamp-2 min-w-0">
+                  {location}
+                </span>
               </p>
-            </div>
 
-            {/* Small decorative leaf */}
+              {/* CTA */}
 
-            <span
-              className="
-                absolute
-                bottom-[4px]
-                right-[14px]
-                text-[22px]
-                leading-none
-                opacity-35
-              "
-              aria-hidden="true"
-            >
-              🌿
-            </span>
-          </motion.div>
-
-          {/* =================================================
-              MOBILE MINI FEATURES
-          ================================================= */}
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 12,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.65,
-              delay: 0.28,
-            }}
-            className="
-              mt-[18px]
-              grid
-              grid-cols-2
-              gap-y-4
-              border-t
-              border-[#e4dfd5]
-              pt-[15px]
-
-              sm:grid-cols-4
-            "
-          >
-            <MiniFeature
-              icon={Home}
-              title="Premium"
-              subtitle="Properties"
-            />
-
-            <MiniFeature
-              icon={Building2}
-              title="Trusted"
-              subtitle="Developers"
-            />
-
-            <MiniFeature
-              icon={MapPin}
-              title="Prime"
-              subtitle="Locations"
-            />
-
-            <MiniFeature
-              icon={ShieldCheck}
-              title="Expert"
-              subtitle="Guidance"
-            />
-          </motion.div>
+              <div className="mt-4 min-[380px]:mt-5">
+                <Link
+                  href={propertyHref}
+                  className="
+                    inline-flex
+                    min-h-[39px]
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-full
+                    border
+                    border-[#e5c47e]/75
+                    bg-[#d4af67]
+                    px-4
+                    py-2.5
+                    text-[10px]
+                    font-bold
+                    tracking-[0.2px]
+                    text-[#142c22]
+                    shadow-[0_6px_20px_rgba(0,0,0,0.18)]
+                    transition-colors
+                    duration-200
+                    hover:bg-[#e6c783]
+                    active:scale-[0.98]
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-[#f0d9a5]
+                  "
+                >
+                  Explore Property
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* ==================================================
-            REAL FUNCTIONAL MOBILE SEARCH PANEL
+        {/* ====================================================
+            PREVIOUS / NEXT BUTTONS
+        ==================================================== */}
 
-            IMPORTANT:
-            - Normal document flow
-            - No absolute positioning
-            - Overflow visible
-            - Dropdowns can extend below
-        ================================================== */}
+        {properties.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goToPrevious}
+              aria-label="Previous featured property"
+              className="
+                absolute
+                left-2
+                top-[44%]
+                z-20
+                flex
+                h-8
+                w-8
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                border
+                border-white/40
+                bg-[#102c23]/40
+                text-white
+                backdrop-blur-md
+                transition-colors
+                hover:border-[#d4af67]
+                hover:bg-[#d4af67]
+                hover:text-[#17342d]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#e5c47e]
 
+                min-[430px]:left-3
+                min-[430px]:h-9
+                min-[430px]:w-9
+              "
+            >
+              <ArrowLeft size={15} />
+            </button>
+
+            <button
+              type="button"
+              onClick={goToNext}
+              aria-label="Next featured property"
+              className="
+                absolute
+                right-2
+                top-[44%]
+                z-20
+                flex
+                h-8
+                w-8
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                border
+                border-white/40
+                bg-[#102c23]/40
+                text-white
+                backdrop-blur-md
+                transition-colors
+                hover:border-[#d4af67]
+                hover:bg-[#d4af67]
+                hover:text-[#17342d]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#e5c47e]
+
+                min-[430px]:right-3
+                min-[430px]:h-9
+                min-[430px]:w-9
+              "
+            >
+              <ArrowRight size={15} />
+            </button>
+          </>
+        )}
+
+        {/* ====================================================
+            CAROUSEL INDICATORS
+        ==================================================== */}
+
+        {properties.length > 1 && (
+          <div className="absolute bottom-[37px] right-5 z-20 flex max-w-[55%] items-center justify-end gap-1.5 min-[380px]:right-6 min-[430px]:right-7">
+            {properties.map((property, index) => (
+              <button
+                key={getPropertyKey(property)}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Show featured property ${index + 1}`}
+                aria-current={
+                  activeIndex === index ? "true" : undefined
+                }
+                className={`
+                  h-[3px]
+                  rounded-full
+                  transition-all
+                  duration-300
+                  focus-visible:outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-[#e5c47e]
+
+                  ${
+                    activeIndex === index
+                      ? "w-6 bg-[#e4bd70]"
+                      : "w-2 bg-white/55 hover:bg-white"
+                  }
+                `}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Loading indicator */}
+
+        {loading && (
+          <div className="absolute bottom-[35px] left-5 z-20 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[1.1px] text-white/75 min-[380px]:left-6 min-[430px]:left-7">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />
+            Loading properties
+          </div>
+        )}
+
+        {/* Bottom gold line */}
+
+        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
+      </div>
+
+      {/* ======================================================
+          MOBILE SEARCH PANEL
+      ====================================================== */}
+
+      <div className="relative z-[1000] mx-auto -mt-[25px] w-full max-w-[640px] px-3 min-[380px]:px-4 min-[430px]:px-5">
         <motion.div
           initial={{
             opacity: 0,
-            y: 18,
+            y: reduceMotion ? 0 : 10,
           }}
           animate={{
             opacity: 1,
             y: 0,
           }}
           transition={{
-            duration: 0.65,
-            delay: 0.34,
+            duration: reduceMotion ? 0 : 0.45,
+            delay: 0.1,
           }}
           className="
             relative
             z-[1000]
-            mt-[22px]
-            w-full
-            overflow-visible
+            rounded-[17px]
+            border
+            border-[#e7decd]
+            bg-[#fffefa]
+            p-[5px]
+            shadow-[0_12px_32px_rgba(24,46,36,0.14)]
+            sm:rounded-[20px]
+            sm:p-[6px]
           "
         >
-          <SearchPanelMobile />
-        </motion.div>
-
-        {/* ==================================================
-            TRUST STRIP
-        ================================================== */}
-
-        <div
-          className="
-            relative
-            z-[10]
-            mt-[20px]
-            border-b
-            border-[#e9e5dc]
-            pb-[18px]
-          "
-        >
-          <div
-            className="
-              grid
-              grid-cols-2
-              gap-y-5
-            "
-          >
-            <TrustItem
-              icon={ShieldCheck}
-              title="Exclusive Listings"
-              subtitle="Handpicked premium properties"
-              first
-            />
-
-            <TrustItem
-              icon={Building2}
-              title="Verified Developers"
-              subtitle="Trusted & established brands"
-            />
-
-            <TrustItem
-              icon={Target}
-              title="End-to-End Support"
-              subtitle="From search to possession"
-            />
-
-            <TrustItem
-              icon={ShieldCheck}
-              title="Better Investment"
-              subtitle="Build wealth for tomorrow"
-              last
-            />
+          <div className="relative z-[1000] overflow-visible rounded-[13px]">
+            <SearchPanelMobile />
           </div>
+        </motion.div>
+      </div>
+
+      {/* ======================================================
+          TRUST FEATURES
+      ====================================================== */}
+
+      <div className="relative z-[1] mx-auto mt-5 w-full max-w-[640px] px-4 pb-5 min-[430px]:px-5">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4 border-b border-[#e9e5dc] pb-5">
+          <TrustItem
+            icon={ShieldCheck}
+            title="Exclusive Listings"
+            subtitle="Handpicked premium properties"
+          />
+
+          <TrustItem
+            icon={Building2}
+            title="Verified Developers"
+            subtitle="Trusted & established brands"
+          />
+
+          <TrustItem
+            icon={Target}
+            title="End-to-End Support"
+            subtitle="From search to possession"
+          />
+
+          <TrustItem
+            icon={ShieldCheck}
+            title="Better Investment"
+            subtitle="Build wealth for tomorrow"
+          />
         </div>
       </div>
 
       {/* ======================================================
-          MOBILE CATEGORY SECTION
-
-          CATEGORY IMAGES ARE KEPT.
-
-          /img4.webp
-          /img5.webp
-          /img6.webp
-          /img7.webp
+          EXPLORE BY CATEGORY
       ====================================================== */}
 
-      <section
-        className="
-          relative
-          z-[1]
-          overflow-visible
-          bg-[#fbfaf6]
-          px-4
-          py-[27px]
+      <section className="relative z-[1] overflow-visible bg-[#fbfaf6] px-4 py-6 min-[430px]:px-5 min-[430px]:py-7">
+        <div className="mx-auto w-full max-w-[600px]">
 
-          sm:px-5
-          sm:py-[32px]
-        "
-      >
-        <div className="mx-auto w-full">
-          {/* =================================================
-              CATEGORY HEADER
-          ================================================= */}
+          {/* Category heading */}
 
-          <div className="mb-[17px]">
-            <div
-              className="
-                mb-[7px]
-                flex
-                items-center
-                gap-3
-              "
-            >
-              <span
-                className="
-                  text-[8px]
-                  font-semibold
-                  uppercase
-                  tracking-[2.4px]
-                  text-[#888379]
-                "
-              >
-                EXPLORE BY CATEGORY
+          <div className="mb-4">
+            <div className="mb-2 flex items-center gap-3">
+              <span className="text-[8px] font-semibold uppercase tracking-[2.2px] text-[#888379]">
+                Explore by Category
               </span>
 
-              <span
-                className="
-                  h-px
-                  w-[42px]
-                  bg-[#c89d58]
-                "
-              />
+              <span className="h-px w-9 bg-[#c89d58]" />
             </div>
 
             <h2
-              className="
-                font-serif
-                text-[25px]
-                leading-[1.08]
-                tracking-[-0.7px]
-                text-[#173a31]
-
-                sm:text-[28px]
-              "
+              className="font-serif text-[25px] leading-[1.1] tracking-[-0.7px] text-[#173a31] min-[430px]:text-[28px]"
               style={{
-                fontFamily:
-                  "Georgia, 'Times New Roman', serif",
+                fontFamily: "Georgia, 'Times New Roman', serif",
               }}
             >
               Find Properties That Match
@@ -843,17 +1011,9 @@ export default function HeroSectionMobile() {
             </h2>
           </div>
 
-          {/* =================================================
-              CATEGORY CARDS
-          ================================================= */}
+          {/* Category cards */}
 
-          <div
-            className="
-              grid
-              grid-cols-2
-              gap-3
-            "
-          >
+          <div className="grid grid-cols-2 gap-3">
             {categoriesLoading ? (
               <>
                 <CategorySkeleton />
@@ -871,25 +1031,7 @@ export default function HeroSectionMobile() {
                 />
               ))
             ) : (
-              <div
-                className="
-                  col-span-2
-                  flex
-                  min-h-[110px]
-                  items-center
-                  justify-center
-                  rounded-[14px]
-                  border
-                  border-[#e8e2d7]
-                  bg-white
-                  px-4
-                  text-center
-                  text-[9px]
-                  uppercase
-                  tracking-[1.8px]
-                  text-[#8a8f8b]
-                "
-              >
+              <div className="col-span-2 flex min-h-[100px] items-center justify-center rounded-[14px] border border-[#e8e2d7] bg-white px-4 text-center text-[9px] uppercase tracking-[1.5px] text-[#8a8f8b]">
                 Explore our property collection
               </div>
             )}
@@ -901,141 +1043,22 @@ export default function HeroSectionMobile() {
 }
 
 /* ============================================================
-   MINI FEATURE
-============================================================ */
-
-function MiniFeature({
-  icon: Icon,
-  title,
-  subtitle,
-}) {
-  return (
-    <div
-      className="
-        flex
-        min-w-0
-        items-center
-        gap-2
-      "
-    >
-      <span
-        className="
-          flex
-          h-[29px]
-          w-[29px]
-          shrink-0
-          items-center
-          justify-center
-          rounded-full
-          border
-          border-[#d8bb82]
-          text-[#c0934d]
-        "
-      >
-        <Icon
-          size={14}
-          strokeWidth={1.6}
-        />
-      </span>
-
-      <span className="min-w-0">
-        <span
-          className="
-            block
-            truncate
-            text-[9px]
-            font-semibold
-            leading-[1.2]
-            text-[#344b44]
-          "
-        >
-          {title}
-        </span>
-
-        <span
-          className="
-            mt-[2px]
-            block
-            truncate
-            text-[8px]
-            leading-[1.2]
-            text-[#7d8782]
-          "
-        >
-          {subtitle}
-        </span>
-      </span>
-    </div>
-  );
-}
-
-/* ============================================================
    TRUST ITEM
 ============================================================ */
 
-function TrustItem({
-  icon: Icon,
-  title,
-  subtitle,
-  first = false,
-  last = false,
-}) {
+function TrustItem({ icon: Icon, title, subtitle }) {
   return (
-    <div
-      className={`
-        flex
-        min-w-0
-        items-center
-        gap-2.5
-        px-1
-
-        ${!first ? "border-l border-[#e5e1d8] pl-3" : ""}
-
-        ${last ? "pr-0" : ""}
-      `}
-    >
-      <span
-        className="
-          flex
-          h-[30px]
-          w-[30px]
-          shrink-0
-          items-center
-          justify-center
-          rounded-full
-          border
-          border-[#d9bd86]
-          text-[#bd914d]
-        "
-      >
-        <Icon
-          size={14}
-          strokeWidth={1.7}
-        />
+    <div className="flex min-w-0 items-center gap-2.5 px-1">
+      <span className="flex h-[31px] w-[31px] shrink-0 items-center justify-center rounded-full border border-[#d9bd86] text-[#bd914d]">
+        <Icon size={14} strokeWidth={1.7} />
       </span>
 
       <span className="min-w-0">
-        <span
-          className="
-            block
-            truncate
-            text-[9px]
-            font-semibold
-            text-[#394e47]
-          "
-        >
+        <span className="block truncate text-[9px] font-semibold text-[#394e47] min-[430px]:text-[10px]">
           {title}
         </span>
 
-        <span
-          className="
-            mt-[2px]
-            block
-            truncate
-            text-[7.5px]
-            text-[#8a918c]
-          "
-        >
+        <span className="mt-[3px] block truncate text-[7.5px] text-[#8a918c] min-[430px]:text-[8px]">
           {subtitle}
         </span>
       </span>
@@ -1049,36 +1072,12 @@ function TrustItem({
 
 function CategorySkeleton() {
   return (
-    <div
-      className="
-        h-[112px]
-        animate-pulse
-        rounded-[14px]
-        border
-        border-[#e7e1d6]
-        bg-[#eeeae1]
-
-        sm:h-[125px]
-      "
-    />
+    <div className="h-[112px] animate-pulse rounded-[14px] border border-[#e7e1d6] bg-[#eeeae1] min-[430px]:h-[125px]" />
   );
 }
 
 /* ============================================================
    CATEGORY CARD
-
-   REAL LINK:
-
-   /properties?propertyType=...
-
-   IMAGE SOURCE:
-
-   /img4.webp → /img7.webp
-
-   NOTE:
-   These are NOT hero images.
-   They remain because they belong to the
-   Explore By Category section.
 ============================================================ */
 
 function CategoryCard({
@@ -1086,9 +1085,7 @@ function CategoryCard({
   icon: Icon = Building2,
   image,
 }) {
-  const href = `/properties?propertyType=${encodeURIComponent(
-    title
-  )}`;
+  const href = `/properties?propertyType=${encodeURIComponent(title)}`;
 
   return (
     <Link
@@ -1103,105 +1100,35 @@ function CategoryCard({
         border-white
         bg-[#163a31]
         shadow-[0_7px_20px_rgba(22,48,40,0.08)]
-
-        sm:h-[125px]
+        min-[430px]:h-[125px]
       "
     >
-      <img
+      <Image
         src={image}
         alt={`${title} properties`}
+        fill
+        sizes="(max-width: 639px) 50vw, 300px"
         loading="lazy"
-        decoding="async"
-        className="
-          absolute
-          inset-0
-          h-full
-          w-full
-          object-cover
-          transition-transform
-          duration-700
-          group-hover:scale-[1.05]
-        "
+        className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
       />
 
-      <div
-        className="
-          absolute
-          inset-0
-          bg-gradient-to-t
-          from-[#12392f]/95
-          via-[#12392f]/30
-          to-transparent
-        "
-      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#12392f]/95 via-[#12392f]/30 to-transparent" />
 
-      <div
-        className="
-          absolute
-          bottom-2.5
-          left-2.5
-          right-2.5
-          flex
-          items-center
-          justify-between
-          gap-2
-        "
-      >
-        <div
-          className="
-            flex
-            min-w-0
-            items-center
-            gap-1.5
-          "
-        >
+      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1.5">
           <Icon
             size={13}
             strokeWidth={1.7}
-            className="
-              shrink-0
-              text-[#d4b16d]
-            "
+            className="shrink-0 text-[#d4b16d]"
           />
 
-          <span
-            className="
-              truncate
-              text-[8.5px]
-              font-medium
-              text-white
-
-              sm:text-[9px]
-            "
-          >
+          <span className="truncate text-[8.5px] font-medium text-white min-[430px]:text-[9px]">
             {title}
           </span>
         </div>
 
-        <span
-          className="
-            flex
-            h-[22px]
-            w-[22px]
-            shrink-0
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-white/55
-            text-white
-            transition-all
-            duration-300
-
-            group-hover:border-[#d4b16d]
-            group-hover:bg-[#d4b16d]
-            group-hover:text-[#17342d]
-          "
-        >
-          <ArrowRight
-            size={10}
-            strokeWidth={2}
-          />
+        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-all duration-300 group-hover:border-[#d4b16d] group-hover:bg-[#d4b16d] group-hover:text-[#17342d]">
+          <ArrowRight size={10} strokeWidth={2} />
         </span>
       </div>
     </Link>

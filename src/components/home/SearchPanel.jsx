@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import LuxuryDropdown from "./LuxuryDropdown";
@@ -11,7 +11,191 @@ import {
   SlidersHorizontal,
   MapPin,
   LocateFixed,
+  Mic,
+  MicOff,
 } from "lucide-react";
+
+/* ============================================================
+   FUZZY SEARCH HELPERS
+   These functions allow searches with minor spelling mistakes.
+============================================================ */
+
+const normalizeSearchText = (value = "") => {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/gurugram/g, "gurgaon")
+    .replace(/new delhi/g, "delhi")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const levenshteinDistance = (first = "", second = "") => {
+  const a = String(first);
+  const b = String(second);
+
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+
+  let previousRow = Array.from(
+    { length: b.length + 1 },
+    (_, index) => index
+  );
+
+  for (let i = 1; i <= a.length; i++) {
+    const currentRow = [i];
+
+    for (let j = 1; j <= b.length; j++) {
+      const substitutionCost =
+        a[i - 1] === b[j - 1] ? 0 : 1;
+
+      currentRow[j] = Math.min(
+        currentRow[j - 1] + 1,
+        previousRow[j] + 1,
+        previousRow[j - 1] + substitutionCost
+      );
+    }
+
+    previousRow = currentRow;
+  }
+
+  return previousRow[b.length];
+};
+
+/*
+ * Scores one search word against one candidate word.
+ *
+ * Exact matches score highest.
+ * Small spelling mistakes are accepted for longer words.
+ * Very short words are deliberately kept stricter to avoid
+ * returning too many irrelevant suggestions.
+ */
+const getWordMatchScore = (queryWord, candidateWord) => {
+  if (!queryWord || !candidateWord) return 0;
+
+  if (candidateWord === queryWord) {
+    return 100;
+  }
+
+  if (candidateWord.startsWith(queryWord)) {
+    return queryWord.length >= 2 ? 88 : 0;
+  }
+
+  if (candidateWord.includes(queryWord)) {
+    return queryWord.length >= 3 ? 78 : 0;
+  }
+
+  if (queryWord.length < 4 || candidateWord.length < 4) {
+    return 0;
+  }
+
+  const distance = levenshteinDistance(
+    queryWord,
+    candidateWord
+  );
+
+  const maxLength = Math.max(
+    queryWord.length,
+    candidateWord.length
+  );
+
+  const allowedDistance =
+    maxLength >= 8 ? 2 : maxLength >= 5 ? 2 : 1;
+
+  if (distance > allowedDistance) {
+    return 0;
+  }
+
+  /*
+   * "flowers" and "floors" have a small edit distance,
+   * so a search such as "Spiti Flowers" can match
+   * "Spiti Floors".
+   */
+  return Math.max(
+    0,
+    76 - distance * 17
+  );
+};
+
+/*
+ * Scores a complete query against a title, location, or developer.
+ * Every query word must match somewhere in the candidate.
+ * This prevents a single matching word from making an
+ * unrelated result rank highly.
+ */
+const getFuzzyMatchScore = (query, candidate) => {
+  const normalizedQuery = normalizeSearchText(query);
+  const normalizedCandidate = normalizeSearchText(candidate);
+
+  if (!normalizedQuery || !normalizedCandidate) {
+    return 0;
+  }
+
+  if (normalizedCandidate === normalizedQuery) {
+    return 120;
+  }
+
+  if (normalizedCandidate.includes(normalizedQuery)) {
+    return 110;
+  }
+
+  const queryWords = normalizedQuery
+    .split(" ")
+    .filter(Boolean);
+
+  const candidateWords = normalizedCandidate
+    .split(" ")
+    .filter(Boolean);
+
+  if (!queryWords.length || !candidateWords.length) {
+    return 0;
+  }
+
+  let totalScore = 0;
+
+  for (const queryWord of queryWords) {
+    let bestWordScore = 0;
+
+    for (const candidateWord of candidateWords) {
+      const score = getWordMatchScore(
+        queryWord,
+        candidateWord
+      );
+
+      if (score > bestWordScore) {
+        bestWordScore = score;
+      }
+    }
+
+    /*
+     * Every query word needs a reasonable match.
+     * Otherwise, do not return the candidate.
+     */
+    if (bestWordScore < 45) {
+      return 0;
+    }
+
+    totalScore += bestWordScore;
+  }
+
+  const averageScore =
+    totalScore / queryWords.length;
+
+  /*
+   * Slightly favor candidates containing the entire query
+   * in the same order.
+   */
+  if (
+    normalizedCandidate.includes(normalizedQuery)
+  ) {
+    return averageScore + 12;
+  }
+
+  return averageScore;
+};
 
 export default function SearchPanel() {
   // ============================================================
@@ -31,11 +215,22 @@ export default function SearchPanel() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ============================================================
+  // VOICE SEARCH
+  // ============================================================
+
+  const [isListening, setIsListening] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState("");
+  const recognitionRef = useRef(null);
+
+  // ============================================================
   // MODALS
   // ============================================================
 
-  const [showDeveloperModal, setShowDeveloperModal] = useState(false);
-  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showDeveloperModal, setShowDeveloperModal] =
+    useState(false);
+
+  const [showLocationModal, setShowLocationModal] =
+    useState(false);
 
   // ============================================================
   // MODAL SEARCH
@@ -50,7 +245,8 @@ export default function SearchPanel() {
 
   const [gettingLocation, setGettingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState("");
-  const [currentCoordinates, setCurrentCoordinates] = useState(null);
+  const [currentCoordinates, setCurrentCoordinates] =
+    useState(null);
 
   // ============================================================
   // FILTERS
@@ -80,14 +276,18 @@ export default function SearchPanel() {
         });
 
         if (!res.ok) {
-          throw new Error(`Properties request failed: ${res.status}`);
+          throw new Error(
+            `Properties request failed: ${res.status}`
+          );
         }
 
         const data = await res.json();
 
         if (!mounted) return;
 
-        const propertyData = data?.data || [];
+        const propertyData = Array.isArray(data?.data)
+          ? data.data
+          : [];
 
         setProperties(propertyData);
 
@@ -126,7 +326,7 @@ export default function SearchPanel() {
               )
               .map((property) => {
                 const developer =
-                  property?.coreDetails?.developerRef;
+                  property.coreDetails.developerRef;
 
                 return [
                   property.coreDetails.developerName,
@@ -289,9 +489,7 @@ export default function SearchPanel() {
             longitude,
           });
 
-          // ======================================================
           // REVERSE GEOCODING
-          // ======================================================
 
           const response = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
@@ -317,9 +515,7 @@ export default function SearchPanel() {
             return;
           }
 
-          // ======================================================
           // UPDATE LOCATION FILTER
-          // ======================================================
 
           setFilters((prev) => ({
             ...prev,
@@ -332,31 +528,14 @@ export default function SearchPanel() {
 
           setGettingLocation(false);
 
-          // ======================================================
           // AUTOMATIC SEARCH
-          // ======================================================
 
           const params = new URLSearchParams();
 
-          params.set(
-            "location",
-            matchedLocation
-          );
-
-          params.set(
-            "lat",
-            latitude.toString()
-          );
-
-          params.set(
-            "lng",
-            longitude.toString()
-          );
-
-          params.set(
-            "nearby",
-            "true"
-          );
+          params.set("location", matchedLocation);
+          params.set("lat", latitude.toString());
+          params.set("lng", longitude.toString());
+          params.set("nearby", "true");
 
           router.push(
             `/properties?${params.toString()}`
@@ -383,24 +562,17 @@ export default function SearchPanel() {
 
         setGettingLocation(false);
 
-        if (
-          error.code ===
-          error.PERMISSION_DENIED
-        ) {
+        if (error.code === error.PERMISSION_DENIED) {
           setLocationMessage(
             "Location access was denied. Please allow location access in your browser."
           );
         } else if (
-          error.code ===
-          error.POSITION_UNAVAILABLE
+          error.code === error.POSITION_UNAVAILABLE
         ) {
           setLocationMessage(
             "Your current location is unavailable."
           );
-        } else if (
-          error.code ===
-          error.TIMEOUT
-        ) {
+        } else if (error.code === error.TIMEOUT) {
           setLocationMessage(
             "Location request timed out. Please try again."
           );
@@ -427,41 +599,25 @@ export default function SearchPanel() {
     const params = new URLSearchParams();
 
     if (searchTerm.trim()) {
-      params.set(
-        "search",
-        searchTerm.trim()
-      );
+      params.set("search", searchTerm.trim());
     }
 
     if (filters.location) {
-      params.set(
-        "location",
-        filters.location
-      );
+      params.set("location", filters.location);
     }
 
     if (filters.developer) {
-      params.set(
-        "developer",
-        filters.developer
-      );
+      params.set("developer", filters.developer);
     }
 
     if (filters.propertyType) {
-      params.set(
-        "propertyType",
-        filters.propertyType
-      );
+      params.set("propertyType", filters.propertyType);
     }
 
     if (filters.budget) {
-      params.set(
-        "budget",
-        filters.budget
-      );
+      params.set("budget", filters.budget);
     }
 
-    // Preserve coordinates if available.
     if (currentCoordinates) {
       params.set(
         "lat",
@@ -474,12 +630,119 @@ export default function SearchPanel() {
       );
     }
 
+    setShowSuggestions(false);
+
     const query = params.toString();
 
     router.push(
       `/properties${query ? `?${query}` : ""}`
     );
   };
+
+  // ============================================================
+  // VOICE SEARCH — SPEECH TO TEXT
+  // ============================================================
+
+  const handleVoiceSearch = () => {
+    setVoiceMessage("");
+
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    if (typeof window === "undefined") return;
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setVoiceMessage(
+        "Voice search is not supported in this browser. Please try Chrome."
+      );
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceMessage(
+        "Listening... Speak your property search."
+      );
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(" ")
+        .trim();
+
+      if (transcript) {
+        setSearchTerm(transcript);
+        setShowSuggestions(true);
+        setVoiceMessage(
+          "Your speech has been added to search."
+        );
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      recognitionRef.current = null;
+
+      if (event.error === "not-allowed") {
+        setVoiceMessage(
+          "Microphone access denied. Allow microphone access in your browser settings."
+        );
+      } else if (event.error === "no-speech") {
+        setVoiceMessage(
+          "No speech detected. Tap the microphone and try again."
+        );
+      } else if (event.error !== "aborted") {
+        setVoiceMessage(
+          "Voice search could not start. Please try again."
+        );
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+
+    try {
+      recognition.start();
+    } catch (error) {
+      recognitionRef.current = null;
+      setIsListening(false);
+      setVoiceMessage(
+        "Unable to start the microphone. Please try again."
+      );
+    }
+  };
+
+  // Stop voice recognition when the component unmounts.
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
 
   // ============================================================
   // OPTIONS
@@ -492,14 +755,24 @@ export default function SearchPanel() {
   const locationOptions = locations.slice(0, 6);
 
   // ============================================================
-  // SEARCH SUGGESTIONS
+  // FUZZY SEARCH SUGGESTIONS
+  // Properties + locations + developers
   // ============================================================
 
-  const suggestions = properties
-    .filter((property) => {
-      const search =
-        searchTerm.toLowerCase();
+  const suggestions = useMemo(() => {
+    const query = searchTerm.trim();
 
+    if (!query || query.length < 2) {
+      return [];
+    }
+
+    const results = [];
+
+    // ----------------------------------------------------------
+    // PROPERTY SUGGESTIONS
+    // ----------------------------------------------------------
+
+    for (const property of properties) {
       const title =
         property?.coreDetails?.title || "";
 
@@ -509,35 +782,172 @@ export default function SearchPanel() {
       const developer =
         property?.coreDetails?.developerName || "";
 
-      return (
-        title.toLowerCase().includes(search) ||
-        location.toLowerCase().includes(search) ||
-        developer.toLowerCase().includes(search)
+      const titleScore = getFuzzyMatchScore(
+        query,
+        title
       );
-    })
-    .sort((a, b) => {
-      const aTitle =
-        a?.coreDetails?.title || "";
 
-      const bTitle =
-        b?.coreDetails?.title || "";
+      const locationScore = getFuzzyMatchScore(
+        query,
+        location
+      );
 
-      const search =
-        searchTerm.toLowerCase();
+      const developerScore = getFuzzyMatchScore(
+        query,
+        developer
+      );
 
-      const aStarts =
-        aTitle.toLowerCase().startsWith(search);
+      const score = Math.max(
+        titleScore,
+        locationScore * 0.92,
+        developerScore * 0.96
+      );
 
-      const bStarts =
-        bTitle.toLowerCase().startsWith(search);
+      if (score >= 45) {
+        results.push({
+          type: "property",
+          key: `property-${property._id || property.slug || title}`,
+          label: title || "Property",
+          subtitle: [
+            location,
+            developer,
+          ].filter(Boolean).join(" · "),
+          score,
+          property,
+        });
+      }
+    }
 
-      if (aStarts && !bStarts) return -1;
+    // ----------------------------------------------------------
+    // LOCATION SUGGESTIONS
+    // ----------------------------------------------------------
 
-      if (!aStarts && bStarts) return 1;
+    for (const location of locations) {
+      const score = getFuzzyMatchScore(
+        query,
+        location
+      );
 
-      return aTitle.localeCompare(bTitle);
-    })
-    .slice(0, 8);
+      if (score >= 45) {
+        results.push({
+          type: "location",
+          key: `location-${location}`,
+          label: location,
+          subtitle: "Explore properties in this location",
+          score,
+          location,
+        });
+      }
+    }
+
+    // ----------------------------------------------------------
+    // DEVELOPER SUGGESTIONS
+    // ----------------------------------------------------------
+
+    for (const developer of developers) {
+      const score = getFuzzyMatchScore(
+        query,
+        developer.name
+      );
+
+      if (score >= 45) {
+        results.push({
+          type: "developer",
+          key: `developer-${developer.name}`,
+          label: developer.name,
+          subtitle: "Explore this developer's properties",
+          score,
+          developer,
+        });
+      }
+    }
+
+    // ----------------------------------------------------------
+    // RANK AND REMOVE DUPLICATES
+    // ----------------------------------------------------------
+
+    const seen = new Set();
+
+    return results
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+
+        return a.label.localeCompare(b.label);
+      })
+      .filter((item) => {
+        const uniqueKey =
+          `${item.type}-${normalizeSearchText(item.label)}`;
+
+        if (seen.has(uniqueKey)) {
+          return false;
+        }
+
+        seen.add(uniqueKey);
+        return true;
+      })
+      .slice(0, 8);
+  }, [
+    searchTerm,
+    properties,
+    locations,
+    developers,
+  ]);
+
+  // ============================================================
+  // SELECT A SEARCH SUGGESTION
+  // ============================================================
+
+  const handleSuggestionSelect = (suggestion) => {
+    setShowSuggestions(false);
+
+    if (suggestion.type === "property") {
+      const slug = suggestion.property?.slug;
+
+      if (slug) {
+        router.push(`/${slug}`);
+      }
+
+      return;
+    }
+
+    const params = new URLSearchParams();
+
+    if (suggestion.type === "location") {
+      setFilters((prev) => ({
+        ...prev,
+        location: suggestion.location,
+      }));
+
+      params.set("location", suggestion.location);
+    }
+
+    if (suggestion.type === "developer") {
+      setFilters((prev) => ({
+        ...prev,
+        developer: suggestion.developer.name,
+      }));
+
+      params.set(
+        "developer",
+        suggestion.developer.name
+      );
+    }
+
+    if (filters.propertyType) {
+      params.set(
+        "propertyType",
+        filters.propertyType
+      );
+    }
+
+    if (filters.budget) {
+      params.set("budget", filters.budget);
+    }
+
+    router.push(`/properties?${params.toString()}`);
+  };
 
   // ============================================================
   // JSX
@@ -574,9 +984,7 @@ export default function SearchPanel() {
             shadow-[0_18px_55px_rgba(15,59,46,0.14)]
           "
         >
-          {/* ====================================================
-              SEARCH INPUT ROW
-          ==================================================== */}
+          {/* SEARCH INPUT ROW */}
 
           <div
             className="
@@ -604,19 +1012,11 @@ export default function SearchPanel() {
                 lg:px-5
               "
             >
-              {/* Search Icon */}
-
               <Search
                 size={18}
                 strokeWidth={1.8}
-                className="
-                  mr-3
-                  shrink-0
-                  text-[#b08a4b]
-                "
+                className="mr-3 shrink-0 text-[#b08a4b]"
               />
-
-              {/* Search Input */}
 
               <input
                 value={searchTerm}
@@ -631,6 +1031,7 @@ export default function SearchPanel() {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
+                    e.preventDefault();
                     handleSearch();
                   }
 
@@ -638,7 +1039,8 @@ export default function SearchPanel() {
                     setShowSuggestions(false);
                   }
                 }}
-                placeholder="Search by property name, project, or landmark"
+                placeholder="Search by property name, project, developer, or location"
+                autoComplete="off"
                 className="
                   min-w-0
                   flex-1
@@ -652,21 +1054,66 @@ export default function SearchPanel() {
                 "
               />
 
-              {/* ==================================================
-                  USE MY LOCATION
-              ================================================== */}
+              {/* VOICE SEARCH BUTTON */}
+
+              <motion.button
+                type="button"
+                onClick={handleVoiceSearch}
+                whileTap={{ scale: 0.92 }}
+                aria-label={
+                  isListening
+                    ? "Stop voice search"
+                    : "Start voice search"
+                }
+                aria-pressed={isListening}
+                title={
+                  isListening
+                    ? "Stop listening"
+                    : "Search using your voice"
+                }
+                className={`
+                  relative ml-2 flex h-9 w-9 shrink-0
+                  items-center justify-center rounded-xl
+                  border transition-colors duration-200
+                  ${
+                    isListening
+                      ? "border-red-300 bg-red-50 text-red-600"
+                      : "border-[#c89d58]/30 bg-white text-[#0f3b2e] hover:bg-[#f7f3ee]"
+                  }
+                `}
+              >
+                {isListening && (
+                  <motion.span
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-xl border border-red-400"
+                    animate={{
+                      scale: [1, 1.2],
+                      opacity: [0.8, 0],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      ease: "easeOut",
+                    }}
+                  />
+                )}
+
+                {isListening ? (
+                  <MicOff size={17} />
+                ) : (
+                  <Mic size={17} />
+                )}
+              </motion.button>
+
+              {/* USE MY LOCATION */}
 
               <div className="relative ml-3 shrink-0">
                 <motion.button
                   type="button"
                   onClick={handleUseMyLocation}
                   disabled={gettingLocation}
-                  whileHover={{
-                    scale: 1.02,
-                  }}
-                  whileTap={{
-                    scale: 0.97,
-                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                   className="
                     group
                     flex
@@ -695,9 +1142,7 @@ export default function SearchPanel() {
                   >
                     {gettingLocation ? (
                       <motion.span
-                        animate={{
-                          rotate: 360,
-                        }}
+                        animate={{ rotate: 360 }}
                         transition={{
                           duration: 1,
                           repeat: Infinity,
@@ -740,23 +1185,12 @@ export default function SearchPanel() {
                   </span>
                 </motion.button>
 
-                {/* LOCATION STATUS */}
-
                 <AnimatePresence>
                   {locationMessage && (
                     <motion.div
-                      initial={{
-                        opacity: 0,
-                        y: 6,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        y: 6,
-                      }}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
                       className="
                         absolute
                         right-0
@@ -775,20 +1209,10 @@ export default function SearchPanel() {
                       <div className="flex items-start gap-3">
                         <MapPin
                           size={15}
-                          className="
-                            mt-0.5
-                            shrink-0
-                            text-[#d4ae67]
-                          "
+                          className="mt-0.5 shrink-0 text-[#d4ae67]"
                         />
 
-                        <p
-                          className="
-                            text-[11px]
-                            leading-relaxed
-                            text-white/75
-                          "
-                        >
+                        <p className="text-[11px] leading-relaxed text-white/75">
                           {locationMessage}
                         </p>
                       </div>
@@ -798,27 +1222,40 @@ export default function SearchPanel() {
               </div>
             </div>
 
-            {/* ==================================================
-                SEARCH SUGGESTIONS
-            ================================================== */}
+            {/* VOICE SEARCH STATUS */}
+
+            <AnimatePresence>
+              {voiceMessage && (
+                <motion.p
+                  role="status"
+                  aria-live="polite"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className={`mt-2 px-2 text-[10px] ${
+                    isListening
+                      ? "text-[#a87d39]"
+                      : "text-[#17342d]/65"
+                  }`}
+                >
+                  {isListening && (
+                    <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+                  )}
+                  {voiceMessage}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* SEARCH SUGGESTIONS */}
 
             <AnimatePresence>
               {showSuggestions &&
-                searchTerm &&
+                searchTerm.trim() &&
                 suggestions.length > 0 && (
                   <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: 8,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: 8,
-                    }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
                     className="
                       absolute
                       left-3
@@ -838,65 +1275,133 @@ export default function SearchPanel() {
                       lg:top-[72px]
                     "
                   >
-                    {suggestions.map((property) => (
+                    {suggestions.map((suggestion) => (
                       <button
-                        key={property._id}
+                        key={suggestion.key}
                         type="button"
-                        onClick={() => {
-                          router.push(
-                            `/${property.slug}`
-                          );
-
-                          setShowSuggestions(false);
-                        }}
+                        onClick={() =>
+                          handleSuggestionSelect(suggestion)
+                        }
                         className="
-                          block
+                          flex
                           w-full
+                          items-center
+                          gap-3
                           border-b
                           border-[#eee8de]
-                          px-5
-                          py-3.5
+                          px-4
+                          py-3
                           text-left
                           transition-colors
                           last:border-none
                           hover:bg-[#f7f3ec]
+                          sm:px-5
                         "
                       >
-                        <p
+                        <span
                           className="
-                            text-[13px]
-                            font-semibold
-                            text-[#17342d]
+                            flex
+                            h-9
+                            w-9
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-xl
+                            border
+                            border-[#c89d58]/20
+                            bg-[#c89d58]/10
+                            text-[#a87d39]
                           "
                         >
-                          {
-                            property?.coreDetails
-                              ?.title
-                          }
-                        </p>
+                          {suggestion.type === "location" ? (
+                            <MapPin size={16} />
+                          ) : (
+                            <Building2 size={16} />
+                          )}
+                        </span>
 
-                        <p
-                          className="
-                            mt-1
-                            text-[10px]
-                            text-[#17342d]/45
-                          "
-                        >
-                          {
-                            property?.locationData
-                              ?.locationName
-                          }
-                        </p>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="text-[13px] font-semibold text-[#17342d]">
+                              {suggestion.label}
+                            </span>
+
+                            <span
+                              className="
+                                rounded-full
+                                border
+                                border-[#c89d58]/25
+                                bg-[#c89d58]/10
+                                px-2
+                                py-0.5
+                                text-[8px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.8px]
+                                text-[#8c692f]
+                              "
+                            >
+                              {suggestion.type === "property"
+                                ? "Property"
+                                : suggestion.type === "location"
+                                  ? "Location"
+                                  : "Developer"}
+                            </span>
+                          </span>
+
+                          <span className="mt-1 block truncate text-[10px] text-[#17342d]/55">
+                            {suggestion.subtitle}
+                          </span>
+                        </span>
+
+                        <span className="shrink-0 text-[17px] text-[#b08a4b]">
+                          →
+                        </span>
                       </button>
                     ))}
+                  </motion.div>
+                )}
+
+              {showSuggestions &&
+                searchTerm.trim().length >= 2 &&
+                suggestions.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="
+                      absolute
+                      left-3
+                      right-3
+                      top-[68px]
+                      z-[99999]
+                      rounded-[16px]
+                      border
+                      border-[#e5ddd0]
+                      bg-[#fffdfa]
+                      px-5
+                      py-5
+                      shadow-[0_25px_70px_rgba(15,59,46,0.18)]
+                      sm:left-4
+                      sm:right-4
+                      lg:left-5
+                      lg:right-5
+                      lg:top-[72px]
+                    "
+                  >
+                    <p className="text-[12px] font-semibold text-[#17342d]">
+                      No matching suggestions found
+                    </p>
+
+                    <p className="mt-1 text-[11px] text-[#17342d]/55">
+                      Try a project name, developer, or location. You can also press Enter to search.
+                    </p>
                   </motion.div>
                 )}
             </AnimatePresence>
           </div>
 
-          {/* ====================================================
-              FILTER ROW
-          ==================================================== */}
+          {/* FILTER ROW */}
 
           <div
             className="
@@ -924,9 +1429,7 @@ export default function SearchPanel() {
                 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_132px]
               "
             >
-              {/* ==================================================
-                  PROPERTY TYPE
-              ================================================== */}
+              {/* PROPERTY TYPE */}
 
               <div
                 className="
@@ -944,17 +1447,12 @@ export default function SearchPanel() {
                   value={filters.propertyType}
                   options={propertyTypes}
                   onChange={(value) =>
-                    handleChange(
-                      "propertyType",
-                      value
-                    )
+                    handleChange("propertyType", value)
                   }
                 />
               </div>
 
-              {/* ==================================================
-                  BUDGET
-              ================================================== */}
+              {/* BUDGET */}
 
               <div
                 className="
@@ -974,18 +1472,14 @@ export default function SearchPanel() {
                   onChange={(budgetData) => {
                     setFilters((prev) => ({
                       ...prev,
-                      budget:
-                        budgetData.value,
-                      budgetLabel:
-                        budgetData.label,
+                      budget: budgetData.value,
+                      budgetLabel: budgetData.label,
                     }));
                   }}
                 />
               </div>
 
-              {/* ==================================================
-                  LOCATION
-              ================================================== */}
+              {/* LOCATION */}
 
               <div
                 className="
@@ -1006,26 +1500,18 @@ export default function SearchPanel() {
                     "View All Locations →",
                   ]}
                   onChange={(value) => {
-                    if (
-                      value ===
-                      "View All Locations →"
-                    ) {
+                    if (value === "View All Locations →") {
                       setLocationSearch("");
                       setShowLocationModal(true);
                       return;
                     }
 
-                    handleChange(
-                      "location",
-                      value
-                    );
+                    handleChange("location", value);
                   }}
                 />
               </div>
 
-              {/* ==================================================
-                  DEVELOPER
-              ================================================== */}
+              {/* DEVELOPER */}
 
               <div
                 className="
@@ -1046,35 +1532,23 @@ export default function SearchPanel() {
                     "View All Developers →",
                   ]}
                   onChange={(value) => {
-                    if (
-                      value ===
-                      "View All Developers →"
-                    ) {
+                    if (value === "View All Developers →") {
                       setDeveloperSearch("");
                       setShowDeveloperModal(true);
                       return;
                     }
 
-                    handleChange(
-                      "developer",
-                      value
-                    );
+                    handleChange("developer", value);
                   }}
                 />
               </div>
 
-              {/* ==================================================
-                  SEARCH BUTTON
-              ================================================== */}
+              {/* SEARCH BUTTON */}
 
               <motion.button
                 type="button"
-                whileHover={{
-                  y: -1,
-                }}
-                whileTap={{
-                  scale: 0.98,
-                }}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleSearch}
                 className="
                   relative
@@ -1103,8 +1577,6 @@ export default function SearchPanel() {
                   </span>
                 </span>
 
-                {/* Subtle gold highlight */}
-
                 <span
                   className="
                     pointer-events-none
@@ -1123,9 +1595,7 @@ export default function SearchPanel() {
             </div>
           </div>
 
-          {/* ====================================================
-              TAGLINE
-          ==================================================== */}
+          {/* TAGLINE */}
 
           <div
             className="
@@ -1141,10 +1611,7 @@ export default function SearchPanel() {
             <Building2
               size={12}
               strokeWidth={1.5}
-              className="
-                shrink-0
-                text-[#b08a4b]
-              "
+              className="shrink-0 text-[#b08a4b]"
             />
 
             <span
@@ -1187,9 +1654,7 @@ export default function SearchPanel() {
               pt-[100px]
               backdrop-blur-[5px]
             "
-            onClick={() =>
-              setShowDeveloperModal(false)
-            }
+            onClick={() => setShowDeveloperModal(false)}
           >
             <motion.div
               initial={{
@@ -1207,12 +1672,8 @@ export default function SearchPanel() {
                 scale: 0.96,
                 y: 20,
               }}
-              transition={{
-                duration: 0.25,
-              }}
-              onClick={(e) =>
-                e.stopPropagation()
-              }
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
               className="
                 relative
                 w-full
@@ -1225,82 +1686,31 @@ export default function SearchPanel() {
                 shadow-[0_40px_120px_rgba(0,0,0,0.65)]
               "
             >
-              {/* TOP LINE */}
-
-              <div
-                className="
-                  h-[2px]
-                  bg-gradient-to-r
-                  from-transparent
-                  via-[#c89d58]
-                  to-transparent
-                "
-              />
+              <div className="h-[2px] bg-gradient-to-r from-transparent via-[#c89d58] to-transparent" />
 
               {/* HEADER */}
 
-              <div
-                className="
-                  border-b
-                  border-white/10
-                  bg-[#0b0b0b]
-                  px-6
-                  py-5
-                "
-              >
+              <div className="border-b border-white/10 bg-[#0b0b0b] px-6 py-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p
-                      className="
-                        mb-2
-                        text-[10px]
-                        uppercase
-                        tracking-[3px]
-                        text-[#c89d58]
-                      "
-                    >
+                    <p className="mb-2 text-[10px] uppercase tracking-[3px] text-[#c89d58]">
                       Developer Directory
                     </p>
 
-                    <h3
-                      className="
-                        text-[22px]
-                        font-semibold
-                        leading-none
-                        text-white
-                      "
-                    >
+                    <h3 className="text-[22px] font-semibold leading-none text-white">
                       Select Developer
                     </h3>
 
-                    <p
-                      className="
-                        mt-2
-                        text-[13px]
-                        text-white/45
-                      "
-                    >
+                    <p className="mt-2 text-[13px] text-white/45">
                       Browse all developer partners
                     </p>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowDeveloperModal(false)
-                    }
-                    className="
-                      flex
-                      h-9
-                      w-9
-                      items-center
-                      justify-center
-                      rounded-full
-                      bg-white/5
-                      text-white/60
-                      transition-all
-                      hover:bg-white/10
-                    "
+                    onClick={() => setShowDeveloperModal(false)}
+                    aria-label="Close developer directory"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/60 transition-all hover:bg-white/10"
                   >
                     ✕
                   </button>
@@ -1309,20 +1719,11 @@ export default function SearchPanel() {
 
               {/* SEARCH */}
 
-              <div
-                className="
-                  border-b
-                  border-white/10
-                  bg-[#0b0b0b]
-                  p-5
-                "
-              >
+              <div className="border-b border-white/10 bg-[#0b0b0b] p-5">
                 <input
                   value={developerSearch}
                   onChange={(e) =>
-                    setDeveloperSearch(
-                      e.target.value
-                    )
+                    setDeveloperSearch(e.target.value)
                   }
                   placeholder="Search developer..."
                   className="
@@ -1343,21 +1744,13 @@ export default function SearchPanel() {
 
               {/* LIST */}
 
-              <div
-                className="
-                  max-h-[260px]
-                  overflow-y-auto
-                  scrollbar-thin
-                  scrollbar-thumb-white/10
-                "
-              >
+              <div className="max-h-[260px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
                 {developers
                   .filter((developer) =>
-                    developer.name
-                      .toLowerCase()
-                      .includes(
-                        developerSearch.toLowerCase()
-                      )
+                    getFuzzyMatchScore(
+                      developerSearch,
+                      developer.name
+                    ) >= 45
                   )
                   .map((developer) => (
                     <button
@@ -1406,25 +1799,11 @@ export default function SearchPanel() {
                       />
 
                       <div className="flex-1">
-                        <p
-                          className="
-                            text-[15px]
-                            font-medium
-                            text-white
-                            transition-colors
-                            group-hover:text-[#c89d58]
-                          "
-                        >
+                        <p className="text-[15px] font-medium text-white transition-colors group-hover:text-[#c89d58]">
                           {developer.name}
                         </p>
 
-                        <p
-                          className="
-                            mt-0.5
-                            text-[12px]
-                            text-white/40
-                          "
-                        >
+                        <p className="mt-0.5 text-[12px] text-white/40">
                           Developer Partner
                         </p>
                       </div>
@@ -1432,11 +1811,10 @@ export default function SearchPanel() {
                   ))}
 
                 {developers.filter((developer) =>
-                  developer.name
-                    .toLowerCase()
-                    .includes(
-                      developerSearch.toLowerCase()
-                    )
+                  getFuzzyMatchScore(
+                    developerSearch,
+                    developer.name
+                  ) >= 45
                 ).length === 0 && (
                   <div className="py-14 text-center">
                     <p className="text-white/40">
@@ -1471,9 +1849,7 @@ export default function SearchPanel() {
               pt-[100px]
               backdrop-blur-[5px]
             "
-            onClick={() =>
-              setShowLocationModal(false)
-            }
+            onClick={() => setShowLocationModal(false)}
           >
             <motion.div
               initial={{
@@ -1491,12 +1867,8 @@ export default function SearchPanel() {
                 scale: 0.96,
                 y: 20,
               }}
-              transition={{
-                duration: 0.25,
-              }}
-              onClick={(e) =>
-                e.stopPropagation()
-              }
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
               className="
                 relative
                 w-full
@@ -1509,76 +1881,31 @@ export default function SearchPanel() {
                 shadow-[0_40px_120px_rgba(0,0,0,0.65)]
               "
             >
-              {/* TOP LINE */}
-
-              <div
-                className="
-                  h-[2px]
-                  bg-gradient-to-r
-                  from-transparent
-                  via-[#c89d58]
-                  to-transparent
-                "
-              />
+              <div className="h-[2px] bg-gradient-to-r from-transparent via-[#c89d58] to-transparent" />
 
               {/* HEADER */}
 
-              <div
-                className="
-                  border-b
-                  border-white/10
-                  px-6
-                  py-5
-                "
-              >
-                <p
-                  className="
-                    mb-2
-                    text-[10px]
-                    uppercase
-                    tracking-[3px]
-                    text-[#c89d58]
-                  "
-                >
+              <div className="border-b border-white/10 px-6 py-5">
+                <p className="mb-2 text-[10px] uppercase tracking-[3px] text-[#c89d58]">
                   Location Directory
                 </p>
 
-                <h3
-                  className="
-                    text-[22px]
-                    font-semibold
-                    text-white
-                  "
-                >
+                <h3 className="text-[22px] font-semibold text-white">
                   Select Location
                 </h3>
 
-                <p
-                  className="
-                    mt-2
-                    text-[13px]
-                    text-white/45
-                  "
-                >
+                <p className="mt-2 text-[13px] text-white/45">
                   Browse all available locations
                 </p>
               </div>
 
               {/* SEARCH */}
 
-              <div
-                className="
-                  border-b
-                  border-white/10
-                  p-5
-                "
-              >
+              <div className="border-b border-white/10 p-5">
                 <input
                   value={locationSearch}
                   onChange={(e) =>
-                    setLocationSearch(
-                      e.target.value
-                    )
+                    setLocationSearch(e.target.value)
                   }
                   placeholder="Search location..."
                   className="
@@ -1601,23 +1928,20 @@ export default function SearchPanel() {
 
               <div className="max-h-[260px] overflow-y-auto">
                 {locations
-                  .filter((loc) =>
-                    loc
-                      .toLowerCase()
-                      .includes(
-                        locationSearch.toLowerCase()
-                      )
+                  .filter(
+                    (location) =>
+                      !locationSearch.trim() ||
+                      getFuzzyMatchScore(
+                        locationSearch,
+                        location
+                      ) >= 45
                   )
-                  .map((loc) => (
+                  .map((location) => (
                     <button
-                      key={loc}
+                      key={location}
                       type="button"
                       onClick={() => {
-                        handleChange(
-                          "location",
-                          loc
-                        );
-
+                        handleChange("location", location);
                         setShowLocationModal(false);
                       }}
                       className="
@@ -1635,7 +1959,7 @@ export default function SearchPanel() {
                       "
                     >
                       <span className="text-[14px] text-white">
-                        {loc}
+                        {location}
                       </span>
 
                       <span className="text-[16px] text-[#c89d58]">
@@ -1644,12 +1968,13 @@ export default function SearchPanel() {
                     </button>
                   ))}
 
-                {locations.filter((loc) =>
-                  loc
-                    .toLowerCase()
-                    .includes(
-                      locationSearch.toLowerCase()
-                    )
+                {locations.filter(
+                  (location) =>
+                    !locationSearch.trim() ||
+                    getFuzzyMatchScore(
+                      locationSearch,
+                      location
+                    ) >= 45
                 ).length === 0 && (
                   <div className="py-14 text-center text-white/40">
                     No locations found
