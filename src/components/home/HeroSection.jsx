@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
 
-const FEATURED_API = "/api/properties?propertyTag=Featured";
+const FEATURED_API = "/api/properties/featured";
 const ROTATION_MS = 5000;
 
 const SearchPanel = dynamic(() => import("./SearchPanel"), {
@@ -35,6 +35,7 @@ function getPropertyImage(property) {
     property?.image,
     property?.coreDetails?.image,
     property?.media?.images?.[0],
+    property?.media?.gallery?.[0],
     property?.gallery?.[0],
   ];
 
@@ -45,7 +46,7 @@ function getPropertyImage(property) {
         : candidate?.url || candidate?.secure_url;
 
     if (typeof value === "string" && value.trim()) {
-      return value;
+      return value.trim();
     }
   }
 
@@ -71,7 +72,9 @@ function getPropertyLocation(property) {
       location?.parent?.parent?.name,
     ].filter(Boolean);
 
-    if (parts.length) return [...new Set(parts)].join(", ");
+    if (parts.length) {
+      return [...new Set(parts)].join(", ");
+    }
   }
 
   return (
@@ -99,18 +102,51 @@ function getPropertyConfiguration(property) {
     property?.configurations;
 
   if (Array.isArray(value)) {
-    return value
+    const labels = value
       .map((item) =>
         typeof item === "string"
           ? item
-          : item?.label || item?.name || item?.configuration
+          : item?.label || item?.name || item?.configuration || item?.unitType
       )
-      .filter(Boolean)
-      .join(" / ");
+      .filter(Boolean);
+
+    if (labels.length) return [...new Set(labels)].join(" / ");
   }
 
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return `${value} BHK`;
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  if (typeof value === "number") {
+    return `${value} BHK`;
+  }
+
+  // Support the actual Property model's unitConfigurations array.
+  const units = property?.unitConfigurations;
+
+  if (Array.isArray(units) && units.length) {
+    const labels = units
+      .map((unit) => {
+        if (!unit || typeof unit !== "object") return "";
+
+        if (unit.unitType && typeof unit.unitType === "string") {
+          return unit.unitType;
+        }
+
+        if (unit.bedrooms != null && unit.bedrooms !== "") {
+          const bedrooms = Number(unit.bedrooms);
+
+          return Number.isFinite(bedrooms)
+            ? `${bedrooms} BHK`
+            : `${unit.bedrooms} BHK`;
+        }
+
+        return "";
+      })
+      .filter(Boolean);
+
+    if (labels.length) return [...new Set(labels)].join(" / ");
+  }
 
   return "";
 }
@@ -169,6 +205,7 @@ function getStartingPrice(property) {
           return formatPrice(numeric);
         }
 
+        // Preserve valid display strings such as "1.95 Cr*".
         return cleaned;
       }
     }
@@ -197,7 +234,9 @@ export default function HeroSection() {
         });
 
         if (!response.ok) {
-          throw new Error(`Featured properties request failed: ${response.status}`);
+          throw new Error(
+            `Featured properties request failed: ${response.status}`
+          );
         }
 
         const result = await response.json();
@@ -212,20 +251,26 @@ export default function HeroSection() {
               ? result
               : [];
 
-        const published = list.filter(
+        // The dedicated backend endpoint is responsible for filtering
+        // published, active, non-deleted Featured properties.
+        const validProperties = list.filter(
           (property) =>
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.isActive !== false &&
-            property?.deletedFromStatus !== "trash"
+            property &&
+            typeof property === "object" &&
+            typeof property.slug === "string" &&
+            property.slug.trim() !== ""
         );
 
-        setProperties(published);
+        setProperties(validProperties);
         setActiveIndex(0);
       } catch (error) {
         if (error?.name !== "AbortError") {
           console.error("Featured property carousel failed:", error);
-          if (mounted) setProperties([]);
+
+          if (mounted) {
+            setProperties([]);
+            setActiveIndex(0);
+          }
         }
       } finally {
         if (mounted) setLoading(false);
@@ -269,9 +314,7 @@ export default function HeroSection() {
     ? getPropertyConfiguration(activeProperty)
     : "";
 
-  const price = activeProperty
-    ? getStartingPrice(activeProperty)
-    : "";
+  const price = activeProperty ? getStartingPrice(activeProperty) : "";
 
   const propertyHref = activeProperty?.slug
     ? `/${activeProperty.slug}`
@@ -293,18 +336,16 @@ export default function HeroSection() {
 
   return (
     <section className="relative z-[10] overflow-visible bg-[#faf9f4] text-[#17342d]">
-      {/* COMPACT FULL-WIDTH FEATURED CAROUSEL */}
+      {/* Featured property carousel */}
 
       <div
-  className="
-    relative w-full overflow-hidden
-    h-[340px]
-    sm:h-[380px]
-    md:h-[420px]
-    lg:h-[440px]
-    xl:h-[460px]
-    bg-[#102c23]
-  "
+        className="
+          relative h-[340px] w-full overflow-hidden bg-[#102c23]
+          sm:h-[380px]
+          md:h-[420px]
+          lg:h-[440px]
+          xl:h-[460px]
+        "
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -325,11 +366,15 @@ export default function HeroSection() {
           >
             <Image
               src={image}
-              alt={activeProperty ? title : "Luxury properties by Property Bouquet"}
+              alt={
+                activeProperty
+                  ? title
+                  : "Luxury properties by Property Bouquet"
+              }
               fill
               priority
               sizes="100vw"
-              quality={88}
+              quality={85}
               className="object-cover object-center"
             />
           </motion.div>
@@ -344,12 +389,16 @@ export default function HeroSection() {
         <div className="pointer-events-none absolute -right-20 -top-24 h-[300px] w-[300px] rounded-full border border-[#d4af67]/20 sm:h-[360px] sm:w-[360px]" />
         <div className="pointer-events-none absolute -right-6 -top-10 h-[230px] w-[230px] rounded-full border border-white/10 sm:h-[285px] sm:w-[285px]" />
 
-        {/* Property information: vertically compact */}
+        {/* Property information */}
 
         <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-end px-5 pb-[65px] sm:px-8 sm:pb-[70px] md:px-10 md:pb-[73px] lg:px-12 lg:pb-[76px] xl:px-16">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={activeProperty ? getPropertyKey(activeProperty) : "fallback-copy"}
+              key={
+                activeProperty
+                  ? getPropertyKey(activeProperty)
+                  : "fallback-copy"
+              }
               initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
@@ -382,7 +431,9 @@ export default function HeroSection() {
                 {price && (
                   <p className="text-[12px] font-medium text-white sm:text-[14px]">
                     <span className="text-white/75">Starting at </span>
-                    <span className="font-semibold text-[#f0c66e]">{price}</span>
+                    <span className="font-semibold text-[#f0c66e]">
+                      {price}
+                    </span>
                   </p>
                 )}
 
@@ -459,7 +510,7 @@ export default function HeroSection() {
           </>
         )}
 
-        {/* Compact carousel indicators */}
+        {/* Carousel indicators */}
 
         {properties.length > 1 && (
           <div className="absolute bottom-[47px] right-5 z-20 flex items-center gap-1.5 sm:bottom-[52px] sm:right-8 md:right-10">
@@ -490,13 +541,16 @@ export default function HeroSection() {
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-      {/* SEARCH PANEL: smaller overlap so more of it is visible */}
+      {/* Search panel */}
 
       <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.45, delay: 0.1 }}
+          transition={{
+            duration: reduceMotion ? 0 : 0.45,
+            delay: 0.1,
+          }}
           className="
             rounded-[17px] border border-[#e7decd]
             bg-[#fffefa] p-[5px]
@@ -510,7 +564,7 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Controlled spacing before the next section */}
+      {/* Spacing before the next section */}
 
       <div className="h-5 sm:h-7 lg:h-8" />
     </section>
