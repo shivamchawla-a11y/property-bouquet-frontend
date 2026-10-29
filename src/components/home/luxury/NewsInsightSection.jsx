@@ -5,31 +5,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
-const LATEST_NEWS_API = "/api/news/latest";
+const NEWS_API = "/api/news?status=published";
 
 const formatDate = (date) => {
-  if (!date) {
-    return {
-      day: "--",
-      month: "---",
-    };
-  }
+  if (!date) return { day: "--", month: "---" };
 
   const parsedDate = new Date(date);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return {
-      day: "--",
-      month: "---",
-    };
+    return { day: "--", month: "---" };
   }
 
   return {
     day: parsedDate.getDate(),
     month: parsedDate
-      .toLocaleString("en-US", {
-        month: "short",
-      })
+      .toLocaleString("en-US", { month: "short" })
       .toUpperCase(),
   };
 };
@@ -40,57 +30,62 @@ export default function NewsInsightSection() {
   useEffect(() => {
     const controller = new AbortController();
 
-    const fetchLatestNews = async () => {
+    async function fetchLatestNews() {
       try {
-        const response = await fetch(LATEST_NEWS_API, {
+        const response = await fetch(NEWS_API, {
           signal: controller.signal,
           headers: {
             Accept: "application/json",
           },
-          next: {
-            revalidate: 300,
-          },
         });
+
+        const result = await response.json().catch(() => null);
 
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch latest news: ${response.status}`
+            result?.message ||
+              `Failed to fetch news: HTTP ${response.status}`
           );
         }
 
-        const result = await response.json();
+        const articles = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result)
+            ? result
+            : [];
 
-        if (!result?.success || !Array.isArray(result.data)) {
-          setLatestInsights([]);
-          return;
+        const published = articles
+          .filter(
+            (item) =>
+              item &&
+              item.slug &&
+              item.status === "published" &&
+              item.isDeleted !== true
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.publishDate || b.createdAt || 0) -
+              new Date(a.publishDate || a.createdAt || 0)
+          )
+          .slice(0, 3);
+
+        if (!controller.signal.aborted) {
+          setLatestInsights(published);
         }
-
-        // The backend should already return only the latest
-        // three published, non-deleted news articles.
-        setLatestInsights(
-          result.data
-            .filter(
-              (item) =>
-                item &&
-                item.status === "published" &&
-                item.isDeleted !== true &&
-                item.slug
-            )
-            .slice(0, 3)
-        );
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Latest news loading error:", error);
-          setLatestInsights([]);
+
+          if (!controller.signal.aborted) {
+            setLatestInsights([]);
+          }
         }
       }
-    };
+    }
 
     fetchLatestNews();
 
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, []);
 
   return (
@@ -102,7 +97,7 @@ export default function NewsInsightSection() {
             <div className="bg-[#fbf9f5] border-r border-black/10 px-8 py-8 xl:px-10 xl:py-10 flex flex-col justify-between">
               <div>
                 <p className="text-[10px] tracking-[2px] uppercase text-black/55 font-semibold mb-7">
-                  News & Insights
+                  News &amp; Insights
                 </p>
 
                 <h2
@@ -129,7 +124,6 @@ export default function NewsInsightSection() {
                         className="block"
                       >
                         <div className="flex gap-4 group cursor-pointer">
-                          {/* DATE */}
                           <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
                             <span className="text-[24px] leading-none font-semibold text-[#171717]">
                               {date.day}
@@ -140,10 +134,9 @@ export default function NewsInsightSection() {
                             </span>
                           </div>
 
-                          {/* TEXT */}
                           <div className="pt-[2px]">
                             <h3 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[320px] transition-all duration-300 group-hover:text-[#b98b3c]">
-                              {item.title}
+                              {item.title || "Property Market Update"}
                             </h3>
 
                             <div className="flex items-center gap-3 mt-2">
@@ -178,7 +171,6 @@ export default function NewsInsightSection() {
                 className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px] w-fit"
               >
                 View All News
-
                 <ArrowRight
                   size={13}
                   className="group-hover:translate-x-1 transition"
@@ -192,16 +184,14 @@ export default function NewsInsightSection() {
                 src="/market11.png"
                 alt="Luxury interior and premium real estate"
                 fill
-                sizes="(max-width: 1279px) 100vw, 55vw"
-                className="absolute inset-0 object-cover object-center"
+                sizes="(max-width: 767px) 100vw, (max-width: 1279px) 100vw, 55vw"
+                className="object-cover object-center"
                 priority={false}
               />
 
-              {/* PREMIUM OVERLAY */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none" />
 
-              {/* SOFT SHADOW */}
-              <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.18)]" />
+              <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.18)] pointer-events-none" />
             </div>
           </div>
         </div>
