@@ -15,7 +15,7 @@ import {
 import { formatPrice } from "@/utils/formatPrice";
 
 const FEATURED_API = "/api/properties/featured";
-const AUTOPLAY_DELAY = 4500;
+const AUTOPLAY_DELAY = 3500;
 const MAX_FEATURED = 12;
 
 // ============================================================

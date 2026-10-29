@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 const TRENDING_API = "/api/properties?propertyTag=Trending";
-const AUTOPLAY_DELAY = 4500;
+const AUTOPLAY_DELAY = 3500;
 const MAX_TRENDING = 12;
 
 // ============================================================

@@ -8,7 +8,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
 
 const FEATURED_API = "/api/properties/featured";
-const ROTATION_MS = 4000;
+const ROTATION_MS = 3500;
 
 function getPropertyKey(property) {
   return (

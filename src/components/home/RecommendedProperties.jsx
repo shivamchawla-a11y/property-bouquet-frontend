@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const RECOMMENDED_API = "/api/properties?propertyTag=Recommended";
-const AUTOPLAY_DELAY = 4500;
+const AUTOPLAY_DELAY = 3500;
 const MAX_RECOMMENDED = 12;
 
 // ============================================================

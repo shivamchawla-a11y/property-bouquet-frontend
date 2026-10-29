@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -23,27 +23,10 @@ import {
 
 import SearchPanelMobile from "./SearchPanelMobile";
 
-/* ============================================================
-   PROPERTY BOUQUET — MOBILE HERO SECTION
-
-   FEATURES
-   ------------------------------------------------------------
-   - Same featured-property carousel as desktop
-   - Dynamic featured listings from the backend
-   - Automatic rotation every 5 seconds
-   - Property image, title, configuration, price and location
-   - Previous/next controls and carousel indicators
-   - Luxury green and gold visual treatment
-   - Responsive mobile typography and spacing
-   - Functional SearchPanelMobile
-   - Trust features and dynamic property categories
-   - Category images /img4.webp through /img7.webp
-   - Reduced-motion accessibility support
-============================================================ */
-
 const FEATURED_API = "/api/properties/featured";
 const CATEGORIES_API = "/api/properties/categories";
 const ROTATION_MS = 5000;
+const SWIPE_THRESHOLD = 45;
 
 /* ============================================================
    PROPERTY HELPERS
@@ -67,6 +50,7 @@ function getPropertyImage(property) {
     property?.image,
     property?.coreDetails?.image,
     property?.media?.images?.[0],
+    property?.media?.gallery?.[0],
     property?.gallery?.[0],
   ];
 
@@ -122,33 +106,67 @@ function getPropertyConfiguration(property) {
   const configuration = property?.configurationData || {};
 
   const value =
-    core?.configuration ||
-    core?.configurations ||
-    core?.bedrooms ||
-    core?.bhk ||
-    configuration?.configuration ||
-    configuration?.configurations ||
-    configuration?.bedroom ||
-    configuration?.bhk ||
+    core.configuration ||
+    core.configurations ||
+    core.bedrooms ||
+    core.bhk ||
+    configuration.configuration ||
+    configuration.configurations ||
+    configuration.bedroom ||
+    configuration.bhk ||
     property?.configurations;
 
   if (Array.isArray(value)) {
-    return value
+    const labels = value
       .map((item) =>
         typeof item === "string"
           ? item
-          : item?.label || item?.name || item?.configuration
+          : item?.label ||
+            item?.name ||
+            item?.configuration ||
+            item?.unitType
       )
-      .filter(Boolean)
-      .join(" / ");
+      .filter(Boolean);
+
+    if (labels.length) {
+      return [...new Set(labels)].join(" / ");
+    }
   }
 
-  if (typeof value === "string") {
-    return value;
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
   }
 
   if (typeof value === "number") {
     return `${value} BHK`;
+  }
+
+  const units = property?.unitConfigurations;
+
+  if (Array.isArray(units)) {
+    const labels = units
+      .map((unit) => {
+        if (!unit || typeof unit !== "object") return "";
+
+        if (typeof unit.unitType === "string" && unit.unitType.trim()) {
+          return unit.unitType.trim();
+        }
+
+        if (unit.bedrooms != null && unit.bedrooms !== "") {
+          const bedrooms = Number(unit.bedrooms);
+
+          return Number.isFinite(bedrooms)
+            ? `${bedrooms} BHK`
+            : `${unit.bedrooms} BHK`;
+        }
+
+        return "";
+      })
+      .filter(Boolean);
+
+    if (labels.length) {
+      return [...new Set(labels)].join(" / ");
+    }
   }
 
   return "";
@@ -157,20 +175,14 @@ function getPropertyConfiguration(property) {
 function formatPrice(value) {
   const amount = Number(value);
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return "";
-  }
+  if (!Number.isFinite(amount) || amount <= 0) return "";
 
   if (amount >= 10000000) {
-    return `₹${(amount / 10000000)
-      .toFixed(2)
-      .replace(/\.?0+$/, "")} Cr`;
+    return `₹${(amount / 10000000).toFixed(2).replace(/\.?0+$/, "")} Cr`;
   }
 
   if (amount >= 100000) {
-    return `₹${(amount / 100000)
-      .toFixed(2)
-      .replace(/\.?0+$/, "")} Lac`;
+    return `₹${(amount / 100000).toFixed(2).replace(/\.?0+$/, "")} Lac`;
   }
 
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -208,9 +220,7 @@ function getStartingPrice(property) {
       }
 
       if (/\d/.test(cleaned)) {
-        const numeric = Number(
-          cleaned.replace(/[₹,\s]/g, "")
-        );
+        const numeric = Number(cleaned.replace(/[₹,\s]/g, ""));
 
         if (Number.isFinite(numeric) && numeric > 0) {
           return formatPrice(numeric);
@@ -235,33 +245,19 @@ function getCategoryScore(name) {
     value.includes("apartment") ||
     value.includes("residential") ||
     value.includes("flat")
-  ) {
-    return 100;
-  }
+  ) return 100;
 
   if (value.includes("villa")) return 90;
 
-  if (
-    value.includes("plot") ||
-    value.includes("land")
-  ) {
-    return 80;
-  }
+  if (value.includes("plot") || value.includes("land")) return 80;
 
   if (
     value.includes("commercial") ||
     value.includes("office") ||
     value.includes("retail")
-  ) {
-    return 70;
-  }
+  ) return 70;
 
-  if (
-    value.includes("builder") ||
-    value.includes("floor")
-  ) {
-    return 60;
-  }
+  if (value.includes("builder") || value.includes("floor")) return 60;
 
   if (value.includes("penthouse")) return 55;
 
@@ -273,24 +269,15 @@ function getCategoryScore(name) {
 function getCategoryIcon(categoryName) {
   const value = String(categoryName || "").toLowerCase();
 
-  if (
-    value.includes("plot") ||
-    value.includes("land")
-  ) {
-    return Trees;
-  }
+  if (value.includes("plot") || value.includes("land")) return Trees;
 
   if (
     value.includes("commercial") ||
     value.includes("office") ||
     value.includes("retail")
-  ) {
-    return Landmark;
-  }
+  ) return Landmark;
 
-  if (value.includes("villa")) {
-    return Home;
-  }
+  if (value.includes("villa")) return Home;
 
   return Building2;
 }
@@ -310,6 +297,9 @@ export default function HeroSectionMobile() {
 
   const reduceMotion = useReducedMotion();
 
+  // Store touch coordinates without triggering extra renders.
+  const touchStartRef = useRef(null);
+
   /* ==========================================================
      FETCH FEATURED PROPERTIES
   ========================================================== */
@@ -321,14 +311,11 @@ export default function HeroSectionMobile() {
     async function fetchFeaturedProperties() {
       try {
         const response = await fetch(FEATURED_API, {
-          cache: "no-store",
           signal: controller.signal,
         });
 
         if (!response.ok) {
-          throw new Error(
-            `Featured properties request failed: ${response.status}`
-          );
+          throw new Error(`Featured properties request failed: ${response.status}`);
         }
 
         const result = await response.json();
@@ -345,29 +332,29 @@ export default function HeroSectionMobile() {
 
         const published = list.filter(
           (property) =>
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.isActive !== false &&
-            property?.deletedFromStatus !== "trash"
+            property &&
+            typeof property === "object" &&
+            typeof property.slug === "string" &&
+            property.slug.trim() !== "" &&
+            property.status === "published" &&
+            property.isDeleted !== true &&
+            property.isActive !== false &&
+            property.deletedFromStatus !== "trash"
         );
 
         setProperties(published);
         setActiveIndex(0);
       } catch (error) {
         if (error?.name !== "AbortError") {
-          console.error(
-            "Featured property carousel failed:",
-            error
-          );
+          console.error("Featured property carousel failed:", error);
 
           if (mounted) {
             setProperties([]);
+            setActiveIndex(0);
           }
         }
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
 
@@ -379,100 +366,153 @@ export default function HeroSectionMobile() {
     };
   }, []);
 
+  /* ==========================================================
+     FETCH PROPERTY CATEGORIES INDEPENDENTLY
+  ========================================================== */
 
-/* ==========================================================
-   FETCH DYNAMIC PROPERTY CATEGORIES
-   Uses the lightweight category-only API.
-========================================================== */
+  useEffect(() => {
+    const controller = new AbortController();
+    let mounted = true;
 
-useEffect(() => {
-  const controller = new AbortController();
-  let cancelled = false;
+    async function fetchPropertyCategories() {
+      try {
+        const response = await fetch(CATEGORIES_API, {
+          signal: controller.signal,
+        });
 
-  async function fetchPropertyCategories() {
-    try {
-      const response = await fetch(CATEGORIES_API, {
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch property categories: ${response.status}`
-        );
-      }
-
-      const result = await response.json();
-
-      if (cancelled) return;
-
-      // The API returns { success: true, data: ["Apartments", ...] }
-      const categoryNames = Array.isArray(result?.data)
-        ? result.data
-        : [];
-
-      const uniqueCategories = [
-        ...new Set(
-          categoryNames
-            .filter((name) => typeof name === "string")
-            .map((name) => name.trim())
-            .filter(Boolean)
-        ),
-      ];
-
-      const sortedCategories = uniqueCategories.sort((a, b) => {
-        const difference =
-          getCategoryScore(b) - getCategoryScore(a);
-
-        return difference !== 0
-          ? difference
-          : a.localeCompare(b);
-      });
-
-      setPropertyCategories(sortedCategories.slice(0, 4));
-    } catch (error) {
-      if (error?.name !== "AbortError") {
-        console.error(
-          "Property category fetch failed:",
-          error
-        );
-
-        if (!cancelled) {
-          setPropertyCategories([]);
+        if (!response.ok) {
+          throw new Error(`Property categories request failed: ${response.status}`);
         }
-      }
-    } finally {
-      if (!cancelled) {
-        setCategoriesLoading(false);
+
+        const result = await response.json();
+
+        if (!mounted) return;
+
+        const categoryNames = Array.isArray(result?.data)
+          ? result.data
+          : [];
+
+        const uniqueCategories = [
+          ...new Set(
+            categoryNames
+              .filter((name) => typeof name === "string")
+              .map((name) => name.trim())
+              .filter(Boolean)
+          ),
+        ];
+
+        uniqueCategories.sort((a, b) => {
+          const difference = getCategoryScore(b) - getCategoryScore(a);
+          return difference || a.localeCompare(b);
+        });
+
+        setPropertyCategories(uniqueCategories.slice(0, 4));
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error("Property category fetch failed:", error);
+
+          if (mounted) setPropertyCategories([]);
+        }
+      } finally {
+        if (mounted) setCategoriesLoading(false);
       }
     }
-  }
 
-  fetchPropertyCategories();
+    fetchPropertyCategories();
 
-  return () => {
-    cancelled = true;
-    controller.abort();
-  };
-}, []);
-
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
 
   /* ==========================================================
      AUTOMATIC CAROUSEL ROTATION
   ========================================================== */
 
   useEffect(() => {
-    if (properties.length < 2 || paused) {
-      return undefined;
-    }
+    if (properties.length < 2 || paused) return undefined;
 
     const timer = window.setInterval(() => {
-      setActiveIndex(
-        (current) => (current + 1) % properties.length
-      );
+      setActiveIndex((current) => (current + 1) % properties.length);
     }, ROTATION_MS);
 
     return () => window.clearInterval(timer);
   }, [properties.length, paused]);
+
+  /* ==========================================================
+     CAROUSEL CONTROLS AND SWIPE
+  ========================================================== */
+
+  const goToPrevious = useCallback(() => {
+    if (properties.length < 2) return;
+
+    setActiveIndex(
+      (current) => (current - 1 + properties.length) % properties.length
+    );
+  }, [properties.length]);
+
+  const goToNext = useCallback(() => {
+    if (properties.length < 2) return;
+
+    setActiveIndex((current) => (current + 1) % properties.length);
+  }, [properties.length]);
+
+  const handleTouchStart = useCallback((event) => {
+    const touch = event.touches?.[0];
+
+    if (!touch) return;
+
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+
+    setPaused(true);
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (event) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+
+      if (!start) {
+        setPaused(false);
+        return;
+      }
+
+      const touch = event.changedTouches?.[0];
+
+      if (!touch) {
+        setPaused(false);
+        return;
+      }
+
+      const deltaX = touch.clientX - start.x;
+      const deltaY = touch.clientY - start.y;
+
+      // Only change properties for intentional horizontal swipes.
+      // Normal vertical page scrolling is not intercepted.
+      if (
+        Math.abs(deltaX) >= SWIPE_THRESHOLD &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.2
+      ) {
+        if (deltaX < 0) {
+          goToNext();
+        } else {
+          goToPrevious();
+        }
+      }
+
+      setPaused(false);
+    },
+    [goToNext, goToPrevious]
+  );
+
+  const handleTouchCancel = useCallback(() => {
+    touchStartRef.current = null;
+    setPaused(false);
+  }, []);
 
   /* ==========================================================
      ACTIVE PROPERTY DATA
@@ -480,13 +520,9 @@ useEffect(() => {
 
   const activeProperty = properties[activeIndex] || null;
 
-  const image = useMemo(
-    () =>
-      activeProperty
-        ? getPropertyImage(activeProperty)
-        : "/img1.jpg",
-    [activeProperty]
-  );
+  const image = activeProperty
+    ? getPropertyImage(activeProperty)
+    : "/img1.jpg";
 
   const title = activeProperty
     ? getPropertyTitle(activeProperty)
@@ -500,9 +536,7 @@ useEffect(() => {
     ? getPropertyConfiguration(activeProperty)
     : "";
 
-  const price = activeProperty
-    ? getStartingPrice(activeProperty)
-    : "";
+  const price = activeProperty ? getStartingPrice(activeProperty) : "";
 
   const propertyHref = activeProperty?.slug
     ? `/${activeProperty.slug}`
@@ -519,79 +553,43 @@ useEffect(() => {
   );
 
   /* ==========================================================
-     CAROUSEL CONTROLS
-  ========================================================== */
-
-  function goToPrevious() {
-    if (properties.length < 2) return;
-
-    setActiveIndex(
-      (current) =>
-        (current - 1 + properties.length) % properties.length
-    );
-  }
-
-  function goToNext() {
-    if (properties.length < 2) return;
-
-    setActiveIndex(
-      (current) => (current + 1) % properties.length
-    );
-  }
-
-  /* ==========================================================
      RENDER
   ========================================================== */
 
   return (
     <section className="relative z-[100] overflow-visible bg-[#faf9f4] text-[#17342d]">
 
-      {/* ======================================================
-          FEATURED PROPERTY CAROUSEL
-      ====================================================== */}
+      {/* FEATURED PROPERTY CAROUSEL */}
 
       <div
         className="
-          relative
-          h-[365px]
-          w-full
-          overflow-hidden
-          bg-[#102c23]
-
+          relative h-[365px] w-full overflow-hidden bg-[#102c23]
+          touch-pan-y
           min-[380px]:h-[390px]
           min-[430px]:h-[410px]
           sm:h-[430px]
         "
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
         onBlur={(event) => {
-          if (
-            !event.currentTarget.contains(event.relatedTarget)
-          ) {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
             setPaused(false);
           }
         }}
       >
-        {/* Property image with crossfade */}
+        {/* Featured image */}
 
-        <AnimatePresence mode="sync" initial={false}>
+        <AnimatePresence initial={false} mode="sync">
           <motion.div
-            key={
-              activeProperty
-                ? getPropertyKey(activeProperty)
-                : "fallback"
-            }
-            initial={{
-              opacity: reduceMotion ? 1 : 0,
-            }}
+            key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
+            initial={{ opacity: reduceMotion ? 1 : 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{
-              duration: reduceMotion ? 0 : 0.65,
-            }}
+            transition={{ duration: reduceMotion ? 0 : 0.3 }}
             className="absolute inset-0"
           >
             <Image
@@ -603,61 +601,42 @@ useEffect(() => {
               }
               fill
               priority
-              sizes="(max-width: 639px) 100vw, 640px"
-              quality={85}
+              fetchPriority="high"
+              sizes="100vw"
+              quality={75}
               className="object-cover object-center"
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Premium green overlays */}
+        {/* Lighter overlays to reveal property photography */}
 
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/90 via-[#0d291f]/65 to-[#0d291f]/25" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/95 via-[#071b14]/25 to-[#071b14]/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/65 via-[#071b14]/10 to-transparent" />
 
-        {/* Gold top accent */}
+        {/* Gold accent */}
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67] to-transparent" />
 
-        {/* Subtle decorative rings */}
+        {/* Decorative rings */}
 
         <div className="pointer-events-none absolute -right-[100px] top-[20px] h-[260px] w-[260px] rounded-full border border-[#d4af67]/20 min-[430px]:h-[300px] min-[430px]:w-[300px]" />
 
         <div className="pointer-events-none absolute -right-[60px] top-[60px] h-[190px] w-[190px] rounded-full border border-white/10 min-[430px]:h-[225px] min-[430px]:w-[225px]" />
 
-        {/* ====================================================
-            PROPERTY INFORMATION
-        ==================================================== */}
+        {/* PROPERTY INFORMATION */}
 
         <div className="relative mx-auto flex h-full w-full max-w-[640px] items-end px-5 pb-[64px] min-[380px]:px-6 min-[430px]:px-7 sm:px-8">
-
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false} mode="wait">
             <motion.div
-              key={
-                activeProperty
-                  ? getPropertyKey(activeProperty)
-                  : "fallback-copy"
-              }
-              initial={{
-                opacity: 0,
-                y: reduceMotion ? 0 : 10,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: reduceMotion ? 0 : -5,
-              }}
-              transition={{
-                duration: reduceMotion ? 0 : 0.35,
-              }}
+              key={activeProperty ? getPropertyKey(activeProperty) : "fallback-copy"}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -4 }}
+              transition={{ duration: reduceMotion ? 0 : 0.22 }}
               className="relative z-10 w-full"
             >
-              {/* Eyebrow */}
-
               <div className="mb-3 flex items-center gap-2">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#d4af67]/55 bg-[#d4af67]/10 text-[#e5c47e]">
                   <Sparkles size={14} strokeWidth={1.7} />
@@ -670,90 +649,46 @@ useEffect(() => {
                 <span className="h-px w-8 bg-[#d4af67]/80 min-[380px]:w-10" />
               </div>
 
-              {/* Configuration */}
-
               {configuration && (
                 <p className="mb-1.5 line-clamp-1 font-serif text-[15px] text-[#f0d9a5] min-[380px]:text-[17px] min-[430px]:text-[19px]">
                   {configuration}
                 </p>
               )}
 
-              {/* Main title */}
-
-              <h1
-                className="
-                  max-w-[520px]
-                  font-serif
-                  text-[29px]
-                  font-medium
-                  leading-[1.08]
-                  tracking-[-0.7px]
-                  text-white
-                  drop-shadow-[0_2px_12px_rgba(0,0,0,0.25)]
-
-                  min-[380px]:text-[32px]
-                  min-[430px]:text-[35px]
-                  sm:text-[39px]
-                "
-              >
+              <h1 className="max-w-[520px] font-serif text-[29px] font-medium leading-[1.08] tracking-[-0.7px] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)] min-[380px]:text-[32px] min-[430px]:text-[35px] sm:text-[39px]">
                 {title}
               </h1>
 
-              {/* Price */}
-
               {price && (
                 <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-[10px] text-white/75 min-[380px]:text-[11px]">
+                  <span className="text-[10px] text-white/90 min-[380px]:text-[11px]">
                     Starting at
                   </span>
 
-                  <span className="text-[15px] font-semibold text-[#f0c66e] min-[380px]:text-[17px]">
+                  <span className="text-[15px] font-semibold text-[#f0c66e] drop-shadow-sm min-[380px]:text-[17px]">
                     {price}
                   </span>
                 </div>
               )}
 
-              {/* Location */}
-
-              <p className="mt-2.5 flex max-w-full items-start gap-1.5 text-[9px] font-medium leading-[1.5] tracking-[0.7px] text-white/90 min-[380px]:text-[10px] min-[430px]:tracking-[1px]">
-                <MapPin
-                  size={14}
-                  className="mt-[1px] shrink-0 text-[#e6b85e]"
-                />
-
-                <span className="line-clamp-2 min-w-0">
-                  {location}
-                </span>
+              <p className="mt-2.5 flex max-w-full items-start gap-1.5 text-[9px] font-medium leading-[1.5] tracking-[0.7px] text-white drop-shadow-sm min-[380px]:text-[10px] min-[430px]:tracking-[1px]">
+                <MapPin size={14} className="mt-[1px] shrink-0 text-[#e6b85e]" />
+                <span className="line-clamp-2 min-w-0">{location}</span>
               </p>
-
-              {/* CTA */}
 
               <div className="mt-4 min-[380px]:mt-5">
                 <Link
                   href={propertyHref}
                   className="
-                    inline-flex
-                    min-h-[39px]
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-full
-                    border
-                    border-[#e5c47e]/75
-                    bg-[#d4af67]
-                    px-4
-                    py-2.5
-                    text-[10px]
-                    font-bold
-                    tracking-[0.2px]
-                    text-[#142c22]
+                    inline-flex min-h-[39px] items-center justify-center gap-2
+                    rounded-full border border-[#e5c47e]/75
+                    bg-[#d4af67] px-4 py-2.5
+                    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
                     shadow-[0_6px_20px_rgba(0,0,0,0.18)]
-                    transition-colors
-                    duration-200
+                    transition-colors duration-200
                     hover:bg-[#e6c783]
                     active:scale-[0.98]
-                    focus-visible:outline-none
-                    focus-visible:ring-2
+                    focus-visible:outline-none focus-visible:ring-2
                     focus-visible:ring-[#f0d9a5]
                   "
                 >
@@ -765,9 +700,7 @@ useEffect(() => {
           </AnimatePresence>
         </div>
 
-        {/* ====================================================
-            PREVIOUS / NEXT BUTTONS
-        ==================================================== */}
+        {/* PREVIOUS / NEXT */}
 
         {properties.length > 1 && (
           <>
@@ -776,33 +709,13 @@ useEffect(() => {
               onClick={goToPrevious}
               aria-label="Previous featured property"
               className="
-                absolute
-                left-2
-                top-[44%]
-                z-20
-                flex
-                h-8
-                w-8
-                -translate-y-1/2
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-white/40
-                bg-[#102c23]/40
-                text-white
-                backdrop-blur-md
-                transition-colors
-                hover:border-[#d4af67]
-                hover:bg-[#d4af67]
-                hover:text-[#17342d]
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#e5c47e]
-
-                min-[430px]:left-3
-                min-[430px]:h-9
-                min-[430px]:w-9
+                absolute left-2 top-[44%] z-20
+                flex h-8 w-8 -translate-y-1/2 items-center justify-center
+                rounded-full border border-white/50 bg-[#102c23]/35
+                text-white backdrop-blur-sm transition-colors
+                hover:border-[#d4af67] hover:bg-[#d4af67] hover:text-[#17342d]
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e]
+                min-[430px]:left-3 min-[430px]:h-9 min-[430px]:w-9
               "
             >
               <ArrowLeft size={15} />
@@ -813,33 +726,13 @@ useEffect(() => {
               onClick={goToNext}
               aria-label="Next featured property"
               className="
-                absolute
-                right-2
-                top-[44%]
-                z-20
-                flex
-                h-8
-                w-8
-                -translate-y-1/2
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-white/40
-                bg-[#102c23]/40
-                text-white
-                backdrop-blur-md
-                transition-colors
-                hover:border-[#d4af67]
-                hover:bg-[#d4af67]
-                hover:text-[#17342d]
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#e5c47e]
-
-                min-[430px]:right-3
-                min-[430px]:h-9
-                min-[430px]:w-9
+                absolute right-2 top-[44%] z-20
+                flex h-8 w-8 -translate-y-1/2 items-center justify-center
+                rounded-full border border-white/50 bg-[#102c23]/35
+                text-white backdrop-blur-sm transition-colors
+                hover:border-[#d4af67] hover:bg-[#d4af67] hover:text-[#17342d]
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e]
+                min-[430px]:right-3 min-[430px]:h-9 min-[430px]:w-9
               "
             >
               <ArrowRight size={15} />
@@ -847,9 +740,7 @@ useEffect(() => {
           </>
         )}
 
-        {/* ====================================================
-            CAROUSEL INDICATORS
-        ==================================================== */}
+        {/* INDICATORS */}
 
         {properties.length > 1 && (
           <div className="absolute bottom-[37px] right-5 z-20 flex max-w-[55%] items-center justify-end gap-1.5 min-[380px]:right-6 min-[430px]:right-7">
@@ -859,83 +750,46 @@ useEffect(() => {
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Show featured property ${index + 1}`}
-                aria-current={
-                  activeIndex === index ? "true" : undefined
-                }
-                className={`
-                  h-[3px]
-                  rounded-full
-                  transition-all
-                  duration-300
-                  focus-visible:outline-none
-                  focus-visible:ring-2
-                  focus-visible:ring-[#e5c47e]
-
-                  ${
-                    activeIndex === index
-                      ? "w-6 bg-[#e4bd70]"
-                      : "w-2 bg-white/55 hover:bg-white"
-                  }
-                `}
+                aria-current={activeIndex === index ? "true" : undefined}
+                className={`h-[3px] rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e] ${
+                  activeIndex === index
+                    ? "w-6 bg-[#e4bd70]"
+                    : "w-2 bg-white/65 hover:bg-white"
+                }`}
               />
             ))}
           </div>
         )}
 
-        {/* Loading indicator */}
-
         {loading && (
-          <div className="absolute bottom-[35px] left-5 z-20 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[1.1px] text-white/75 min-[380px]:left-6 min-[430px]:left-7">
+          <div className="absolute bottom-[35px] left-5 z-20 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[1.1px] text-white/90 min-[380px]:left-6 min-[430px]:left-7">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />
             Loading properties
           </div>
         )}
 
-        {/* Bottom gold line */}
-
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-      {/* ======================================================
-          MOBILE SEARCH PANEL
-      ====================================================== */}
+      {/* MOBILE SEARCH PANEL — RENDER IMMEDIATELY */}
 
       <div className="relative z-[1000] mx-auto -mt-[25px] w-full max-w-[640px] px-3 min-[380px]:px-4 min-[430px]:px-5">
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: reduceMotion ? 0 : 10,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.45,
-            delay: 0.1,
-          }}
+        <div
           className="
-            relative
-            z-[1000]
-            rounded-[17px]
-            border
-            border-[#e7decd]
-            bg-[#fffefa]
-            p-[5px]
-            shadow-[0_12px_32px_rgba(24,46,36,0.14)]
-            sm:rounded-[20px]
-            sm:p-[6px]
+            relative z-[1000]
+            rounded-[17px] border border-[#e7decd]
+            bg-[#fffefa] p-[5px]
+            shadow-[0_12px_32px_rgba(24,46,36,0.12)]
+            sm:rounded-[20px] sm:p-[6px]
           "
         >
           <div className="relative z-[1000] overflow-visible rounded-[13px]">
             <SearchPanelMobile />
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* ======================================================
-          TRUST FEATURES
-      ====================================================== */}
+      {/* TRUST FEATURES */}
 
       <div className="relative z-[1] mx-auto mt-5 w-full max-w-[640px] px-4 pb-5 min-[430px]:px-5">
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 border-b border-[#e9e5dc] pb-5">
@@ -965,15 +819,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ======================================================
-          EXPLORE BY CATEGORY
-      ====================================================== */}
+      {/* EXPLORE BY CATEGORY */}
 
       <section className="relative z-[1] overflow-visible bg-[#fbfaf6] px-4 py-6 min-[430px]:px-5 min-[430px]:py-7">
         <div className="mx-auto w-full max-w-[600px]">
-
-          {/* Category heading */}
-
           <div className="mb-4">
             <div className="mb-2 flex items-center gap-3">
               <span className="text-[8px] font-semibold uppercase tracking-[2.2px] text-[#888379]">
@@ -985,17 +834,13 @@ useEffect(() => {
 
             <h2
               className="font-serif text-[25px] leading-[1.1] tracking-[-0.7px] text-[#173a31] min-[430px]:text-[28px]"
-              style={{
-                fontFamily: "Georgia, 'Times New Roman', serif",
-              }}
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
               Find Properties That Match
               <br />
               Your Dreams
             </h2>
           </div>
-
-          {/* Category cards */}
 
           <div className="grid grid-cols-2 gap-3">
             {categoriesLoading ? (
@@ -1064,25 +909,15 @@ function CategorySkeleton() {
    CATEGORY CARD
 ============================================================ */
 
-function CategoryCard({
-  title,
-  icon: Icon = Building2,
-  image,
-}) {
+function CategoryCard({ title, icon: Icon = Building2, image }) {
   const href = `/properties?propertyType=${encodeURIComponent(title)}`;
 
   return (
     <Link
       href={href}
       className="
-        group
-        relative
-        h-[112px]
-        overflow-hidden
-        rounded-[14px]
-        border
-        border-white
-        bg-[#163a31]
+        group relative h-[112px] overflow-hidden
+        rounded-[14px] border border-white bg-[#163a31]
         shadow-[0_7px_20px_rgba(22,48,40,0.08)]
         min-[430px]:h-[125px]
       "
@@ -1093,10 +928,10 @@ function CategoryCard({
         fill
         sizes="(max-width: 639px) 50vw, 300px"
         loading="lazy"
-        className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-[#12392f]/95 via-[#12392f]/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#12392f]/85 via-[#12392f]/20 to-transparent" />
 
       <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -1111,7 +946,7 @@ function CategoryCard({
           </span>
         </div>
 
-        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-all duration-300 group-hover:border-[#d4b16d] group-hover:bg-[#d4b16d] group-hover:text-[#17342d]">
+        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-colors duration-200 group-hover:border-[#d4b16d] group-hover:bg-[#d4b16d] group-hover:text-[#17342d]">
           <ArrowRight size={10} strokeWidth={2} />
         </span>
       </div>
