@@ -216,107 +216,155 @@ export default function Footer() {
 
           {/* BRAND / LOGO */}
 
-          <div className="border-r-0 pr-0 lg:border-r lg:border-[#8e6b2e]/40 lg:pr-10">
+          
+<div className="border-r-0 pr-0 lg:border-r lg:border-[#C89D58]/25 lg:pr-10">
 
-            {/* Logo with subtle background for contrast */}
+  {/* Premium Logo — Seamlessly Blended with Footer */}
 
-            <Link
-              href="/"
-              aria-label="Property Bouquet home"
-              className="
-                inline-flex
-                h-[62px]
-                w-[245px]
-                max-w-full
-                items-center
-                justify-center
-                overflow-hidden
-                rounded-md
-                border
-                border-[#C89B4F]/25
-                bg-[#F7F3EE]
-                px-3
-                py-2
-                shadow-[0_4px_18px_rgba(0,0,0,0.16)]
-                transition-all
-                duration-300
-                hover:border-[#C89B4F]/60
-              "
-            >
-              <Image
-                src="/logowhole.webp"
-                alt="Property Bouquet"
-                width={1809}
-                height={599}
-                priority
-                sizes="245px"
-                className="block h-full w-full object-contain"
-              />
-            </Link>
+  <Link
+    href="/"
+    aria-label="Property Bouquet home"
+    className="
+      group
+      inline-flex
+      h-[62px]
+      w-[245px]
+      max-w-full
+      items-center
+      justify-start
+      overflow-hidden
+      rounded-lg
+      transition-all
+      duration-300
+      hover:opacity-90
+      focus-visible:outline-none
+      focus-visible:ring-2
+      focus-visible:ring-[#C89D58]
+      focus-visible:ring-offset-4
+      focus-visible:ring-offset-[#081512]
+    "
+  >
+    <Image
+      src="/logo.webp"
+      alt="Property Bouquet"
+      width={1809}
+      height={599}
+      priority
+      sizes="245px"
+      className="
+        block
+        h-full
+        w-full
+        object-contain
+        object-left
+        drop-shadow-[0_2px_10px_rgba(200,157,88,0.12)]
+        transition-all
+        duration-300
+        group-hover:drop-shadow-[0_2px_14px_rgba(200,157,88,0.24)]
+      "
+    />
+  </Link>
 
-            <p className="mt-7 max-w-[520px] text-[13px] leading-[1.85] text-white/75">
-              Property Bouquet is a luxury real estate platform offering
-              curated properties, expert insights &amp; intelligent tools
-              to help you make confident decisions.
-            </p>
+  {/* Brand Description */}
 
-            {/* SOCIAL LINKS */}
+  <p className="
+    mt-6
+    max-w-[390px]
+    text-[13px]
+    leading-[1.9]
+    tracking-[0.01em]
+    text-white/65
+  ">
+    Property Bouquet is a luxury real estate platform offering
+    curated properties, expert insights &amp; intelligent tools
+    to help you make confident decisions.
+  </p>
 
-            <div className="mt-10 flex gap-4 sm:mt-14 sm:gap-6">
+  {/* Social Links */}
 
-              <a
-                href="https://www.facebook.com/profile.php?id=61592435707356"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Property Bouquet on Facebook"
-                className="
-                  flex h-11 w-11 items-center justify-center
-                  rounded-full border border-[#B58A44]
-                  text-lg text-[#C89B4F]
-                  transition-all duration-300
-                  hover:bg-[#C89B4F] hover:text-black
-                  sm:h-12 sm:w-12
-                "
-              >
-                <FaFacebookF />
-              </a>
+  <div className="mt-8 flex items-center gap-3 sm:mt-10 sm:gap-4">
 
-              <a
-                href="https://www.instagram.com/propertybouquet/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Property Bouquet on Instagram"
-                className="
-                  flex h-11 w-11 items-center justify-center
-                  rounded-full border border-[#B58A44]
-                  text-lg text-[#C89B4F]
-                  transition-all duration-300
-                  hover:bg-[#C89B4F] hover:text-black
-                  sm:h-12 sm:w-12
-                "
-              >
-                <FaInstagram />
-              </a>
+    <a
+      href="https://www.facebook.com/profile.php?id=61592435707356"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Property Bouquet on Facebook"
+      className="
+        group/social
+        flex h-11 w-11 items-center justify-center
+        rounded-full
+        border border-[#C89D58]/40
+        bg-white/[0.025]
+        text-[16px] text-[#C89D58]
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:border-[#C89D58]
+        hover:bg-[#C89D58]
+        hover:text-[#081512]
+        hover:shadow-[0_5px_20px_rgba(200,157,88,0.16)]
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[#C89D58]
+      "
+    >
+      <FaFacebookF />
+    </a>
 
-              <a
-                href="https://www.youtube.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
-                className="
-                  flex h-11 w-11 items-center justify-center
-                  rounded-full border border-[#B58A44]
-                  text-lg text-[#C89B4F]
-                  transition-all duration-300
-                  hover:bg-[#C89B4F] hover:text-black
-                  sm:h-12 sm:w-12
-                "
-              >
-                <FaYoutube />
-              </a>
+    <a
+      href="https://www.instagram.com/propertybouquet/"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Property Bouquet on Instagram"
+      className="
+        group/social
+        flex h-11 w-11 items-center justify-center
+        rounded-full
+        border border-[#C89D58]/40
+        bg-white/[0.025]
+        text-[17px] text-[#C89D58]
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:border-[#C89D58]
+        hover:bg-[#C89D58]
+        hover:text-[#081512]
+        hover:shadow-[0_5px_20px_rgba(200,157,88,0.16)]
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[#C89D58]
+      "
+    >
+      <FaInstagram />
+    </a>
 
-            </div>
-          </div>
+    <a
+      href="https://www.youtube.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="YouTube"
+      className="
+        group/social
+        flex h-11 w-11 items-center justify-center
+        rounded-full
+        border border-[#C89D58]/40
+        bg-white/[0.025]
+        text-[17px] text-[#C89D58]
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:border-[#C89D58]
+        hover:bg-[#C89D58]
+        hover:text-[#081512]
+        hover:shadow-[0_5px_20px_rgba(200,157,88,0.16)]
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[#C89D58]
+      "
+    >
+      <FaYoutube />
+    </a>
+
+  </div>
+</div>
+
 
           {/* EXPLORE */}
 

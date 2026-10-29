@@ -2,20 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import SearchPanel from "./SearchPanel";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
 
 const FEATURED_API = "/api/properties/featured";
-const ROTATION_MS = 5000;
-
-const SearchPanel = dynamic(() => import("./SearchPanel"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[64px] w-full animate-pulse rounded-[16px] border border-[#e8e0d1] bg-white" />
-  ),
-});
+const ROTATION_MS = 4000;
 
 function getPropertyKey(property) {
   return (
@@ -229,7 +222,6 @@ export default function HeroSection() {
     async function fetchFeaturedProperties() {
       try {
         const response = await fetch(FEATURED_API, {
-          cache: "no-store",
           signal: controller.signal,
         });
 
@@ -339,13 +331,13 @@ export default function HeroSection() {
       {/* Featured property carousel */}
 
       <div
-        className="
-          relative h-[340px] w-full overflow-hidden bg-[#102c23]
-          sm:h-[380px]
-          md:h-[420px]
-          lg:h-[440px]
-          xl:h-[460px]
-        "
+       className="
+        relative h-[365px] w-full overflow-hidden bg-[#102c23]
+        sm:h-[400px]
+        md:h-[440px]
+        lg:h-[465px]
+        xl:h-[485px]
+      "
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -373,17 +365,19 @@ export default function HeroSection() {
               }
               fill
               priority
+              fetchPriority="high"
               sizes="100vw"
-              quality={85}
+              quality={75}
               className="object-cover object-center"
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Luxury green image treatment */}
+{/* Lighter overlays — preserve image detail */}
 
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/85 via-[#0d291f]/45 to-[#0d291f]/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/80 via-transparent to-[#071b14]/15" />
+<div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
+
+<div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/55 via-transparent to-transparent" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67]/80 to-transparent" />
         <div className="pointer-events-none absolute -right-20 -top-24 h-[300px] w-[300px] rounded-full border border-[#d4af67]/20 sm:h-[360px] sm:w-[360px]" />
@@ -541,28 +535,25 @@ export default function HeroSection() {
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-      {/* Search panel */}
+{/* Search Panel — Render Immediately */}
 
-      <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.45,
-            delay: 0.1,
-          }}
-          className="
-            rounded-[17px] border border-[#e7decd]
-            bg-[#fffefa] p-[5px]
-            shadow-[0_12px_32px_rgba(24,46,36,0.14)]
-            sm:rounded-[20px] sm:p-[6px]
-          "
-        >
-          <div className="rounded-[13px] sm:rounded-[16px]">
-            <SearchPanel />
-          </div>
-        </motion.div>
-      </div>
+<div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
+  <div
+    className="
+      rounded-[17px]
+      border border-[#e7decd]
+      bg-[#fffefa]
+      p-[5px]
+      shadow-[0_12px_32px_rgba(24,46,36,0.12)]
+      sm:rounded-[20px]
+      sm:p-[6px]
+    "
+  >
+    <div className="rounded-[13px] sm:rounded-[16px]">
+      <SearchPanel />
+    </div>
+  </div>
+</div>
 
       {/* Spacing before the next section */}
 
