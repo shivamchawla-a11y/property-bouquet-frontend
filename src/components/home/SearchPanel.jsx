@@ -215,6 +215,79 @@ export default function SearchPanel() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ============================================================
+// ANIMATED SEARCH PLACEHOLDER
+// ============================================================
+
+const placeholderPhrases = useMemo(
+  () => [
+    "Name",
+    "Developer",
+    "Location",
+    "Sub-location",
+    "City",
+    "Name",
+  ],
+  []
+);
+
+const [placeholderText, setPlaceholderText] = useState("");
+const [placeholderPhraseIndex, setPlaceholderPhraseIndex] =
+  useState(0);
+const [placeholderDeleting, setPlaceholderDeleting] =
+  useState(false);
+
+useEffect(() => {
+  // Respect reduced-motion preferences.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    setPlaceholderText(placeholderPhrases[0]);
+    return;
+  }
+
+  const phrase = placeholderPhrases[placeholderPhraseIndex];
+
+  const delay = placeholderDeleting ? 35 : 65;
+
+  const timeout = setTimeout(() => {
+    if (!placeholderDeleting) {
+      const nextText = phrase.slice(
+        0,
+        placeholderText.length + 1
+      );
+
+      setPlaceholderText(nextText);
+
+      if (nextText === phrase) {
+        setTimeout(() => {
+          setPlaceholderDeleting(true);
+        }, 1300);
+      }
+    } else {
+      const nextText = phrase.slice(
+        0,
+        Math.max(0, placeholderText.length - 1)
+      );
+
+      setPlaceholderText(nextText);
+
+      if (nextText.length === 0) {
+        setPlaceholderDeleting(false);
+
+        setPlaceholderPhraseIndex(
+          (prev) => (prev + 1) % placeholderPhrases.length
+        );
+      }
+    }
+  }, delay);
+
+  return () => clearTimeout(timeout);
+}, [
+  placeholderText,
+  placeholderPhraseIndex,
+  placeholderDeleting,
+  placeholderPhrases,
+]);
+
+  // ============================================================
   // VOICE SEARCH
   // ============================================================
 
@@ -1039,7 +1112,11 @@ export default function SearchPanel() {
                     setShowSuggestions(false);
                   }
                 }}
-                placeholder="Search by property name, project, developer, or location"
+               placeholder={
+  searchTerm
+    ? ""
+    : `Search Properties by ${placeholderText}${placeholderDeleting ? "" : ""}`
+}
                 autoComplete="off"
                 className="
                   min-w-0
