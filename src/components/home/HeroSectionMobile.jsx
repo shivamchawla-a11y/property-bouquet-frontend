@@ -41,8 +41,8 @@ import SearchPanelMobile from "./SearchPanelMobile";
    - Reduced-motion accessibility support
 ============================================================ */
 
-const FEATURED_API = "/api/properties?propertyTag=Featured";
-const PROPERTIES_API = "/api/properties";
+const FEATURED_API = "/api/properties/featured";
+const CATEGORIES_API = "/api/properties/categories";
 const ROTATION_MS = 5000;
 
 /* ============================================================
@@ -379,98 +379,82 @@ export default function HeroSectionMobile() {
     };
   }, []);
 
-  /* ==========================================================
-     FETCH DYNAMIC PROPERTY CATEGORIES
-  ========================================================== */
 
-  useEffect(() => {
-    const controller = new AbortController();
-    let cancelled = false;
+/* ==========================================================
+   FETCH DYNAMIC PROPERTY CATEGORIES
+   Uses the lightweight category-only API.
+========================================================== */
 
-    async function fetchPropertyCategories() {
-      try {
-        const response = await fetch(PROPERTIES_API, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
+useEffect(() => {
+  const controller = new AbortController();
+  let cancelled = false;
 
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch property categories: ${response.status}`
-          );
-        }
+  async function fetchPropertyCategories() {
+    try {
+      const response = await fetch(CATEGORIES_API, {
+        signal: controller.signal,
+      });
 
-        const result = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch property categories: ${response.status}`
+        );
+      }
 
-        if (cancelled) return;
+      const result = await response.json();
 
-        const propertyData = Array.isArray(result)
-          ? result
-          : Array.isArray(result?.properties)
-            ? result.properties
-            : Array.isArray(result?.data)
-              ? result.data
-              : [];
+      if (cancelled) return;
 
-        const uniqueCategories = [
-          ...new Set(
-            propertyData
-              .filter(
-                (property) =>
-                  property?.status === "published" &&
-                  property?.isDeleted !== true &&
-                  property?.isActive !== false &&
-                  property?.deletedFromStatus !== "trash"
-              )
-              .map(
-                (property) =>
-                  property?.categoryData?.categoryName
-              )
-              .filter(Boolean)
-              .map((name) => String(name).trim())
-              .filter(Boolean)
-          ),
-        ];
+      // The API returns { success: true, data: ["Apartments", ...] }
+      const categoryNames = Array.isArray(result?.data)
+        ? result.data
+        : [];
 
-        const sortedCategories = uniqueCategories.sort(
-          (a, b) => {
-            const difference =
-              getCategoryScore(b) - getCategoryScore(a);
+      const uniqueCategories = [
+        ...new Set(
+          categoryNames
+            .filter((name) => typeof name === "string")
+            .map((name) => name.trim())
+            .filter(Boolean)
+        ),
+      ];
 
-            return difference !== 0
-              ? difference
-              : a.localeCompare(b);
-          }
+      const sortedCategories = uniqueCategories.sort((a, b) => {
+        const difference =
+          getCategoryScore(b) - getCategoryScore(a);
+
+        return difference !== 0
+          ? difference
+          : a.localeCompare(b);
+      });
+
+      setPropertyCategories(sortedCategories.slice(0, 4));
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        console.error(
+          "Property category fetch failed:",
+          error
         );
 
-        setPropertyCategories(
-          sortedCategories.slice(0, 4)
-        );
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          console.error(
-            "Property category fetch failed:",
-            error
-          );
-
-          if (!cancelled) {
-            setPropertyCategories([]);
-          }
-        }
-      } finally {
         if (!cancelled) {
-          setCategoriesLoading(false);
+          setPropertyCategories([]);
         }
       }
+    } finally {
+      if (!cancelled) {
+        setCategoriesLoading(false);
+      }
     }
+  }
 
-    fetchPropertyCategories();
+  fetchPropertyCategories();
 
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, []);
+  return () => {
+    cancelled = true;
+    controller.abort();
+  };
+}, []);
+
 
   /* ==========================================================
      AUTOMATIC CAROUSEL ROTATION
