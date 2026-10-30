@@ -277,15 +277,20 @@ export default function HeroSection() {
     };
   }, []);
 
-  useEffect(() => {
-    if (properties.length < 2 || paused) return undefined;
+/* =========================================================
+   CONTINUOUS FEATURED PROPERTY AUTOPLAY
+   Never pauses on hover, focus or mouse interaction.
+========================================================= */
 
-    const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % properties.length);
-    }, ROTATION_MS);
+useEffect(() => {
+  if (properties.length < 2 || paused) return undefined;
 
-    return () => window.clearInterval(timer);
-  }, [properties.length, paused]);
+  const timer = window.setInterval(() => {
+    setActiveIndex((current) => (current + 1) % properties.length);
+  }, ROTATION_MS);
+
+  return () => window.clearInterval(timer);
+}, [properties.length, paused]);
 
   const activeProperty = properties[activeIndex] || null;
 
@@ -331,22 +336,14 @@ export default function HeroSection() {
       {/* Featured property carousel */}
 
       <div
-       className="
-        relative h-[365px] w-full overflow-hidden bg-[#102c23]
-        sm:h-[400px]
-        md:h-[440px]
-        lg:h-[465px]
-        xl:h-[485px]
-      "
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setPaused(false);
-          }
-        }}
-      >
+          className="
+            group relative h-[365px] w-full overflow-hidden bg-[#102c23]
+            sm:h-[400px]
+            md:h-[440px]
+            lg:h-[465px]
+            xl:h-[485px]
+          "
+        >
         <AnimatePresence mode="sync" initial={false}>
           <motion.div
             key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
@@ -368,7 +365,14 @@ export default function HeroSection() {
               fetchPriority="high"
               sizes="100vw"
               quality={75}
-              className="object-cover object-center"
+              className="
+              object-cover object-center
+              transform-gpu
+              transition-transform
+              duration-[1800ms]
+              ease-[cubic-bezier(0.22,1,0.36,1)]
+              group-hover:scale-[1.07]
+            "
             />
           </motion.div>
         </AnimatePresence>
@@ -443,22 +447,24 @@ export default function HeroSection() {
 
               <div className="mt-4 sm:mt-5">
                 <Link
-                  href={propertyHref}
-                  className="
-                    inline-flex min-h-[38px] items-center gap-2.5
-                    rounded-full border border-[#e5c47e]/70
-                    bg-[#d4af67] px-4 py-2.5
-                    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
-                    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
-                    transition-colors duration-200
-                    hover:bg-[#e6c783]
-                    focus-visible:outline-none focus-visible:ring-2
-                    focus-visible:ring-[#f0d9a5]
-                  "
-                >
-                  Explore Property
-                  <ArrowRight size={14} />
-                </Link>
+  href={propertyHref}
+  onMouseEnter={() => setPaused(true)}
+  onMouseLeave={() => setPaused(false)}
+  className="
+    inline-flex min-h-[38px] items-center gap-2.5
+    rounded-full border border-[#e5c47e]/70
+    bg-[#d4af67] px-4 py-2.5
+    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
+    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
+    transition-colors duration-200
+    hover:bg-[#e6c783]
+    focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-[#f0d9a5]
+  "
+>
+  Explore Property
+  <ArrowRight size={14} />
+</Link>
               </div>
             </motion.div>
           </AnimatePresence>
