@@ -1,59 +1,14 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import SearchPanel from "./SearchPanel";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
 
 const FEATURED_API = "/api/properties/featured";
 const ROTATION_MS = 3500;
-
-// ============================================================
-// CLOUDINARY IMAGE OPTIMIZATION
-// ============================================================
-
-function optimizeHeroImage(url) {
-  if (!url || typeof url !== "string") return "";
-
-  const cleanUrl = url.trim();
-
-  if (!cleanUrl.includes("res.cloudinary.com")) {
-    return cleanUrl;
-  }
-
-  const uploadMarker = "/image/upload/";
-  const uploadIndex = cleanUrl.indexOf(uploadMarker);
-
-  if (uploadIndex === -1) return cleanUrl;
-
-  const beforeUpload = cleanUrl.slice(
-    0,
-    uploadIndex + uploadMarker.length
-  );
-
-  const afterUpload = cleanUrl.slice(
-    uploadIndex + uploadMarker.length
-  );
-
-  const firstSegment = afterUpload.split("/")[0];
-
-  // Avoid adding duplicate automatic format/quality transformations.
-  if (
-    /(^|,)f_auto(,|$)/.test(firstSegment) ||
-    /(^|,)q_auto(:[^,]*)?(,|$)/.test(firstSegment)
-  ) {
-    return cleanUrl;
-  }
-
-  return `${beforeUpload}f_auto,q_auto:good,w_1600,c_limit/${afterUpload}`;
-}
-
-// ============================================================
-// PROPERTY HELPERS
-// ============================================================
 
 function getPropertyKey(property) {
   return (
@@ -88,8 +43,7 @@ function getPropertyImage(property) {
     }
   }
 
-  // No fallback image request.
-  return "";
+  return "/img1.jpg";
 }
 
 function getPropertyTitle(property) {
@@ -145,10 +99,7 @@ function getPropertyConfiguration(property) {
       .map((item) =>
         typeof item === "string"
           ? item
-          : item?.label ||
-            item?.name ||
-            item?.configuration ||
-            item?.unitType
+          : item?.label || item?.name || item?.configuration || item?.unitType
       )
       .filter(Boolean);
 
@@ -163,6 +114,7 @@ function getPropertyConfiguration(property) {
     return `${value} BHK`;
   }
 
+  // Support the actual Property model's unitConfigurations array.
   const units = property?.unitConfigurations;
 
   if (Array.isArray(units) && units.length) {
@@ -192,25 +144,17 @@ function getPropertyConfiguration(property) {
   return "";
 }
 
-// ============================================================
-// PRICE HELPERS
-// ============================================================
-
 function formatPrice(value) {
   const amount = Number(value);
 
   if (!Number.isFinite(amount) || amount <= 0) return "";
 
   if (amount >= 10000000) {
-    return `₹${(amount / 10000000)
-      .toFixed(2)
-      .replace(/\.?0+$/, "")} Cr`;
+    return `₹${(amount / 10000000).toFixed(2).replace(/\.?0+$/, "")} Cr`;
   }
 
   if (amount >= 100000) {
-    return `₹${(amount / 100000)
-      .toFixed(2)
-      .replace(/\.?0+$/, "")} Lac`;
+    return `₹${(amount / 100000).toFixed(2).replace(/\.?0+$/, "")} Lac`;
   }
 
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -254,6 +198,7 @@ function getStartingPrice(property) {
           return formatPrice(numeric);
         }
 
+        // Preserve valid display strings such as "1.95 Cr*".
         return cleaned;
       }
     }
@@ -262,29 +207,13 @@ function getStartingPrice(property) {
   return "";
 }
 
-// ============================================================
-// MAIN COMPONENT
-// ============================================================
-
 export default function HeroSection() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [pageVisible, setPageVisible] = useState(true);
-
-  // Track the image currently being displayed and decoded.
-  const [imageReady, setImageReady] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
-
-  const imageRef = useRef(null);
-  const preloadedImagesRef = useRef(new Set());
 
   const reduceMotion = useReducedMotion();
-
-  // ==========================================================
-  // FETCH FEATURED PROPERTIES
-  // ==========================================================
 
   useEffect(() => {
     const controller = new AbortController();
@@ -314,6 +243,8 @@ export default function HeroSection() {
               ? result
               : [];
 
+        // The dedicated backend endpoint is responsible for filtering
+        // published, active, non-deleted Featured properties.
         const validProperties = list.filter(
           (property) =>
             property &&
@@ -346,44 +277,26 @@ export default function HeroSection() {
     };
   }, []);
 
-  // ==========================================================
-  // TAB VISIBILITY
-  // ==========================================================
+/* =========================================================
+   CONTINUOUS FEATURED PROPERTY AUTOPLAY
+   Never pauses on hover, focus or mouse interaction.
+========================================================= */
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setPageVisible(!document.hidden);
-    };
+useEffect(() => {
+  if (properties.length < 2 || paused) return undefined;
 
-    handleVisibilityChange();
+  const timer = window.setInterval(() => {
+    setActiveIndex((current) => (current + 1) % properties.length);
+  }, ROTATION_MS);
 
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
-
-    return () => {
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange
-      );
-    };
-  }, []);
-
-  // ==========================================================
-  // ACTIVE PROPERTY DATA
-  // ==========================================================
+  return () => window.clearInterval(timer);
+}, [properties.length, paused]);
 
   const activeProperty = properties[activeIndex] || null;
 
-  const rawImage = useMemo(
-    () => (activeProperty ? getPropertyImage(activeProperty) : ""),
-    [activeProperty]
-  );
-
   const image = useMemo(
-    () => optimizeHeroImage(rawImage),
-    [rawImage]
+    () => (activeProperty ? getPropertyImage(activeProperty) : "/img1.jpg"),
+    [activeProperty]
   );
 
   const title = activeProperty
@@ -398,170 +311,61 @@ export default function HeroSection() {
     ? getPropertyConfiguration(activeProperty)
     : "";
 
-  const price = activeProperty
-    ? getStartingPrice(activeProperty)
-    : "";
+  const price = activeProperty ? getStartingPrice(activeProperty) : "";
 
   const propertyHref = activeProperty?.slug
     ? `/${activeProperty.slug}`
     : "/properties";
 
-  // ==========================================================
-  // RESET IMAGE STATE WHEN PROPERTY CHANGES
-  // ==========================================================
-
-  useEffect(() => {
-    setImageReady(false);
-    setImageFailed(false);
-  }, [image]);
-
-  // ==========================================================
-  // IMAGE DECODE HANDLING
-  // Reveal the text when the image is ready.
-  // ==========================================================
-
-  const handleImageLoad = useCallback(async () => {
-    const currentImage = imageRef.current;
-
-    if (!currentImage) return;
-
-    try {
-      if (typeof currentImage.decode === "function") {
-        await currentImage.decode();
-      }
-    } catch {
-      // Some browsers reject decode() even when the image is usable.
-      // The load event itself is sufficient in that case.
-    }
-
-    if (imageRef.current === currentImage) {
-      setImageReady(true);
-    }
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    setImageFailed(true);
-    setImageReady(true);
-  }, []);
-
-  // ==========================================================
-  // PRELOAD THE NEXT PROPERTY IMAGE
-  // Only one upcoming image is preloaded to avoid excess requests.
-  // ==========================================================
-
-  useEffect(() => {
-    if (properties.length < 2) return;
-
-    const nextIndex = (activeIndex + 1) % properties.length;
-    const nextProperty = properties[nextIndex];
-
-    const nextRawImage = getPropertyImage(nextProperty);
-    const nextImage = optimizeHeroImage(nextRawImage);
-
-    if (!nextImage || preloadedImagesRef.current.has(nextImage)) {
-      return;
-    }
-
-    preloadedImagesRef.current.add(nextImage);
-
-    const preload = new window.Image();
-    preload.decoding = "async";
-    preload.src = nextImage;
-  }, [properties, activeIndex]);
-
-  // ==========================================================
-  // CONTINUOUS FEATURED PROPERTY AUTOPLAY
-  // ==========================================================
-
-  useEffect(() => {
-    if (
-      properties.length < 2 ||
-      paused ||
-      !pageVisible
-    ) {
-      return undefined;
-    }
-
-    const timer = window.setInterval(() => {
-      setActiveIndex(
-        (current) => (current + 1) % properties.length
-      );
-    }, ROTATION_MS);
-
-    return () => window.clearInterval(timer);
-  }, [properties.length, paused, pageVisible]);
-
-  // ==========================================================
-  // CAROUSEL NAVIGATION
-  // ==========================================================
-
-  const goToPrevious = useCallback(() => {
+  function goToPrevious() {
     if (properties.length < 2) return;
 
     setActiveIndex(
-      (current) =>
-        (current - 1 + properties.length) % properties.length
+      (current) => (current - 1 + properties.length) % properties.length
     );
-  }, [properties.length]);
+  }
 
-  const goToNext = useCallback(() => {
+  function goToNext() {
     if (properties.length < 2) return;
 
-    setActiveIndex(
-      (current) => (current + 1) % properties.length
-    );
-  }, [properties.length]);
-
-  const showProperty = useCallback((index) => {
-    setActiveIndex(index);
-  }, []);
-
-  // ==========================================================
-  // TEXT ENTRANCE ANIMATION
-  // ==========================================================
-
-  const textInitial = reduceMotion
-    ? { opacity: 1, x: 0 }
-    : { opacity: 0, x: -24 };
-
-  const textAnimate = {
-    opacity: imageReady || !image || imageFailed ? 1 : 0,
-    x: imageReady || !image || imageFailed ? 0 : -24,
-  };
+    setActiveIndex((current) => (current + 1) % properties.length);
+  }
 
   return (
     <section className="relative z-[10] overflow-visible bg-[#faf9f4] text-[#17342d]">
-      {/* FEATURED PROPERTY CAROUSEL */}
+      {/* Featured property carousel */}
 
       <div
-        className="
-          group relative h-[365px] w-full overflow-hidden bg-[#102c23]
-          sm:h-[400px]
-          md:h-[440px]
-          lg:h-[465px]
-          xl:h-[485px]
-        "
-      >
-        {/* HERO IMAGE */}
-
-        {image && !imageFailed && (
-          <Image
-            ref={imageRef}
-            src={image}
-            alt={
-              activeProperty
-                ? title
-                : "Luxury properties by Property Bouquet"
-            }
-            fill
-            priority
-            loading="eager"
-            fetchPriority="high"
-            sizes="100vw"
-            quality={80}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            className="
+          className="
+            group relative h-[365px] w-full overflow-hidden bg-[#102c23]
+            sm:h-[400px]
+            md:h-[440px]
+            lg:h-[465px]
+            xl:h-[485px]
+          "
+        >
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.div
+            key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.65 }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={image}
+              alt={
+                activeProperty
+                  ? title
+                  : "Luxury properties by Property Bouquet"
+              }
+              fill
+              priority
+              fetchPriority="high"
+              sizes="100vw"
+              quality={75}
+              className="
               object-cover object-center
               transform-gpu
               transition-transform
@@ -569,22 +373,21 @@ export default function HeroSection() {
               ease-[cubic-bezier(0.22,1,0.36,1)]
               group-hover:scale-[1.07]
             "
-          />
-        )}
+            />
+          </motion.div>
+        </AnimatePresence>
 
-        {/* LIGHTER OVERLAYS */}
+{/* Lighter overlays — preserve image detail */}
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
+<div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071b14]/55 via-transparent to-transparent" />
+<div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/55 via-transparent to-transparent" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67]/80 to-transparent" />
-
         <div className="pointer-events-none absolute -right-20 -top-24 h-[300px] w-[300px] rounded-full border border-[#d4af67]/20 sm:h-[360px] sm:w-[360px]" />
-
         <div className="pointer-events-none absolute -right-6 -top-10 h-[230px] w-[230px] rounded-full border border-white/10 sm:h-[285px] sm:w-[285px]" />
 
-        {/* PROPERTY INFORMATION */}
+        {/* Property information */}
 
         <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-end px-5 pb-[65px] sm:px-8 sm:pb-[70px] md:px-10 md:pb-[73px] lg:px-12 lg:pb-[76px] xl:px-16">
           <AnimatePresence mode="wait" initial={false}>
@@ -594,17 +397,10 @@ export default function HeroSection() {
                   ? getPropertyKey(activeProperty)
                   : "fallback-copy"
               }
-              initial={textInitial}
-              animate={textAnimate}
-              exit={
-                reduceMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, x: -12 }
-              }
-              transition={{
-                duration: reduceMotion ? 0 : 0.48,
-                ease: [0.22, 1, 0.36, 1],
-              }}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
+              transition={{ duration: reduceMotion ? 0 : 0.35 }}
               className="relative z-10 w-full max-w-[760px]"
             >
               <div className="mb-3 flex items-center gap-2">
@@ -632,10 +428,7 @@ export default function HeroSection() {
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mt-4">
                 {price && (
                   <p className="text-[12px] font-medium text-white sm:text-[14px]">
-                    <span className="text-white/75">
-                      Starting at{" "}
-                    </span>
-
+                    <span className="text-white/75">Starting at </span>
                     <span className="font-semibold text-[#f0c66e]">
                       {price}
                     </span>
@@ -647,46 +440,37 @@ export default function HeroSection() {
                 )}
 
                 <p className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[1.2px] text-white/90 sm:text-[10px] sm:tracking-[1.7px]">
-                  <MapPin
-                    size={14}
-                    className="shrink-0 text-[#e6b85e]"
-                  />
-
-                  <span className="line-clamp-2">
-                    {location}
-                  </span>
+                  <MapPin size={14} className="shrink-0 text-[#e6b85e]" />
+                  <span className="line-clamp-2">{location}</span>
                 </p>
               </div>
 
               <div className="mt-4 sm:mt-5">
                 <Link
-                  href={propertyHref}
-                  prefetch={false}
-                  onMouseEnter={() => setPaused(true)}
-                  onMouseLeave={() => setPaused(false)}
-                  onFocus={() => setPaused(true)}
-                  onBlur={() => setPaused(false)}
-                  className="
-                    inline-flex min-h-[38px] items-center gap-2.5
-                    rounded-full border border-[#e5c47e]/70
-                    bg-[#d4af67] px-4 py-2.5
-                    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
-                    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
-                    transition-colors duration-200
-                    hover:bg-[#e6c783]
-                    focus-visible:outline-none focus-visible:ring-2
-                    focus-visible:ring-[#f0d9a5]
-                  "
-                >
-                  Explore Property
-                  <ArrowRight size={14} />
-                </Link>
+  href={propertyHref}
+  onMouseEnter={() => setPaused(true)}
+  onMouseLeave={() => setPaused(false)}
+  className="
+    inline-flex min-h-[38px] items-center gap-2.5
+    rounded-full border border-[#e5c47e]/70
+    bg-[#d4af67] px-4 py-2.5
+    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
+    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
+    transition-colors duration-200
+    hover:bg-[#e6c783]
+    focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-[#f0d9a5]
+  "
+>
+  Explore Property
+  <ArrowRight size={14} />
+</Link>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* CAROUSEL ARROWS */}
+        {/* Carousel arrows */}
 
         {properties.length > 1 && (
           <>
@@ -726,7 +510,7 @@ export default function HeroSection() {
           </>
         )}
 
-        {/* CAROUSEL INDICATORS */}
+        {/* Carousel indicators */}
 
         {properties.length > 1 && (
           <div className="absolute bottom-[47px] right-5 z-20 flex items-center gap-1.5 sm:bottom-[52px] sm:right-8 md:right-10">
@@ -734,11 +518,9 @@ export default function HeroSection() {
               <button
                 key={getPropertyKey(property)}
                 type="button"
-                onClick={() => showProperty(index)}
+                onClick={() => setActiveIndex(index)}
                 aria-label={`Show featured property ${index + 1}`}
-                aria-current={
-                  activeIndex === index ? "true" : undefined
-                }
+                aria-current={activeIndex === index ? "true" : undefined}
                 className={`h-[3px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e] ${
                   activeIndex === index
                     ? "w-7 bg-[#e4bd70]"
@@ -748,8 +530,6 @@ export default function HeroSection() {
             ))}
           </div>
         )}
-
-        {/* LOADING INDICATOR */}
 
         {loading && (
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[1.8px] text-white/70 sm:left-8 md:left-10">
@@ -761,27 +541,27 @@ export default function HeroSection() {
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-      {/* SEARCH PANEL — RENDER IMMEDIATELY */}
+{/* Search Panel — Render Immediately */}
 
-      <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
-        <div
-          className="
-            rounded-[17px]
-            border border-[#e7decd]
-            bg-[#fffefa]
-            p-[5px]
-            shadow-[0_12px_32px_rgba(24,46,36,0.12)]
-            sm:rounded-[20px]
-            sm:p-[6px]
-          "
-        >
-          <div className="rounded-[13px] sm:rounded-[16px]">
-            <SearchPanel />
-          </div>
-        </div>
-      </div>
+<div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
+  <div
+    className="
+      rounded-[17px]
+      border border-[#e7decd]
+      bg-[#fffefa]
+      p-[5px]
+      shadow-[0_12px_32px_rgba(24,46,36,0.12)]
+      sm:rounded-[20px]
+      sm:p-[6px]
+    "
+  >
+    <div className="rounded-[13px] sm:rounded-[16px]">
+      <SearchPanel />
+    </div>
+  </div>
+</div>
 
-      {/* SPACING BEFORE NEXT SECTION */}
+      {/* Spacing before the next section */}
 
       <div className="h-5 sm:h-7 lg:h-8" />
     </section>
