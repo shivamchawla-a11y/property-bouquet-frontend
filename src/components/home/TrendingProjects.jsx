@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,6 +18,34 @@ import {
 const TRENDING_API = "/api/properties?propertyTag=Trending";
 const AUTOPLAY_DELAY = 3500;
 const MAX_TRENDING = 12;
+
+// ============================================================
+// CLOUDINARY IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeCloudinaryImage(url, width = 800) {
+  if (!url || typeof url !== "string") return "";
+
+  // Only transform Cloudinary images.
+  if (!url.includes("res.cloudinary.com")) return url;
+
+  // Keep already optimized Cloudinary URLs unchanged.
+  const uploadIndex = url.indexOf("/image/upload/");
+
+  if (uploadIndex === -1) return url;
+
+  const beforeUpload = url.slice(0, uploadIndex + 14);
+  const afterUpload = url.slice(uploadIndex + 14);
+
+  // Avoid adding duplicate transformations.
+  if (
+    /(^|\/)(f_auto|q_auto|w_\d+|c_limit)(,|\/)/.test(afterUpload)
+  ) {
+    return url;
+  }
+
+  return `${beforeUpload}f_auto,q_auto:good,w_${width},c_limit/${afterUpload}`;
+}
 
 // ============================================================
 // HELPERS
@@ -71,6 +100,45 @@ function getPrice(item) {
 }
 
 // ============================================================
+// PROPERTY IMAGE
+// ============================================================
+
+function TrendingPropertyImage({ src, alt }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const optimizedSrc = useMemo(
+    () => optimizeCloudinaryImage(src, 800),
+    [src]
+  );
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [optimizedSrc]);
+
+  if (!optimizedSrc || imageFailed) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-black/45">
+        Property image coming soon
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={optimizedSrc}
+      alt={alt}
+      width="800"
+      height="520"
+      loading="lazy"
+      decoding="async"
+      fetchPriority="low"
+      onError={() => setImageFailed(true)}
+      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+    />
+  );
+}
+
+// ============================================================
 // SKELETON
 // ============================================================
 
@@ -109,7 +177,7 @@ function TrendingSkeleton() {
 // TRENDING PROPERTY CARD
 // ============================================================
 
-function TrendingPropertyCard({ item, index }) {
+function TrendingPropertyCard({ item }) {
   const title = item?.coreDetails?.title || "Trending Property";
   const image = item?.media?.heroImageUrl;
   const configuration = item?.unitConfigurations?.[0];
@@ -117,26 +185,15 @@ function TrendingPropertyCard({ item, index }) {
   return (
     <Link
       href={`/${item.slug}`}
+      prefetch={false}
       aria-label={`Explore ${title}`}
       className="block min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%]"
     >
       <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#ebe5da] bg-white shadow-[0_10px_32px_rgba(0,0,0,0.045)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)]">
+
         {/* IMAGE */}
         <div className="relative h-[160px] overflow-hidden bg-[#eee9df]">
-          {image ? (
-            <img
-              src={image}
-              alt={title}
-              loading={index < 2 ? "eager" : "lazy"}
-              decoding="async"
-              fetchPriority={index === 0 ? "high" : "auto"}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-black/45">
-              Property image coming soon
-            </div>
-          )}
+          <TrendingPropertyImage src={image} alt={title} />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
@@ -235,13 +292,13 @@ export default function TrendingProjects() {
   const [loading, setLoading] = useState(true);
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Keep the autoplay plugin stable between renders.
+  // Keep autoplay stable between renders.
   const autoplay = useMemo(
     () =>
       Autoplay({
         delay: AUTOPLAY_DELAY,
         stopOnInteraction: false,
-        stopOnMouseEnter: true,
+        stopOnMouseEnter: false,
       }),
     []
   );
@@ -305,7 +362,6 @@ export default function TrendingProjects() {
               : property?.propertyTag === "Trending")
         );
 
-        // Shuffle once when the data arrives.
         const shuffled = shuffleArray(published).slice(0, MAX_TRENDING);
 
         if (!controller.signal.aborted) {
@@ -345,6 +401,7 @@ export default function TrendingProjects() {
 
       <div className="relative mx-auto max-w-[1450px] px-5 xl:px-8">
         <div className="grid items-start gap-8 lg:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] xl:gap-10">
+
           {/* LEFT */}
           <div className="pt-2 lg:pt-4">
             <p className="mb-5 font-body text-[11px] font-semibold uppercase tracking-[2.5px] text-white/55">
@@ -362,6 +419,7 @@ export default function TrendingProjects() {
 
             <Link
               href="/properties"
+              prefetch={false}
               className="group mt-8 inline-flex items-center gap-3 font-body text-[13px] font-semibold tracking-[1px] text-[#d6a454]"
             >
               VIEW ALL INVESTMENTS
@@ -375,6 +433,7 @@ export default function TrendingProjects() {
 
           {/* RIGHT */}
           <div className="min-w-0">
+
             {/* ARROWS */}
             <div className="mb-5 flex justify-end gap-3">
               <button
@@ -397,7 +456,10 @@ export default function TrendingProjects() {
             </div>
 
             {/* CAROUSEL */}
-            <div className="min-w-0 max-w-[900px] overflow-hidden" ref={emblaRef}>
+            <div
+              className="min-w-0 max-w-[900px] overflow-hidden"
+              ref={emblaRef}
+            >
               <div className="-ml-2 flex">
                 {loading &&
                   Array.from({ length: 3 }, (_, index) => (
@@ -405,11 +467,10 @@ export default function TrendingProjects() {
                   ))}
 
                 {!loading &&
-                  trendingProperties.map((item, index) => (
+                  trendingProperties.map((item) => (
                     <TrendingPropertyCard
                       key={item._id || item.slug}
                       item={item}
-                      index={index}
                     />
                   ))}
 
@@ -423,6 +484,7 @@ export default function TrendingProjects() {
 
                     <Link
                       href="/properties"
+                      prefetch={false}
                       className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#d6a454]"
                     >
                       Explore all properties <ArrowRight size={15} />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -5,6 +6,7 @@ import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
+
 import { formatPrice } from "@/utils/formatPrice";
 
 import {
@@ -14,19 +16,330 @@ import {
   MapPin,
 } from "lucide-react";
 
+// ============================================================
+// CONFIGURATION
+// ============================================================
+
+const FEATURED_API = "/api/properties/featured";
+
+const AUTOPLAY_DELAY = 3500;
+
+const MAX_FEATURED = 12;
+
+const FALLBACK_IMAGE =
+  "https://placehold.co/600x400/f3f4f6/999999?text=Property";
+
+// ============================================================
+// IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeCloudinaryImage(url, width = 900) {
+  if (!url || typeof url !== "string") {
+    return FALLBACK_IMAGE;
+  }
+
+  const imageUrl = url.trim();
+
+  if (
+    !imageUrl.includes("res.cloudinary.com") ||
+    !imageUrl.includes("/image/upload/")
+  ) {
+    return imageUrl;
+  }
+
+  const uploadPath =
+    imageUrl.split("/image/upload/")[1] || "";
+
+  // Avoid applying transformations twice.
+  if (
+    /^(?:[^/]*,)*(?:f_auto|q_auto|w_\d+|c_limit)(?:,|\/)/i.test(
+      uploadPath
+    )
+  ) {
+    return imageUrl;
+  }
+
+  return imageUrl.replace(
+    "/image/upload/",
+    `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`
+  );
+}
+
+// ============================================================
+// LOCATION HELPER
+// ============================================================
+
+function getLocationName(item) {
+  const location = item?.locationData?.locationRef;
+
+  if (!location) {
+    return (
+      item?.locationData?.customLocation ||
+      item?.locationData?.locationName ||
+      "Prime Location"
+    );
+  }
+
+  return [
+    location.name,
+    location.parent?.name,
+    location.parent?.parent?.name,
+  ]
+    .filter(Boolean)
+    .join(", ") || "Prime Location";
+}
+
+// ============================================================
+// PRICE HELPER
+// ============================================================
+
+function getPrice(item) {
+  const details = item?.coreDetails;
+  const configuration = item?.unitConfigurations?.[0];
+
+  if (details?.priceOnRequest) {
+    return "On Request";
+  }
+
+  const price =
+    details?.startingPrice ?? configuration?.price;
+
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
+    return "Price Unavailable";
+  }
+
+  return `₹${formatPrice(price)}`;
+}
+
+// ============================================================
+// PROPERTY IMAGE
+// ============================================================
+
+function PropertyImage({ item }) {
+  const originalImage = item?.media?.heroImageUrl;
+
+  const image = optimizeCloudinaryImage(
+    originalImage,
+    900
+  );
+
+  const [imageSrc, setImageSrc] = useState(image);
+
+  useEffect(() => {
+    setImageSrc(image);
+  }, [image]);
+
+  const handleImageError = (event) => {
+    if (event.currentTarget.src !== FALLBACK_IMAGE) {
+      event.currentTarget.onerror = null;
+      setImageSrc(FALLBACK_IMAGE);
+    }
+  };
+
+  if (!originalImage) {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#eee9df] text-sm text-black/45">
+        Property image coming soon
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageSrc}
+      alt={
+        item?.coreDetails?.title ||
+        "Featured property in Gurgaon"
+      }
+      width="900"
+      height="600"
+      loading="lazy"
+      decoding="async"
+      fetchPriority="low"
+      draggable="false"
+      onError={handleImageError}
+      className="h-full w-full object-cover"
+    />
+  );
+}
+
+// ============================================================
+// PROPERTY CARD
+// ============================================================
+
+function FeaturedMobileCard({ item, index }) {
+  const title =
+    item?.coreDetails?.title || "Featured Property";
+
+  const bedrooms =
+    item?.unitConfigurations?.[0]?.bedrooms;
+
+  const bathrooms =
+    item?.unitConfigurations?.[0]?.bathrooms;
+
+  return (
+    <div className="mr-4 min-w-0 flex-[0_0_88%]">
+      <Link
+        href={item?.slug ? `/${item.slug}` : "/properties"}
+        prefetch={false}
+        aria-label={`View ${title}`}
+        className="block h-full"
+      >
+        <motion.article
+          initial={{
+            opacity: 0,
+            y: 25,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.45,
+            delay: Math.min(index * 0.05, 0.15),
+          }}
+          viewport={{
+            once: true,
+            amount: 0.1,
+          }}
+          className="overflow-hidden rounded-[26px] border border-[#ebe5da] bg-white shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
+        >
+          {/* IMAGE */}
+
+          <div className="relative h-[240px] overflow-hidden bg-[#eee9df]">
+            <PropertyImage item={item} />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+
+            <div className="absolute left-4 top-4 rounded-full bg-[#c89948] px-4 py-2 text-[10px] font-semibold tracking-[1.5px] text-white">
+              FEATURED
+            </div>
+          </div>
+
+          {/* GOLD LINE */}
+
+          <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
+
+          {/* CONTENT */}
+
+          <div className="p-5">
+
+            {/* TITLE */}
+
+            <h3
+              className="line-clamp-2 text-[24px] leading-tight text-[#171717]"
+              style={{
+                fontFamily:
+                  "Georgia, Times New Roman, serif",
+              }}
+            >
+              {title}
+            </h3>
+
+            {/* LOCATION */}
+
+            <div className="mt-3 flex gap-2">
+              <MapPin
+                size={16}
+                className="mt-[2px] shrink-0 text-[#c89948]"
+              />
+
+              <span className="line-clamp-2 text-[13px] leading-6 text-black/60">
+                {getLocationName(item)}
+              </span>
+            </div>
+
+            {/* PROPERTY DETAILS */}
+
+            <div className="mt-6 flex items-center justify-between text-black/65">
+
+              <div className="flex items-center gap-2">
+                <BedDouble size={16} />
+
+                <span className="text-[13px]">
+                  {bedrooms
+                    ? `${bedrooms} Beds`
+                    : "Luxury"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Bath size={16} />
+
+                <span className="text-[13px]">
+                  {bathrooms
+                    ? `${bathrooms} Baths`
+                    : "Residence"}
+                </span>
+              </div>
+            </div>
+
+            {/* PRICE */}
+
+            <div className="mt-5">
+              <p className="mb-2 text-[11px] uppercase tracking-[1px] text-black/45">
+                {item?.coreDetails?.priceOnRequest
+                  ? "Price"
+                  : "Starting Price"}
+              </p>
+
+              <h4 className="text-[24px] font-bold leading-none text-[#111]">
+                {getPrice(item)}
+              </h4>
+            </div>
+
+            {/* VIEW PROPERTY */}
+
+            <div className="mt-6 flex items-center justify-between border-t border-[#ece7df] pt-5">
+              <span className="text-[12px] font-semibold uppercase tracking-[1.6px] text-[#bf8b37]">
+                View Property
+              </span>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#bf8b37] text-white">
+                <ArrowRight size={18} />
+              </div>
+            </div>
+
+          </div>
+        </motion.article>
+      </Link>
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
+
 export default function FeaturedProjectsMobile() {
   const [featuredProperties, setFeaturedProperties] =
     useState([]);
 
   const [loading, setLoading] = useState(true);
 
-  const autoplay = useRef(
-    Autoplay({
-      delay: 3500,
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  // ----------------------------------------------------------
+  // AUTOPLAY
+  // ----------------------------------------------------------
+
+  const autoplay = useRef(null);
+
+  if (!autoplay.current) {
+    autoplay.current = Autoplay({
+      delay: AUTOPLAY_DELAY,
+
+      // Continue after manual interaction.
       stopOnInteraction: false,
-      stopOnMouseEnter: true,
-    })
-  );
+
+      // Do not pause when hovered.
+      stopOnMouseEnter: false,
+    });
+  }
 
   const [emblaRef] = useEmblaCarousel(
     {
@@ -38,63 +351,114 @@ export default function FeaturedProjectsMobile() {
     [autoplay.current]
   );
 
+  // ----------------------------------------------------------
+  // FETCH FEATURED PROPERTIES
+  // ----------------------------------------------------------
+
   useEffect(() => {
-    const fetchFeaturedProperties = async () => {
+    const controller = new AbortController();
+
+    async function fetchFeaturedProperties() {
       try {
-        const res = await fetch(
-          "/api/properties?propertyTag=Featured",
-          {
-            cache: "no-store",
-          }
-        );
+        const response = await fetch(FEATURED_API, {
+          signal: controller.signal,
+        });
 
-        const data = await res.json();
+        if (!response.ok) {
+          throw new Error(
+            `Featured properties request failed: ${response.status}`
+          );
+        }
 
-        if (data.success) {
-          const published = (data.data || []).filter(
+        const result = await response.json();
+
+        const records = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result?.properties)
+              ? result.properties
+              : [];
+
+        const published = records
+          .filter(
             (property) =>
-              property.status === "published" &&
-              property.isDeleted === false &&
-              property.isActive === true
+              property?.slug &&
+              property?.coreDetails?.title &&
+              property?.status === "published" &&
+              property?.isDeleted !== true &&
+              property?.isActive !== false &&
+              (property?.propertyTag || []).includes(
+                "Featured"
+              )
+          )
+          .slice(0, MAX_FEATURED);
+
+        if (!controller.signal.aborted) {
+          setFeaturedProperties(published);
+          setFetchFailed(false);
+        }
+      } catch (error) {
+        if (
+          error?.name !== "AbortError" &&
+          !controller.signal.aborted
+        ) {
+          console.error(
+            "Failed to load mobile featured properties:",
+            error
           );
 
-          const shuffled = [...published].sort(
-  () => Math.random() - 0.5
-);
-
-setFeaturedProperties(shuffled);
+          setFetchFailed(true);
         }
-      } catch (err) {
-        console.error(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
-    };
+    }
 
     fetchFeaturedProperties();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
-  return (
-    <section className="bg-[#f6f3ee] py-14 overflow-hidden lg:hidden">
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
 
+  return (
+    <section
+      className="overflow-hidden bg-[#f6f3ee] py-14 lg:hidden"
+      aria-labelledby="featured-mobile-heading"
+    >
       <div className="px-5">
 
         {/* HEADER */}
 
         <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.45,
+          }}
+          viewport={{
+            once: true,
+          }}
         >
-
-          <p className="text-[10px] uppercase tracking-[2.5px] text-black/55 font-semibold">
-
+          <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-black/55">
             FEATURED PROPERTIES
-
           </p>
 
           <h2
+            id="featured-mobile-heading"
             className="mt-4 text-[34px] leading-[1.1] text-[#171717]"
             style={{
               fontFamily:
@@ -102,344 +466,73 @@ setFeaturedProperties(shuffled);
             }}
           >
             Exclusive Mandates.
-
             <br />
-
             Extraordinary Assets.
-
           </h2>
 
           <Link
             href="/properties"
-            className="
-              inline-flex
-              items-center
-              gap-2
-              mt-7
-              text-[#bf8b37]
-              text-[12px]
-              tracking-[1.5px]
-              font-semibold
-            "
+            prefetch={false}
+            className="mt-7 inline-flex items-center gap-2 text-[12px] font-semibold tracking-[1.5px] text-[#bf8b37]"
           >
             VIEW ALL
 
             <ArrowRight size={14} />
-
           </Link>
-
         </motion.div>
 
         {/* CAROUSEL */}
 
         <div
           ref={emblaRef}
-          className="overflow-hidden mt-10"
+          className="mt-10 overflow-hidden"
         >
-
           <div className="flex">
 
-                      {loading && (
-            <div className="flex-[0_0_100%] text-center py-20 text-black/60">
-              Loading featured properties...
-            </div>
-          )}
+            {/* LOADING */}
 
-          {!loading &&
-            featuredProperties.length === 0 && (
-              <div className="flex-[0_0_100%] text-center py-20 text-black/60">
-                No featured properties found.
+            {loading && (
+              <div className="flex-[0_0_100%] py-20 text-center text-sm text-black/60">
+                Loading featured properties...
               </div>
             )}
 
-          {featuredProperties.map((item, index) => (
-            <div
-              key={item._id}
-              className="
-                flex-[0_0_88%]
-                mr-4
-              "
-            >
-              <Link
-                href={`/${item.slug}`}
-                className="block"
-              >
-                <motion.div
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    delay: index * 0.08,
-                  }}
-                  viewport={{
-                    once: true,
-                  }}
-                  whileHover={{
-                    y: -6,
-                  }}
-                  className="
-                    bg-white
-                    rounded-[26px]
-                    overflow-hidden
-                    border
-                    border-[#ebe5da]
-                    shadow-[0_18px_50px_rgba(0,0,0,0.08)]
-                  "
-                >
+            {/* EMPTY STATE */}
 
-                  {/* IMAGE */}
+            {!loading &&
+              featuredProperties.length === 0 && (
+                <div className="flex-[0_0_100%] py-20 text-center text-sm text-black/60">
+                  {fetchFailed
+                    ? "Featured properties are temporarily unavailable."
+                    : "No featured properties found."}
 
-                  <div className="relative h-[240px]">
-
-                    <img
-                      src={item?.media?.heroImageUrl}
-                      alt={item?.coreDetails?.title}
-                      className="
-                        w-full
-                        h-full
-                        object-cover
-                      "
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-
-                    <div
-                      className="
-                        absolute
-                        top-4
-                        left-4
-                        bg-[#c89948]
-                        text-white
-                        text-[10px]
-                        tracking-[1.5px]
-                        px-4
-                        py-2
-                        rounded-full
-                        font-semibold
-                      "
+                  <div>
+                    <Link
+                      href="/properties"
+                      prefetch={false}
+                      className="mt-4 inline-flex items-center gap-2 font-semibold text-[#bf8b37]"
                     >
-                      FEATURED
-                    </div>
-
+                      Explore properties
+                      <ArrowRight size={15} />
+                    </Link>
                   </div>
+                </div>
+              )}
 
-                  <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
+            {/* PROPERTY CARDS */}
 
-                  {/* CONTENT */}
-
-                  <div className="p-5">
-
-                    <h3
-                      className="
-                        text-[24px]
-                        leading-tight
-                        text-[#171717]
-                        line-clamp-2
-                      "
-                      style={{
-                        fontFamily:
-                          "Georgia, Times New Roman, serif",
-                      }}
-                    >
-                      {item?.coreDetails?.title}
-                    </h3>
-
-                    <div className="flex gap-2 mt-3">
-
-                      <MapPin
-                        size={16}
-                        className="shrink-0 mt-[2px] text-[#c89948]"
-                      />
-
-                      <span
-                        className="
-                          text-[13px]
-                          text-black/60
-                          leading-6
-                          line-clamp-2
-                        "
-                      >
-                        {(() => {
-                          const location =
-                            item?.locationData?.locationRef;
-
-                          if (!location) {
-                            return (
-                              item?.locationData
-                                ?.customLocation ||
-                              item?.locationData
-                                ?.locationName ||
-                              "Prime Location"
-                            );
-                          }
-
-                          const parts = [];
-
-                          if (location.name)
-                            parts.push(location.name);
-
-                          if (location.parent?.name)
-                            parts.push(
-                              location.parent.name
-                            );
-
-                          if (
-                            location.parent?.parent?.name
-                          ) {
-                            parts.push(
-                              location.parent.parent
-                                .name
-                            );
-                          }
-
-                          return parts.join(", ");
-                        })()}
-                      </span>
-
-                    </div>
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        mt-6
-                        text-black/65
-                      "
-                    >
-
-                      <div className="flex items-center gap-2">
-
-                        <BedDouble size={16} />
-
-                        <span className="text-[13px]">
-                          {item?.unitConfigurations?.[0]
-                            ?.bedrooms
-                            ? `${item.unitConfigurations[0].bedrooms} Beds`
-                            : "Luxury"}
-                        </span>
-
-                      </div>
-
-                      <div className="flex items-center gap-2">
-
-                        <Bath size={16} />
-
-                        <span className="text-[13px]">
-                          {item?.unitConfigurations?.[0]
-                            ?.bathrooms
-                            ? `${item.unitConfigurations[0].bathrooms} Baths`
-                            : "Residence"}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                    {/* PRICE */}
-<div className="mt-3">
-  <p
-    className="
-      text-[11px]
-      uppercase
-      tracking-[1px]
-      text-black/45
-      mb-2
-    "
-  >
-    {item?.coreDetails?.priceOnRequest
-      ? "Price"
-      : "Starting Price"}
-  </p>
-
-  <h4
-    className="
-      text-[24px]
-      font-bold
-      text-[#111]
-      leading-none
-    "
-  >
-    {item?.coreDetails?.priceOnRequest ? (
-      "On Request"
-    ) : item?.coreDetails?.startingPrice ? (
-      <>
-        ₹{formatPrice(item.coreDetails.startingPrice)}
-      </>
-    ) : item?.unitConfigurations?.[0]?.price ? (
-      <>
-        ₹{formatPrice(item.unitConfigurations[0].price)}
-      </>
-    ) : (
-      "Price Unavailable"
-    )}
-  </h4>
-</div>
-
-                    <div
-                      className="
-                        mt-6
-                        pt-5
-                        border-t
-                        border-[#ece7df]
-                        flex
-                        items-center
-                        justify-between
-                      "
-                    >
-
-                      <span
-                        className="
-                          text-[12px]
-                          tracking-[1.6px]
-                          uppercase
-                          font-semibold
-                          text-[#bf8b37]
-                        "
-                      >
-                        View Property
-                      </span>
-
-                      <div
-                        className="
-                          w-10
-                          h-10
-                          rounded-full
-                          bg-[#bf8b37]
-                          text-white
-                          flex
-                          items-center
-                          justify-center
-                        "
-                      >
-                        <ArrowRight size={18} />
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                </motion.div>
-
-              </Link>
-
-            </div>
-
-          ))}
+            {!loading &&
+              featuredProperties.map((item, index) => (
+                <FeaturedMobileCard
+                  key={item._id || item.slug}
+                  item={item}
+                  index={index}
+                />
+              ))}
 
           </div>
-
         </div>
-
       </div>
-
     </section>
-
   );
 }

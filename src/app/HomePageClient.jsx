@@ -1,6 +1,8 @@
+
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 import Navbar from "@/components/home/Navbar";
 import NavbarMobile from "@/components/home/NavbarMobile";
@@ -9,8 +11,6 @@ import HeroSection from "@/components/home/HeroSection";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
 
 import NavbarConsultationModal from "@/components/home/NavbarConsultationModal";
-
-import { useState } from "react";
 
 // =========================================================
 // LAZY LOADED SECTIONS
@@ -53,12 +53,47 @@ const Footer = dynamic(() =>
 );
 
 // =========================================================
+// RESPONSIVE BREAKPOINT HOOK
+// =========================================================
+
+function useDesktopLayout() {
+  const [isDesktop, setIsDesktop] = useState(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    const updateLayout = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    updateLayout();
+
+    mediaQuery.addEventListener("change", updateLayout);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateLayout);
+    };
+  }, []);
+
+  return isDesktop;
+}
+
+// =========================================================
 // HOME PAGE
 // =========================================================
 
 export default function HomePage() {
-  const [showConsultation, setShowConsultation] =
-    useState(false);
+  const [showConsultation, setShowConsultation] = useState(false);
+
+  const isDesktop = useDesktopLayout();
+
+  const openConsultation = () => {
+    setShowConsultation(true);
+  };
+
+  const closeConsultation = () => {
+    setShowConsultation(false);
+  };
 
   return (
     <main className="bg-[#f6f6f6] overflow-hidden">
@@ -66,39 +101,22 @@ export default function HomePage() {
       {/* ===================================================== */}
       {/* DESKTOP NAVBAR */}
       {/* ===================================================== */}
-      {/*
-        IMPORTANT:
-        The existing Navbar.jsx is completely untouched.
-
-        It is rendered only on desktop/tablet.
-        Mobile gets its own dedicated NavbarMobile.jsx.
-      */}
 
       <div className="hidden md:block">
         <Navbar
           forceSolid
-          onConsultationClick={() =>
-            setShowConsultation(true)
-          }
+          onConsultationClick={openConsultation}
         />
       </div>
 
       {/* ===================================================== */}
       {/* MOBILE NAVBAR */}
       {/* ===================================================== */}
-      {/*
-        Dedicated mobile navbar.
-
-        This keeps the desktop Navbar.jsx completely isolated
-        from mobile styling and behaviour.
-      */}
 
       <div className="block md:hidden">
         <NavbarMobile
           forceSolid
-          onConsultationClick={() =>
-            setShowConsultation(true)
-          }
+          onConsultationClick={openConsultation}
         />
       </div>
 
@@ -108,9 +126,7 @@ export default function HomePage() {
 
       <NavbarConsultationModal
         open={showConsultation}
-        onClose={() =>
-          setShowConsultation(false)
-        }
+        onClose={closeConsultation}
       />
 
       {/* ===================================================== */}
@@ -137,31 +153,29 @@ export default function HomePage() {
 
       {/* ===================================================== */}
       {/* FEATURED PROJECTS */}
+      {/* Only the active responsive component mounts. */}
       {/* ===================================================== */}
 
-      {/* DESKTOP */}
-      <div className="hidden lg:block">
+      {isDesktop === true && (
         <FeaturedProjects />
-      </div>
+      )}
 
-      {/* MOBILE / TABLET */}
-      <div className="block lg:hidden">
+      {isDesktop === false && (
         <FeaturedProjectsMobile />
-      </div>
+      )}
 
       {/* ===================================================== */}
       {/* TRENDING PROJECTS */}
+      {/* Only the active responsive component mounts. */}
       {/* ===================================================== */}
 
-      {/* DESKTOP */}
-      <div className="hidden lg:block">
+      {isDesktop === true && (
         <TrendingProjects />
-      </div>
+      )}
 
-      {/* MOBILE / TABLET */}
-      <div className="block lg:hidden">
+      {isDesktop === false && (
         <TrendingProjectsMobile />
-      </div>
+      )}
 
       {/* ===================================================== */}
       {/* EXPLORE LOCATIONS */}
@@ -180,9 +194,7 @@ export default function HomePage() {
       {/* ===================================================== */}
 
       <LuxuryInsightsSection
-        onConsultationClick={() =>
-          setShowConsultation(true)
-        }
+        onConsultationClick={openConsultation}
       />
 
       {/* ===================================================== */}

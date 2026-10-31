@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+
 import {
   ArrowRight,
   BedDouble,
@@ -12,14 +14,59 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+
 import { formatPrice } from "@/utils/formatPrice";
 
+// ============================================================
+// CONFIGURATION
+// ============================================================
+
 const FEATURED_API = "/api/properties/featured";
+
 const AUTOPLAY_DELAY = 3500;
+
 const MAX_FEATURED = 12;
 
+const FALLBACK_IMAGE =
+  "https://placehold.co/600x400/f3f4f6/999999?text=Property";
+
 // ============================================================
-// HELPERS
+// IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeCloudinaryImage(url, width = 800) {
+  if (!url || typeof url !== "string") {
+    return FALLBACK_IMAGE;
+  }
+
+  const imageUrl = url.trim();
+
+  if (
+    !imageUrl.includes("res.cloudinary.com") ||
+    !imageUrl.includes("/image/upload/")
+  ) {
+    return imageUrl;
+  }
+
+  // Do not add the same transformations twice.
+  const uploadPath = imageUrl.split("/image/upload/")[1] || "";
+
+  if (
+    /^(?:[^/]*,)*(?:f_auto|q_auto|w_\d+|c_limit)(?:,|\/)/i.test(
+      uploadPath
+    )
+  ) {
+    return imageUrl;
+  }
+
+  return imageUrl.replace(
+    "/image/upload/",
+    `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`
+  );
+}
+
+// ============================================================
+// PROPERTY HELPERS
 // ============================================================
 
 function getLocationName(item) {
@@ -61,16 +108,19 @@ function getPrice(item) {
 
 function getBedroomLabel(item) {
   const value = item?.unitConfigurations?.[0]?.bedrooms;
+
   return value ? `${value} Beds` : "Luxury";
 }
 
 function getBathroomLabel(item) {
   const value = item?.unitConfigurations?.[0]?.bathrooms;
+
   return value ? `${value} Baths` : "Residence";
 }
 
 function getAreaLabel(item) {
   const value = item?.unitConfigurations?.[0]?.area;
+
   return value ? `${value} Sq.Ft.` : "Premium";
 }
 
@@ -82,20 +132,26 @@ function PropertySkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="min-w-0 flex-[0_0_100%] md:flex-[0_0_50%] xl:flex-[0_0_33.3333%] pl-2"
+      className="min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%]"
     >
       <div className="h-full overflow-hidden rounded-[24px] border border-[#ebe5da] bg-white">
         <div className="h-[160px] animate-pulse bg-[#eae5dc]" />
+
         <div className="h-[2px] bg-[#d4af68]" />
 
         <div className="space-y-4 p-5">
           <div className="h-6 w-4/5 animate-pulse rounded bg-[#eeeae3]" />
+
           <div className="h-4 w-3/5 animate-pulse rounded bg-[#f0ede7]" />
+
           <div className="h-4 w-2/3 animate-pulse rounded bg-[#f0ede7]" />
+
           <div className="mt-5 border-t border-[#ece7df] pt-4">
             <div className="mb-3 h-3 w-1/3 animate-pulse rounded bg-[#f0ede7]" />
+
             <div className="h-7 w-1/2 animate-pulse rounded bg-[#eeeae3]" />
           </div>
+
           <div className="border-t border-[#ece7df] pt-4">
             <div className="h-4 w-2/5 animate-pulse rounded bg-[#f0ede7]" />
           </div>
@@ -109,27 +165,47 @@ function PropertySkeleton() {
 // PROPERTY CARD
 // ============================================================
 
-function FeaturedPropertyCard({ item, index }) {
-  const title = item?.coreDetails?.title || "Featured Property";
-  const image = item?.media?.heroImageUrl;
-  const configuration = item?.unitConfigurations?.[0];
+function FeaturedPropertyCard({ item }) {
+  const title =
+    item?.coreDetails?.title || "Featured Property";
+
+  const originalImage = item?.media?.heroImageUrl;
+
+  const image = optimizeCloudinaryImage(
+    originalImage,
+    800
+  );
 
   return (
     <Link
       href={item?.slug ? `/${item.slug}` : "/properties"}
-      className="min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%] block"
+      prefetch={false}
+      className="block min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%]"
       aria-label={`View ${title}`}
     >
       <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#ebe5da] bg-white shadow-[0_10px_32px_rgba(0,0,0,0.045)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.10)]">
+
         {/* IMAGE */}
-        <div className="relative h-[160px] overflow-hidden bg-[#eee9df]">
-          {image ? (
+
+        <div className="relative h-[160px] shrink-0 overflow-hidden bg-[#eee9df]">
+          {originalImage ? (
             <img
               src={image}
               alt={title}
-              loading={index < 2 ? "eager" : "lazy"}
+              width="800"
+              height="520"
+              loading="lazy"
               decoding="async"
-              fetchPriority={index === 0 ? "high" : "auto"}
+              fetchPriority="low"
+              draggable="false"
+              onError={(event) => {
+                const img = event.currentTarget;
+
+                if (img.src !== FALLBACK_IMAGE) {
+                  img.onerror = null;
+                  img.src = FALLBACK_IMAGE;
+                }
+              }}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
           ) : (
@@ -145,46 +221,69 @@ function FeaturedPropertyCard({ item, index }) {
           </span>
         </div>
 
-        <div className="h-[2px] bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
+        {/* GOLD LINE */}
+
+        <div className="h-[2px] shrink-0 bg-gradient-to-r from-[#c9a64b] via-[#e3c97d] to-[#c9a64b]" />
 
         {/* CONTENT */}
+
         <div className="flex flex-1 flex-col p-5">
           <h3 className="line-clamp-2 font-heading text-[22px] leading-tight text-[#171717] xl:text-[24px]">
             {title}
           </h3>
 
           <div className="mt-2 flex items-start gap-2 text-black/60">
-            <MapPin size={15} className="mt-[2px] shrink-0" />
+            <MapPin
+              size={15}
+              className="mt-[2px] shrink-0"
+            />
+
             <span className="line-clamp-2 text-[13px] leading-snug">
               {getLocationName(item)}
             </span>
           </div>
 
+          {/* PROPERTY DETAILS */}
+
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-black/65">
             <div className="flex items-center gap-2">
               <BedDouble size={15} />
-              <span className="text-[13px]">{getBedroomLabel(item)}</span>
+
+              <span className="text-[13px]">
+                {getBedroomLabel(item)}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
               <Bath size={15} />
-              <span className="text-[13px]">{getBathroomLabel(item)}</span>
+
+              <span className="text-[13px]">
+                {getBathroomLabel(item)}
+              </span>
             </div>
 
-            <span className="text-[13px]">{getAreaLabel(item)}</span>
+            <span className="text-[13px]">
+              {getAreaLabel(item)}
+            </span>
           </div>
 
           <div className="mt-4 border-t border-[#ece7df]" />
 
+          {/* PRICE */}
+
           <div className="mt-3">
             <p className="mb-2 text-[11px] uppercase tracking-[1px] text-black/45">
-              {item?.coreDetails?.priceOnRequest ? "Price" : "Starting Price"}
+              {item?.coreDetails?.priceOnRequest
+                ? "Price"
+                : "Starting Price"}
             </p>
 
             <p className="text-[24px] font-bold leading-tight text-[#111]">
               {getPrice(item)}
             </p>
           </div>
+
+          {/* VIEW PROPERTY */}
 
           <div className="mt-4 flex items-center justify-between border-t border-[#ece7df] pt-4">
             <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#bf8b37]">
@@ -207,17 +306,27 @@ function FeaturedPropertyCard({ item, index }) {
 // ============================================================
 
 export default function FeaturedProjects() {
-  const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [featuredProperties, setFeaturedProperties] =
+    useState([]);
+
   const [loading, setLoading] = useState(true);
+
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Keep the autoplay plugin stable between renders.
+  // ----------------------------------------------------------
+  // AUTOPLAY
+  // ----------------------------------------------------------
+
   const autoplay = useMemo(
     () =>
       Autoplay({
         delay: AUTOPLAY_DELAY,
+
+        // Continue playing after manual interaction.
         stopOnInteraction: false,
-        stopOnMouseEnter: true,
+
+        // Do not pause when the mouse enters the carousel.
+        stopOnMouseEnter: false,
       }),
     []
   );
@@ -232,6 +341,10 @@ export default function FeaturedProjects() {
     [autoplay]
   );
 
+  // ----------------------------------------------------------
+  // NAVIGATION
+  // ----------------------------------------------------------
+
   const handlePrev = useCallback(() => {
     emblaApi?.scrollPrev();
   }, [emblaApi]);
@@ -240,7 +353,10 @@ export default function FeaturedProjects() {
     emblaApi?.scrollNext();
   }, [emblaApi]);
 
-  // Fetch once per component mount; allow normal browser caching.
+  // ----------------------------------------------------------
+  // FETCH FEATURED PROPERTIES
+  // ----------------------------------------------------------
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -251,7 +367,9 @@ export default function FeaturedProjects() {
         });
 
         if (!response.ok) {
-          throw new Error(`Featured properties request failed: ${response.status}`);
+          throw new Error(
+            `Featured properties request failed: ${response.status}`
+          );
         }
 
         const result = await response.json();
@@ -272,7 +390,9 @@ export default function FeaturedProjects() {
               property?.status === "published" &&
               property?.isDeleted !== true &&
               property?.isActive !== false &&
-              (property?.propertyTag || []).includes("Featured")
+              (property?.propertyTag || []).includes(
+                "Featured"
+              )
           )
           .slice(0, MAX_FEATURED);
 
@@ -281,12 +401,16 @@ export default function FeaturedProjects() {
           setFetchFailed(false);
         }
       } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Failed to load featured properties:", error);
+        if (
+          error?.name !== "AbortError" &&
+          !controller.signal.aborted
+        ) {
+          console.error(
+            "Failed to load featured properties:",
+            error
+          );
 
-          if (!controller.signal.aborted) {
-            setFetchFailed(true);
-          }
+          setFetchFailed(true);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -297,8 +421,14 @@ export default function FeaturedProjects() {
 
     loadFeaturedProperties();
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+    };
   }, []);
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
 
   return (
     <section
@@ -306,8 +436,11 @@ export default function FeaturedProjects() {
       aria-labelledby="featured-projects-heading"
     >
       <div className="mx-auto max-w-[1450px] px-5 xl:px-8">
+
         <div className="grid items-start gap-8 lg:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] xl:gap-10">
-          {/* LEFT */}
+
+          {/* LEFT CONTENT */}
+
           <div className="pt-2 lg:pt-4">
             <p className="mb-5 font-body text-[11px] font-semibold uppercase tracking-[2.5px] text-black/55">
               Featured Properties
@@ -324,9 +457,11 @@ export default function FeaturedProjects() {
 
             <Link
               href="/properties"
+              prefetch={false}
               className="group mt-8 inline-flex items-center gap-3 font-body text-[13px] font-semibold tracking-[1px] text-[#bf8b37]"
             >
               VIEW ALL PROPERTIES
+
               <ArrowRight
                 size={15}
                 className="transition-transform group-hover:translate-x-1"
@@ -334,8 +469,12 @@ export default function FeaturedProjects() {
             </Link>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT CAROUSEL */}
+
           <div className="min-w-0">
+
+            {/* ARROWS */}
+
             <div className="mb-5 flex justify-end gap-3">
               <button
                 type="button"
@@ -356,37 +495,58 @@ export default function FeaturedProjects() {
               </button>
             </div>
 
-            <div className="min-w-0 overflow-hidden" ref={emblaRef}>
-              <div className="flex -ml-2">
+            {/* EMBLA */}
+
+            <div
+              className="min-w-0 overflow-hidden"
+              ref={emblaRef}
+            >
+              <div className="-ml-2 flex">
+
+                {/* LOADING SKELETONS */}
+
                 {loading &&
-                  Array.from({ length: 3 }, (_, index) => (
-                    <PropertySkeleton key={`skeleton-${index}`} />
-                  ))}
+                  Array.from(
+                    { length: 3 },
+                    (_, index) => (
+                      <PropertySkeleton
+                        key={`skeleton-${index}`}
+                      />
+                    )
+                  )}
+
+                {/* PROPERTY CARDS */}
 
                 {!loading &&
-                  featuredProperties.map((item, index) => (
+                  featuredProperties.map((item) => (
                     <FeaturedPropertyCard
                       key={item._id || item.slug}
                       item={item}
-                      index={index}
                     />
                   ))}
 
-                {!loading && featuredProperties.length === 0 && (
-                  <div className="w-full rounded-2xl border border-[#e8e1d6] bg-white p-8 text-center">
-                    <p className="text-sm text-black/65">
-                      {fetchFailed
-                        ? "Featured properties are temporarily unavailable."
-                        : "New featured properties will appear here soon."}
-                    </p>
-                    <Link
-                      href="/properties"
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#bf8b37]"
-                    >
-                      Explore properties <ArrowRight size={15} />
-                    </Link>
-                  </div>
-                )}
+                {/* EMPTY STATE */}
+
+                {!loading &&
+                  featuredProperties.length === 0 && (
+                    <div className="w-full rounded-2xl border border-[#e8e1d6] bg-white p-8 text-center">
+                      <p className="text-sm text-black/65">
+                        {fetchFailed
+                          ? "Featured properties are temporarily unavailable."
+                          : "New featured properties will appear here soon."}
+                      </p>
+
+                      <Link
+                        href="/properties"
+                        prefetch={false}
+                        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#bf8b37]"
+                      >
+                        Explore properties
+
+                        <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  )}
               </div>
             </div>
           </div>

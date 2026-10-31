@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -20,6 +21,44 @@ import {
 const RECOMMENDED_API = "/api/properties?propertyTag=Recommended";
 const AUTOPLAY_DELAY = 3500;
 const MAX_RECOMMENDED = 12;
+
+// ============================================================
+// CLOUDINARY IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeCloudinaryImage(url, width = 800) {
+  if (!url || typeof url !== "string") return "";
+
+  // Only transform Cloudinary images.
+  if (!url.includes("res.cloudinary.com")) {
+    return url;
+  }
+
+  // Avoid adding transformations if the URL already contains
+  // automatic format or quality settings.
+  const uploadMarker = "/image/upload/";
+  const uploadIndex = url.indexOf(uploadMarker);
+
+  if (uploadIndex === -1) return url;
+
+  const beforeUpload = url.slice(0, uploadIndex + uploadMarker.length);
+  const afterUpload = url.slice(uploadIndex + uploadMarker.length);
+
+  // If an existing transformation already contains f_auto or q_auto,
+  // retain the original URL to avoid conflicting transformations.
+  const firstSegment = afterUpload.split("/")[0];
+
+  if (
+    /(^|,)f_auto(,|$)/.test(firstSegment) ||
+    /(^|,)q_auto(:[^,]*)?(,|$)/.test(firstSegment)
+  ) {
+    return url;
+  }
+
+  const transformations = `f_auto,q_auto:good,w_${width},c_limit`;
+
+  return `${beforeUpload}${transformations}/${afterUpload}`;
+}
 
 // ============================================================
 // HELPERS
@@ -112,40 +151,65 @@ function RecommendedSkeleton() {
 }
 
 // ============================================================
+// OPTIMIZED PROPERTY IMAGE
+// ============================================================
+
+function RecommendedPropertyImage({ image, title }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const optimizedImage = useMemo(
+    () => optimizeCloudinaryImage(image, 800),
+    [image]
+  );
+
+  if (!optimizedImage || imageFailed) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-black/45">
+        Property image coming soon
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={optimizedImage}
+      alt={title}
+      width="800"
+      height="520"
+      loading="lazy"
+      decoding="async"
+      fetchPriority="low"
+      onError={() => setImageFailed(true)}
+      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+    />
+  );
+}
+
+// ============================================================
 // PROPERTY CARD
 // ============================================================
 
-function RecommendedPropertyCard({ item, index }) {
+function RecommendedPropertyCard({ item }) {
   const title = item?.coreDetails?.title || "Recommended Property";
   const image = item?.media?.heroImageUrl;
-
   const configuration = item?.unitConfigurations?.[0];
 
   return (
     <Link
       href={`/${item.slug}`}
+      prefetch={false}
       aria-label={`Explore ${title}`}
       className="block min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%]"
     >
       <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#ebe5da] bg-white shadow-[0_10px_32px_rgba(0,0,0,0.045)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.10)]">
         {/* IMAGE */}
         <div className="relative h-[180px] overflow-hidden bg-[#eee9df]">
-          {image ? (
-            <img
-              src={image}
-              alt={title}
-              loading={index < 2 ? "eager" : "lazy"}
-              decoding="async"
-              fetchPriority={index === 0 ? "high" : "auto"}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-black/45">
-              Property image coming soon
-            </div>
-          )}
+          <RecommendedPropertyImage
+            image={image}
+            title={title}
+          />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
           <span className="absolute left-4 top-4 rounded-full bg-[#c89948] px-4 py-2 text-[10px] font-semibold tracking-[1.5px] text-white">
             RECOMMENDED
@@ -203,7 +267,9 @@ function RecommendedPropertyCard({ item, index }) {
           {/* PRICE */}
           <div className="mt-3">
             <p className="mb-2 text-[11px] uppercase tracking-[1px] text-black/45">
-              {item?.coreDetails?.priceOnRequest ? "Price" : "Starting Price"}
+              {item?.coreDetails?.priceOnRequest
+                ? "Price"
+                : "Starting Price"}
             </p>
 
             <p className="text-[24px] font-bold leading-tight text-[#111]">
@@ -237,13 +303,13 @@ export default function RecommendedProjects() {
   const [loading, setLoading] = useState(true);
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Create the autoplay plugin only once.
+  // Autoplay remains active when the user hovers over the carousel.
   const autoplay = useMemo(
     () =>
       Autoplay({
         delay: AUTOPLAY_DELAY,
         stopOnInteraction: false,
-        stopOnMouseEnter: true,
+        stopOnMouseEnter: false,
       }),
     []
   );
@@ -307,7 +373,6 @@ export default function RecommendedProjects() {
               : property?.propertyTag === "Recommended")
         );
 
-        // Randomize once when the data arrives.
         const shuffled = shuffleArray(published).slice(
           0,
           MAX_RECOMMENDED
@@ -319,7 +384,10 @@ export default function RecommendedProjects() {
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Failed to load recommended properties:", error);
+          console.error(
+            "Failed to load recommended properties:",
+            error
+          );
 
           if (!controller.signal.aborted) {
             setFetchFailed(true);
@@ -399,7 +467,10 @@ export default function RecommendedProjects() {
         </div>
 
         {/* CAROUSEL */}
-        <div className="mx-auto max-w-[1100px] overflow-hidden" ref={emblaRef}>
+        <div
+          className="mx-auto max-w-[1100px] overflow-hidden"
+          ref={emblaRef}
+        >
           <div className="-ml-2 flex">
             {loading &&
               Array.from({ length: 3 }, (_, index) => (
@@ -407,11 +478,10 @@ export default function RecommendedProjects() {
               ))}
 
             {!loading &&
-              properties.map((item, index) => (
+              properties.map((item) => (
                 <RecommendedPropertyCard
                   key={item._id || item.slug}
                   item={item}
-                  index={index}
                 />
               ))}
 
@@ -425,6 +495,7 @@ export default function RecommendedProjects() {
 
                 <Link
                   href="/properties"
+                  prefetch={false}
                   className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#bf8b37]"
                 >
                   Explore all properties <ArrowRight size={15} />

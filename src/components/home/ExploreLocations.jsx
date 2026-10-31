@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -157,8 +158,38 @@ function getPublicLocationUrl(location, root = null) {
 }
 
 // ============================================================
-// IMAGE URL
+// IMAGE OPTIMIZATION
 // ============================================================
+
+function optimizeCloudinaryImage(url, width = 900) {
+  if (!url || typeof url !== "string") {
+    return FALLBACK_IMAGE;
+  }
+
+  const imageUrl = url.trim();
+
+  // Only optimize Cloudinary-hosted images.
+  if (
+    !imageUrl.includes("res.cloudinary.com") ||
+    !imageUrl.includes("/image/upload/")
+  ) {
+    return imageUrl;
+  }
+
+  // Avoid adding transformations twice.
+  if (
+    /\/image\/upload\/[^/]*(?:f_auto|q_auto|w_\d+)/i.test(
+      imageUrl
+    )
+  ) {
+    return imageUrl;
+  }
+
+  return imageUrl.replace(
+    "/image/upload/",
+    `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`
+  );
+}
 
 function getImage(location) {
   const image = String(location?.image || "").trim();
@@ -168,7 +199,7 @@ function getImage(location) {
   }
 
   if (/^https?:\/\//i.test(image)) {
-    return image;
+    return optimizeCloudinaryImage(image, 900);
   }
 
   return `${API}${image.startsWith("/") ? "" : "/"}${image}`;
@@ -193,19 +224,24 @@ const LocationImage = memo(function LocationImage({
   }, [image]);
 
   const handleImageError = useCallback(() => {
-    setImageSrc((current) =>
-      current === FALLBACK_IMAGE
-        ? current
-        : FALLBACK_IMAGE
-    );
+    setImageSrc((current) => {
+      if (current === FALLBACK_IMAGE) {
+        return current;
+      }
+
+      return FALLBACK_IMAGE;
+    });
   }, []);
 
   return (
     <img
       src={imageSrc}
       alt={`${location?.name || "Location"} properties in Gurgaon`}
+      width="900"
+      height="1200"
       loading="lazy"
       decoding="async"
+      fetchPriority="low"
       onError={handleImageError}
       className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
     />
@@ -381,8 +417,6 @@ export default function ExploreLocations() {
           ? gurgaon.children
           : [];
 
-        // Create a lookup once rather than repeatedly scanning
-        // the children array for each featured location.
         const childrenByName = new Map(
           children.map((location) => [
             String(location?.name || "")
@@ -392,14 +426,13 @@ export default function ExploreLocations() {
           ])
         );
 
-        // Preserve the original featured-location order.
+        // Preserve featured location order.
         const preparedLocations = FEATURED_LOCATIONS
           .map((name) =>
             childrenByName.get(name.toLowerCase())
           )
           .filter(Boolean)
           .map((location) => {
-            // Find the real location and root once, during fetch.
             const found = findLocationInTree(
               tree,
               location?.name
@@ -457,8 +490,9 @@ export default function ExploreLocations() {
 
     if (!container) return;
 
-    const firstCard =
-      container.querySelector("[data-location-card]");
+    const firstCard = container.querySelector(
+      "[data-location-card]"
+    );
 
     const cardWidth = firstCard
       ? firstCard.getBoundingClientRect().width
@@ -491,6 +525,7 @@ export default function ExploreLocations() {
             >
               Gurgaon’s Most Premium
               <br />
+
               <span className="text-[#b88a3b]">
                 Investment Corridors
               </span>
