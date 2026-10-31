@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState, useCallback } from "react";
 
 import Navbar from "@/components/home/Navbar";
 import NavbarMobile from "@/components/home/NavbarMobile";
@@ -9,8 +10,6 @@ import HeroSection from "@/components/home/HeroSection";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
 
 import NavbarConsultationModal from "@/components/home/NavbarConsultationModal";
-
-import { useState } from "react";
 
 // =========================================================
 // LAZY LOADED SECTIONS
@@ -53,141 +52,123 @@ const Footer = dynamic(() =>
 );
 
 // =========================================================
+// RESPONSIVE BREAKPOINT HOOK
+// =========================================================
+
+function useDesktopLayout() {
+  const [isDesktop, setIsDesktop] = useState(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    const updateLayout = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    updateLayout();
+
+    mediaQuery.addEventListener("change", updateLayout);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateLayout);
+    };
+  }, []);
+
+  return isDesktop;
+}
+
+// =========================================================
 // HOME PAGE
 // =========================================================
 
-export default function HomePage() {
-  const [showConsultation, setShowConsultation] =
-    useState(false);
+export default function HomePage({
+  initialFeaturedProperties = [],
+}) {
+  const [showConsultation, setShowConsultation] = useState(false);
+
+  const isDesktop = useDesktopLayout();
+
+  const openConsultation = useCallback(() => {
+    setShowConsultation(true);
+  }, []);
+
+  const closeConsultation = useCallback(() => {
+    setShowConsultation(false);
+  }, []);
 
   return (
-    <main className="bg-[#f6f6f6] overflow-hidden">
+    <main className="overflow-hidden bg-[#f6f6f6]">
 
-      {/* ===================================================== */}
       {/* DESKTOP NAVBAR */}
-      {/* ===================================================== */}
-      {/*
-        IMPORTANT:
-        The existing Navbar.jsx is completely untouched.
-
-        It is rendered only on desktop/tablet.
-        Mobile gets its own dedicated NavbarMobile.jsx.
-      */}
 
       <div className="hidden md:block">
         <Navbar
           forceSolid
-          onConsultationClick={() =>
-            setShowConsultation(true)
-          }
+          onConsultationClick={openConsultation}
         />
       </div>
 
-      {/* ===================================================== */}
       {/* MOBILE NAVBAR */}
-      {/* ===================================================== */}
-      {/*
-        Dedicated mobile navbar.
-
-        This keeps the desktop Navbar.jsx completely isolated
-        from mobile styling and behaviour.
-      */}
 
       <div className="block md:hidden">
         <NavbarMobile
           forceSolid
-          onConsultationClick={() =>
-            setShowConsultation(true)
-          }
+          onConsultationClick={openConsultation}
         />
       </div>
 
-      {/* ===================================================== */}
       {/* CONSULTATION MODAL */}
-      {/* ===================================================== */}
 
       <NavbarConsultationModal
         open={showConsultation}
-        onClose={() =>
-          setShowConsultation(false)
-        }
+        onClose={closeConsultation}
       />
 
-      {/* ===================================================== */}
       {/* DESKTOP HERO */}
-      {/* ===================================================== */}
 
       <div className="hidden md:block">
-        <HeroSection />
+        <HeroSection
+          initialProperties={initialFeaturedProperties}
+        />
       </div>
 
-      {/* ===================================================== */}
       {/* MOBILE HERO */}
-      {/* ===================================================== */}
 
       <div className="block md:hidden">
         <HeroSectionMobile />
       </div>
 
-      {/* ===================================================== */}
       {/* RECOMMENDED PROJECTS */}
-      {/* ===================================================== */}
 
       <RecommendedProjects />
 
-      {/* ===================================================== */}
       {/* FEATURED PROJECTS */}
-      {/* ===================================================== */}
 
-      {/* DESKTOP */}
-      <div className="hidden lg:block">
-        <FeaturedProjects />
-      </div>
+      {isDesktop === true && <FeaturedProjects />}
 
-      {/* MOBILE / TABLET */}
-      <div className="block lg:hidden">
-        <FeaturedProjectsMobile />
-      </div>
+      {isDesktop === false && <FeaturedProjectsMobile />}
 
-      {/* ===================================================== */}
       {/* TRENDING PROJECTS */}
-      {/* ===================================================== */}
 
-      {/* DESKTOP */}
-      <div className="hidden lg:block">
-        <TrendingProjects />
-      </div>
+      {isDesktop === true && <TrendingProjects />}
 
-      {/* MOBILE / TABLET */}
-      <div className="block lg:hidden">
-        <TrendingProjectsMobile />
-      </div>
+      {isDesktop === false && <TrendingProjectsMobile />}
 
-      {/* ===================================================== */}
       {/* EXPLORE LOCATIONS */}
-      {/* ===================================================== */}
 
       <ExploreLocations />
 
-      {/* ===================================================== */}
       {/* PREMIUM PARTNERS */}
-      {/* ===================================================== */}
 
       <PremiumPartners />
 
-      {/* ===================================================== */}
       {/* LUXURY INSIGHTS */}
-      {/* ===================================================== */}
 
       <LuxuryInsightsSection
-        onConsultationClick={() =>
-          setShowConsultation(true)
-        }
+        onConsultationClick={openConsultation}
       />
 
-      {/* ===================================================== */}
       {/* FOOTER */}
-      {/* ===================================================== */}
 
       <Footer />
 

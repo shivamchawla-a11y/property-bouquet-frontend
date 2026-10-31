@@ -3,12 +3,104 @@
 import Image from "next/image";
 import Link from "next/link";
 import SearchPanel from "./SearchPanel";
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, MapPin, Sparkles } from "lucide-react";
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 
 const FEATURED_API = "/api/properties/featured";
 const ROTATION_MS = 3500;
+
+// ============================================================
+// CLOUDINARY IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeHeroImage(url) {
+  if (!url || typeof url !== "string") return "";
+
+  const cleanUrl = url.trim();
+
+  if (!cleanUrl.includes("res.cloudinary.com")) {
+    return cleanUrl;
+  }
+
+  const uploadMarker = "/image/upload/";
+  const uploadIndex = cleanUrl.indexOf(uploadMarker);
+
+  if (uploadIndex === -1) return cleanUrl;
+
+  const prefix = cleanUrl.slice(
+    0,
+    uploadIndex + uploadMarker.length
+  );
+
+  const remainder = cleanUrl.slice(
+    uploadIndex + uploadMarker.length
+  );
+
+  const segments = remainder.split("/");
+
+  const firstSegment = segments[0];
+
+  const isTransformation =
+    /^[a-z]{1,3}_[^/]+/.test(firstSegment);
+
+  const transformations = isTransformation
+    ? firstSegment.split(",")
+    : [];
+
+  const hasTransformation = (prefix) =>
+    transformations.some((item) =>
+      item.startsWith(prefix)
+    );
+
+  if (!hasTransformation("f_auto")) {
+    transformations.push("f_auto");
+  }
+
+  if (!hasTransformation("q_auto")) {
+    transformations.push("q_auto:good");
+  }
+
+  if (!hasTransformation("w_")) {
+    transformations.push("w_1600");
+  }
+
+  if (!hasTransformation("c_limit")) {
+    transformations.push("c_limit");
+  }
+
+  const optimizedSegment = transformations.join(",");
+
+  if (isTransformation) {
+    segments[0] = optimizedSegment;
+  } else {
+    segments.unshift(optimizedSegment);
+  }
+
+  return prefix + segments.join("/");
+}
+
+// ============================================================
+// PROPERTY HELPERS
+// ============================================================
 
 function getPropertyKey(property) {
   return (
@@ -43,7 +135,7 @@ function getPropertyImage(property) {
     }
   }
 
-  return "/img1.jpg";
+  return "";
 }
 
 function getPropertyTitle(property) {
@@ -99,11 +191,16 @@ function getPropertyConfiguration(property) {
       .map((item) =>
         typeof item === "string"
           ? item
-          : item?.label || item?.name || item?.configuration || item?.unitType
+          : item?.label ||
+            item?.name ||
+            item?.configuration ||
+            item?.unitType
       )
       .filter(Boolean);
 
-    if (labels.length) return [...new Set(labels)].join(" / ");
+    if (labels.length) {
+      return [...new Set(labels)].join(" / ");
+    }
   }
 
   if (typeof value === "string" && value.trim()) {
@@ -114,7 +211,6 @@ function getPropertyConfiguration(property) {
     return `${value} BHK`;
   }
 
-  // Support the actual Property model's unitConfigurations array.
   const units = property?.unitConfigurations;
 
   if (Array.isArray(units) && units.length) {
@@ -122,27 +218,27 @@ function getPropertyConfiguration(property) {
       .map((unit) => {
         if (!unit || typeof unit !== "object") return "";
 
-        if (unit.unitType && typeof unit.unitType === "string") {
-          return unit.unitType;
-        }
+        if (unit.unitType) return unit.unitType;
 
         if (unit.bedrooms != null && unit.bedrooms !== "") {
-          const bedrooms = Number(unit.bedrooms);
-
-          return Number.isFinite(bedrooms)
-            ? `${bedrooms} BHK`
-            : `${unit.bedrooms} BHK`;
+          return `${unit.bedrooms} BHK`;
         }
 
         return "";
       })
       .filter(Boolean);
 
-    if (labels.length) return [...new Set(labels)].join(" / ");
+    if (labels.length) {
+      return [...new Set(labels)].join(" / ");
+    }
   }
 
   return "";
 }
+
+// ============================================================
+// PRICE HELPERS
+// ============================================================
 
 function formatPrice(value) {
   const amount = Number(value);
@@ -150,11 +246,15 @@ function formatPrice(value) {
   if (!Number.isFinite(amount) || amount <= 0) return "";
 
   if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2).replace(/\.?0+$/, "")} Cr`;
+    return `₹${(amount / 10000000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Cr`;
   }
 
   if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(2).replace(/\.?0+$/, "")} Lac`;
+    return `₹${(amount / 100000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Lac`;
   }
 
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -192,13 +292,14 @@ function getStartingPrice(property) {
       }
 
       if (/\d/.test(cleaned)) {
-        const numeric = Number(cleaned.replace(/[₹,\s]/g, ""));
+        const numeric = Number(
+          cleaned.replace(/[₹,\s]/g, "")
+        );
 
         if (Number.isFinite(numeric) && numeric > 0) {
           return formatPrice(numeric);
         }
 
-        // Preserve valid display strings such as "1.95 Cr*".
         return cleaned;
       }
     }
@@ -207,15 +308,43 @@ function getStartingPrice(property) {
   return "";
 }
 
-export default function HeroSection() {
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
+
+export default function HeroSection({
+  initialProperties = [],
+}) {
+  const hasInitialProperties =
+    Array.isArray(initialProperties) &&
+    initialProperties.length > 0;
+
+  const [properties, setProperties] = useState(
+    hasInitialProperties ? initialProperties : []
+  );
+
+  const [loading, setLoading] = useState(
+    !hasInitialProperties
+  );
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
+
+  const [imageReady, setImageReady] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const imageRef = useRef(null);
 
   const reduceMotion = useReducedMotion();
 
+  // ==========================================================
+  // FETCH ONLY IF SERVER DATA IS NOT AVAILABLE
+  // ==========================================================
+
   useEffect(() => {
+    if (hasInitialProperties) return;
+
     const controller = new AbortController();
     let mounted = true;
 
@@ -243,26 +372,22 @@ export default function HeroSection() {
               ? result
               : [];
 
-        // The dedicated backend endpoint is responsible for filtering
-        // published, active, non-deleted Featured properties.
         const validProperties = list.filter(
           (property) =>
             property &&
             typeof property === "object" &&
             typeof property.slug === "string" &&
-            property.slug.trim() !== ""
+            property.slug.trim()
         );
 
         setProperties(validProperties);
         setActiveIndex(0);
       } catch (error) {
         if (error?.name !== "AbortError") {
-          console.error("Featured property carousel failed:", error);
-
-          if (mounted) {
-            setProperties([]);
-            setActiveIndex(0);
-          }
+          console.error(
+            "Featured property carousel failed:",
+            error
+          );
         }
       } finally {
         if (mounted) setLoading(false);
@@ -275,28 +400,49 @@ export default function HeroSection() {
       mounted = false;
       controller.abort();
     };
+  }, [hasInitialProperties]);
+
+  // ==========================================================
+  // TAB VISIBILITY
+  // ==========================================================
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setPageVisible(!document.hidden);
+    };
+
+    handleVisibilityChange();
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
   }, []);
 
-/* =========================================================
-   CONTINUOUS FEATURED PROPERTY AUTOPLAY
-   Never pauses on hover, focus or mouse interaction.
-========================================================= */
-
-useEffect(() => {
-  if (properties.length < 2 || paused) return undefined;
-
-  const timer = window.setInterval(() => {
-    setActiveIndex((current) => (current + 1) % properties.length);
-  }, ROTATION_MS);
-
-  return () => window.clearInterval(timer);
-}, [properties.length, paused]);
+  // ==========================================================
+  // ACTIVE PROPERTY
+  // ==========================================================
 
   const activeProperty = properties[activeIndex] || null;
 
-  const image = useMemo(
-    () => (activeProperty ? getPropertyImage(activeProperty) : "/img1.jpg"),
+  const rawImage = useMemo(
+    () =>
+      activeProperty
+        ? getPropertyImage(activeProperty)
+        : "",
     [activeProperty]
+  );
+
+  const image = useMemo(
+    () => optimizeHeroImage(rawImage),
+    [rawImage]
   );
 
   const title = activeProperty
@@ -311,61 +457,140 @@ useEffect(() => {
     ? getPropertyConfiguration(activeProperty)
     : "";
 
-  const price = activeProperty ? getStartingPrice(activeProperty) : "";
+  const price = activeProperty
+    ? getStartingPrice(activeProperty)
+    : "";
 
   const propertyHref = activeProperty?.slug
     ? `/${activeProperty.slug}`
     : "/properties";
 
-  function goToPrevious() {
+  // ==========================================================
+  // RESET IMAGE STATE WHEN SLIDE CHANGES
+  // ==========================================================
+
+  useEffect(() => {
+    setImageReady(false);
+    setImageFailed(false);
+  }, [image]);
+
+  // ==========================================================
+  // IMAGE LOAD
+  // ==========================================================
+
+  const handleImageLoad = useCallback(async () => {
+    const currentImage = imageRef.current;
+
+    if (!currentImage) return;
+
+    try {
+      if (typeof currentImage.decode === "function") {
+        await currentImage.decode();
+      }
+    } catch {
+      // The image load event is sufficient if decode fails.
+    }
+
+    if (imageRef.current === currentImage) {
+      setImageReady(true);
+    }
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageFailed(true);
+    setImageReady(true);
+  }, []);
+
+  // ==========================================================
+  // AUTOPLAY
+  // ==========================================================
+
+  useEffect(() => {
+    if (
+      properties.length < 2 ||
+      paused ||
+      !pageVisible
+    ) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveIndex(
+        (current) => (current + 1) % properties.length
+      );
+    }, ROTATION_MS);
+
+    return () => window.clearInterval(timer);
+  }, [properties.length, paused, pageVisible]);
+
+  // ==========================================================
+  // NAVIGATION
+  // ==========================================================
+
+  const goToPrevious = useCallback(() => {
     if (properties.length < 2) return;
 
     setActiveIndex(
-      (current) => (current - 1 + properties.length) % properties.length
+      (current) =>
+        (current - 1 + properties.length) % properties.length
     );
-  }
+  }, [properties.length]);
 
-  function goToNext() {
+  const goToNext = useCallback(() => {
     if (properties.length < 2) return;
 
-    setActiveIndex((current) => (current + 1) % properties.length);
-  }
+    setActiveIndex(
+      (current) => (current + 1) % properties.length
+    );
+  }, [properties.length]);
+
+  const showProperty = useCallback((index) => {
+    setActiveIndex(index);
+  }, []);
+
+  // ==========================================================
+  // TEXT ANIMATION
+  // ==========================================================
+
+  const textVisible =
+    imageReady || !image || imageFailed;
 
   return (
     <section className="relative z-[10] overflow-visible bg-[#faf9f4] text-[#17342d]">
-      {/* Featured property carousel */}
+
+      {/* FEATURED PROPERTY CAROUSEL */}
 
       <div
-          className="
-            group relative h-[365px] w-full overflow-hidden bg-[#102c23]
-            sm:h-[400px]
-            md:h-[440px]
-            lg:h-[465px]
-            xl:h-[485px]
-          "
-        >
-        <AnimatePresence mode="sync" initial={false}>
-          <motion.div
-            key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.65 }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={image}
-              alt={
-                activeProperty
-                  ? title
-                  : "Luxury properties by Property Bouquet"
-              }
-              fill
-              priority
-              fetchPriority="high"
-              sizes="100vw"
-              quality={75}
-              className="
+        className="
+          group relative h-[365px] w-full overflow-hidden bg-[#102c23]
+          sm:h-[400px]
+          md:h-[440px]
+          lg:h-[465px]
+          xl:h-[485px]
+        "
+      >
+
+        {/* HERO IMAGE */}
+
+        {image && !imageFailed && (
+          <Image
+            key={image}
+            ref={imageRef}
+            src={image}
+            alt={title}
+            fill
+            priority={activeIndex === 0}
+            loading={
+              activeIndex === 0 ? undefined : "eager"
+            }
+            fetchPriority={
+              activeIndex === 0 ? "high" : "auto"
+            }
+            sizes="100vw"
+            quality={80}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            className="
               object-cover object-center
               transform-gpu
               transition-transform
@@ -373,23 +598,25 @@ useEffect(() => {
               ease-[cubic-bezier(0.22,1,0.36,1)]
               group-hover:scale-[1.07]
             "
-            />
-          </motion.div>
-        </AnimatePresence>
+          />
+        )}
 
-{/* Lighter overlays — preserve image detail */}
+        {/* OVERLAYS */}
 
-<div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
 
-<div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/55 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071b14]/55 via-transparent to-transparent" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67]/80 to-transparent" />
+
         <div className="pointer-events-none absolute -right-20 -top-24 h-[300px] w-[300px] rounded-full border border-[#d4af67]/20 sm:h-[360px] sm:w-[360px]" />
+
         <div className="pointer-events-none absolute -right-6 -top-10 h-[230px] w-[230px] rounded-full border border-white/10 sm:h-[285px] sm:w-[285px]" />
 
-        {/* Property information */}
+        {/* PROPERTY INFORMATION */}
 
         <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-end px-5 pb-[65px] sm:px-8 sm:pb-[70px] md:px-10 md:pb-[73px] lg:px-12 lg:pb-[76px] xl:px-16">
+
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={
@@ -397,13 +624,29 @@ useEffect(() => {
                   ? getPropertyKey(activeProperty)
                   : "fallback-copy"
               }
-              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
-              transition={{ duration: reduceMotion ? 0 : 0.35 }}
+              initial={
+                reduceMotion
+                  ? { opacity: 1, x: 0 }
+                  : { opacity: 0, x: -24 }
+              }
+              animate={{
+                opacity: textVisible ? 1 : 0,
+                x: textVisible ? 0 : -24,
+              }}
+              exit={
+                reduceMotion
+                  ? { opacity: 0 }
+                  : { opacity: 0, x: -12 }
+              }
+              transition={{
+                duration: reduceMotion ? 0 : 0.48,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="relative z-10 w-full max-w-[760px]"
             >
+
               <div className="mb-3 flex items-center gap-2">
+
                 <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d4af67]/55 bg-[#d4af67]/10 text-[#e5c47e]">
                   <Sparkles size={14} strokeWidth={1.7} />
                 </span>
@@ -413,6 +656,7 @@ useEffect(() => {
                 </span>
 
                 <span className="h-px w-10 bg-[#d4af67]/80 sm:w-14" />
+
               </div>
 
               {configuration && (
@@ -426,9 +670,13 @@ useEffect(() => {
               </h1>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mt-4">
+
                 {price && (
                   <p className="text-[12px] font-medium text-white sm:text-[14px]">
-                    <span className="text-white/75">Starting at </span>
+                    <span className="text-white/75">
+                      Starting at{" "}
+                    </span>
+
                     <span className="font-semibold text-[#f0c66e]">
                       {price}
                     </span>
@@ -440,37 +688,53 @@ useEffect(() => {
                 )}
 
                 <p className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[1.2px] text-white/90 sm:text-[10px] sm:tracking-[1.7px]">
-                  <MapPin size={14} className="shrink-0 text-[#e6b85e]" />
-                  <span className="line-clamp-2">{location}</span>
+
+                  <MapPin
+                    size={14}
+                    className="shrink-0 text-[#e6b85e]"
+                  />
+
+                  <span className="line-clamp-2">
+                    {location}
+                  </span>
+
                 </p>
+
               </div>
 
               <div className="mt-4 sm:mt-5">
+
                 <Link
-  href={propertyHref}
-  onMouseEnter={() => setPaused(true)}
-  onMouseLeave={() => setPaused(false)}
-  className="
-    inline-flex min-h-[38px] items-center gap-2.5
-    rounded-full border border-[#e5c47e]/70
-    bg-[#d4af67] px-4 py-2.5
-    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
-    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
-    transition-colors duration-200
-    hover:bg-[#e6c783]
-    focus-visible:outline-none focus-visible:ring-2
-    focus-visible:ring-[#f0d9a5]
-  "
->
-  Explore Property
-  <ArrowRight size={14} />
-</Link>
+                  href={propertyHref}
+                  prefetch={false}
+                  onMouseEnter={() => setPaused(true)}
+                  onMouseLeave={() => setPaused(false)}
+                  onFocus={() => setPaused(true)}
+                  onBlur={() => setPaused(false)}
+                  className="
+                    inline-flex min-h-[38px] items-center gap-2.5
+                    rounded-full border border-[#e5c47e]/70
+                    bg-[#d4af67] px-4 py-2.5
+                    text-[10px] font-bold tracking-[0.2px] text-[#142c22]
+                    shadow-[0_6px_20px_rgba(0,0,0,0.16)]
+                    transition-colors duration-200
+                    hover:bg-[#e6c783]
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-[#f0d9a5]
+                  "
+                >
+                  Explore Property
+                  <ArrowRight size={14} />
+                </Link>
+
               </div>
+
             </motion.div>
           </AnimatePresence>
+
         </div>
 
-        {/* Carousel arrows */}
+        {/* CAROUSEL ARROWS */}
 
         {properties.length > 1 && (
           <>
@@ -510,17 +774,20 @@ useEffect(() => {
           </>
         )}
 
-        {/* Carousel indicators */}
+        {/* CAROUSEL INDICATORS */}
 
         {properties.length > 1 && (
           <div className="absolute bottom-[47px] right-5 z-20 flex items-center gap-1.5 sm:bottom-[52px] sm:right-8 md:right-10">
+
             {properties.map((property, index) => (
               <button
                 key={getPropertyKey(property)}
                 type="button"
-                onClick={() => setActiveIndex(index)}
+                onClick={() => showProperty(index)}
                 aria-label={`Show featured property ${index + 1}`}
-                aria-current={activeIndex === index ? "true" : undefined}
+                aria-current={
+                  activeIndex === index ? "true" : undefined
+                }
                 className={`h-[3px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e] ${
                   activeIndex === index
                     ? "w-7 bg-[#e4bd70]"
@@ -528,42 +795,54 @@ useEffect(() => {
                 }`}
               />
             ))}
+
           </div>
         )}
 
+        {/* LOADING INDICATOR */}
+
         {loading && (
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[1.8px] text-white/70 sm:left-8 md:left-10">
+
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />
+
             Discovering featured properties
+
           </div>
         )}
 
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
+
       </div>
 
-{/* Search Panel — Render Immediately */}
+      {/* SEARCH PANEL */}
 
-<div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
-  <div
-    className="
-      rounded-[17px]
-      border border-[#e7decd]
-      bg-[#fffefa]
-      p-[5px]
-      shadow-[0_12px_32px_rgba(24,46,36,0.12)]
-      sm:rounded-[20px]
-      sm:p-[6px]
-    "
-  >
-    <div className="rounded-[13px] sm:rounded-[16px]">
-      <SearchPanel />
-    </div>
-  </div>
-</div>
+      <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
 
-      {/* Spacing before the next section */}
+        <div
+          className="
+            rounded-[17px]
+            border border-[#e7decd]
+            bg-[#fffefa]
+            p-[5px]
+            shadow-[0_12px_32px_rgba(24,46,36,0.12)]
+            sm:rounded-[20px]
+            sm:p-[6px]
+          "
+        >
+
+          <div className="rounded-[13px] sm:rounded-[16px]">
+            <SearchPanel />
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* SPACING */}
 
       <div className="h-5 sm:h-7 lg:h-8" />
+
     </section>
   );
 }
