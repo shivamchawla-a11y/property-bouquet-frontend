@@ -23,7 +23,6 @@ import {
 
 import SearchPanelMobile from "./SearchPanelMobile";
 
-const FEATURED_API = "/api/properties/featured";
 const CATEGORIES_API = "/api/properties/categories";
 const ROTATION_MS = 5000;
 const SWIPE_THRESHOLD = 45;
@@ -286,9 +285,17 @@ function getCategoryIcon(categoryName) {
    MAIN MOBILE HERO
 ============================================================ */
 
-export default function HeroSectionMobile() {
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function HeroSectionMobile({
+  initialProperties = [],
+  isLoading = false,
+}) {
+  // Featured properties are now supplied by HomePageClient.
+  // No separate featured-properties API request is made here.
+
+  const properties = Array.isArray(initialProperties)
+    ? initialProperties
+    : [];
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -301,70 +308,14 @@ export default function HeroSectionMobile() {
   const touchStartRef = useRef(null);
 
   /* ==========================================================
-     FETCH FEATURED PROPERTIES
+     KEEP ACTIVE INDEX VALID
   ========================================================== */
 
   useEffect(() => {
-    const controller = new AbortController();
-    let mounted = true;
-
-    async function fetchFeaturedProperties() {
-      try {
-        const response = await fetch(FEATURED_API, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Featured properties request failed: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (!mounted) return;
-
-        const list = Array.isArray(result?.data)
-          ? result.data
-          : Array.isArray(result?.properties)
-            ? result.properties
-            : Array.isArray(result)
-              ? result
-              : [];
-
-        const published = list.filter(
-          (property) =>
-            property &&
-            typeof property === "object" &&
-            typeof property.slug === "string" &&
-            property.slug.trim() !== "" &&
-            property.status === "published" &&
-            property.isDeleted !== true &&
-            property.isActive !== false &&
-            property.deletedFromStatus !== "trash"
-        );
-
-        setProperties(published);
-        setActiveIndex(0);
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          console.error("Featured property carousel failed:", error);
-
-          if (mounted) {
-            setProperties([]);
-            setActiveIndex(0);
-          }
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchFeaturedProperties();
-
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
+    setActiveIndex((current) =>
+      current >= properties.length ? 0 : current
+    );
+  }, [properties.length]);
 
   /* ==========================================================
      FETCH PROPERTY CATEGORIES INDEPENDENTLY
@@ -761,7 +712,7 @@ export default function HeroSectionMobile() {
           </div>
         )}
 
-        {loading && (
+        {isLoading && (
           <div className="absolute bottom-[35px] left-5 z-20 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[1.1px] text-white/90 min-[380px]:left-6 min-[430px]:left-7">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />
             Loading properties
@@ -946,7 +897,7 @@ function CategoryCard({ title, icon: Icon = Building2, image }) {
           </span>
         </div>
 
-        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-colors duration-200 group-hover:border-[#d4b16d] group-hover:bg-[#d4b16d] group-hover:text-[#17342d]">
+        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-colors duration-200 group-hover:border-[#d4af67] group-hover:bg-[#d4af67] group-hover:text-[#17342d]">
           <ArrowRight size={10} strokeWidth={2} />
         </span>
       </div>

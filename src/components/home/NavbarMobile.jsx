@@ -265,6 +265,7 @@ const getPublicLocationUrl = (
 
 export default function NavbarMobile({
   onConsultationClick,
+  navigationData = null,
 }) {
   const router = useRouter();
 
@@ -278,19 +279,25 @@ export default function NavbarMobile({
   const [mobileDropdown, setMobileDropdown] =
     useState(null);
 
-  const [locations, setLocations] = useState([]);
+    // Shared navigation data from HomePageClient.
+const navData =
+  navigationData?.data || navigationData || {};
 
-  const [locationTree, setLocationTree] =
-    useState([]);
+const locations = Array.isArray(navData.locations)
+  ? navData.locations
+  : [];
 
-  const [developers, setDevelopers] =
-    useState([]);
+const locationTree = Array.isArray(navData.locationTree)
+  ? navData.locationTree
+  : [];
 
-  const [propertyTypes, setPropertyTypes] =
-    useState([]);
+const developers = Array.isArray(navData.developers)
+  ? navData.developers
+  : [];
 
-  const [properties, setProperties] =
-    useState([]);
+const propertyTypes = Array.isArray(navData.propertyTypes)
+  ? navData.propertyTypes
+  : [];
 
   const [showLocationModal, setShowLocationModal] =
     useState(false);
@@ -303,208 +310,6 @@ export default function NavbarMobile({
 
   const [developerSearch, setDeveloperSearch] =
     useState("");
-
-  // =========================================================
-  // FETCH DATA
-  // =========================================================
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const res = await fetch(
-          "/api/properties"
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(
-            `Failed to fetch properties: ${res.status}`
-          );
-        }
-
-        const propertyData =
-          data?.data || [];
-
-        setProperties(propertyData);
-
-        // ===================================================
-        // LOCATION TREE
-        // ===================================================
-
-        try {
-          const locationRes =
-            await fetch(
-              "/api/locations/tree"
-            );
-
-          const locationData =
-            await locationRes.json();
-
-          if (locationRes.ok) {
-            setLocationTree(
-              locationData?.data || []
-            );
-          }
-        } catch (locationError) {
-          console.error(
-            "Navbar mobile location tree error:",
-            locationError
-          );
-        }
-
-        // ===================================================
-        // LOCATIONS
-        // ===================================================
-
-        const uniqueLocations = [
-          ...new Set(
-            propertyData.flatMap(
-              (property) => {
-                const location =
-                  property
-                    ?.locationData
-                    ?.locationName;
-
-                if (!location) {
-                  return [];
-                }
-
-                return location
-                  .split(">")
-                  .map((item) =>
-                    item.trim()
-                  )
-                  .filter(Boolean);
-              }
-            )
-          ),
-        ].sort();
-
-        setLocations(
-          uniqueLocations
-        );
-
-        // ===================================================
-        // DEVELOPERS
-        // ===================================================
-
-        const developerMap =
-          new Map();
-
-        propertyData.forEach(
-          (property) => {
-            const developerName =
-              property
-                ?.coreDetails
-                ?.developerName;
-
-            if (!developerName) {
-              return;
-            }
-
-            const developer =
-              property
-                ?.coreDetails
-                ?.developerRef;
-
-            const existing =
-              developerMap.get(
-                developerName
-              );
-
-            if (existing) {
-              existing.propertyCount += 1;
-              return;
-            }
-
-            const developerSlug =
-              developer?.slug ||
-              developerName
-                .toLowerCase()
-                .trim()
-                .replace(
-                  /[^a-z0-9]+/g,
-                  "-"
-                )
-                .replace(
-                  /^-+|-+$/g,
-                  "");
-
-            developerMap.set(
-              developerName,
-              {
-                name: developerName,
-
-                slug: developerSlug,
-
-                logo:
-                  developer?.logo ||
-                  developer?.image ||
-                  property
-                    ?.coreDetails
-                    ?.developerLogo ||
-                  property
-                    ?.coreDetails
-                    ?.developerImage ||
-                  "/placeholder.jpg",
-
-                propertyCount: 1,
-              }
-            );
-          }
-        );
-
-        // ===================================================
-        // SORT DEVELOPERS
-        // ===================================================
-
-        const uniqueDevelopers =
-          Array.from(
-            developerMap.values()
-          ).sort(
-            (a, b) =>
-              b.propertyCount -
-                a.propertyCount ||
-              a.name.localeCompare(
-                b.name
-              )
-          );
-
-        setDevelopers(
-          uniqueDevelopers
-        );
-
-        // ===================================================
-        // PROPERTY TYPES
-        // ===================================================
-
-        const uniqueCategories = [
-          ...new Set(
-            propertyData
-              .map(
-                (property) =>
-                  property
-                    ?.categoryData
-                    ?.categoryName
-              )
-              .filter(Boolean)
-          ),
-        ].sort();
-
-        setPropertyTypes(
-          uniqueCategories
-        );
-      } catch (err) {
-        console.error(
-          "Navbar mobile property fetch error:",
-          err
-        );
-      }
-    };
-
-    fetchProperties();
-  }, []);
 
   // =========================================================
   // MOBILE ITEMS

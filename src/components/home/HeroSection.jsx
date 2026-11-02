@@ -25,7 +25,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const FEATURED_API = "/api/properties/featured";
 const ROTATION_MS = 3500;
 
 // ============================================================
@@ -314,18 +313,14 @@ function getStartingPrice(property) {
 
 export default function HeroSection({
   initialProperties = [],
+  isLoading = false,
 }) {
-  const hasInitialProperties =
-    Array.isArray(initialProperties) &&
-    initialProperties.length > 0;
+  // Properties are now received from HomePageClient.
+  // This component does not make its own featured API request.
 
-  const [properties, setProperties] = useState(
-    hasInitialProperties ? initialProperties : []
-  );
-
-  const [loading, setLoading] = useState(
-    !hasInitialProperties
-  );
+  const properties = Array.isArray(initialProperties)
+    ? initialProperties
+    : [];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -339,68 +334,14 @@ export default function HeroSection({
   const reduceMotion = useReducedMotion();
 
   // ==========================================================
-  // FETCH ONLY IF SERVER DATA IS NOT AVAILABLE
+  // KEEP ACTIVE INDEX VALID
   // ==========================================================
 
   useEffect(() => {
-    if (hasInitialProperties) return;
-
-    const controller = new AbortController();
-    let mounted = true;
-
-    async function fetchFeaturedProperties() {
-      try {
-        const response = await fetch(FEATURED_API, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Featured properties request failed: ${response.status}`
-          );
-        }
-
-        const result = await response.json();
-
-        if (!mounted) return;
-
-        const list = Array.isArray(result?.data)
-          ? result.data
-          : Array.isArray(result?.properties)
-            ? result.properties
-            : Array.isArray(result)
-              ? result
-              : [];
-
-        const validProperties = list.filter(
-          (property) =>
-            property &&
-            typeof property === "object" &&
-            typeof property.slug === "string" &&
-            property.slug.trim()
-        );
-
-        setProperties(validProperties);
-        setActiveIndex(0);
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          console.error(
-            "Featured property carousel failed:",
-            error
-          );
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchFeaturedProperties();
-
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, [hasInitialProperties]);
+    setActiveIndex((current) =>
+      current >= properties.length ? 0 : current
+    );
+  }, [properties.length]);
 
   // ==========================================================
   // TAB VISIBILITY
@@ -801,7 +742,7 @@ export default function HeroSection({
 
         {/* LOADING INDICATOR */}
 
-        {loading && (
+        {isLoading && (
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[1.8px] text-white/70 sm:left-8 md:left-10">
 
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e4bd70]" />

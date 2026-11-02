@@ -78,6 +78,26 @@ function useDesktopLayout() {
 }
 
 // =========================================================
+// SHARED FEATURED PROPERTY FILTER
+// =========================================================
+
+function filterFeaturedProperties(list) {
+  if (!Array.isArray(list)) return [];
+
+  return list.filter(
+    (property) =>
+      property &&
+      typeof property === "object" &&
+      typeof property.slug === "string" &&
+      property.slug.trim() !== "" &&
+      property.status === "published" &&
+      property.isDeleted !== true &&
+      property.isActive !== false &&
+      property.deletedFromStatus !== "trash"
+  );
+}
+
+// =========================================================
 // HOME PAGE
 // =========================================================
 
@@ -88,6 +108,141 @@ export default function HomePage({
 
   const isDesktop = useDesktopLayout();
 
+  // =======================================================
+  // SHARED FEATURED PROPERTIES
+  // =======================================================
+
+  const hasServerFeaturedProperties =
+    Array.isArray(initialFeaturedProperties) &&
+    initialFeaturedProperties.length > 0;
+
+  const [featuredProperties, setFeaturedProperties] = useState(
+    () => filterFeaturedProperties(initialFeaturedProperties)
+  );
+
+  const [featuredPropertiesLoading, setFeaturedPropertiesLoading] =
+    useState(!hasServerFeaturedProperties);
+
+  // =======================================================
+  // SHARED NAVIGATION DATA
+  // =======================================================
+
+  const [navigationData, setNavigationData] = useState(null);
+
+  // =======================================================
+  // LOAD SHARED NAVIGATION DATA
+  // =======================================================
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadNavigationData = async () => {
+      try {
+        const response = await fetch("/api/navigation/home");
+
+        if (!response.ok) {
+          throw new Error(
+            `Navigation request failed: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error("Invalid navigation response");
+        }
+
+        if (!cancelled) {
+          setNavigationData(result.data);
+        }
+      } catch (error) {
+        console.error("Navigation data error:", error);
+      }
+    };
+
+    loadNavigationData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // =======================================================
+  // LOAD FEATURED PROPERTIES ONCE FOR BOTH HERO SECTIONS
+  // =======================================================
+
+  useEffect(() => {
+    // Use server-provided properties when available.
+    if (
+      Array.isArray(initialFeaturedProperties) &&
+      initialFeaturedProperties.length > 0
+    ) {
+      setFeaturedProperties(
+        filterFeaturedProperties(initialFeaturedProperties)
+      );
+
+      setFeaturedPropertiesLoading(false);
+
+      return;
+    }
+
+    const controller = new AbortController();
+    let cancelled = false;
+
+    const loadFeaturedProperties = async () => {
+      try {
+        const response = await fetch("/api/properties/featured", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Featured properties request failed: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+
+        const list = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.properties)
+            ? result.properties
+            : Array.isArray(result)
+              ? result
+              : [];
+
+        const filteredProperties =
+          filterFeaturedProperties(list);
+
+        if (!cancelled) {
+          setFeaturedProperties(filteredProperties);
+        }
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error(
+            "Featured properties loading failed:",
+            error
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setFeaturedPropertiesLoading(false);
+        }
+      }
+    };
+
+    loadFeaturedProperties();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [initialFeaturedProperties]);
+
+  // =======================================================
+  // CONSULTATION MODAL
+  // =======================================================
+
   const openConsultation = useCallback(() => {
     setShowConsultation(true);
   }, []);
@@ -95,6 +250,10 @@ export default function HomePage({
   const closeConsultation = useCallback(() => {
     setShowConsultation(false);
   }, []);
+
+  // =======================================================
+  // HOME PAGE RENDER
+  // =======================================================
 
   return (
     <main className="overflow-hidden bg-[#f6f6f6]">
@@ -104,6 +263,7 @@ export default function HomePage({
       <div className="hidden md:block">
         <Navbar
           forceSolid
+          navigationData={navigationData}
           onConsultationClick={openConsultation}
         />
       </div>
@@ -113,6 +273,7 @@ export default function HomePage({
       <div className="block md:hidden">
         <NavbarMobile
           forceSolid
+          navigationData={navigationData}
           onConsultationClick={openConsultation}
         />
       </div>
@@ -128,14 +289,18 @@ export default function HomePage({
 
       <div className="hidden md:block">
         <HeroSection
-          initialProperties={initialFeaturedProperties}
+          initialProperties={featuredProperties}
+          isLoading={featuredPropertiesLoading}
         />
       </div>
 
       {/* MOBILE HERO */}
 
       <div className="block md:hidden">
-        <HeroSectionMobile />
+        <HeroSectionMobile
+          initialProperties={featuredProperties}
+          isLoading={featuredPropertiesLoading}
+        />
       </div>
 
       {/* RECOMMENDED PROJECTS */}
