@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,24 +6,42 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
-const NEWS_API = "/api/news?status=published";
+const NEWS_API = "/api/news/latest";
+
+// ============================================================
+// DATE FORMATTER
+// ============================================================
 
 const formatDate = (date) => {
-  if (!date) return { day: "--", month: "---" };
+  if (!date) {
+    return {
+      day: "--",
+      month: "---",
+    };
+  }
 
   const parsedDate = new Date(date);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return { day: "--", month: "---" };
+    return {
+      day: "--",
+      month: "---",
+    };
   }
 
   return {
     day: parsedDate.getDate(),
     month: parsedDate
-      .toLocaleString("en-US", { month: "short" })
+      .toLocaleString("en-US", {
+        month: "short",
+      })
       .toUpperCase(),
   };
 };
+
+// ============================================================
+// NEWS INSIGHTS SECTION
+// ============================================================
 
 export default function NewsInsightSection() {
   const [latestInsights, setLatestInsights] = useState([]);
@@ -50,31 +69,22 @@ export default function NewsInsightSection() {
 
         const articles = Array.isArray(result?.data)
           ? result.data
-          : Array.isArray(result)
-            ? result
-            : [];
+          : [];
 
-        const published = articles
-          .filter(
-            (item) =>
-              item &&
-              item.slug &&
-              item.status === "published" &&
-              item.isDeleted !== true
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.publishDate || b.createdAt || 0) -
-              new Date(a.publishDate || a.createdAt || 0)
-          )
-          .slice(0, 3);
+        // Backend already returns the latest three
+        // published, non-deleted articles.
+        // No browser-side filtering or sorting needed.
 
         if (!controller.signal.aborted) {
-          setLatestInsights(published);
+          setLatestInsights(articles);
         }
+
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Latest news loading error:", error);
+          console.error(
+            "Latest news loading error:",
+            error
+          );
 
           if (!controller.signal.aborted) {
             setLatestInsights([]);
@@ -89,21 +99,30 @@ export default function NewsInsightSection() {
   }, []);
 
   return (
-    <section className="px-5 md:px-8 xl:px-10 py-6">
-      <div className="max-w-[1440px] mx-auto">
+    <section className="px-5 py-6 md:px-8 xl:px-10">
+      <div className="mx-auto max-w-[1440px]">
+
         <div className="overflow-hidden rounded-[32px] border border-black/10 bg-white shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
+
           <div className="grid xl:grid-cols-[0.95fr_1.18fr]">
+
+            {/* ================================================= */}
             {/* NEWS & INSIGHTS */}
-            <div className="bg-[#fbf9f5] border-r border-black/10 px-8 py-8 xl:px-10 xl:py-10 flex flex-col justify-between">
+            {/* ================================================= */}
+
+            <div className="flex flex-col justify-between border-r border-black/10 bg-[#fbf9f5] px-8 py-8 xl:px-10 xl:py-10">
+
               <div>
-                <p className="text-[10px] tracking-[2px] uppercase text-black/55 font-semibold mb-7">
+
+                <p className="mb-7 text-[10px] font-semibold uppercase tracking-[2px] text-black/55">
                   News &amp; Insights
                 </p>
 
                 <h2
-                  className="text-[34px] xl:text-[38px] leading-[1.12] text-[#171717] font-medium mb-10"
+                  className="mb-10 text-[34px] font-medium leading-[1.12] text-[#171717] xl:text-[38px]"
                   style={{
-                    fontFamily: "Georgia, Times New Roman, serif",
+                    fontFamily:
+                      "Georgia, Times New Roman, serif",
                   }}
                 >
                   Latest Luxury
@@ -111,7 +130,10 @@ export default function NewsInsightSection() {
                   Market Updates.
                 </h2>
 
+                {/* NEWS ARTICLES */}
+
                 <div className="space-y-7">
+
                   {latestInsights.map((item) => {
                     const date = formatDate(
                       item.publishDate || item.createdAt
@@ -121,65 +143,95 @@ export default function NewsInsightSection() {
                       <Link
                         key={item._id || item.slug}
                         href={`/insights/${item.slug}`}
+                        prefetch={false}
                         className="block"
                       >
-                        <div className="flex gap-4 group cursor-pointer">
-                          <div className="w-[62px] h-[62px] rounded-[12px] bg-[#f1ece3]/90 backdrop-blur-xl border border-black/5 flex flex-col items-center justify-center shrink-0 transition-all duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] group-hover:-translate-y-[2px]">
-                            <span className="text-[24px] leading-none font-semibold text-[#171717]">
+
+                        <div className="group flex cursor-pointer gap-4">
+
+                          {/* DATE BADGE */}
+
+                          <div className="flex h-[62px] w-[62px] shrink-0 flex-col items-center justify-center rounded-[12px] border border-black/5 bg-[#f1ece3]/90 backdrop-blur-xl transition-all duration-300 group-hover:-translate-y-[2px] group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+
+                            <span className="text-[24px] font-semibold leading-none text-[#171717]">
                               {date.day}
                             </span>
 
-                            <span className="text-[9px] tracking-[1.4px] uppercase text-black/50 mt-1">
+                            <span className="mt-1 text-[9px] uppercase tracking-[1.4px] text-black/50">
                               {date.month}
                             </span>
+
                           </div>
 
+                          {/* ARTICLE DETAILS */}
+
                           <div className="pt-[2px]">
-                            <h3 className="text-[15px] leading-[1.55] text-[#171717] font-medium max-w-[320px] transition-all duration-300 group-hover:text-[#b98b3c]">
-                              {item.title || "Property Market Update"}
+
+                            <h3 className="max-w-[320px] text-[15px] font-medium leading-[1.55] text-[#171717] transition-all duration-300 group-hover:text-[#b98b3c]">
+                              {item.title ||
+                                "Property Market Update"}
                             </h3>
 
-                            <div className="flex items-center gap-3 mt-2">
+                            <div className="mt-2 flex items-center gap-3">
+
                               <p className="text-[12px] text-black/45">
                                 {item.readTime
                                   ? `${item.readTime} Min Read`
                                   : "Latest Update"}
                               </p>
 
-                              <div className="w-1 h-1 rounded-full bg-black/25" />
+                              <div className="h-1 w-1 rounded-full bg-black/25" />
 
-                              <p className="text-[12px] text-[#b98b3c] font-medium">
-                                {item.category || "Real Estate"}
+                              <p className="text-[12px] font-medium text-[#b98b3c]">
+                                {item.category ||
+                                  "Real Estate"}
                               </p>
+
                             </div>
+
                           </div>
+
                         </div>
+
                       </Link>
                     );
                   })}
+
+                  {/* EMPTY STATE */}
 
                   {latestInsights.length === 0 && (
                     <p className="text-sm leading-7 text-black/50">
                       The latest market updates will appear here soon.
                     </p>
                   )}
+
                 </div>
+
               </div>
+
+              {/* VIEW ALL */}
 
               <Link
                 href="/insights"
-                className="group mt-10 flex items-center gap-2 text-[#b98b3c] text-[12px] font-semibold uppercase tracking-[1px] w-fit"
+                prefetch={false}
+                className="group mt-10 flex w-fit items-center gap-2 text-[12px] font-semibold uppercase tracking-[1px] text-[#b98b3c]"
               >
                 View All News
+
                 <ArrowRight
                   size={13}
-                  className="group-hover:translate-x-1 transition"
+                  className="transition group-hover:translate-x-1"
                 />
               </Link>
+
             </div>
 
+            {/* ================================================= */}
             {/* RIGHT IMAGE */}
+            {/* ================================================= */}
+
             <div className="relative min-h-[540px] overflow-hidden bg-black">
+
               <Image
                 src="/market11.png"
                 alt="Luxury interior and premium real estate"
@@ -189,12 +241,16 @@ export default function NewsInsightSection() {
                 priority={false}
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
 
-              <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.18)] pointer-events-none" />
+              <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.18)]" />
+
             </div>
+
           </div>
+
         </div>
+
       </div>
     </section>
   );

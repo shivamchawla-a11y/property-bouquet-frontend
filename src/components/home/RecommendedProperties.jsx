@@ -1,10 +1,18 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+
 import Container from "@/components/layout/Container";
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -18,9 +26,17 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const RECOMMENDED_API = "/api/properties?propertyTag=Recommended";
+// ============================================================
+// CONFIGURATION
+// ============================================================
+
+const RECOMMENDED_API = "/api/properties/recommended";
+
 const AUTOPLAY_DELAY = 3500;
 const MAX_RECOMMENDED = 12;
+
+// Load the data shortly before the section enters the viewport.
+const LAZY_LOAD_ROOT_MARGIN = "450px 0px";
 
 // ============================================================
 // CLOUDINARY IMAGE OPTIMIZATION
@@ -29,23 +45,24 @@ const MAX_RECOMMENDED = 12;
 function optimizeCloudinaryImage(url, width = 800) {
   if (!url || typeof url !== "string") return "";
 
-  // Only transform Cloudinary images.
   if (!url.includes("res.cloudinary.com")) {
     return url;
   }
 
-  // Avoid adding transformations if the URL already contains
-  // automatic format or quality settings.
   const uploadMarker = "/image/upload/";
   const uploadIndex = url.indexOf(uploadMarker);
 
   if (uploadIndex === -1) return url;
 
-  const beforeUpload = url.slice(0, uploadIndex + uploadMarker.length);
-  const afterUpload = url.slice(uploadIndex + uploadMarker.length);
+  const beforeUpload = url.slice(
+    0,
+    uploadIndex + uploadMarker.length
+  );
 
-  // If an existing transformation already contains f_auto or q_auto,
-  // retain the original URL to avoid conflicting transformations.
+  const afterUpload = url.slice(
+    uploadIndex + uploadMarker.length
+  );
+
   const firstSegment = afterUpload.split("/")[0];
 
   if (
@@ -55,7 +72,8 @@ function optimizeCloudinaryImage(url, width = 800) {
     return url;
   }
 
-  const transformations = `f_auto,q_auto:good,w_${width},c_limit`;
+  const transformations =
+    `f_auto,q_auto:good,w_${width},c_limit`;
 
   return `${beforeUpload}${transformations}/${afterUpload}`;
 }
@@ -69,7 +87,11 @@ function shuffleArray(array) {
 
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+
+    [shuffled[i], shuffled[j]] = [
+      shuffled[j],
+      shuffled[i],
+    ];
   }
 
   return shuffled;
@@ -86,13 +108,15 @@ function getLocationName(item) {
     );
   }
 
-  return [
-    location.name,
-    location.parent?.name,
-    location.parent?.parent?.name,
-  ]
-    .filter(Boolean)
-    .join(", ") || "Prime Location";
+  return (
+    [
+      location.name,
+      location.parent?.name,
+      location.parent?.parent?.name,
+    ]
+      .filter(Boolean)
+      .join(", ") || "Prime Location"
+  );
 }
 
 function getPrice(item) {
@@ -103,9 +127,14 @@ function getPrice(item) {
     return "On Request";
   }
 
-  const price = details?.startingPrice ?? configuration?.price;
+  const price =
+    details?.startingPrice ?? configuration?.price;
 
-  if (price === null || price === undefined || price === "") {
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
     return "Price Unavailable";
   }
 
@@ -129,15 +158,18 @@ function RecommendedSkeleton() {
 
         <div className="space-y-4 p-5">
           <div className="h-6 w-4/5 animate-pulse rounded bg-[#eeeae3]" />
+
           <div className="h-4 w-3/5 animate-pulse rounded bg-[#f0ede7]" />
 
           <div className="flex gap-3">
             <div className="h-4 w-16 animate-pulse rounded bg-[#f0ede7]" />
+
             <div className="h-4 w-16 animate-pulse rounded bg-[#f0ede7]" />
           </div>
 
           <div className="mt-5 border-t border-[#ece7df] pt-4">
             <div className="mb-3 h-3 w-1/3 animate-pulse rounded bg-[#f0ede7]" />
+
             <div className="h-7 w-1/2 animate-pulse rounded bg-[#eeeae3]" />
           </div>
 
@@ -190,8 +222,11 @@ function RecommendedPropertyImage({ image, title }) {
 // ============================================================
 
 function RecommendedPropertyCard({ item }) {
-  const title = item?.coreDetails?.title || "Recommended Property";
+  const title =
+    item?.coreDetails?.title || "Recommended Property";
+
   const image = item?.media?.heroImageUrl;
+
   const configuration = item?.unitConfigurations?.[0];
 
   return (
@@ -202,6 +237,7 @@ function RecommendedPropertyCard({ item }) {
       className="block min-w-0 flex-[0_0_100%] pl-2 md:flex-[0_0_50%] xl:flex-[0_0_33.3333%]"
     >
       <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#ebe5da] bg-white shadow-[0_10px_32px_rgba(0,0,0,0.045)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.10)]">
+
         {/* IMAGE */}
         <div className="relative h-[180px] overflow-hidden bg-[#eee9df]">
           <RecommendedPropertyImage
@@ -221,13 +257,17 @@ function RecommendedPropertyCard({ item }) {
 
         {/* CONTENT */}
         <div className="flex flex-1 flex-col p-5">
+
           <h3 className="line-clamp-2 font-heading text-[22px] leading-tight text-[#171717] xl:text-[24px]">
             {title}
           </h3>
 
           {/* LOCATION */}
           <div className="mt-2 flex items-start gap-2 text-black/60">
-            <MapPin size={15} className="mt-[2px] shrink-0" />
+            <MapPin
+              size={15}
+              className="mt-[2px] shrink-0"
+            />
 
             <span className="line-clamp-2 text-[13px] leading-snug">
               {getLocationName(item)}
@@ -236,8 +276,10 @@ function RecommendedPropertyCard({ item }) {
 
           {/* PROPERTY DETAILS */}
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-black/65">
+
             <div className="flex items-center gap-2">
               <BedDouble size={15} />
+
               <span className="text-[13px]">
                 {configuration?.bedrooms
                   ? `${configuration.bedrooms} Beds`
@@ -247,6 +289,7 @@ function RecommendedPropertyCard({ item }) {
 
             <div className="flex items-center gap-2">
               <Bath size={15} />
+
               <span className="text-[13px]">
                 {configuration?.bathrooms
                   ? `${configuration.bathrooms} Baths`
@@ -259,6 +302,7 @@ function RecommendedPropertyCard({ item }) {
                 ? `${configuration.area} Sq.Ft.`
                 : "Premium"}
             </span>
+
           </div>
 
           {/* DIVIDER */}
@@ -279,6 +323,7 @@ function RecommendedPropertyCard({ item }) {
 
           {/* CTA */}
           <div className="mt-4 flex items-center justify-between border-t border-[#ece7df] pt-4">
+
             <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#bf8b37]">
               Explore Residence
             </span>
@@ -287,6 +332,7 @@ function RecommendedPropertyCard({ item }) {
               size={18}
               className="text-[#bf8b37] transition-transform duration-300 group-hover:translate-x-1"
             />
+
           </div>
         </div>
       </article>
@@ -300,10 +346,20 @@ function RecommendedPropertyCard({ item }) {
 
 export default function RecommendedProjects() {
   const [properties, setProperties] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Autoplay remains active when the user hovers over the carousel.
+  // Controls when the API request is allowed to start.
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  const sectionRef = useRef(null);
+
+  // ==========================================================
+  // AUTOPLAY
+  // ==========================================================
+
   const autoplay = useMemo(
     () =>
       Autoplay({
@@ -333,10 +389,51 @@ export default function RecommendedProjects() {
   }, [emblaApi]);
 
   // ==========================================================
-  // FETCH RECOMMENDED PROPERTIES
+  // LAZY LOAD WHEN SECTION APPROACHES VIEWPORT
   // ==========================================================
 
   useEffect(() => {
+    const section = sectionRef.current;
+
+    if (!section) return;
+
+    // Fallback for browsers without IntersectionObserver.
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        if (entry?.isIntersecting) {
+          setShouldLoad(true);
+
+          // We only need to trigger the request once.
+          observer.disconnect();
+        }
+      },
+      {
+        root: null,
+        rootMargin: LAZY_LOAD_ROOT_MARGIN,
+        threshold: 0,
+      }
+    );
+
+    observer.observe(section);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // ==========================================================
+  // FETCH LIGHTWEIGHT RECOMMENDED PROPERTIES
+  // ==========================================================
+
+  useEffect(() => {
+    // Do not request data until the section approaches viewport.
+    if (!shouldLoad) return;
+
     const controller = new AbortController();
 
     async function loadRecommended() {
@@ -353,35 +450,33 @@ export default function RecommendedProjects() {
 
         const result = await response.json();
 
-        const records = Array.isArray(result)
-          ? result
-          : Array.isArray(result?.data)
-            ? result.data
-            : Array.isArray(result?.properties)
-              ? result.properties
+        const records = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.properties)
+            ? result.properties
+            : Array.isArray(result)
+              ? result
               : [];
 
-        const published = records.filter(
+        // The backend already filters for published,
+        // active, non-deleted Recommended properties.
+        // No need to download and filter full records here.
+
+        const validProperties = records.filter(
           (property) =>
             property?.slug &&
-            property?.coreDetails?.title &&
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.isActive !== false &&
-            (Array.isArray(property?.propertyTag)
-              ? property.propertyTag.includes("Recommended")
-              : property?.propertyTag === "Recommended")
+            property?.coreDetails?.title
         );
 
-        const shuffled = shuffleArray(published).slice(
-          0,
-          MAX_RECOMMENDED
-        );
+        const shuffled = shuffleArray(
+          validProperties
+        ).slice(0, MAX_RECOMMENDED);
 
         if (!controller.signal.aborted) {
           setProperties(shuffled);
           setFetchFailed(false);
         }
+
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error(
@@ -393,6 +488,7 @@ export default function RecommendedProjects() {
             setFetchFailed(true);
           }
         }
+
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -403,13 +499,19 @@ export default function RecommendedProjects() {
     loadRecommended();
 
     return () => controller.abort();
-  }, []);
+  }, [shouldLoad]);
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden bg-[#faf7f2] py-14 md:py-20 lg:py-24"
       aria-labelledby="recommended-projects-heading"
     >
+
       {/* LIGHTWEIGHT BACKGROUND TEXTURE */}
       <div
         aria-hidden="true"
@@ -417,11 +519,18 @@ export default function RecommendedProjects() {
       />
 
       <Container className="relative">
+
         {/* HEADER */}
         <div className="mb-10 text-center md:mb-14 lg:mb-16">
+
           <div className="mb-5 inline-flex items-center gap-2">
             <div className="h-px w-12 bg-[#c89d58]" />
-            <Sparkles size={14} className="text-[#c89d58]" />
+
+            <Sparkles
+              size={14}
+              className="text-[#c89d58]"
+            />
+
             <div className="h-px w-12 bg-[#c89d58]" />
           </div>
 
@@ -443,10 +552,12 @@ export default function RecommendedProjects() {
             their exceptional location, design excellence,
             future value, and lifestyle appeal.
           </p>
+
         </div>
 
         {/* CAROUSEL CONTROLS */}
         <div className="mb-5 flex justify-end gap-3">
+
           <button
             type="button"
             onClick={handlePrev}
@@ -464,6 +575,7 @@ export default function RecommendedProjects() {
           >
             <ChevronRight size={18} />
           </button>
+
         </div>
 
         {/* CAROUSEL */}
@@ -472,11 +584,19 @@ export default function RecommendedProjects() {
           ref={emblaRef}
         >
           <div className="-ml-2 flex">
-            {loading &&
-              Array.from({ length: 3 }, (_, index) => (
-                <RecommendedSkeleton key={`skeleton-${index}`} />
-              ))}
 
+            {/* SKELETONS */}
+            {loading &&
+              Array.from(
+                { length: 3 },
+                (_, index) => (
+                  <RecommendedSkeleton
+                    key={`skeleton-${index}`}
+                  />
+                )
+              )}
+
+            {/* PROPERTY CARDS */}
             {!loading &&
               properties.map((item) => (
                 <RecommendedPropertyCard
@@ -485,8 +605,10 @@ export default function RecommendedProjects() {
                 />
               ))}
 
+            {/* EMPTY STATE */}
             {!loading && properties.length === 0 && (
               <div className="w-full rounded-2xl border border-[#e8e1d6] bg-white px-5 py-10 text-center">
+
                 <p className="text-sm text-black/65">
                   {fetchFailed
                     ? "Recommended properties are temporarily unavailable."
@@ -498,12 +620,16 @@ export default function RecommendedProjects() {
                   prefetch={false}
                   className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#bf8b37]"
                 >
-                  Explore all properties <ArrowRight size={15} />
+                  Explore all properties
+                  <ArrowRight size={15} />
                 </Link>
+
               </div>
             )}
+
           </div>
         </div>
+
       </Container>
     </section>
   );
