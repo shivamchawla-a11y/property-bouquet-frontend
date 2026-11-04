@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
@@ -19,8 +19,6 @@ import {
 // ============================================================
 // CONFIGURATION
 // ============================================================
-
-const FEATURED_API = "/api/properties/featured";
 
 const AUTOPLAY_DELAY = 3500;
 
@@ -50,7 +48,7 @@ function optimizeCloudinaryImage(url, width = 900) {
   const uploadPath =
     imageUrl.split("/image/upload/")[1] || "";
 
-  // Avoid applying transformations twice.
+  // Avoid applying Cloudinary transformations twice.
   if (
     /^(?:[^/]*,)*(?:f_auto|q_auto|w_\d+|c_limit)(?:,|\/)/i.test(
       uploadPath
@@ -80,13 +78,15 @@ function getLocationName(item) {
     );
   }
 
-  return [
-    location.name,
-    location.parent?.name,
-    location.parent?.parent?.name,
-  ]
-    .filter(Boolean)
-    .join(", ") || "Prime Location";
+  return (
+    [
+      location.name,
+      location.parent?.name,
+      location.parent?.parent?.name,
+    ]
+      .filter(Boolean)
+      .join(", ") || "Prime Location"
+  );
 }
 
 // ============================================================
@@ -127,16 +127,12 @@ function PropertyImage({ item }) {
     900
   );
 
-  const [imageSrc, setImageSrc] = useState(image);
-
-  useEffect(() => {
-    setImageSrc(image);
-  }, [image]);
-
   const handleImageError = (event) => {
-    if (event.currentTarget.src !== FALLBACK_IMAGE) {
-      event.currentTarget.onerror = null;
-      setImageSrc(FALLBACK_IMAGE);
+    const img = event.currentTarget;
+
+    if (img.src !== FALLBACK_IMAGE) {
+      img.onerror = null;
+      img.src = FALLBACK_IMAGE;
     }
   };
 
@@ -150,10 +146,10 @@ function PropertyImage({ item }) {
 
   return (
     <img
-      src={imageSrc}
+      src={image}
       alt={
         item?.coreDetails?.title ||
-        "Featured property in Gurgaon"
+        "Featured property"
       }
       width="900"
       height="600"
@@ -276,6 +272,7 @@ function FeaturedMobileCard({ item, index }) {
                     : "Residence"}
                 </span>
               </div>
+
             </div>
 
             {/* PRICE */}
@@ -312,16 +309,60 @@ function FeaturedMobileCard({ item, index }) {
 }
 
 // ============================================================
+// LOADING SKELETON
+// ============================================================
+
+function FeaturedMobileSkeleton() {
+  return (
+    <div className="mr-4 min-w-0 flex-[0_0_88%]">
+      <div className="overflow-hidden rounded-[26px] border border-[#ebe5da] bg-white">
+        <div className="h-[240px] animate-pulse bg-[#eae5dc]" />
+
+        <div className="h-[2px] bg-[#d4af68]" />
+
+        <div className="space-y-4 p-5">
+          <div className="h-7 w-4/5 animate-pulse rounded bg-[#eeeae3]" />
+
+          <div className="h-4 w-3/5 animate-pulse rounded bg-[#f0ede7]" />
+
+          <div className="mt-6 h-4 w-2/3 animate-pulse rounded bg-[#f0ede7]" />
+
+          <div className="mt-5 h-8 w-1/2 animate-pulse rounded bg-[#eeeae3]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
-export default function FeaturedProjectsMobile() {
-  const [featuredProperties, setFeaturedProperties] =
-    useState([]);
+export default function FeaturedProjectsMobile({
+  initialProperties = [],
+  isLoading = false,
+  fetchFailed = false,
+}) {
+  // ----------------------------------------------------------
+  // SHARED PROPERTY DATA
+  // ----------------------------------------------------------
+  // No API request is made here.
+  // Properties are passed by HomePageClient.
 
-  const [loading, setLoading] = useState(true);
+  const featuredProperties = useMemo(() => {
+    if (!Array.isArray(initialProperties)) {
+      return [];
+    }
 
-  const [fetchFailed, setFetchFailed] = useState(false);
+    return initialProperties
+      .filter(
+        (property) =>
+          property &&
+          typeof property.slug === "string" &&
+          property.slug.trim() !== ""
+      )
+      .slice(0, MAX_FEATURED);
+  }, [initialProperties]);
 
   // ----------------------------------------------------------
   // AUTOPLAY
@@ -350,79 +391,6 @@ export default function FeaturedProjectsMobile() {
     },
     [autoplay.current]
   );
-
-  // ----------------------------------------------------------
-  // FETCH FEATURED PROPERTIES
-  // ----------------------------------------------------------
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchFeaturedProperties() {
-      try {
-        const response = await fetch(FEATURED_API, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Featured properties request failed: ${response.status}`
-          );
-        }
-
-        const result = await response.json();
-
-        const records = Array.isArray(result)
-          ? result
-          : Array.isArray(result?.data)
-            ? result.data
-            : Array.isArray(result?.properties)
-              ? result.properties
-              : [];
-
-        const published = records
-          .filter(
-            (property) =>
-              property?.slug &&
-              property?.coreDetails?.title &&
-              property?.status === "published" &&
-              property?.isDeleted !== true &&
-              property?.isActive !== false &&
-              (property?.propertyTag || []).includes(
-                "Featured"
-              )
-          )
-          .slice(0, MAX_FEATURED);
-
-        if (!controller.signal.aborted) {
-          setFeaturedProperties(published);
-          setFetchFailed(false);
-        }
-      } catch (error) {
-        if (
-          error?.name !== "AbortError" &&
-          !controller.signal.aborted
-        ) {
-          console.error(
-            "Failed to load mobile featured properties:",
-            error
-          );
-
-          setFetchFailed(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchFeaturedProperties();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
 
   // ----------------------------------------------------------
   // RENDER
@@ -489,17 +457,21 @@ export default function FeaturedProjectsMobile() {
         >
           <div className="flex">
 
-            {/* LOADING */}
+            {/* LOADING SKELETONS */}
 
-            {loading && (
-              <div className="flex-[0_0_100%] py-20 text-center text-sm text-black/60">
-                Loading featured properties...
-              </div>
-            )}
+            {isLoading &&
+              Array.from(
+                { length: 2 },
+                (_, index) => (
+                  <FeaturedMobileSkeleton
+                    key={`featured-skeleton-${index}`}
+                  />
+                )
+              )}
 
             {/* EMPTY STATE */}
 
-            {!loading &&
+            {!isLoading &&
               featuredProperties.length === 0 && (
                 <div className="flex-[0_0_100%] py-20 text-center text-sm text-black/60">
                   {fetchFailed
@@ -513,6 +485,7 @@ export default function FeaturedProjectsMobile() {
                       className="mt-4 inline-flex items-center gap-2 font-semibold text-[#bf8b37]"
                     >
                       Explore properties
+
                       <ArrowRight size={15} />
                     </Link>
                   </div>
@@ -521,7 +494,7 @@ export default function FeaturedProjectsMobile() {
 
             {/* PROPERTY CARDS */}
 
-            {!loading &&
+            {!isLoading &&
               featuredProperties.map((item, index) => (
                 <FeaturedMobileCard
                   key={item._id || item.slug}

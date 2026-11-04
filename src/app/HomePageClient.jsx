@@ -1,7 +1,12 @@
+
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState, useCallback } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
 import Navbar from "@/components/home/Navbar";
 import NavbarMobile from "@/components/home/NavbarMobile";
@@ -52,10 +57,17 @@ const Footer = dynamic(() =>
 );
 
 // =========================================================
-// RESPONSIVE BREAKPOINT HOOK
+// FEATURED / TRENDING RESPONSIVE BREAKPOINT
+// =========================================================
+// FeaturedProjectsMobile uses lg:hidden.
+// Therefore, its JavaScript counterpart must switch at
+// 1024px, not 768px.
+//
+// Navbar and Hero continue using their existing md CSS
+// breakpoint independently.
 // =========================================================
 
-function useDesktopLayout() {
+function useDesktopSections() {
   const [isDesktop, setIsDesktop] = useState(null);
 
   useEffect(() => {
@@ -78,23 +90,48 @@ function useDesktopLayout() {
 }
 
 // =========================================================
-// SHARED FEATURED PROPERTY FILTER
+// SHARED FEATURED PROPERTY VALIDATION
+// =========================================================
+// The backend already filters:
+// - published properties
+// - non-deleted properties
+// - active properties
+// - Featured-tagged properties
+//
+// Those fields are intentionally excluded from the API
+// projection, so we only validate the returned slug here.
 // =========================================================
 
 function filterFeaturedProperties(list) {
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list)) {
+    return [];
+  }
 
-  return list.filter(
-    (property) =>
-      property &&
-      typeof property === "object" &&
-      typeof property.slug === "string" &&
-      property.slug.trim() !== "" &&
-      property.status === "published" &&
-      property.isDeleted !== true &&
-      property.isActive !== false &&
-      property.deletedFromStatus !== "trash"
-  );
+  return list
+    .filter(
+      (property) =>
+        property &&
+        typeof property === "object" &&
+        typeof property.slug === "string" &&
+        property.slug.trim() !== ""
+    )
+    .slice(0, 12);
+}
+
+// =========================================================
+// EXTRACT API RESPONSE
+// =========================================================
+
+function extractFeaturedProperties(result) {
+  const list = Array.isArray(result?.data)
+    ? result.data
+    : Array.isArray(result?.properties)
+      ? result.properties
+      : Array.isArray(result)
+        ? result
+        : [];
+
+  return filterFeaturedProperties(list);
 }
 
 // =========================================================
@@ -104,24 +141,35 @@ function filterFeaturedProperties(list) {
 export default function HomePage({
   initialFeaturedProperties = [],
 }) {
-  const [showConsultation, setShowConsultation] = useState(false);
+  // =======================================================
+  // RESPONSIVE LAYOUT
+  // =======================================================
 
-  const isDesktop = useDesktopLayout();
+  const isDesktop = useDesktopSections();
+
+  // =======================================================
+  // CONSULTATION MODAL
+  // =======================================================
+
+  const [showConsultation, setShowConsultation] =
+    useState(false);
 
   // =======================================================
   // SHARED FEATURED PROPERTIES
   // =======================================================
 
-  const hasServerFeaturedProperties =
-    Array.isArray(initialFeaturedProperties) &&
-    initialFeaturedProperties.length > 0;
-
-  const [featuredProperties, setFeaturedProperties] = useState(
-    () => filterFeaturedProperties(initialFeaturedProperties)
-  );
+  const [featuredProperties, setFeaturedProperties] =
+    useState(() =>
+      filterFeaturedProperties(initialFeaturedProperties)
+    );
 
   const [featuredPropertiesLoading, setFeaturedPropertiesLoading] =
-    useState(!hasServerFeaturedProperties);
+    useState(
+      filterFeaturedProperties(initialFeaturedProperties).length === 0
+    );
+
+  const [featuredPropertiesFetchFailed, setFeaturedPropertiesFetchFailed] =
+    useState(false);
 
   // =======================================================
   // SHARED NAVIGATION DATA
@@ -134,11 +182,13 @@ export default function HomePage({
   // =======================================================
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
-    const loadNavigationData = async () => {
+    async function loadNavigationData() {
       try {
-        const response = await fetch("/api/navigation/home");
+        const response = await fetch("/api/navigation/home", {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(
@@ -148,52 +198,64 @@ export default function HomePage({
 
         const result = await response.json();
 
-        if (!result.success || !result.data) {
+        if (!result?.success || !result?.data) {
           throw new Error("Invalid navigation response");
         }
 
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setNavigationData(result.data);
         }
       } catch (error) {
-        console.error("Navigation data error:", error);
+        if (error?.name !== "AbortError") {
+          console.error("Navigation data error:", error);
+        }
       }
-    };
+    }
 
     loadNavigationData();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, []);
 
   // =======================================================
-  // LOAD FEATURED PROPERTIES ONCE FOR BOTH HERO SECTIONS
+  // LOAD FEATURED PROPERTIES ONCE
+  // =======================================================
+  // Priority:
+  // 1. Use the properties already supplied by page.js.
+  // 2. Only use the client API fallback if server data
+  //    is empty or unavailable.
+  //
+  // All featured homepage components receive this same
+  // dataset. They do not make their own featured requests.
   // =======================================================
 
   useEffect(() => {
-    // Use server-provided properties when available.
-    if (
-      Array.isArray(initialFeaturedProperties) &&
-      initialFeaturedProperties.length > 0
-    ) {
-      setFeaturedProperties(
-        filterFeaturedProperties(initialFeaturedProperties)
-      );
+    const serverProperties =
+      filterFeaturedProperties(initialFeaturedProperties);
 
+    if (serverProperties.length > 0) {
+      setFeaturedProperties(serverProperties);
       setFeaturedPropertiesLoading(false);
+      setFeaturedPropertiesFetchFailed(false);
 
-      return;
+      return undefined;
     }
 
     const controller = new AbortController();
-    let cancelled = false;
 
-    const loadFeaturedProperties = async () => {
+    async function loadFeaturedProperties() {
+      setFeaturedPropertiesLoading(true);
+      setFeaturedPropertiesFetchFailed(false);
+
       try {
-        const response = await fetch("/api/properties/featured", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          "/api/properties/featured",
+          {
+            signal: controller.signal,
+          }
+        );
 
         if (!response.ok) {
           throw new Error(
@@ -203,44 +265,49 @@ export default function HomePage({
 
         const result = await response.json();
 
-        const list = Array.isArray(result?.data)
-          ? result.data
-          : Array.isArray(result?.properties)
-            ? result.properties
-            : Array.isArray(result)
-              ? result
-              : [];
+        if (result?.success === false) {
+          throw new Error(
+            result?.message ||
+              "Featured properties API returned an error"
+          );
+        }
 
-        const filteredProperties =
-          filterFeaturedProperties(list);
+        const properties =
+          extractFeaturedProperties(result);
 
-        if (!cancelled) {
-          setFeaturedProperties(filteredProperties);
+        if (!controller.signal.aborted) {
+          setFeaturedProperties(properties);
+          setFeaturedPropertiesFetchFailed(false);
         }
       } catch (error) {
-        if (error?.name !== "AbortError") {
+        if (
+          error?.name !== "AbortError" &&
+          !controller.signal.aborted
+        ) {
           console.error(
             "Featured properties loading failed:",
             error
           );
+
+          setFeaturedProperties([]);
+          setFeaturedPropertiesFetchFailed(true);
         }
       } finally {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setFeaturedPropertiesLoading(false);
         }
       }
-    };
+    }
 
     loadFeaturedProperties();
 
     return () => {
-      cancelled = true;
       controller.abort();
     };
   }, [initialFeaturedProperties]);
 
   // =======================================================
-  // CONSULTATION MODAL
+  // CONSULTATION MODAL ACTIONS
   // =======================================================
 
   const openConsultation = useCallback(() => {
@@ -252,13 +319,25 @@ export default function HomePage({
   }, []);
 
   // =======================================================
+  // SHARED FEATURED PROPERTIES PROPS
+  // =======================================================
+
+  const sharedFeaturedProps = {
+    initialProperties: featuredProperties,
+    isLoading: featuredPropertiesLoading,
+    fetchFailed: featuredPropertiesFetchFailed,
+  };
+
+  // =======================================================
   // HOME PAGE RENDER
   // =======================================================
 
   return (
     <main className="overflow-hidden bg-[#f6f6f6]">
 
-      {/* DESKTOP NAVBAR */}
+      {/* =================================================
+          DESKTOP NAVBAR
+      ================================================= */}
 
       <div className="hidden md:block">
         <Navbar
@@ -268,7 +347,9 @@ export default function HomePage({
         />
       </div>
 
-      {/* MOBILE NAVBAR */}
+      {/* =================================================
+          MOBILE NAVBAR
+      ================================================= */}
 
       <div className="block md:hidden">
         <NavbarMobile
@@ -278,14 +359,18 @@ export default function HomePage({
         />
       </div>
 
-      {/* CONSULTATION MODAL */}
+      {/* =================================================
+          CONSULTATION MODAL
+      ================================================= */}
 
       <NavbarConsultationModal
         open={showConsultation}
         onClose={closeConsultation}
       />
 
-      {/* DESKTOP HERO */}
+      {/* =================================================
+          DESKTOP HERO
+      ================================================= */}
 
       <div className="hidden md:block">
         <HeroSection
@@ -294,7 +379,9 @@ export default function HomePage({
         />
       </div>
 
-      {/* MOBILE HERO */}
+      {/* =================================================
+          MOBILE HERO
+      ================================================= */}
 
       <div className="block md:hidden">
         <HeroSectionMobile
@@ -303,37 +390,66 @@ export default function HomePage({
         />
       </div>
 
-      {/* RECOMMENDED PROJECTS */}
+      {/* =================================================
+          RECOMMENDED PROJECTS
+      ================================================= */}
 
       <RecommendedProjects />
 
-      {/* FEATURED PROJECTS */}
+      {/* =================================================
+          FEATURED PROJECTS
+      ================================================= */}
+      {/* Desktop at 1024px and above.
+          Mobile below 1024px.
+          Both receive the same 12-property dataset. */}
 
-      {isDesktop === true && <FeaturedProjects />}
+      {isDesktop === true && (
+        <FeaturedProjects
+          {...sharedFeaturedProps}
+        />
+      )}
 
-      {isDesktop === false && <FeaturedProjectsMobile />}
+      {isDesktop === false && (
+        <FeaturedProjectsMobile
+          {...sharedFeaturedProps}
+        />
+      )}
 
-      {/* TRENDING PROJECTS */}
+      {/* =================================================
+          TRENDING PROJECTS
+      ================================================= */}
 
-      {isDesktop === true && <TrendingProjects />}
+      {isDesktop === true && (
+        <TrendingProjects />
+      )}
 
-      {isDesktop === false && <TrendingProjectsMobile />}
+      {isDesktop === false && (
+        <TrendingProjectsMobile />
+      )}
 
-      {/* EXPLORE LOCATIONS */}
+      {/* =================================================
+          EXPLORE LOCATIONS
+      ================================================= */}
 
       <ExploreLocations />
 
-      {/* PREMIUM PARTNERS */}
+      {/* =================================================
+          PREMIUM PARTNERS
+      ================================================= */}
 
       <PremiumPartners />
 
-      {/* LUXURY INSIGHTS */}
+      {/* =================================================
+          LUXURY INSIGHTS
+      ================================================= */}
 
       <LuxuryInsightsSection
         onConsultationClick={openConsultation}
       />
 
-      {/* FOOTER */}
+      {/* =================================================
+          FOOTER
+      ================================================= */}
 
       <Footer />
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -17,6 +18,59 @@ import Link from "next/link";
 const DEVELOPERS_API = "/api/developers";
 const MARQUEE_DURATION = 80;
 const LOGO_FALLBACK = "/placeholder.jpg";
+
+// ============================================================
+// CLOUDINARY IMAGE OPTIMIZATION
+// ============================================================
+
+function optimizeDeveloperLogo(url) {
+  if (!url || typeof url !== "string") {
+    return LOGO_FALLBACK;
+  }
+
+  const imageUrl = url.trim();
+
+  // Only optimize Cloudinary-hosted images.
+  if (
+    !imageUrl.includes("res.cloudinary.com") ||
+    !imageUrl.includes("/image/upload/")
+  ) {
+    return imageUrl;
+  }
+
+  const uploadPath = "/image/upload/";
+  const uploadIndex = imageUrl.indexOf(uploadPath);
+
+  const base = imageUrl.slice(
+    0,
+    uploadIndex + uploadPath.length
+  );
+
+  const remaining = imageUrl.slice(
+    uploadIndex + uploadPath.length
+  );
+
+  const segments = remaining.split("/");
+  const firstSegment = segments[0];
+
+  // Detect an existing Cloudinary transformation segment.
+  const hasExistingTransformation =
+    /^(f_|q_|w_|h_|c_|e_|ar_|g_)/i.test(firstSegment) ||
+    firstSegment.includes(",");
+
+  // Remove the existing transformation segment.
+  // This prevents duplicate width and quality transformations.
+  if (hasExistingTransformation) {
+    segments.shift();
+  }
+
+  // Logos are displayed inside a 170px-wide container.
+  // 360px provides sufficient resolution for high-density screens.
+  const transformations =
+    "f_auto,q_auto:good,w_360,c_limit";
+
+  return `${base}${transformations}/${segments.join("/")}`;
+}
 
 // ============================================================
 // DEVELOPER URL HELPER
@@ -118,7 +172,15 @@ const DeveloperLogo = memo(function DeveloperLogo({
   const [imageError, setImageError] = useState(false);
   const [isWhiteLogo, setIsWhiteLogo] = useState(false);
 
-  const logo = developer?.logo || LOGO_FALLBACK;
+  // Optimize the logo URL once per developer logo change.
+  const logo = useMemo(
+    () =>
+      optimizeDeveloperLogo(
+        developer?.logo || LOGO_FALLBACK
+      ),
+    [developer?.logo]
+  );
+
   const signatureGlobal = isSignatureGlobal(developer);
   const breez = isBreez(developer);
 
@@ -249,6 +311,8 @@ const DeveloperLogo = memo(function DeveloperLogo({
             <img
               src={logo}
               alt={developer?.name || "Breez"}
+              width="360"
+              height="180"
               loading="lazy"
               decoding="async"
               onError={handleImageError}
@@ -291,6 +355,8 @@ const DeveloperLogo = memo(function DeveloperLogo({
           <img
             src={logo}
             alt={developer?.name || "Developer"}
+            width="360"
+            height="180"
             loading="lazy"
             decoding="async"
             crossOrigin="anonymous"

@@ -293,11 +293,14 @@ export default function HeroSectionMobile({
   // No separate featured-properties API request is made here.
 
   const properties = Array.isArray(initialProperties)
-    ? initialProperties
-    : [];
+  ? initialProperties
+      .filter((property) => property?.slug?.trim())
+      .slice(0, 6)
+  : [];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
 
   const [propertyCategories, setPropertyCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -312,6 +315,26 @@ export default function HeroSectionMobile({
   ========================================================== */
 
   useEffect(() => {
+  const handleVisibilityChange = () => {
+    setPageVisible(!document.hidden);
+  };
+
+  handleVisibilityChange();
+
+  document.addEventListener(
+    "visibilitychange",
+    handleVisibilityChange
+  );
+
+  return () => {
+    document.removeEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+  };
+}, []);
+
+  useEffect(() => {
     setActiveIndex((current) =>
       current >= properties.length ? 0 : current
     );
@@ -321,75 +344,114 @@ export default function HeroSectionMobile({
      FETCH PROPERTY CATEGORIES INDEPENDENTLY
   ========================================================== */
 
-  useEffect(() => {
-    const controller = new AbortController();
-    let mounted = true;
 
-    async function fetchPropertyCategories() {
-      try {
-        const response = await fetch(CATEGORIES_API, {
-          signal: controller.signal,
-        });
+useEffect(() => {
+  const mediaQuery = window.matchMedia("(max-width: 767px)");
 
-        if (!response.ok) {
-          throw new Error(`Property categories request failed: ${response.status}`);
-        }
+  let controller = null;
+  let mounted = true;
 
-        const result = await response.json();
-
-        if (!mounted) return;
-
-        const categoryNames = Array.isArray(result?.data)
-          ? result.data
-          : [];
-
-        const uniqueCategories = [
-          ...new Set(
-            categoryNames
-              .filter((name) => typeof name === "string")
-              .map((name) => name.trim())
-              .filter(Boolean)
-          ),
-        ];
-
-        uniqueCategories.sort((a, b) => {
-          const difference = getCategoryScore(b) - getCategoryScore(a);
-          return difference || a.localeCompare(b);
-        });
-
-        setPropertyCategories(uniqueCategories.slice(0, 4));
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          console.error("Property category fetch failed:", error);
-
-          if (mounted) setPropertyCategories([]);
-        }
-      } finally {
-        if (mounted) setCategoriesLoading(false);
+  async function fetchPropertyCategories() {
+    // Do not fetch mobile categories on desktop.
+    if (!mediaQuery.matches) {
+      if (mounted) {
+        setCategoriesLoading(false);
       }
+      return;
     }
 
-    fetchPropertyCategories();
+    // Prevent an older request from continuing.
+    controller?.abort();
 
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
+    controller = new AbortController();
+
+    setCategoriesLoading(true);
+
+    try {
+      const response = await fetch(CATEGORIES_API, {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Property categories request failed: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+
+      if (!mounted || controller.signal.aborted) return;
+
+      const categoryNames = Array.isArray(result?.data)
+        ? result.data
+        : [];
+
+      const uniqueCategories = [
+        ...new Set(
+          categoryNames
+            .filter((name) => typeof name === "string")
+            .map((name) => name.trim())
+            .filter(Boolean)
+        ),
+      ];
+
+      uniqueCategories.sort((a, b) => {
+        const difference =
+          getCategoryScore(b) - getCategoryScore(a);
+
+        return difference || a.localeCompare(b);
+      });
+
+      setPropertyCategories(uniqueCategories.slice(0, 4));
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        console.error("Property category fetch failed:", error);
+
+        if (mounted) {
+          setPropertyCategories([]);
+        }
+      }
+    } finally {
+      if (mounted && !controller?.signal.aborted) {
+        setCategoriesLoading(false);
+      }
+    }
+  }
+
+  fetchPropertyCategories();
+
+  // Handle resizing from desktop to mobile.
+  mediaQuery.addEventListener("change", fetchPropertyCategories);
+
+  return () => {
+    mounted = false;
+    controller?.abort();
+    mediaQuery.removeEventListener("change", fetchPropertyCategories);
+  };
+}, []);
+
 
   /* ==========================================================
      AUTOMATIC CAROUSEL ROTATION
   ========================================================== */
 
   useEffect(() => {
-    if (properties.length < 2 || paused) return undefined;
+  if (
+    properties.length < 2 ||
+    paused ||
+    !pageVisible
+  ) {
+    return undefined;
+  }
 
-    const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % properties.length);
-    }, ROTATION_MS);
+  const timer = window.setInterval(() => {
+    setActiveIndex(
+      (current) => (current + 1) % properties.length
+    );
+  }, ROTATION_MS);
 
-    return () => window.clearInterval(timer);
-  }, [properties.length, paused]);
+  return () => window.clearInterval(timer);
+}, [properties.length, paused, pageVisible]);
 
   /* ==========================================================
      CAROUSEL CONTROLS AND SWIPE
@@ -551,8 +613,9 @@ export default function HeroSectionMobile({
                   : "Luxury properties by Property Bouquet"
               }
               fill
-              priority
-              fetchPriority="high"
+              priority={activeIndex === 0}
+              fetchPriority={activeIndex === 0 ? "high" : "auto"}
+              loading={activeIndex === 0 ? "eager" : "lazy"}
               sizes="100vw"
               quality={75}
               className="object-cover object-center"

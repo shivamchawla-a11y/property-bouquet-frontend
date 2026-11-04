@@ -158,17 +158,16 @@ function getPublicLocationUrl(location, root = null) {
 }
 
 // ============================================================
-// IMAGE OPTIMIZATION
+// RESPONSIVE CLOUDINARY IMAGE OPTIMIZATION
 // ============================================================
 
-function optimizeCloudinaryImage(url, width = 900) {
+function optimizeCloudinaryImage(url, width = 640) {
   if (!url || typeof url !== "string") {
     return FALLBACK_IMAGE;
   }
 
   const imageUrl = url.trim();
 
-  // Only optimize Cloudinary-hosted images.
   if (
     !imageUrl.includes("res.cloudinary.com") ||
     !imageUrl.includes("/image/upload/")
@@ -176,20 +175,63 @@ function optimizeCloudinaryImage(url, width = 900) {
     return imageUrl;
   }
 
-  // Avoid adding transformations twice.
-  if (
-    /\/image\/upload\/[^/]*(?:f_auto|q_auto|w_\d+)/i.test(
-      imageUrl
-    )
-  ) {
+  try {
+    const parsedUrl = new URL(imageUrl);
+
+    const uploadMarker = "/image/upload/";
+    const uploadIndex =
+      parsedUrl.pathname.indexOf(uploadMarker);
+
+    if (uploadIndex === -1) {
+      return imageUrl;
+    }
+
+    const beforeUpload = parsedUrl.pathname.slice(
+      0,
+      uploadIndex + uploadMarker.length
+    );
+
+    const afterUpload = parsedUrl.pathname.slice(
+      uploadIndex + uploadMarker.length
+    );
+
+    const segments = afterUpload.split("/");
+    const firstSegment = segments[0] || "";
+
+    // Remove an existing transformation segment
+    // to prevent stacking transformations.
+    const hasExistingTransformation =
+      firstSegment.includes(",") ||
+      /^(f_auto|q_auto|w_\d+|h_\d+|c_[a-z]+|dpr_\d+)(,|$)/i.test(
+        firstSegment
+      );
+
+    if (hasExistingTransformation) {
+      segments.shift();
+    }
+
+    const transformations = [
+      "f_auto",
+      "q_auto:good",
+      `w_${width}`,
+      "c_limit",
+    ].join(",");
+
+    parsedUrl.pathname =
+      beforeUpload +
+      transformations +
+      "/" +
+      segments.join("/");
+
+    return parsedUrl.toString();
+  } catch {
     return imageUrl;
   }
-
-  return imageUrl.replace(
-    "/image/upload/",
-    `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`
-  );
 }
+
+// ============================================================
+// IMAGE URL
+// ============================================================
 
 function getImage(location) {
   const image = String(location?.image || "").trim();
@@ -199,10 +241,33 @@ function getImage(location) {
   }
 
   if (/^https?:\/\//i.test(image)) {
-    return optimizeCloudinaryImage(image, 900);
+    return optimizeCloudinaryImage(image, 640);
   }
 
   return `${API}${image.startsWith("/") ? "" : "/"}${image}`;
+}
+
+// ============================================================
+// RESPONSIVE IMAGE SRCSET
+// ============================================================
+
+function getResponsiveImageSrcSet(location) {
+  const image = String(location?.image || "").trim();
+
+  if (
+    !image ||
+    !/^https?:\/\//i.test(image) ||
+    !image.includes("res.cloudinary.com") ||
+    !image.includes("/image/upload/")
+  ) {
+    return undefined;
+  }
+
+  return [360, 480, 640, 768]
+    .map((width) => {
+      return `${optimizeCloudinaryImage(image, width)} ${width}w`;
+    })
+    .join(", ");
 }
 
 // ============================================================
@@ -217,25 +282,35 @@ const LocationImage = memo(function LocationImage({
     [location]
   );
 
+  const imageSrcSet = useMemo(
+    () => getResponsiveImageSrcSet(location),
+    [location]
+  );
+
   const [imageSrc, setImageSrc] = useState(image);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     setImageSrc(image);
+    setHasError(false);
   }, [image]);
 
   const handleImageError = useCallback(() => {
-    setImageSrc((current) => {
-      if (current === FALLBACK_IMAGE) {
-        return current;
-      }
+    if (hasError) return;
 
-      return FALLBACK_IMAGE;
-    });
-  }, []);
+    setHasError(true);
+    setImageSrc(FALLBACK_IMAGE);
+  }, [hasError]);
 
   return (
     <img
       src={imageSrc}
+      srcSet={!hasError ? imageSrcSet : undefined}
+      sizes="
+        (max-width: 639px) calc(100vw - 40px),
+        (max-width: 1023px) calc((100vw - 64px) / 2),
+        (min-width: 1024px) 332px
+      "
       alt={`${location?.name || "Location"} properties in Gurgaon`}
       width="900"
       height="1200"

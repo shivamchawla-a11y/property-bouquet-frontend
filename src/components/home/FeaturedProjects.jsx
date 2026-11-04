@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
@@ -21,11 +21,7 @@ import { formatPrice } from "@/utils/formatPrice";
 // CONFIGURATION
 // ============================================================
 
-const FEATURED_API = "/api/properties/featured";
-
 const AUTOPLAY_DELAY = 3500;
-
-const MAX_FEATURED = 12;
 
 const FALLBACK_IMAGE =
   "https://placehold.co/600x400/f3f4f6/999999?text=Property";
@@ -48,9 +44,10 @@ function optimizeCloudinaryImage(url, width = 800) {
     return imageUrl;
   }
 
-  // Do not add the same transformations twice.
-  const uploadPath = imageUrl.split("/image/upload/")[1] || "";
+  const uploadPath =
+    imageUrl.split("/image/upload/")[1] || "";
 
+  // Avoid adding transformations more than once.
   if (
     /^(?:[^/]*,)*(?:f_auto|q_auto|w_\d+|c_limit)(?:,|\/)/i.test(
       uploadPath
@@ -80,13 +77,15 @@ function getLocationName(item) {
     );
   }
 
-  return [
-    location.name,
-    location.parent?.name,
-    location.parent?.parent?.name,
-  ]
-    .filter(Boolean)
-    .join(", ") || "Prime Location";
+  return (
+    [
+      location.name,
+      location.parent?.name,
+      location.parent?.parent?.name,
+    ]
+      .filter(Boolean)
+      .join(", ") || "Prime Location"
+  );
 }
 
 function getPrice(item) {
@@ -97,9 +96,14 @@ function getPrice(item) {
     return "On Request";
   }
 
-  const price = details?.startingPrice ?? configuration?.price;
+  const price =
+    details?.startingPrice ?? configuration?.price;
 
-  if (price === null || price === undefined || price === "") {
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
     return "Price Unavailable";
   }
 
@@ -107,19 +111,22 @@ function getPrice(item) {
 }
 
 function getBedroomLabel(item) {
-  const value = item?.unitConfigurations?.[0]?.bedrooms;
+  const value =
+    item?.unitConfigurations?.[0]?.bedrooms;
 
   return value ? `${value} Beds` : "Luxury";
 }
 
 function getBathroomLabel(item) {
-  const value = item?.unitConfigurations?.[0]?.bathrooms;
+  const value =
+    item?.unitConfigurations?.[0]?.bathrooms;
 
   return value ? `${value} Baths` : "Residence";
 }
 
 function getAreaLabel(item) {
-  const value = item?.unitConfigurations?.[0]?.area;
+  const value =
+    item?.unitConfigurations?.[0]?.area;
 
   return value ? `${value} Sq.Ft.` : "Premium";
 }
@@ -305,13 +312,32 @@ function FeaturedPropertyCard({ item }) {
 // MAIN COMPONENT
 // ============================================================
 
-export default function FeaturedProjects() {
-  const [featuredProperties, setFeaturedProperties] =
-    useState([]);
+export default function FeaturedProjects({
+  initialProperties = [],
+  isLoading = false,
+  fetchFailed = false,
+}) {
+  // ----------------------------------------------------------
+  // SHARED PROPERTY DATA
+  // ----------------------------------------------------------
+  // No API request is made in this component.
+  // The homepage passes the same server-loaded properties
+  // that are used by the hero carousel.
 
-  const [loading, setLoading] = useState(true);
+  const featuredProperties = useMemo(() => {
+    if (!Array.isArray(initialProperties)) {
+      return [];
+    }
 
-  const [fetchFailed, setFetchFailed] = useState(false);
+    return initialProperties
+      .filter(
+        (property) =>
+          property &&
+          typeof property.slug === "string" &&
+          property.slug.trim() !== ""
+      )
+      .slice(0, 12);
+  }, [initialProperties]);
 
   // ----------------------------------------------------------
   // AUTOPLAY
@@ -321,11 +347,7 @@ export default function FeaturedProjects() {
     () =>
       Autoplay({
         delay: AUTOPLAY_DELAY,
-
-        // Continue playing after manual interaction.
         stopOnInteraction: false,
-
-        // Do not pause when the mouse enters the carousel.
         stopOnMouseEnter: false,
       }),
     []
@@ -354,79 +376,6 @@ export default function FeaturedProjects() {
   }, [emblaApi]);
 
   // ----------------------------------------------------------
-  // FETCH FEATURED PROPERTIES
-  // ----------------------------------------------------------
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadFeaturedProperties() {
-      try {
-        const response = await fetch(FEATURED_API, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Featured properties request failed: ${response.status}`
-          );
-        }
-
-        const result = await response.json();
-
-        const records = Array.isArray(result)
-          ? result
-          : Array.isArray(result?.data)
-            ? result.data
-            : Array.isArray(result?.properties)
-              ? result.properties
-              : [];
-
-        const published = records
-          .filter(
-            (property) =>
-              property?.slug &&
-              property?.coreDetails?.title &&
-              property?.status === "published" &&
-              property?.isDeleted !== true &&
-              property?.isActive !== false &&
-              (property?.propertyTag || []).includes(
-                "Featured"
-              )
-          )
-          .slice(0, MAX_FEATURED);
-
-        if (!controller.signal.aborted) {
-          setFeaturedProperties(published);
-          setFetchFailed(false);
-        }
-      } catch (error) {
-        if (
-          error?.name !== "AbortError" &&
-          !controller.signal.aborted
-        ) {
-          console.error(
-            "Failed to load featured properties:",
-            error
-          );
-
-          setFetchFailed(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadFeaturedProperties();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  // ----------------------------------------------------------
   // RENDER
   // ----------------------------------------------------------
 
@@ -436,7 +385,6 @@ export default function FeaturedProjects() {
       aria-labelledby="featured-projects-heading"
     >
       <div className="mx-auto max-w-[1450px] px-5 xl:px-8">
-
         <div className="grid items-start gap-8 lg:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] xl:gap-10">
 
           {/* LEFT CONTENT */}
@@ -480,7 +428,8 @@ export default function FeaturedProjects() {
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous featured properties"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-[#c89948] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c89948] md:h-11 md:w-11"
+                disabled={featuredProperties.length <= 1}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-[#c89948] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c89948] md:h-11 md:w-11"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -489,7 +438,8 @@ export default function FeaturedProjects() {
                 type="button"
                 onClick={handleNext}
                 aria-label="Next featured properties"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-[#c89948] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c89948] md:h-11 md:w-11"
+                disabled={featuredProperties.length <= 1}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-[#c89948] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c89948] md:h-11 md:w-11"
               >
                 <ChevronRight size={18} />
               </button>
@@ -505,7 +455,7 @@ export default function FeaturedProjects() {
 
                 {/* LOADING SKELETONS */}
 
-                {loading &&
+                {isLoading &&
                   Array.from(
                     { length: 3 },
                     (_, index) => (
@@ -517,7 +467,7 @@ export default function FeaturedProjects() {
 
                 {/* PROPERTY CARDS */}
 
-                {!loading &&
+                {!isLoading &&
                   featuredProperties.map((item) => (
                     <FeaturedPropertyCard
                       key={item._id || item.slug}
@@ -527,7 +477,7 @@ export default function FeaturedProjects() {
 
                 {/* EMPTY STATE */}
 
-                {!loading &&
+                {!isLoading &&
                   featuredProperties.length === 0 && (
                     <div className="w-full rounded-2xl border border-[#e8e1d6] bg-white p-8 text-center">
                       <p className="text-sm text-black/65">
@@ -547,6 +497,7 @@ export default function FeaturedProjects() {
                       </Link>
                     </div>
                   )}
+
               </div>
             </div>
           </div>

@@ -319,8 +319,10 @@ export default function HeroSection({
   // This component does not make its own featured API request.
 
   const properties = Array.isArray(initialProperties)
-    ? initialProperties
-    : [];
+  ? initialProperties
+      .filter((property) => property?.slug?.trim())
+      .slice(0, 6)
+  : [];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -521,12 +523,8 @@ export default function HeroSection({
             alt={title}
             fill
             priority={activeIndex === 0}
-            loading={
-              activeIndex === 0 ? undefined : "eager"
-            }
-            fetchPriority={
-              activeIndex === 0 ? "high" : "auto"
-            }
+            loading={activeIndex === 0 ? "eager" : "lazy"}
+            fetchPriority={activeIndex === 0 ? "high" : "auto"}
             sizes="100vw"
             quality={80}
             onLoad={handleImageLoad}
