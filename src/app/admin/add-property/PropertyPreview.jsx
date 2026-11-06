@@ -1604,19 +1604,23 @@ lg:px-6
 
     <div className="max-w-[1450px] mx-auto w-full">
 
-      {/* ================= MOBILE HERO IMAGE ================= */}
+{/* ================= MOBILE HERO IMAGE ================= */}
 <div className="block md:hidden mt-20 mb-8">
   <div className="overflow-hidden rounded-[26px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
 
-    <img
-      src={heroSection?.heroImage || media?.heroImageUrl}
-      alt={coreDetails?.title}
-      className="
-        w-full
-        h-[250px]
-        object-cover
-      "
-    />
+    {(heroSection?.heroImage || media?.heroImageUrl) && (
+      <Image
+        src={heroSection?.heroImage || media?.heroImageUrl}
+        alt={coreDetails?.title || "Property image"}
+        width={1200}
+        height={800}
+        quality={75}
+        priority
+        fetchPriority="high"
+        sizes="100vw"
+        className="w-full h-[250px] object-cover"
+      />
+    )}
 
   </div>
 </div>
