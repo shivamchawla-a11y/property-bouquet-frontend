@@ -72,7 +72,7 @@ useEffect(() => {
 const fetchInsights = async () => {
   try {
     const res = await fetch(
-      "/api/news",
+      "/api/news/latest",
       {
         cache: "no-store",
       }
@@ -106,7 +106,7 @@ useEffect(() => {
   const fetchKnowledge = async () => {
     try {
       const res = await fetch(
-        "/api/knowledge",
+        "/api/knowledge/latest",
         {
           cache: "no-store",
         }
