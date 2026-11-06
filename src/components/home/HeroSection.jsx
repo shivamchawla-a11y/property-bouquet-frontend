@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -8,7 +9,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -32,7 +32,9 @@ const ROTATION_MS = 3500;
 // ============================================================
 
 function optimizeHeroImage(url) {
-  if (!url || typeof url !== "string") return "";
+  if (!url || typeof url !== "string") {
+    return "";
+  }
 
   const cleanUrl = url.trim();
 
@@ -43,7 +45,9 @@ function optimizeHeroImage(url) {
   const uploadMarker = "/image/upload/";
   const uploadIndex = cleanUrl.indexOf(uploadMarker);
 
-  if (uploadIndex === -1) return cleanUrl;
+  if (uploadIndex === -1) {
+    return cleanUrl;
+  }
 
   const prefix = cleanUrl.slice(
     0,
@@ -56,10 +60,13 @@ function optimizeHeroImage(url) {
 
   const segments = remainder.split("/");
 
-  const firstSegment = segments[0];
+  const firstSegment = segments[0] || "";
+
+  const knownTransformationPattern =
+    /^(?:f_auto|q_auto|w_\d+|h_\d+|c_[a-z]+|dpr_[\d.]+|ar_[^/]+|g_[a-z]+|e_[a-z]+|fl_[a-z]+|so_[\d.]+)(?:,|$)/;
 
   const isTransformation =
-    /^[a-z]{1,3}_[^/]+/.test(firstSegment);
+    knownTransformationPattern.test(firstSegment);
 
   const transformations = isTransformation
     ? firstSegment.split(",")
@@ -82,7 +89,7 @@ function optimizeHeroImage(url) {
     transformations.push("w_1600");
   }
 
-  if (!hasTransformation("c_limit")) {
+  if (!hasTransformation("c_")) {
     transformations.push("c_limit");
   }
 
@@ -129,7 +136,10 @@ function getPropertyImage(property) {
         ? candidate
         : candidate?.url || candidate?.secure_url;
 
-    if (typeof value === "string" && value.trim()) {
+    if (
+      typeof value === "string" &&
+      value.trim()
+    ) {
       return value.trim();
     }
   }
@@ -215,11 +225,18 @@ function getPropertyConfiguration(property) {
   if (Array.isArray(units) && units.length) {
     const labels = units
       .map((unit) => {
-        if (!unit || typeof unit !== "object") return "";
+        if (!unit || typeof unit !== "object") {
+          return "";
+        }
 
-        if (unit.unitType) return unit.unitType;
+        if (unit.unitType) {
+          return unit.unitType;
+        }
 
-        if (unit.bedrooms != null && unit.bedrooms !== "") {
+        if (
+          unit.bedrooms != null &&
+          unit.bedrooms !== ""
+        ) {
           return `${unit.bedrooms} BHK`;
         }
 
@@ -242,7 +259,9 @@ function getPropertyConfiguration(property) {
 function formatPrice(value) {
   const amount = Number(value);
 
-  if (!Number.isFinite(amount) || amount <= 0) return "";
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return "";
+  }
 
   if (amount >= 10000000) {
     return `₹${(amount / 10000000)
@@ -295,7 +314,10 @@ function getStartingPrice(property) {
           cleaned.replace(/[₹,\s]/g, "")
         );
 
-        if (Number.isFinite(numeric) && numeric > 0) {
+        if (
+          Number.isFinite(numeric) &&
+          numeric > 0
+        ) {
           return formatPrice(numeric);
         }
 
@@ -315,23 +337,33 @@ export default function HeroSection({
   initialProperties = [],
   isLoading = false,
 }) {
-  // Properties are now received from HomePageClient.
-  // This component does not make its own featured API request.
+  // ==========================================================
+  // SHARED PROPERTY DATA
+  // ==========================================================
 
-  const properties = Array.isArray(initialProperties)
-  ? initialProperties
-      .filter((property) => property?.slug?.trim())
-      .slice(0, 6)
-  : [];
+  const properties = useMemo(() => {
+    if (!Array.isArray(initialProperties)) {
+      return [];
+    }
+
+    return initialProperties
+      .filter(
+        (property) =>
+          property &&
+          typeof property.slug === "string" &&
+          property.slug.trim() !== ""
+      )
+      .slice(0, 6);
+  }, [initialProperties]);
+
+  // ==========================================================
+  // STATE
+  // ==========================================================
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
-
-  const [imageReady, setImageReady] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
-
-  const imageRef = useRef(null);
 
   const reduceMotion = useReducedMotion();
 
@@ -373,7 +405,8 @@ export default function HeroSection({
   // ACTIVE PROPERTY
   // ==========================================================
 
-  const activeProperty = properties[activeIndex] || null;
+  const activeProperty =
+    properties[activeIndex] || null;
 
   const rawImage = useMemo(
     () =>
@@ -409,39 +442,19 @@ export default function HeroSection({
     : "/properties";
 
   // ==========================================================
-  // RESET IMAGE STATE WHEN SLIDE CHANGES
+  // RESET IMAGE ERROR WHEN SLIDE CHANGES
   // ==========================================================
 
   useEffect(() => {
-    setImageReady(false);
     setImageFailed(false);
   }, [image]);
 
   // ==========================================================
-  // IMAGE LOAD
+  // IMAGE ERROR
   // ==========================================================
-
-  const handleImageLoad = useCallback(async () => {
-    const currentImage = imageRef.current;
-
-    if (!currentImage) return;
-
-    try {
-      if (typeof currentImage.decode === "function") {
-        await currentImage.decode();
-      }
-    } catch {
-      // The image load event is sufficient if decode fails.
-    }
-
-    if (imageRef.current === currentImage) {
-      setImageReady(true);
-    }
-  }, []);
 
   const handleImageError = useCallback(() => {
     setImageFailed(true);
-    setImageReady(true);
   }, []);
 
   // ==========================================================
@@ -452,7 +465,8 @@ export default function HeroSection({
     if (
       properties.length < 2 ||
       paused ||
-      !pageVisible
+      !pageVisible ||
+      reduceMotion
     ) {
       return undefined;
     }
@@ -464,7 +478,12 @@ export default function HeroSection({
     }, ROTATION_MS);
 
     return () => window.clearInterval(timer);
-  }, [properties.length, paused, pageVisible]);
+  }, [
+    properties.length,
+    paused,
+    pageVisible,
+    reduceMotion,
+  ]);
 
   // ==========================================================
   // NAVIGATION
@@ -475,7 +494,8 @@ export default function HeroSection({
 
     setActiveIndex(
       (current) =>
-        (current - 1 + properties.length) % properties.length
+        (current - 1 + properties.length) %
+        properties.length
     );
   }, [properties.length]);
 
@@ -483,7 +503,8 @@ export default function HeroSection({
     if (properties.length < 2) return;
 
     setActiveIndex(
-      (current) => (current + 1) % properties.length
+      (current) =>
+        (current + 1) % properties.length
     );
   }, [properties.length]);
 
@@ -492,16 +513,15 @@ export default function HeroSection({
   }, []);
 
   // ==========================================================
-  // TEXT ANIMATION
+  // RENDER
   // ==========================================================
-
-  const textVisible =
-    imageReady || !image || imageFailed;
 
   return (
     <section className="relative z-[10] overflow-visible bg-[#faf9f4] text-[#17342d]">
 
-      {/* FEATURED PROPERTY CAROUSEL */}
+      {/* ================================================
+          FEATURED PROPERTY CAROUSEL
+      ================================================= */}
 
       <div
         className="
@@ -518,16 +538,15 @@ export default function HeroSection({
         {image && !imageFailed && (
           <Image
             key={image}
-            ref={imageRef}
             src={image}
             alt={title}
             fill
             priority={activeIndex === 0}
-            loading={activeIndex === 0 ? "eager" : "lazy"}
-            fetchPriority={activeIndex === 0 ? "high" : "auto"}
+            fetchPriority={
+              activeIndex === 0 ? "high" : "auto"
+            }
             sizes="100vw"
             quality={80}
-            onLoad={handleImageLoad}
             onError={handleImageError}
             className="
               object-cover object-center
@@ -569,8 +588,8 @@ export default function HeroSection({
                   : { opacity: 0, x: -24 }
               }
               animate={{
-                opacity: textVisible ? 1 : 0,
-                x: textVisible ? 0 : -24,
+                opacity: 1,
+                x: 0,
               }}
               exit={
                 reduceMotion
@@ -754,7 +773,9 @@ export default function HeroSection({
 
       </div>
 
-      {/* SEARCH PANEL */}
+      {/* ================================================
+          SEARCH PANEL
+      ================================================= */}
 
       <div className="relative z-30 mx-auto -mt-[31px] w-full max-w-[1420px] px-4 sm:-mt-[34px] sm:px-6 lg:-mt-[37px] lg:px-8 xl:px-10">
 

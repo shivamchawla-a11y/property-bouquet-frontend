@@ -40,48 +40,62 @@ export default function KnowledgeSection() {
   // GET /api/knowledge/latest
   // ============================================================
 
-  useEffect(() => {
-    const controller = new AbortController();
 
-    async function fetchKnowledge() {
-      try {
-        const response = await fetch("/api/knowledge/latest", {
-          signal: controller.signal,
-          cache: "no-store",
-        });
+useEffect(() => {
+  const controller = new AbortController();
 
-        if (!response.ok) {
-          throw new Error(
+  async function fetchKnowledge() {
+    try {
+      const response = await fetch("/api/knowledge/latest", {
+        signal: controller.signal,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
             `Failed to fetch knowledge articles: ${response.status}`
-          );
-        }
+        );
+      }
 
-        const result = await response.json();
+      // Backend already returns the latest five
+      // published, non-deleted articles.
 
-        if (result.success && Array.isArray(result.data)) {
-          setKnowledgeArticles(result.data.slice(0, 5));
-        } else {
-          setKnowledgeArticles([]);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error(
-            "Knowledge articles loading error:",
-            error
-          );
-          setKnowledgeArticles([]);
-        }
-      } finally {
+      const articles =
+        result?.success && Array.isArray(result.data)
+          ? result.data
+          : [];
+
+      if (!controller.signal.aborted) {
+        setKnowledgeArticles(articles);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error(
+          "Knowledge articles loading error:",
+          error
+        );
+
         if (!controller.signal.aborted) {
-          setLoading(false);
+          setKnowledgeArticles([]);
         }
       }
+    } finally {
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
+  }
 
-    fetchKnowledge();
+  fetchKnowledge();
 
-    return () => controller.abort();
-  }, []);
+  return () => controller.abort();
+}, []);
+
 
   // ============================================================
   // CAROUSEL NAVIGATION

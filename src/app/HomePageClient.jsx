@@ -2,11 +2,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
 import {
   useEffect,
   useState,
   useCallback,
 } from "react";
+
+// =========================================================
+// IMMEDIATE COMPONENTS
+// =========================================================
 
 import Navbar from "@/components/home/Navbar";
 import NavbarMobile from "@/components/home/NavbarMobile";
@@ -14,64 +19,123 @@ import NavbarMobile from "@/components/home/NavbarMobile";
 import HeroSection from "@/components/home/HeroSection";
 import HeroSectionMobile from "@/components/home/HeroSectionMobile";
 
-import NavbarConsultationModal from "@/components/home/NavbarConsultationModal";
-
 // =========================================================
-// LAZY LOADED SECTIONS
+// LIGHTWEIGHT LOADING FALLBACK
 // =========================================================
 
-const RecommendedProjects = dynamic(() =>
-  import("@/components/home/RecommendedProperties")
-);
+function SectionFallback({ height = "200px" }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{ minHeight: height }}
+      className="w-full bg-[#f6f6f6]"
+    />
+  );
+}
 
-const FeaturedProjects = dynamic(() =>
-  import("@/components/home/FeaturedProjects")
-);
+// =========================================================
+// DYNAMIC COMPONENTS
+// =========================================================
 
-const FeaturedProjectsMobile = dynamic(() =>
-  import("@/components/home/FeaturedProjectsMobile")
-);
-
-const TrendingProjects = dynamic(() =>
-  import("@/components/home/TrendingProjects")
-);
-
-const TrendingProjectsMobile = dynamic(() =>
-  import("@/components/home/TrendingProjectsMobile")
-);
-
-const ExploreLocations = dynamic(() =>
-  import("@/components/home/ExploreLocations")
-);
-
-const PremiumPartners = dynamic(() =>
-  import("@/components/home/PremiumPartners")
-);
-
-const LuxuryInsightsSection = dynamic(() =>
-  import("@/components/home/LuxuryInsightsSection")
-);
-
-const Footer = dynamic(() =>
-  import("@/components/home/Footer")
+// Consultation modal loads only when needed.
+const NavbarConsultationModal = dynamic(
+  () =>
+    import("@/components/home/NavbarConsultationModal"),
+  {
+    ssr: false,
+  }
 );
 
 // =========================================================
-// FEATURED / TRENDING RESPONSIVE BREAKPOINT
+// LAZY LOADED HOMEPAGE SECTIONS
 // =========================================================
-// FeaturedProjectsMobile uses lg:hidden.
-// Therefore, its JavaScript counterpart must switch at
-// 1024px, not 768px.
-//
-// Navbar and Hero continue using their existing md CSS
-// breakpoint independently.
+
+const RecommendedProjects = dynamic(
+  () =>
+    import("@/components/home/RecommendedProperties"),
+  {
+    loading: () => <SectionFallback height="350px" />,
+  }
+);
+
+const FeaturedProjects = dynamic(
+  () =>
+    import("@/components/home/FeaturedProjects"),
+  {
+    loading: () => <SectionFallback height="450px" />,
+  }
+);
+
+const FeaturedProjectsMobile = dynamic(
+  () =>
+    import("@/components/home/FeaturedProjectsMobile"),
+  {
+    loading: () => <SectionFallback height="350px" />,
+  }
+);
+
+const TrendingProjects = dynamic(
+  () =>
+    import("@/components/home/TrendingProjects"),
+  {
+    loading: () => <SectionFallback height="450px" />,
+  }
+);
+
+const TrendingProjectsMobile = dynamic(
+  () =>
+    import("@/components/home/TrendingProjectsMobile"),
+  {
+    loading: () => <SectionFallback height="350px" />,
+  }
+);
+
+const ExploreLocations = dynamic(
+  () =>
+    import("@/components/home/ExploreLocations"),
+  {
+    loading: () => <SectionFallback height="300px" />,
+  }
+);
+
+const PremiumPartners = dynamic(
+  () =>
+    import("@/components/home/PremiumPartners"),
+  {
+    loading: () => <SectionFallback height="250px" />,
+  }
+);
+
+const LuxuryInsightsSection = dynamic(
+  () =>
+    import("@/components/home/LuxuryInsightsSection"),
+  {
+    loading: () => <SectionFallback height="350px" />,
+  }
+);
+
+const Footer = dynamic(
+  () =>
+    import("@/components/home/Footer"),
+  {
+    loading: () => <SectionFallback height="250px" />,
+  }
+);
+
 // =========================================================
+// RESPONSIVE BREAKPOINT
+// =========================================================
+
+// Featured and Trending switch at 1024px.
+// Navbar and Hero retain their existing md breakpoint.
 
 function useDesktopSections() {
   const [isDesktop, setIsDesktop] = useState(null);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const mediaQuery = window.matchMedia(
+      "(min-width: 1024px)"
+    );
 
     const updateLayout = () => {
       setIsDesktop(mediaQuery.matches);
@@ -79,10 +143,16 @@ function useDesktopSections() {
 
     updateLayout();
 
-    mediaQuery.addEventListener("change", updateLayout);
+    mediaQuery.addEventListener(
+      "change",
+      updateLayout
+    );
 
     return () => {
-      mediaQuery.removeEventListener("change", updateLayout);
+      mediaQuery.removeEventListener(
+        "change",
+        updateLayout
+      );
     };
   }, []);
 
@@ -90,16 +160,7 @@ function useDesktopSections() {
 }
 
 // =========================================================
-// SHARED FEATURED PROPERTY VALIDATION
-// =========================================================
-// The backend already filters:
-// - published properties
-// - non-deleted properties
-// - active properties
-// - Featured-tagged properties
-//
-// Those fields are intentionally excluded from the API
-// projection, so we only validate the returned slug here.
+// FEATURED PROPERTY VALIDATION
 // =========================================================
 
 function filterFeaturedProperties(list) {
@@ -119,7 +180,7 @@ function filterFeaturedProperties(list) {
 }
 
 // =========================================================
-// EXTRACT API RESPONSE
+// API RESPONSE EXTRACTION
 // =========================================================
 
 function extractFeaturedProperties(result) {
@@ -135,14 +196,15 @@ function extractFeaturedProperties(result) {
 }
 
 // =========================================================
-// HOME PAGE
+// HOMEPAGE CLIENT
 // =========================================================
 
 export default function HomePage({
   initialFeaturedProperties = [],
 }) {
+
   // =======================================================
-  // RESPONSIVE LAYOUT
+  // RESPONSIVE SECTIONS
   // =======================================================
 
   const isDesktop = useDesktopSections();
@@ -154,18 +216,30 @@ export default function HomePage({
   const [showConsultation, setShowConsultation] =
     useState(false);
 
+  const openConsultation = useCallback(() => {
+    setShowConsultation(true);
+  }, []);
+
+  const closeConsultation = useCallback(() => {
+    setShowConsultation(false);
+  }, []);
+
   // =======================================================
   // SHARED FEATURED PROPERTIES
   // =======================================================
 
   const [featuredProperties, setFeaturedProperties] =
     useState(() =>
-      filterFeaturedProperties(initialFeaturedProperties)
+      filterFeaturedProperties(
+        initialFeaturedProperties
+      )
     );
 
   const [featuredPropertiesLoading, setFeaturedPropertiesLoading] =
     useState(
-      filterFeaturedProperties(initialFeaturedProperties).length === 0
+      filterFeaturedProperties(
+        initialFeaturedProperties
+      ).length === 0
     );
 
   const [featuredPropertiesFetchFailed, setFeaturedPropertiesFetchFailed] =
@@ -175,10 +249,11 @@ export default function HomePage({
   // SHARED NAVIGATION DATA
   // =======================================================
 
-  const [navigationData, setNavigationData] = useState(null);
+  const [navigationData, setNavigationData] =
+    useState(null);
 
   // =======================================================
-  // LOAD SHARED NAVIGATION DATA
+  // LOAD NAVIGATION DATA
   // =======================================================
 
   useEffect(() => {
@@ -186,9 +261,12 @@ export default function HomePage({
 
     async function loadNavigationData() {
       try {
-        const response = await fetch("/api/navigation/home", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          "/api/navigation/home",
+          {
+            signal: controller.signal,
+          }
+        );
 
         if (!response.ok) {
           throw new Error(
@@ -198,16 +276,25 @@ export default function HomePage({
 
         const result = await response.json();
 
-        if (!result?.success || !result?.data) {
-          throw new Error("Invalid navigation response");
+        if (
+          !result?.success ||
+          !result?.data
+        ) {
+          throw new Error(
+            "Invalid navigation response"
+          );
         }
 
         if (!controller.signal.aborted) {
           setNavigationData(result.data);
         }
+
       } catch (error) {
         if (error?.name !== "AbortError") {
-          console.error("Navigation data error:", error);
+          console.error(
+            "Navigation data error:",
+            error
+          );
         }
       }
     }
@@ -220,21 +307,16 @@ export default function HomePage({
   }, []);
 
   // =======================================================
-  // LOAD FEATURED PROPERTIES ONCE
-  // =======================================================
-  // Priority:
-  // 1. Use the properties already supplied by page.js.
-  // 2. Only use the client API fallback if server data
-  //    is empty or unavailable.
-  //
-  // All featured homepage components receive this same
-  // dataset. They do not make their own featured requests.
+  // LOAD FEATURED PROPERTIES
   // =======================================================
 
   useEffect(() => {
     const serverProperties =
-      filterFeaturedProperties(initialFeaturedProperties);
+      filterFeaturedProperties(
+        initialFeaturedProperties
+      );
 
+    // Prefer server-rendered data.
     if (serverProperties.length > 0) {
       setFeaturedProperties(serverProperties);
       setFeaturedPropertiesLoading(false);
@@ -243,6 +325,7 @@ export default function HomePage({
       return undefined;
     }
 
+    // Client fallback only when server data is empty.
     const controller = new AbortController();
 
     async function loadFeaturedProperties() {
@@ -279,6 +362,7 @@ export default function HomePage({
           setFeaturedProperties(properties);
           setFeaturedPropertiesFetchFailed(false);
         }
+
       } catch (error) {
         if (
           error?.name !== "AbortError" &&
@@ -292,6 +376,7 @@ export default function HomePage({
           setFeaturedProperties([]);
           setFeaturedPropertiesFetchFailed(true);
         }
+
       } finally {
         if (!controller.signal.aborted) {
           setFeaturedPropertiesLoading(false);
@@ -304,19 +389,8 @@ export default function HomePage({
     return () => {
       controller.abort();
     };
+
   }, [initialFeaturedProperties]);
-
-  // =======================================================
-  // CONSULTATION MODAL ACTIONS
-  // =======================================================
-
-  const openConsultation = useCallback(() => {
-    setShowConsultation(true);
-  }, []);
-
-  const closeConsultation = useCallback(() => {
-    setShowConsultation(false);
-  }, []);
 
   // =======================================================
   // SHARED FEATURED PROPERTIES PROPS
@@ -329,13 +403,13 @@ export default function HomePage({
   };
 
   // =======================================================
-  // HOME PAGE RENDER
+  // HOMEPAGE
   // =======================================================
 
   return (
     <main className="overflow-hidden bg-[#f6f6f6]">
 
-      {/* =================================================
+      {/* ================================================
           DESKTOP NAVBAR
       ================================================= */}
 
@@ -347,7 +421,7 @@ export default function HomePage({
         />
       </div>
 
-      {/* =================================================
+      {/* ================================================
           MOBILE NAVBAR
       ================================================= */}
 
@@ -359,16 +433,18 @@ export default function HomePage({
         />
       </div>
 
-      {/* =================================================
+      {/* ================================================
           CONSULTATION MODAL
       ================================================= */}
 
-      <NavbarConsultationModal
-        open={showConsultation}
-        onClose={closeConsultation}
-      />
+      {showConsultation && (
+        <NavbarConsultationModal
+          open={showConsultation}
+          onClose={closeConsultation}
+        />
+      )}
 
-      {/* =================================================
+      {/* ================================================
           DESKTOP HERO
       ================================================= */}
 
@@ -379,7 +455,7 @@ export default function HomePage({
         />
       </div>
 
-      {/* =================================================
+      {/* ================================================
           MOBILE HERO
       ================================================= */}
 
@@ -390,18 +466,15 @@ export default function HomePage({
         />
       </div>
 
-      {/* =================================================
+      {/* ================================================
           RECOMMENDED PROJECTS
       ================================================= */}
 
       <RecommendedProjects />
 
-      {/* =================================================
+      {/* ================================================
           FEATURED PROJECTS
       ================================================= */}
-      {/* Desktop at 1024px and above.
-          Mobile below 1024px.
-          Both receive the same 12-property dataset. */}
 
       {isDesktop === true && (
         <FeaturedProjects
@@ -415,7 +488,7 @@ export default function HomePage({
         />
       )}
 
-      {/* =================================================
+      {/* ================================================
           TRENDING PROJECTS
       ================================================= */}
 
@@ -427,19 +500,19 @@ export default function HomePage({
         <TrendingProjectsMobile />
       )}
 
-      {/* =================================================
+      {/* ================================================
           EXPLORE LOCATIONS
       ================================================= */}
 
       <ExploreLocations />
 
-      {/* =================================================
+      {/* ================================================
           PREMIUM PARTNERS
       ================================================= */}
 
       <PremiumPartners />
 
-      {/* =================================================
+      {/* ================================================
           LUXURY INSIGHTS
       ================================================= */}
 
@@ -447,7 +520,7 @@ export default function HomePage({
         onConsultationClick={openConsultation}
       />
 
-      {/* =================================================
+      {/* ================================================
           FOOTER
       ================================================= */}
 

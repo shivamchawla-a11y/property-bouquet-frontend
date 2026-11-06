@@ -1,13 +1,23 @@
+
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
 } from "framer-motion";
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,13 +33,18 @@ import {
 
 import SearchPanelMobile from "./SearchPanelMobile";
 
+// ============================================================
+// CONFIGURATION
+// ============================================================
+
 const CATEGORIES_API = "/api/properties/categories";
 const ROTATION_MS = 5000;
 const SWIPE_THRESHOLD = 45;
+const MAX_HERO_PROPERTIES = 6;
 
-/* ============================================================
-   PROPERTY HELPERS
-============================================================ */
+// ============================================================
+// PROPERTY HELPERS
+// ============================================================
 
 function getPropertyKey(property) {
   return (
@@ -171,17 +186,27 @@ function getPropertyConfiguration(property) {
   return "";
 }
 
+// ============================================================
+// PRICE HELPERS
+// ============================================================
+
 function formatPrice(value) {
   const amount = Number(value);
 
-  if (!Number.isFinite(amount) || amount <= 0) return "";
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return "";
+  }
 
   if (amount >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(2).replace(/\.?0+$/, "")} Cr`;
+    return `₹${(amount / 10000000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Cr`;
   }
 
   if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(2).replace(/\.?0+$/, "")} Lac`;
+    return `₹${(amount / 100000)
+      .toFixed(2)
+      .replace(/\.?0+$/, "")} Lac`;
   }
 
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -233,9 +258,9 @@ function getStartingPrice(property) {
   return "";
 }
 
-/* ============================================================
-   CATEGORY HELPERS
-============================================================ */
+// ============================================================
+// CATEGORY HELPERS
+// ============================================================
 
 function getCategoryScore(name) {
   const value = String(name || "").toLowerCase();
@@ -244,7 +269,9 @@ function getCategoryScore(name) {
     value.includes("apartment") ||
     value.includes("residential") ||
     value.includes("flat")
-  ) return 100;
+  ) {
+    return 100;
+  }
 
   if (value.includes("villa")) return 90;
 
@@ -254,7 +281,9 @@ function getCategoryScore(name) {
     value.includes("commercial") ||
     value.includes("office") ||
     value.includes("retail")
-  ) return 70;
+  ) {
+    return 70;
+  }
 
   if (value.includes("builder") || value.includes("floor")) return 60;
 
@@ -268,35 +297,50 @@ function getCategoryScore(name) {
 function getCategoryIcon(categoryName) {
   const value = String(categoryName || "").toLowerCase();
 
-  if (value.includes("plot") || value.includes("land")) return Trees;
+  if (value.includes("plot") || value.includes("land")) {
+    return Trees;
+  }
 
   if (
     value.includes("commercial") ||
     value.includes("office") ||
     value.includes("retail")
-  ) return Landmark;
+  ) {
+    return Landmark;
+  }
 
-  if (value.includes("villa")) return Home;
+  if (value.includes("villa")) {
+    return Home;
+  }
 
   return Building2;
 }
 
-/* ============================================================
-   MAIN MOBILE HERO
-============================================================ */
+// ============================================================
+// MAIN MOBILE HERO
+// ============================================================
 
 export default function HeroSectionMobile({
   initialProperties = [],
   isLoading = false,
 }) {
-  // Featured properties are now supplied by HomePageClient.
-  // No separate featured-properties API request is made here.
+  // Properties are supplied by HomePageClient.
+  // This component does not make another featured-properties request.
 
-  const properties = Array.isArray(initialProperties)
-  ? initialProperties
-      .filter((property) => property?.slug?.trim())
-      .slice(0, 6)
-  : [];
+  const properties = useMemo(() => {
+    if (!Array.isArray(initialProperties)) {
+      return [];
+    }
+
+    return initialProperties
+      .filter(
+        (property) =>
+          property &&
+          typeof property.slug === "string" &&
+          property.slug.trim() !== ""
+      )
+      .slice(0, MAX_HERO_PROPERTIES);
+  }, [initialProperties]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -310,29 +354,34 @@ export default function HeroSectionMobile({
   // Store touch coordinates without triggering extra renders.
   const touchStartRef = useRef(null);
 
-  /* ==========================================================
-     KEEP ACTIVE INDEX VALID
-  ========================================================== */
+  // ==========================================================
+  // PAGE VISIBILITY
+  // Stop carousel rotation when the browser tab is hidden.
+  // ==========================================================
 
   useEffect(() => {
-  const handleVisibilityChange = () => {
-    setPageVisible(!document.hidden);
-  };
+    const handleVisibilityChange = () => {
+      setPageVisible(!document.hidden);
+    };
 
-  handleVisibilityChange();
+    handleVisibilityChange();
 
-  document.addEventListener(
-    "visibilitychange",
-    handleVisibilityChange
-  );
-
-  return () => {
-    document.removeEventListener(
+    document.addEventListener(
       "visibilitychange",
       handleVisibilityChange
     );
-  };
-}, []);
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, []);
+
+  // ==========================================================
+  // KEEP ACTIVE INDEX VALID
+  // ==========================================================
 
   useEffect(() => {
     setActiveIndex((current) =>
@@ -340,136 +389,159 @@ export default function HeroSectionMobile({
     );
   }, [properties.length]);
 
-  /* ==========================================================
-     FETCH PROPERTY CATEGORIES INDEPENDENTLY
-  ========================================================== */
-
-
-useEffect(() => {
-  const mediaQuery = window.matchMedia("(max-width: 767px)");
-
-  let controller = null;
-  let mounted = true;
-
-  async function fetchPropertyCategories() {
-    // Do not fetch mobile categories on desktop.
-    if (!mediaQuery.matches) {
-      if (mounted) {
-        setCategoriesLoading(false);
-      }
-      return;
-    }
-
-    // Prevent an older request from continuing.
-    controller?.abort();
-
-    controller = new AbortController();
-
-    setCategoriesLoading(true);
-
-    try {
-      const response = await fetch(CATEGORIES_API, {
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Property categories request failed: ${response.status}`
-        );
-      }
-
-      const result = await response.json();
-
-      if (!mounted || controller.signal.aborted) return;
-
-      const categoryNames = Array.isArray(result?.data)
-        ? result.data
-        : [];
-
-      const uniqueCategories = [
-        ...new Set(
-          categoryNames
-            .filter((name) => typeof name === "string")
-            .map((name) => name.trim())
-            .filter(Boolean)
-        ),
-      ];
-
-      uniqueCategories.sort((a, b) => {
-        const difference =
-          getCategoryScore(b) - getCategoryScore(a);
-
-        return difference || a.localeCompare(b);
-      });
-
-      setPropertyCategories(uniqueCategories.slice(0, 4));
-    } catch (error) {
-      if (error?.name !== "AbortError") {
-        console.error("Property category fetch failed:", error);
-
-        if (mounted) {
-          setPropertyCategories([]);
-        }
-      }
-    } finally {
-      if (mounted && !controller?.signal.aborted) {
-        setCategoriesLoading(false);
-      }
-    }
-  }
-
-  fetchPropertyCategories();
-
-  // Handle resizing from desktop to mobile.
-  mediaQuery.addEventListener("change", fetchPropertyCategories);
-
-  return () => {
-    mounted = false;
-    controller?.abort();
-    mediaQuery.removeEventListener("change", fetchPropertyCategories);
-  };
-}, []);
-
-
-  /* ==========================================================
-     AUTOMATIC CAROUSEL ROTATION
-  ========================================================== */
+  // ==========================================================
+  // FETCH PROPERTY CATEGORIES
+  // Fetch only when the mobile layout is active.
+  // Cancel requests when the viewport changes or component unmounts.
+  // ==========================================================
 
   useEffect(() => {
-  if (
-    properties.length < 2 ||
-    paused ||
-    !pageVisible
-  ) {
-    return undefined;
-  }
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
 
-  const timer = window.setInterval(() => {
-    setActiveIndex(
-      (current) => (current + 1) % properties.length
-    );
-  }, ROTATION_MS);
+    let controller = null;
+    let mounted = true;
 
-  return () => window.clearInterval(timer);
-}, [properties.length, paused, pageVisible]);
+    async function fetchPropertyCategories() {
+      // Cancel any previous request before checking the viewport.
+      controller?.abort();
+      controller = null;
 
-  /* ==========================================================
-     CAROUSEL CONTROLS AND SWIPE
-  ========================================================== */
+      // Do not fetch mobile categories on desktop.
+      if (!mediaQuery.matches) {
+        if (mounted) {
+          setCategoriesLoading(false);
+        }
+
+        return;
+      }
+
+      const requestController = new AbortController();
+      controller = requestController;
+
+      setCategoriesLoading(true);
+
+      try {
+        const response = await fetch(CATEGORIES_API, {
+          signal: requestController.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Property categories request failed: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+
+        if (!mounted || requestController.signal.aborted) {
+          return;
+        }
+
+        const categoryNames = Array.isArray(result?.data)
+          ? result.data
+          : [];
+
+        const uniqueCategories = [
+          ...new Set(
+            categoryNames
+              .filter((name) => typeof name === "string")
+              .map((name) => name.trim())
+              .filter(Boolean)
+          ),
+        ];
+
+        uniqueCategories.sort((a, b) => {
+          const difference =
+            getCategoryScore(b) - getCategoryScore(a);
+
+          return difference || a.localeCompare(b);
+        });
+
+        setPropertyCategories(uniqueCategories.slice(0, 4));
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error("Property category fetch failed:", error);
+
+          if (mounted) {
+            setPropertyCategories([]);
+          }
+        }
+      } finally {
+        if (mounted && !requestController.signal.aborted) {
+          setCategoriesLoading(false);
+        }
+      }
+    }
+
+    fetchPropertyCategories();
+
+    // Handle resizing between desktop and mobile.
+    mediaQuery.addEventListener("change", fetchPropertyCategories);
+
+    return () => {
+      mounted = false;
+      controller?.abort();
+
+      mediaQuery.removeEventListener(
+        "change",
+        fetchPropertyCategories
+      );
+    };
+  }, []);
+
+  // ==========================================================
+  // AUTOMATIC CAROUSEL ROTATION
+  // Respect reduced-motion preferences and page visibility.
+  // ==========================================================
+
+  useEffect(() => {
+    if (
+      properties.length < 2 ||
+      paused ||
+      !pageVisible ||
+      reduceMotion
+    ) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveIndex(
+        (current) => (current + 1) % properties.length
+      );
+    }, ROTATION_MS);
+
+    return () => window.clearInterval(timer);
+  }, [
+    properties.length,
+    paused,
+    pageVisible,
+    reduceMotion,
+  ]);
+
+  // ==========================================================
+  // CAROUSEL CONTROLS
+  // ==========================================================
 
   const goToPrevious = useCallback(() => {
     if (properties.length < 2) return;
 
     setActiveIndex(
-      (current) => (current - 1 + properties.length) % properties.length
+      (current) =>
+        (current - 1 + properties.length) % properties.length
     );
   }, [properties.length]);
 
   const goToNext = useCallback(() => {
     if (properties.length < 2) return;
 
-    setActiveIndex((current) => (current + 1) % properties.length);
+    setActiveIndex(
+      (current) => (current + 1) % properties.length
+    );
   }, [properties.length]);
+
+  // ==========================================================
+  // TOUCH / SWIPE HANDLING
+  // ==========================================================
 
   const handleTouchStart = useCallback((event) => {
     const touch = event.touches?.[0];
@@ -527,9 +599,9 @@ useEffect(() => {
     setPaused(false);
   }, []);
 
-  /* ==========================================================
-     ACTIVE PROPERTY DATA
-  ========================================================== */
+  // ==========================================================
+  // ACTIVE PROPERTY DATA
+  // ==========================================================
 
   const activeProperty = properties[activeIndex] || null;
 
@@ -549,11 +621,17 @@ useEffect(() => {
     ? getPropertyConfiguration(activeProperty)
     : "";
 
-  const price = activeProperty ? getStartingPrice(activeProperty) : "";
+  const price = activeProperty
+    ? getStartingPrice(activeProperty)
+    : "";
 
   const propertyHref = activeProperty?.slug
     ? `/${activeProperty.slug}`
     : "/properties";
+
+  // ==========================================================
+  // CATEGORY CARDS
+  // ==========================================================
 
   const categoryCards = useMemo(
     () =>
@@ -565,9 +643,9 @@ useEffect(() => {
     [propertyCategories]
   );
 
-  /* ==========================================================
-     RENDER
-  ========================================================== */
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <section className="relative z-[100] overflow-visible bg-[#faf9f4] text-[#17342d]">
@@ -585,24 +663,31 @@ useEffect(() => {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={(event) => {
+          if (
+            !event.currentTarget.contains(event.relatedTarget)
+          ) {
             setPaused(false);
           }
         }}
       >
-        {/* Featured image */}
+
+        {/* FEATURED IMAGE */}
 
         <AnimatePresence initial={false} mode="sync">
           <motion.div
-            key={activeProperty ? getPropertyKey(activeProperty) : "fallback"}
+            key={
+              activeProperty
+                ? getPropertyKey(activeProperty)
+                : "fallback"
+            }
             initial={{ opacity: reduceMotion ? 1 : 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.3 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.3,
+            }}
             className="absolute inset-0"
           >
             <Image
@@ -614,8 +699,9 @@ useEffect(() => {
               }
               fill
               priority={activeIndex === 0}
-              fetchPriority={activeIndex === 0 ? "high" : "auto"}
-              loading={activeIndex === 0 ? "eager" : "lazy"}
+              fetchPriority={
+                activeIndex === 0 ? "high" : "auto"
+              }
               sizes="100vw"
               quality={75}
               className="object-cover object-center"
@@ -623,17 +709,17 @@ useEffect(() => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Lighter overlays to reveal property photography */}
+        {/* IMAGE OVERLAYS */}
 
         <div className="absolute inset-0 bg-gradient-to-r from-[#071d16]/55 via-[#0d291f]/20 to-transparent" />
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#071b14]/65 via-[#071b14]/10 to-transparent" />
 
-        {/* Gold accent */}
+        {/* GOLD ACCENT */}
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af67] to-transparent" />
 
-        {/* Decorative rings */}
+        {/* DECORATIVE RINGS */}
 
         <div className="pointer-events-none absolute -right-[100px] top-[20px] h-[260px] w-[260px] rounded-full border border-[#d4af67]/20 min-[430px]:h-[300px] min-[430px]:w-[300px]" />
 
@@ -642,15 +728,29 @@ useEffect(() => {
         {/* PROPERTY INFORMATION */}
 
         <div className="relative mx-auto flex h-full w-full max-w-[640px] items-end px-5 pb-[64px] min-[380px]:px-6 min-[430px]:px-7 sm:px-8">
+
           <AnimatePresence initial={false} mode="wait">
             <motion.div
-              key={activeProperty ? getPropertyKey(activeProperty) : "fallback-copy"}
-              initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+              key={
+                activeProperty
+                  ? getPropertyKey(activeProperty)
+                  : "fallback-copy"
+              }
+              initial={{
+                opacity: 0,
+                y: reduceMotion ? 0 : 6,
+              }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: reduceMotion ? 0 : -4 }}
-              transition={{ duration: reduceMotion ? 0 : 0.22 }}
+              exit={{
+                opacity: 0,
+                y: reduceMotion ? 0 : -4,
+              }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.22,
+              }}
               className="relative z-10 w-full"
             >
+
               <div className="mb-3 flex items-center gap-2">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#d4af67]/55 bg-[#d4af67]/10 text-[#e5c47e]">
                   <Sparkles size={14} strokeWidth={1.7} />
@@ -686,8 +786,14 @@ useEffect(() => {
               )}
 
               <p className="mt-2.5 flex max-w-full items-start gap-1.5 text-[9px] font-medium leading-[1.5] tracking-[0.7px] text-white drop-shadow-sm min-[380px]:text-[10px] min-[430px]:tracking-[1px]">
-                <MapPin size={14} className="mt-[1px] shrink-0 text-[#e6b85e]" />
-                <span className="line-clamp-2 min-w-0">{location}</span>
+                <MapPin
+                  size={14}
+                  className="mt-[1px] shrink-0 text-[#e6b85e]"
+                />
+
+                <span className="line-clamp-2 min-w-0">
+                  {location}
+                </span>
               </p>
 
               <div className="mt-4 min-[380px]:mt-5">
@@ -710,6 +816,7 @@ useEffect(() => {
                   <ArrowRight size={14} />
                 </Link>
               </div>
+
             </motion.div>
           </AnimatePresence>
         </div>
@@ -754,7 +861,7 @@ useEffect(() => {
           </>
         )}
 
-        {/* INDICATORS */}
+        {/* CAROUSEL INDICATORS */}
 
         {properties.length > 1 && (
           <div className="absolute bottom-[37px] right-5 z-20 flex max-w-[55%] items-center justify-end gap-1.5 min-[380px]:right-6 min-[430px]:right-7">
@@ -764,16 +871,25 @@ useEffect(() => {
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Show featured property ${index + 1}`}
-                aria-current={activeIndex === index ? "true" : undefined}
-                className={`h-[3px] rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e5c47e] ${
-                  activeIndex === index
-                    ? "w-6 bg-[#e4bd70]"
-                    : "w-2 bg-white/65 hover:bg-white"
-                }`}
+                aria-current={
+                  activeIndex === index ? "true" : undefined
+                }
+                className={`
+                  h-[3px] rounded-full transition-all duration-200
+                  focus-visible:outline-none focus-visible:ring-2
+                  focus-visible:ring-[#e5c47e]
+                  ${
+                    activeIndex === index
+                      ? "w-6 bg-[#e4bd70]"
+                      : "w-2 bg-white/65 hover:bg-white"
+                  }
+                `}
               />
             ))}
           </div>
         )}
+
+        {/* LOADING INDICATOR */}
 
         {isLoading && (
           <div className="absolute bottom-[35px] left-5 z-20 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[1.1px] text-white/90 min-[380px]:left-6 min-[430px]:left-7">
@@ -785,7 +901,7 @@ useEffect(() => {
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-[#17342d] via-[#d4af67] to-[#17342d]" />
       </div>
 
-      {/* MOBILE SEARCH PANEL — RENDER IMMEDIATELY */}
+      {/* MOBILE SEARCH PANEL */}
 
       <div className="relative z-[1000] mx-auto -mt-[25px] w-full max-w-[640px] px-3 min-[380px]:px-4 min-[430px]:px-5">
         <div
@@ -807,6 +923,7 @@ useEffect(() => {
 
       <div className="relative z-[1] mx-auto mt-5 w-full max-w-[640px] px-4 pb-5 min-[430px]:px-5">
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 border-b border-[#e9e5dc] pb-5">
+
           <TrustItem
             icon={ShieldCheck}
             title="Exclusive Listings"
@@ -830,6 +947,7 @@ useEffect(() => {
             title="Better Investment"
             subtitle="Build wealth for tomorrow"
           />
+
         </div>
       </div>
 
@@ -837,6 +955,7 @@ useEffect(() => {
 
       <section className="relative z-[1] overflow-visible bg-[#fbfaf6] px-4 py-6 min-[430px]:px-5 min-[430px]:py-7">
         <div className="mx-auto w-full max-w-[600px]">
+
           <div className="mb-4">
             <div className="mb-2 flex items-center gap-3">
               <span className="text-[8px] font-semibold uppercase tracking-[2.2px] text-[#888379]">
@@ -848,7 +967,9 @@ useEffect(() => {
 
             <h2
               className="font-serif text-[25px] leading-[1.1] tracking-[-0.7px] text-[#173a31] min-[430px]:text-[28px]"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+              }}
             >
               Find Properties That Match
               <br />
@@ -879,15 +1000,17 @@ useEffect(() => {
               </div>
             )}
           </div>
+
         </div>
       </section>
+
     </section>
   );
 }
 
-/* ============================================================
-   TRUST ITEM
-============================================================ */
+// ============================================================
+// TRUST ITEM
+// ============================================================
 
 function TrustItem({ icon: Icon, title, subtitle }) {
   return (
@@ -909,9 +1032,9 @@ function TrustItem({ icon: Icon, title, subtitle }) {
   );
 }
 
-/* ============================================================
-   CATEGORY SKELETON
-============================================================ */
+// ============================================================
+// CATEGORY SKELETON
+// ============================================================
 
 function CategorySkeleton() {
   return (
@@ -919,11 +1042,15 @@ function CategorySkeleton() {
   );
 }
 
-/* ============================================================
-   CATEGORY CARD
-============================================================ */
+// ============================================================
+// CATEGORY CARD
+// ============================================================
 
-function CategoryCard({ title, icon: Icon = Building2, image }) {
+function CategoryCard({
+  title,
+  icon: Icon = Building2,
+  image,
+}) {
   const href = `/properties?propertyType=${encodeURIComponent(title)}`;
 
   return (

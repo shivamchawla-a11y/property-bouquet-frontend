@@ -1,6 +1,15 @@
+
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   images: {
+    // Prefer modern, compressed image formats.
+    formats: ["image/avif", "image/webp"],
+
+    // Keep existing supported quality values
+    // to avoid breaking existing Image components.
+    qualities: [75, 78, 80, 85, 90, 100],
+
     remotePatterns: [
       {
         protocol: "https",
@@ -19,8 +28,6 @@ const nextConfig = {
         hostname: "managemylawsuits.com",
       },
     ],
-
-    qualities: [75, 78, 80, 85, 90, 100],
   },
 
   async rewrites() {
