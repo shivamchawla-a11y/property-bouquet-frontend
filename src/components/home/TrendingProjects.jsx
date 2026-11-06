@@ -26,10 +26,8 @@ const MAX_TRENDING = 12;
 function optimizeCloudinaryImage(url, width = 800) {
   if (!url || typeof url !== "string") return "";
 
-  // Only transform Cloudinary images.
   if (!url.includes("res.cloudinary.com")) return url;
 
-  // Keep already optimized Cloudinary URLs unchanged.
   const uploadIndex = url.indexOf("/image/upload/");
 
   if (uploadIndex === -1) return url;
@@ -37,7 +35,6 @@ function optimizeCloudinaryImage(url, width = 800) {
   const beforeUpload = url.slice(0, uploadIndex + 14);
   const afterUpload = url.slice(uploadIndex + 14);
 
-  // Avoid adding duplicate transformations.
   if (
     /(^|\/)(f_auto|q_auto|w_\d+|c_limit)(,|\/)/.test(afterUpload)
   ) {
@@ -156,7 +153,6 @@ function TrendingSkeleton() {
         <div className="space-y-4 p-5">
           <div className="h-6 w-4/5 animate-pulse rounded bg-[#eeeae3]" />
           <div className="h-4 w-3/5 animate-pulse rounded bg-[#f0ede7]" />
-
           <div className="h-4 w-2/3 animate-pulse rounded bg-[#f0ede7]" />
 
           <div className="mt-5 border-t border-[#ece7df] pt-4">
@@ -197,7 +193,6 @@ function TrendingPropertyCard({ item }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-          {/* TRENDING BADGE */}
           <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-[#c89948] px-4 py-2 text-[10px] font-semibold tracking-[1.5px] text-white">
             <Star size={10} fill="currentColor" />
             TRENDING
@@ -350,19 +345,25 @@ export default function TrendingProjects() {
               ? result.properties
               : [];
 
-        const published = records.filter(
+        // IMPORTANT:
+        // The dedicated backend endpoint already filters for:
+        // published + active + non-deleted + Trending properties.
+        //
+        // Its lightweight response intentionally does not include
+        // status, isDeleted, isActive or propertyTag.
+        //
+        // Therefore, only validate the fields required by the card.
+
+        const validProperties = records.filter(
           (property) =>
             property?.slug &&
-            property?.coreDetails?.title &&
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.isActive !== false &&
-            (Array.isArray(property?.propertyTag)
-              ? property.propertyTag.includes("Trending")
-              : property?.propertyTag === "Trending")
+            property?.coreDetails?.title
         );
 
-        const shuffled = shuffleArray(published).slice(0, MAX_TRENDING);
+        const shuffled = shuffleArray(validProperties).slice(
+          0,
+          MAX_TRENDING
+        );
 
         if (!controller.signal.aborted) {
           setTrendingProperties(shuffled);
@@ -387,6 +388,10 @@ export default function TrendingProjects() {
 
     return () => controller.abort();
   }, []);
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <section

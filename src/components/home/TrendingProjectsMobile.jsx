@@ -25,6 +25,7 @@ const MAX_TRENDING = 12;
 function optimizeCloudinaryImage(url, width = 900) {
   if (!url || typeof url !== "string") return "";
 
+  // Only optimize Cloudinary images.
   if (!url.includes("res.cloudinary.com")) return url;
 
   const uploadMarker = "/image/upload/";
@@ -35,6 +36,7 @@ function optimizeCloudinaryImage(url, width = 900) {
   const prefix = url.slice(0, uploadIndex + uploadMarker.length);
   const remaining = url.slice(uploadIndex + uploadMarker.length);
 
+  // Avoid duplicate Cloudinary transformations.
   if (
     /(^|\/)(f_auto|q_auto|w_\d+|c_limit)(,|\/)/.test(remaining)
   ) {
@@ -186,13 +188,23 @@ export default function TrendingProjectsMobile() {
 
         const result = await res.json();
 
-        const records = Array.isArray(result?.data)
-          ? result.data
-          : [];
+        // Support the backend response format.
+        const records = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result?.properties)
+              ? result.properties
+              : [];
 
-        // Backend already filters published, active,
-        // non-deleted Trending properties and limits to 12.
-        // Keep basic validation as a frontend safeguard.
+        // The backend already filters:
+        // published + active + non-deleted + Trending.
+        //
+        // The lightweight API intentionally does not return
+        // status, isDeleted, isActive or propertyTag.
+        //
+        // Only validate the fields required to render cards.
+
         const validProperties = records.filter(
           (property) =>
             property?.slug &&
@@ -230,6 +242,10 @@ export default function TrendingProjectsMobile() {
 
     return () => controller.abort();
   }, []);
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <section className="relative isolate overflow-hidden bg-[#101010] py-14 lg:hidden">
@@ -311,6 +327,7 @@ export default function TrendingProjectsMobile() {
             {!loading &&
               trendingProperties.map((item, index) => {
                 const configuration = item?.unitConfigurations?.[0];
+
                 const title =
                   item?.coreDetails?.title || "Trending Property";
 
