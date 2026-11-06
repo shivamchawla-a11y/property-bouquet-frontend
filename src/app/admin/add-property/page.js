@@ -7138,9 +7138,10 @@ const formatIndianPrice = (value) => {
           "
         >
           <PropertyPreview
-            form={previewData}
-            insideAdmin={true}
-          />
+          form={previewData}
+          insideAdmin={true}
+          iconRegistry={ICONS}
+        />
         </div>
 
       ) : (

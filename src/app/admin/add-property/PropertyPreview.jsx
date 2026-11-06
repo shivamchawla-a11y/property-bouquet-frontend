@@ -136,25 +136,63 @@ const staggerContainer = {
 };
 
 
-import * as FaIcons from "react-icons/fa";
-import * as MdIcons from "react-icons/md";
-import * as GiIcons from "react-icons/gi";
-import * as TbIcons from "react-icons/tb";
-import * as IoIcons from "react-icons/io5";
-import * as BsIcons from "react-icons/bs";
+// Only the icons required by published properties
+import {
+  FaBuilding,
+  FaHome,
+  FaBorderStyle,
+  FaCalendarCheck,
+  FaRoad,
+  FaRegMap,
+  FaTag,
+  FaCalendarAlt,
+  FaMapMarkedAlt,
+  FaCity,
+  FaLayerGroup,
+  FaCertificate,
+} from "react-icons/fa";
+
+import {
+  MdConstruction,
+  MdOutlineWarehouse,
+} from "react-icons/md";
+
+import {
+  IoSparklesSharp,
+} from "react-icons/io5";
+
 import Image from "next/image";
 import Footer from "@/components/home/Footer";
 
-const ICONS = {
-  ...FaIcons,
-  ...MdIcons,
-  ...GiIcons,
-  ...TbIcons,
-  ...IoIcons,
-  ...BsIcons,
+// Lightweight icon registry for public property pages
+const PROPERTY_PAGE_ICONS = {
+  // Existing saved property icons
+  FaBuilding,
+  FaHome,
+  FaBorderStyle,
+  FaCalendarCheck,
+  FaRoad,
+  FaRegMap,
+  MdConstruction,
+  MdOutlineWarehouse,
+  IoSparklesSharp,
+
+  // Default metric icons
+  FaTag,
+  FaCalendarAlt,
+  FaMapMarkedAlt,
+  FaCity,
+  FaLayerGroup,
+  FaCertificate,
 };
 
-export default function PropertyPreview({ form, insideAdmin = false, developers = [], developerData }) {
+export default function PropertyPreview({
+  form,
+  insideAdmin = false,
+  developers = [],
+  developerData,
+  iconRegistry,
+}) {
   if (!form) return null;
 
 const {
@@ -305,23 +343,10 @@ const [mobileMenuOpen, setMobileMenuOpen] =
 const [name, setName] = useState("");
 const [phone, setPhone] = useState("");
 const [loading, setLoading] = useState(false);
-
 const [locations, setLocations] = useState([]);
+
 const [showSuccessModal, setShowSuccessModal] =
   useState(false);
-
-useEffect(() => {
-  const fetchLocations = async () => {
-    const res = await fetch(`${API}/locations/tree`);
-    const data = await res.json();
-
-    if (res.ok) {
-      setLocations(data.data || []);
-    }
-  };
-
-  fetchLocations();
-}, []);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -334,18 +359,37 @@ useEffect(() => {
     window.removeEventListener("scroll", handleScroll);
 }, []);
 
+// Fetch location tree only for Admin Preview
+useEffect(() => {
+  if (!insideAdmin) return;
+
+  const controller = new AbortController();
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch(`${API}/locations/tree`, {
+        signal: controller.signal,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setLocations(data.data || []);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Error fetching locations:", error);
+      }
+    }
+  };
+
+  fetchLocations();
+
+  return () => controller.abort();
+}, [insideAdmin]);
+
 const gallery =
   media.gallery?.filter((img) => img && img.trim()) || [];
-
-  // ================= METRIC ICONS =================
-const metricIcons = {
-  ...FaIcons,
-  ...MdIcons,
-  ...GiIcons,
-  ...TbIcons,
-  ...IoIcons,
-  ...BsIcons,
-};
 
 // ================= METRICS (BACKWARD COMPATIBLE) =================
 const displayMetrics = (() => {
@@ -619,48 +663,14 @@ const getCategoryName = () => {
 
 
 // ================= LOCATION NAME RESOLVER =================
-const getLocationName = () => {
-  if (locationData?.customLocation?.trim()) {
-    return locationData.customLocation;
-  }
 
-  if (locationData?.locationRef && Array.isArray(locations)) {
-    const locationId =
-      typeof locationData.locationRef === "object"
-        ? locationData.locationRef._id
-        : locationData.locationRef;
-
-    const loc = findLocationById(locations, locationId);
-
-    if (loc) {
-      const parts = loc.fullPath.split(">").map((p) => p.trim());
-
-      if (parts.length >= 3) {
-  return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
-}
-
-if (parts.length === 2) {
-  return `${parts[1]}, ${parts[0]}`;
-}
-
-return parts[0];
-    }
-  }
-
-  return locationData.locationName || "Location";
-};
-
-const findLocationById = (
-  nodes,
-  id,
-  prefix = ""
-) => {
-  for (const node of nodes) {
+const findLocationById = (nodes, id, prefix = "") => {
+  for (const node of nodes || []) {
     const path = prefix
       ? `${prefix} > ${node.name}`
       : node.name;
 
-    if (node._id === id) {
+    if (String(node._id) === String(id)) {
       return {
         ...node,
         fullPath: path,
@@ -679,6 +689,71 @@ const findLocationById = (
   }
 
   return null;
+};
+
+const getLocationName = () => {
+  if (locationData?.customLocation?.trim()) {
+    return locationData.customLocation;
+  }
+
+  const locationRef = locationData?.locationRef;
+
+  // Public page: Use populated location hierarchy
+  if (
+    locationRef &&
+    typeof locationRef === "object" &&
+    locationRef.name
+  ) {
+    const parts = [];
+    let current = locationRef;
+
+    while (current && typeof current === "object") {
+      if (current.name) {
+        parts.push(current.name);
+      }
+
+      current = current.parent;
+    }
+
+    if (parts.length >= 3) {
+      return parts.slice(0, 3).join(", ");
+    }
+
+    if (parts.length > 0) {
+      return parts.join(", ");
+    }
+  }
+
+  // Admin preview: Resolve location ID using location tree
+  if (locationRef && locations.length > 0) {
+    const locationId =
+      typeof locationRef === "object"
+        ? locationRef._id
+        : locationRef;
+
+    const loc = findLocationById(
+      locations,
+      locationId
+    );
+
+    if (loc) {
+      const parts = loc.fullPath
+        .split(">")
+        .map((part) => part.trim());
+
+      if (parts.length >= 3) {
+        return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+      }
+
+      if (parts.length === 2) {
+        return `${parts[1]}, ${parts[0]}`;
+      }
+
+      return parts[0];
+    }
+  }
+
+  return locationData?.locationName || "Location";
 };
 
 const categoryName = getCategoryName();
@@ -1889,8 +1964,9 @@ flex-wrap
   {displayMetrics.map((metric, index) => {
 
     const Icon =
-      metricIcons[metric.icon] ||
-      FaIcons.FaHome;
+  (insideAdmin && iconRegistry?.[metric.icon]) ||
+  PROPERTY_PAGE_ICONS[metric.icon] ||
+  FaHome;
 
     return (
       <div
@@ -3397,9 +3473,17 @@ if (PREDEFINED_AMENITY_ICONS[iconKey]) {
     PREDEFINED_AMENITY_ICONS[iconKey];
 }
 
-// CUSTOM REACT-ICON AMENITIES
-else if (ICONS[iconKey]) {
-  IconComponent = ICONS[iconKey];
+// ADMIN: Use complete icon registry
+else if (
+  insideAdmin &&
+  iconRegistry?.[iconKey]
+) {
+  IconComponent = iconRegistry[iconKey];
+}
+
+// PUBLIC: Use lightweight icon registry
+else if (PROPERTY_PAGE_ICONS[iconKey]) {
+  IconComponent = PROPERTY_PAGE_ICONS[iconKey];
 }
 
 // FALLBACK
