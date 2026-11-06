@@ -344,7 +344,7 @@ useEffect(() => {
 
     const fetchProperties = async () => {
       try {
-        const res = await fetch("/api/properties", {
+        const res = await fetch("/api/properties/search-index", {
           cache: "no-store",
         });
 
