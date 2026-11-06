@@ -15,7 +15,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-const TRENDING_API = "/api/properties?propertyTag=Trending";
+const TRENDING_API = "/api/properties/trending";
 const AUTOPLAY_DELAY = 3500;
 const MAX_TRENDING = 12;
 

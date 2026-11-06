@@ -14,7 +14,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-const TRENDING_API = "/api/properties?propertyTag=Trending";
+const TRENDING_API = "/api/properties/trending";
 const AUTOPLAY_DELAY = 3500;
 const MAX_TRENDING = 12;
 
@@ -25,7 +25,6 @@ const MAX_TRENDING = 12;
 function optimizeCloudinaryImage(url, width = 900) {
   if (!url || typeof url !== "string") return "";
 
-  // Only transform Cloudinary images.
   if (!url.includes("res.cloudinary.com")) return url;
 
   const uploadMarker = "/image/upload/";
@@ -36,7 +35,6 @@ function optimizeCloudinaryImage(url, width = 900) {
   const prefix = url.slice(0, uploadIndex + uploadMarker.length);
   const remaining = url.slice(uploadIndex + uploadMarker.length);
 
-  // Avoid adding duplicate transformations.
   if (
     /(^|\/)(f_auto|q_auto|w_\d+|c_limit)(,|\/)/.test(remaining)
   ) {
@@ -168,7 +166,7 @@ export default function TrendingProjectsMobile() {
   );
 
   // ==========================================================
-  // FETCH TRENDING PROPERTIES
+  // FETCH LIGHTWEIGHT TRENDING PROPERTIES
   // ==========================================================
 
   useEffect(() => {
@@ -188,27 +186,23 @@ export default function TrendingProjectsMobile() {
 
         const result = await res.json();
 
-        const records = Array.isArray(result)
-          ? result
-          : Array.isArray(result?.data)
-            ? result.data
-            : Array.isArray(result?.properties)
-              ? result.properties
-              : [];
+        const records = Array.isArray(result?.data)
+          ? result.data
+          : [];
 
-        const published = records.filter(
+        // Backend already filters published, active,
+        // non-deleted Trending properties and limits to 12.
+        // Keep basic validation as a frontend safeguard.
+        const validProperties = records.filter(
           (property) =>
             property?.slug &&
-            property?.coreDetails?.title &&
-            property?.status === "published" &&
-            property?.isDeleted !== true &&
-            property?.isActive !== false &&
-            (Array.isArray(property?.propertyTag)
-              ? property.propertyTag.includes("Trending")
-              : property?.propertyTag === "Trending")
+            property?.coreDetails?.title
         );
 
-        const shuffled = shuffleArray(published).slice(0, MAX_TRENDING);
+        const shuffled = shuffleArray(validProperties).slice(
+          0,
+          MAX_TRENDING
+        );
 
         if (!controller.signal.aborted) {
           setTrendingProperties(shuffled);
@@ -216,7 +210,10 @@ export default function TrendingProjectsMobile() {
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Failed to load mobile trending properties:", error);
+          console.error(
+            "Failed to load mobile trending properties:",
+            error
+          );
 
           if (!controller.signal.aborted) {
             setFetchFailed(true);
@@ -314,7 +311,8 @@ export default function TrendingProjectsMobile() {
             {!loading &&
               trendingProperties.map((item, index) => {
                 const configuration = item?.unitConfigurations?.[0];
-                const title = item?.coreDetails?.title || "Trending Property";
+                const title =
+                  item?.coreDetails?.title || "Trending Property";
 
                 return (
                   <div
