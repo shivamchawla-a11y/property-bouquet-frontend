@@ -1,10 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 
 import { formatPrice } from "@/utils/formatPrice";
+import Footer from "@/components/home/Footer";
+
+const API = "/api";
 
 import {
   Waves,
@@ -46,6 +51,9 @@ import {
   IndianRupee,
   ArrowUpDown,
   Wind,
+  Bed,
+  Bath,
+  WalletCards,
 
 } from "lucide-react";
 
@@ -143,7 +151,13 @@ const ICONS = {
   ...BsIcons,
 };
 
-export default function PropertyPreview({ form, insideAdmin = false, developers = [] }) {
+export default function PropertyPreview({
+  form,
+  insideAdmin = false,
+  developers = [],
+  developerData,
+  iconRegistry,
+}) {
   if (!form) return null;
 
 const {
@@ -209,7 +223,12 @@ const featureBar =
     return coreDetails.developerLogo;
   }
 
-  // ✅ 2. Populated object
+  // Server-fetched developer data
+  if (developerData?.developer?.logo) {
+    return developerData.developer.logo;
+  }
+
+  // Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
@@ -217,7 +236,7 @@ const featureBar =
     return coreDetails.developerRef.logo || "";
   }
 
-  // ✅ 3. Lookup from developers list
+  // Lookup from developers list
   if (coreDetails?.developerRef) {
     const dev = developers.find(
       (d) => d._id === coreDetails.developerRef
@@ -236,7 +255,12 @@ function getDeveloperImage() {
     return coreDetails.developerImage;
   }
 
-  // ✅ If populated object from backend
+  // Server-fetched developer data
+  if (developerData?.developer?.image) {
+    return developerData.developer.image;
+  }
+
+  // Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
@@ -256,7 +280,6 @@ function getDeveloperImage() {
   return "";
 }
 
-  const unitConfigurations = gatedContent?.floorPlans || [];
   const [activePlan, setActivePlan] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [leadName, setLeadName] = useState("");
@@ -270,10 +293,15 @@ const [scrolled, setScrolled] = useState(false);
 const [activeSection, setActiveSection] = useState("overview");
 const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);
-  const [developerProjects, setDeveloperProjects] =
-  useState([]);
-  const [showAboutMore, setShowAboutMore] =
-  useState(false);
+  const [developerProjects, setDeveloperProjects] = useState(
+    Array.isArray(developerData?.properties) ? developerData.properties : []
+  );
+  const [showAboutMore, setShowAboutMore] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -286,8 +314,36 @@ useEffect(() => {
     window.removeEventListener("scroll", handleScroll);
 }, []);
 
-const gallery =
-  media.gallery?.filter((img) => img && img.trim()) || [];
+// Resolve location IDs in Admin Preview, matching PropertyPreview.
+useEffect(() => {
+  if (!insideAdmin) return;
+
+  const controller = new AbortController();
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch(`${API}/locations/tree`, {
+        signal: controller.signal,
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setLocations(Array.isArray(data.data) ? data.data : []);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Error fetching locations:", error);
+      }
+    }
+  };
+
+  fetchLocations();
+  return () => controller.abort();
+}, [insideAdmin]);
+
+const gallery = Array.isArray(media?.gallery)
+  ? media.gallery.filter((img) => typeof img === "string" && img.trim())
+  : [];
 
   // ================= METRIC ICONS =================
 const metricIcons = {
@@ -322,13 +378,13 @@ if (coreDetails?.priceOnRequest === true) {
   if (startPrice && maxPrice) {
     metrics.push({
       label: "Price Range",
-      value: `${formatPrice(startPrice)} - ${formatPrice(maxPrice)}`,
+      value: `₹ ${formatPrice(startPrice)} - ₹ ${formatPrice(maxPrice)}`,
       icon: "FaTag",
     });
   } else if (startPrice) {
     metrics.push({
       label: "Starting Price",
-      value: formatPrice(startPrice),
+      value: `₹ ${formatPrice(startPrice)}` ,
       icon: "FaTag",
     });
   }
@@ -432,7 +488,7 @@ useEffect(() => {
     "configuration",
     "gallery",
     "location",
-    "contact",
+    "faq",
   ];
 
   const handleScrollSpy = () => {
@@ -470,53 +526,55 @@ useEffect(() => {
 }, []);
 
   const handleLeadSubmit = async () => {
-  if (!leadName.trim() || !leadPhone.trim()) {
-    alert("Please fill all fields");
-    return;
-  }
+    const cleanName = leadName.trim();
+    const cleanPhone = leadPhone.replace(/\D/g, "");
 
-  try {
-    setSubmitting(true);
+    if (!cleanName) {
+      toast.error("Please enter your name");
+      return;
+    }
 
-    const res = await fetch(
-      "/api/leads",
-      {
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const res = await fetch(`${API}/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: leadName,
-          phone: leadPhone,
+          name: cleanName,
+          phone: cleanPhone,
           property: coreDetails?.title || "",
+          source: "Property Preview",
+          leadType: "Property Enquiry",
         }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data.success === false) {
+        toast.error(data.message || "Failed to submit enquiry. Please try again.");
+        return;
       }
-    );
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "Failed ❌");
-      return;
+      setShowModal(false);
+      setLeadName("");
+      setLeadPhone("");
+      setShowSuccessModal(true);
+      toast.success("Your enquiry has been received successfully.");
+    } catch (err) {
+      console.error("Lead submission error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    // ✅ CLOSE MODAL
-    setShowModal(false);
-
-    // ✅ DOWNLOAD PDF
-    window.open(gatedContent.brochurePdfUrl, "_blank");
-
-    // RESET
-    setLeadName("");
-    setLeadPhone("");
-
-  } catch (err) {
-    console.error(err);
-    alert("Server error ❌");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   // ================= FIX: DEVELOPER NAME RESOLVER =================
   const getDeveloperName = () => {
@@ -533,7 +591,11 @@ useEffect(() => {
     return coreDetails.developerRef.name || "DEVELOPER";
   }
 
-  // ✅ If only ID (fallback case)
+  if (developerData?.developer?.name) {
+    return developerData.developer.name;
+  }
+
+  // If only ID (fallback case)
   if (coreDetails?.developerRef) {
     const dev = developers.find(
       (d) => d._id === coreDetails.developerRef
@@ -560,27 +622,74 @@ const getCategoryName = () => {
 
 
 // ================= LOCATION NAME RESOLVER =================
+const findLocationById = (nodes, id, prefix = "") => {
+  for (const node of nodes || []) {
+    const path = prefix ? `${prefix} > ${node.name}` : node.name;
+
+    if (String(node._id) === String(id)) {
+      return { ...node, fullPath: path };
+    }
+
+    if (node.children?.length) {
+      const found = findLocationById(node.children, id, path);
+      if (found) return found;
+    }
+  }
+
+  return null;
+};
+
 const getLocationName = () => {
   if (locationData?.customLocation?.trim()) {
     return locationData.customLocation;
   }
 
-  if (locationData?.locationName?.includes(">")) {
-    const parts = locationData.locationName.split(">").map(p => p.trim());
+  const locationRef = locationData?.locationRef;
 
-    // 🔥 SHOW LAST 2 LEVELS ONLY
-    if (parts.length >= 2) {
-      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}`;
+  // Public property pages may receive a populated location hierarchy.
+  if (
+    locationRef &&
+    typeof locationRef === "object" &&
+    locationRef.name
+  ) {
+    const parts = [];
+    let current = locationRef;
+
+    while (current && typeof current === "object") {
+      if (current.name) parts.push(current.name);
+      current = current.parent;
     }
 
+    if (parts.length >= 3) return parts.slice(0, 3).join(", ");
+    if (parts.length > 0) return parts.join(", ");
+  }
+
+  // Admin preview resolves a selected location ID against the location tree.
+  if (locationRef && locations.length > 0) {
+    const locationId =
+      typeof locationRef === "object" ? locationRef._id : locationRef;
+    const loc = findLocationById(locations, locationId);
+
+    if (loc?.fullPath) {
+      const parts = loc.fullPath.split(">").map((part) => part.trim());
+      if (parts.length >= 3) {
+        return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+      }
+      if (parts.length === 2) return `${parts[1]}, ${parts[0]}`;
+      return parts[0];
+    }
+  }
+
+  if (locationData?.locationName?.includes(">")) {
+    const parts = locationData.locationName.split(">").map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+    }
+    if (parts.length === 2) return `${parts[1]}, ${parts[0]}`;
     return parts[0];
   }
 
-  if (locationData?.locationName) {
-    return locationData.locationName;
-  }
-
-  return "Location";
+  return locationData?.locationName || "Location";
 };
 
 const categoryName = getCategoryName();
@@ -596,14 +705,16 @@ const getDeveloperDescription = () => {
     return coreDetails.developerDescription;
   }
 
-  // ✅ If populated object from backend
+  if (developerData?.developer?.description?.trim()) {
+    return developerData.developer.description;
+  }
+
+  // Populated developer object
   if (
     coreDetails?.developerRef &&
     typeof coreDetails.developerRef === "object"
   ) {
-    return (
-      coreDetails.developerRef.description || ""
-    );
+    return coreDetails.developerRef.description || "";
   }
 
   // ✅ If only ID exists
@@ -624,98 +735,211 @@ const developerDescription =
 
 
 useEffect(() => {
+  if (Array.isArray(developerData?.properties)) {
+    setDeveloperProjects(developerData.properties);
+    return;
+  }
 
-  if (!developerName) return;
+  if (!developerName || insideAdmin) {
+    setDeveloperProjects([]);
+    return;
+  }
+
+  const controller = new AbortController();
 
   const fetchDeveloperProjects = async () => {
-
     try {
-
       const developerSlug = developerName
-        ?.toLowerCase()
-        ?.replace(/\s+/g, "-");
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
 
       const res = await fetch(
-        `/api/developers/${developerSlug}`
+        `/api/developers/${encodeURIComponent(developerSlug)}`,
+        { signal: controller.signal }
       );
-
       const data = await res.json();
 
       if (res.ok) {
-
-        // ✅ PROJECTS
         setDeveloperProjects(
-          data.properties || []
+          Array.isArray(data.properties) ? data.properties : []
         );
-
-        // ✅ AUTO LOAD DESCRIPTION
-        if (
-          data.developer?.description &&
-          !coreDetails?.developerDescription
-        ) {
-          form.coreDetails.developerDescription =
-            data.developer.description;
-        }
-
-        // ✅ AUTO LOAD IMAGE
-        if (
-          data.developer?.image &&
-          !coreDetails?.developerImage
-        ) {
-          form.coreDetails.developerImage =
-            data.developer.image;
-        }
-
-        // ✅ AUTO LOAD LOGO
-        if (
-          data.developer?.logo &&
-          !coreDetails?.developerLogo
-        ) {
-          form.coreDetails.developerLogo =
-            data.developer.logo;
-        }
-
       } else {
-
         setDeveloperProjects([]);
-
       }
-
     } catch (err) {
-
-      console.error(
-        "Error fetching developer projects:",
-        err
-      );
-
-      setDeveloperProjects([]);
-
+      if (err.name !== "AbortError") {
+        console.error("Error fetching developer projects:", err);
+        setDeveloperProjects([]);
+      }
     }
   };
 
   fetchDeveloperProjects();
-
-}, [developerName]);
+  return () => controller.abort();
+}, [developerName, developerData, insideAdmin]);
 
 const getShortLocation = (location) => {
-
   if (!location) return "Gurgaon";
 
-  if (location.includes(">")) {
-
-    const parts = location
-      .split(">")
-      .map((p) => p.trim());
-
-    return parts[parts.length - 1];
+  if (typeof location === "object") {
+    const names = [];
+    let current = location;
+    while (current && typeof current === "object") {
+      if (current.name) names.push(current.name);
+      current = current.parent;
+    }
+    if (names.length) return names.slice(0, 3).join(", ");
+    return "Gurgaon";
   }
 
-  if (location.includes(",")) {
-    return location.split(",")[0].trim();
+  if (String(location).includes(">")) {
+    const parts = String(location).split(">").map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `${parts[parts.length - 1]}, ${parts[parts.length - 2]}, ${parts[parts.length - 3]}`;
+    }
+    if (parts.length === 2) return `${parts[1]}, ${parts[0]}`;
+    return parts[0];
   }
 
-  return location;
+  if (String(location).includes(",")) return String(location).split(",")[0].trim();
+  return String(location);
 };
+
+
+const getImageAlt = (url) => {
+  if (!url || typeof url !== "string") return "Property Image";
+  try {
+    const filename = decodeURIComponent(
+      url.split("/").pop().split("?")[0].split("#")[0].split(".")[0]
+    );
+    return filename.replace(/[-_]+/g, " ").trim().replace(/\b\w/g, (char) => char.toUpperCase()) || "Property Image";
+  } catch {
+    return "Property Image";
+  }
+};
+
+const getSafeMapEmbedUrl = (value) => {
+  if (!value || typeof value !== "string") return "";
+
+  let url = value.trim()
+    .replace(/&quot;/gi, '"')
+    .replace(/&#34;/gi, '"')
+    .replace(/&amp;/gi, "&")
+    .replace(/&#38;/gi, "&")
+    .replace(/&#x2F;/gi, "/")
+    .replace(/&#47;/gi, "/");
+
+  const iframeMatch = url.match(/<iframe[^>]+src=["']([^"']+)["'][^>]*>/i);
+  if (iframeMatch?.[1]) url = iframeMatch[1].trim();
+  url = url.replace(/^["']|["']$/g, "").trim();
+
+  const allowed =
+    /^https?:\/\/(www\.)?(google\.com|google\.co\.in)\/maps\/embed/i.test(url) ||
+    /^https?:\/\/(www\.)?google\.[^/]+\/maps/i.test(url) ||
+    /^https?:\/\/maps\.googleapis\.com/i.test(url) ||
+    /^https?:\/\/(www\.)?openstreetmap\.org/i.test(url);
+
+  return allowed ? url : "";
+};
+
+const safeMapUrl = getSafeMapEmbedUrl(locationData?.mapEmbedUrl);
+
+const handleCallback = async () => {
+  const cleanName = name.trim();
+  const cleanPhone = phone.replace(/\D/g, "");
+
+  if (!cleanName) return toast.error("Please enter your name");
+  if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+    return toast.error("Enter a valid 10-digit phone number");
+  }
+
+  try {
+    setLoading(true);
+    const res = await fetch(`${API}/leads`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: cleanName,
+        phone: cleanPhone,
+        property: coreDetails?.title || "",
+        source: "Private Consultation",
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.success === false) {
+      toast.error(data.message || "Unable to submit your request");
+      return;
+    }
+
+    toast.success("Thank you! Our property advisor will contact you shortly.");
+    setName("");
+    setPhone("");
+  } catch (err) {
+    console.error("Callback lead submission error:", err);
+    toast.error("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// Match PropertyPreview: show only other published developer properties.
+const currentPropertySlug = form?.slug?.trim()?.toLowerCase() || "";
+const otherDeveloperProjects = Array.isArray(developerProjects)
+  ? developerProjects.filter((project) => {
+      if (
+        project?.status !== "published" ||
+        project?.isDeleted === true ||
+        project?.deletedFromStatus === "trash"
+      ) {
+        return false;
+      }
+
+      const projectSlug = project?.slug?.trim()?.toLowerCase() || "";
+      return Boolean(projectSlug) && projectSlug !== currentPropertySlug;
+    }).slice(0, 4)
+  : [];
+
+const buildPublicDeveloperSlug = (developerSlug) => {
+  if (!developerSlug) return "";
+
+  const cleanSlug = String(developerSlug)
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!cleanSlug) return "";
+  if (
+    cleanSlug.endsWith("-developer-projects") ||
+    cleanSlug.endsWith("-developers-projects")
+  ) {
+    return cleanSlug;
+  }
+  if (cleanSlug.endsWith("-developer") || cleanSlug.endsWith("-developers")) {
+    return `${cleanSlug}-projects`;
+  }
+  return `${cleanSlug}-developer-projects`;
+};
+
+const backendDeveloperSlug =
+  developerData?.slug ||
+  developerData?.backendSlug ||
+  developerData?.developerSlug ||
+  developerData?.data?.slug ||
+  developerData?.data?.backendSlug ||
+  developerData?.data?.developerSlug ||
+  developerData?.developer?.slug ||
+  "";
+
+const publicDeveloperSlug = buildPublicDeveloperSlug(
+  backendDeveloperSlug || developerName
+);
+
+const developerPortfolioUrl = publicDeveloperSlug
+  ? `/developers/${encodeURIComponent(publicDeveloperSlug)}`
+  : null;
 
   return (
     <div className="relative overflow-hidden bg-black">
@@ -905,8 +1129,8 @@ const getShortLocation = (location) => {
               id: "location",
             },
             {
-              label: "Contact",
-              id: "contact",
+              label: "FAQ & Contact",
+              id: "faq",
             },
           ].map((item, index) => (
             <button
@@ -1013,8 +1237,8 @@ const getShortLocation = (location) => {
     isolate
   "
   style={{
-    backgroundImage: media?.heroImageUrl
-      ? `url(${media.heroImageUrl})`
+    backgroundImage: (heroSection?.heroImage || media?.heroImageUrl)
+      ? `url(${heroSection?.heroImage || media?.heroImageUrl})`
       : "linear-gradient(#000,#111)",
     backgroundSize: "cover",
     backgroundPosition: "center center",
@@ -1136,7 +1360,7 @@ const getShortLocation = (location) => {
         "
       >
         {heroSection?.heroDescription ||
-          "A rare fusion of architectural brilliance and low-density luxury living."}
+          `${coreDetails?.title || "This property"} by ${developerName} is a luxury ${categoryName?.toLowerCase() || "residential"} project in ${locationName}, offering premium residences, world-class amenities, refined architecture and exceptional connectivity.`}
       </motion.p>
 
       {/* BUTTONS */}
@@ -1341,6 +1565,29 @@ const getShortLocation = (location) => {
         </div>
       </motion.div>
 
+      {/* ================= HERO TAGLINE STRIP ================= */}
+      <motion.div
+        variants={fadeUp}
+        className="mt-7 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-center text-[#d8b46b]/90 text-[8px] tracking-[1.6px] uppercase sm:text-[10px] sm:tracking-[2px]"
+        style={{ fontFamily: "Inter, sans-serif" }}
+      >
+        <div className="w-6 sm:w-10 h-[1px] bg-[#c9a64b]/40" />
+        {(Array.isArray(heroSection?.taglineItems) && heroSection.taglineItems.some((item) => String(item || "").trim())
+          ? heroSection.taglineItems.filter((item) => String(item || "").trim())
+          : [
+              "Ultra-Luxury Residences",
+              "Low-Density Living",
+              "Exclusive Community",
+            ]
+        ).map((item, index, items) => (
+          <React.Fragment key={`${String(item)}-${index}`}>
+            <span>{item}</span>
+            {index !== items.length - 1 && <span aria-hidden="true">|</span>}
+          </React.Fragment>
+        ))}
+        <div className="w-6 sm:w-10 h-[1px] bg-[#c9a64b]/40" />
+      </motion.div>
+
     </div>
   </motion.div>
 </motion.div>
@@ -1411,7 +1658,7 @@ const getShortLocation = (location) => {
           uppercase
         "
       >
-        {overview?.aboutLabel || "Luxury Living"}
+        {overview?.aboutSectionLabel || overview?.aboutLabel || aboutSectionLabel}
       </p>
     </div>
 
@@ -1428,13 +1675,11 @@ const getShortLocation = (location) => {
           "Georgia, Times New Roman, serif",
       }}
     >
-      {overview?.aboutTitleLine1 ||
-        "Crafted For Elevated"}
+      {overview?.aboutHeadingLine1 || overview?.aboutTitleLine1 || aboutHeadingLine1}
 
       <br />
 
-      {overview?.aboutTitleLine2 ||
-        "Luxury Living"}
+      {overview?.aboutHeadingLine2 || overview?.aboutTitleLine2 || aboutHeadingLine2}
     </h2>
 
     {/* DIVIDER */}
@@ -1624,15 +1869,36 @@ const getShortLocation = (location) => {
               {item?.title}
             </h3>
 
-            <p
+            {/* DESCRIPTION — SUPPORTS BOTH PLAIN TEXT AND RICH HTML */}
+            <div
               className="
                 text-white/60
                 text-[11px]
                 leading-[1.6]
+                max-w-[220px]
+                mx-auto
+                break-words
+                whitespace-normal
+                overflow-hidden
+                [&_p]:m-0
+                [&_p]:p-0
+                [&_p]:mb-2
+                [&_p:last-child]:mb-0
+                [&_strong]:text-white/80
+                [&_strong]:font-semibold
+                [&_b]:text-white/80
+                [&_b]:font-semibold
+                [&_em]:italic
+                [&_ul]:list-disc
+                [&_ul]:pl-4
+                [&_ol]:list-decimal
+                [&_ol]:pl-4
               "
-            >
-              {item?.desc}
-            </p>
+              style={{ fontFamily: "Inter, sans-serif" }}
+              dangerouslySetInnerHTML={{
+                __html: item?.desc || "",
+              }}
+            />
 
           </div>
       ))}
@@ -2218,142 +2484,257 @@ else {
 </motion.section>
 
 {/* ================= ULTRA PREMIUM CONFIGURATION SECTION ================= */}
-{gatedContent?.floorPlans?.length > 0 && (() => {
 
-  // ✅ ACTIVE FLOOR PLAN
-  const activeFloorPlan =
-    gatedContent.floorPlans?.[activePlan] || {};
+{(() => {
+  const configurationType =
+    gatedContent?.configurationType || "Apartments";
 
-  const hasFloorPlanImage =
-    activeFloorPlan?.image &&
-    activeFloorPlan.image.trim() !== "";
+  const isPlots =
+    String(configurationType).toLowerCase() === "plots";
+
+  // Safely check whether a value contains usable data.
+  const hasValue = (value) =>
+    value !== null &&
+    value !== undefined &&
+    String(value).trim() !== "";
+
+  // Filter out empty placeholder configuration records.
+  const isValidConfiguration = (item) => {
+    if (!item || typeof item !== "object") return false;
+
+    if (isPlots) {
+      return [
+        item.plotType,
+        item.plotArea,
+        item.price,
+        item.paymentPlan,
+        item.image,
+      ].some(hasValue);
+    }
+
+    return [
+      item.unitType,
+      item.area,
+      item.price,
+      item.bedrooms,
+      item.bathrooms,
+      item.balconies,
+      item.paymentPlan,
+      item.image,
+    ].some(hasValue);
+  };
+
+  // Get configurations from the gated-content fields.
+  const gatedSource = isPlots
+    ? gatedContent?.plotConfigurations
+    : gatedContent?.floorPlans;
+
+  const gatedConfigurations = (
+    Array.isArray(gatedSource) ? gatedSource : []
+  ).filter(isValidConfiguration);
+
+  // Get the property's actual unit configurations.
+  const propertyConfigurations = Array.isArray(form?.unitConfigurations)
+    ? form.unitConfigurations.filter(isValidConfiguration)
+    : [];
+
+  // Prefer populated gated configurations.
+  // Otherwise, use the property's unitConfigurations.
+  // Plot listings must not fall back to apartment configurations.
+  const configurations = gatedConfigurations.length > 0
+    ? gatedConfigurations
+    : isPlots
+      ? []
+      : propertyConfigurations;
+
+  // Do not render an empty configuration section.
+  if (configurations.length === 0) return null;
+
+  // Keep the active tab within the available range.
+  const safeActivePlan =
+    activePlan >= 0 && activePlan < configurations.length
+      ? activePlan
+      : 0;
+
+  const activeConfiguration =
+    configurations[safeActivePlan] || {};
+
+  // Check whether a valid configuration image exists.
+  const hasConfigurationImage =
+    typeof activeConfiguration?.image === "string" &&
+    activeConfiguration.image.trim() !== "";
 
   return (
-    <motion.section
-      id="configuration"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
-      variants={staggerContainer}
-      className="
+    <section
+  id="configuration"
+  className="
         relative
-        py-12
-        sm:py-14
-        md:py-20
+        py-14
+        md:py-24
         bg-[#f7f3ec]
         overflow-hidden
-        "
+      "
     >
 
-      {/* SOFT GLOW */}
-      <div className="absolute top-0 left-0 w-[420px] h-[420px] bg-[#c9a64b]/10 blur-[130px] rounded-full" />
+      {/* ================= SOFT GLOW ================= */}
+
+      <div
+        className="
+          absolute
+          top-0
+          left-0
+          w-[420px]
+          h-[420px]
+          bg-[#c9a64b]/10
+          blur-[130px]
+          rounded-full
+          pointer-events-none
+        "
+      />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6">
 
-        {/* ================= SECTION LABEL ================= */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center justify-center gap-2 sm:gap-3 mb-4"
-        >
-          <p
-            className="text-[#b89149] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase"
+        {/* ========================================================= */}
+        {/* ================= HEADING =============================== */}
+        {/* ========================================================= */}
+
+        <div className="text-center mb-12 md:mb-16">
+
+          {/* ================= SECTION LABEL ================= */}
+
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
+
+            <p
+              className="
+                text-[#b89149]
+                text-[10px]
+                sm:text-[11px]
+                tracking-[2px]
+                sm:tracking-[3px]
+                uppercase
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              {configurationSection?.sectionNumber || "05"}
+            </p>
+
+            <div className="w-6 sm:w-8 h-[1px] bg-[#c8a66a]" />
+
+            <p
+              className="
+                text-[#2d4137]
+                text-[10px]
+                sm:text-[11px]
+                tracking-[2px]
+                sm:tracking-[3px]
+                uppercase
+              "
+              style={{
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              {configurationSection?.sectionLabel ||
+                "Residence Configurations"}
+            </p>
+
+          </div>
+
+
+          {/* ================= TITLE ================= */}
+
+          <motion.h2
+            variants={fadeUp}
+            className="
+              text-[34px]
+              sm:text-5xl
+              md:text-6xl
+              font-light
+              text-[#17342d]
+              leading-[1.05]
+              px-2
+            "
             style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 600,
+              fontFamily: "Cormorant Garamond, serif",
             }}
           >
-            {configurationSection?.sectionNumber || "05"}
-          </p>
-
-          <div className="w-6 sm:w-8 h-[1px] bg-[#c9a64b]" />
-
-          <p
-            className="text-[#2d4137] text-[10px] sm:text-[11px] tracking-[2px] sm:tracking-[3px] uppercase text-center"
-            style={{
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            {configurationSection?.sectionLabel ||
-              "Residence Configurations"}
-          </p>
-        </motion.div>
-
-        {/* ================= TITLE ================= */}
-        <motion.h2
-          variants={fadeUp}
-          className="
-            text-center
-            text-[#183126]
-            text-[28px]
-            sm:text-[38px]
-            md:text-[56px]
-            lg:text-[72px]
-            leading-[0.95]
-            tracking-[-1px]
-            md:tracking-[-2px]
-            max-w-[1100px]
-            mx-auto
-            px-2
-          "
-          style={{
-            fontFamily:
-              "Georgia, Times New Roman, serif",
-            fontWeight: 400,
-          }}
-        >
-          <span className="block">
             {configurationSection?.titleLine1 ||
               "Residences Tailored"}
-          </span>
 
-          <span className="block text-[#b89149] mt-1 sm:mt-2">
-            {configurationSection?.titleLine2 ||
-              "to Your Lifestyle"}
-          </span>
-        </motion.h2>
+            <span className="text-[#b58b47]">
+              {" "}
+              {configurationSection?.titleLine2 ||
+                "to Your Lifestyle"}
+            </span>
+          </motion.h2>
 
-        {/* GOLD DIVIDER */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center justify-center gap-3 mt-5 sm:mt-6"
-        >
-          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
 
-          <div className="w-[5px] h-[5px] rotate-45 border border-[#c9a64b]" />
+          {/* ================= DIVIDER ================= */}
 
-          <div className="w-10 sm:w-14 h-[1px] bg-[#c9a64b]" />
-        </motion.div>
+          <div
+            className="
+              w-20
+              md:w-24
+              h-[1px]
+              bg-[#c8a66a]
+              mx-auto
+              mt-5
+              relative
+            "
+          >
+            <div
+              className="
+                absolute
+                left-1/2
+                top-1/2
+                -translate-x-1/2
+                -translate-y-1/2
+                w-2
+                h-2
+                rotate-45
+                bg-[#c8a66a]
+              "
+            />
+          </div>
 
-        {/* SUBTEXT */}
-        <motion.p
-          variants={fadeUp}
-          className="
-            mt-5
-            sm:mt-6
-            text-center
-            text-[#5d5d5d]
-            text-[13px]
-            sm:text-[15px]
-            md:text-[18px]
-            leading-[1.9]
-            max-w-[780px]
-            mx-auto
-            px-2
-          "
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 300,
-          }}
-        >
-          {configurationSection?.subheading ||
-            "Thoughtfully designed layouts that redefine space, privacy and luxury."}
-        </motion.p>
 
-        {/* ================= MAIN CARD ================= */}
-        <motion.div
-          variants={fadeUp}
-          className="
-            mt-10
+          {/* ================= SUBTEXT ================= */}
+
+          <motion.p
+            variants={fadeUp}
+            className="
+              max-w-3xl
+              mx-auto
+              mt-6
+              md:mt-7
+              text-[#6b6b6b]
+              text-[14px]
+              sm:text-base
+              md:text-lg
+              leading-relaxed
+              px-2
+            "
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            {configurationSection?.subheading ||
+              "Thoughtfully designed layouts that redefine space, privacy, and luxury."}
+          </motion.p>
+
+        </div>
+
+
+        {/* ========================================================= */}
+        {/* ================= MAIN CARD ============================= */}
+        {/* ========================================================= */}
+
+        <div
+  className="
+    mt-10
             md:mt-14
             bg-[#f9f7f3]
             border
@@ -2365,209 +2746,321 @@ else {
           "
         >
 
-         <div className="flex flex-col">
+          {/* ======================================================= */}
+          {/* ================= CONFIGURATION TABS ================== */}
+          {/* ======================================================= */}
 
-            {/* ================= LEFT TABS ================= */}
-            <div className="border-b border-[#e6dccb] bg-[#f5f0e7] overflow-x-auto">
+          <div
+            className="
+              flex
+              overflow-x-auto
+              bg-[#f5f0e7]
+              border-b
+              border-[#e6dccb]
+              scrollbar-hide
+            "
+          >
 
-              <div
-  className="
-    flex
-    gap-2
-    px-2
-    overflow-x-auto
-    scrollbar-hide
-  "
->
+            {configurations.map((configuration, index) => {
 
-                {gatedContent.floorPlans.map((u, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActivePlan(i)}
+              const active = safeActivePlan === index;
+
+              const tabTitle = isPlots
+                ? configuration?.plotType || `Plot ${index + 1}`
+                : configuration?.unitType || `Configuration ${index + 1}`;
+
+              const tabArea = isPlots
+                ? configuration?.plotArea || "Plot Area"
+                : configuration?.area || "Residence Area";
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActivePlan(index)}
+                  className={`
+                    relative
+                    flex-1
+                    min-w-[190px]
+                    px-8
+                    py-6
+                    text-left
+                    transition-all
+                    duration-300
+                    border-r
+                    last:border-r-0
+                    border-[#e6dccb]
+                    group
+                    overflow-hidden
+
+                    ${
+                      active
+                        ? "bg-[#03261d] text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+                        : "bg-[#faf7f2] hover:bg-white hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                    }
+                  `}
+                >
+
+                  {/* ================= GOLD SIDE LINE ================= */}
+
+                  <div
                     className={`
-                      group
-  relative
-  flex-shrink-0
-  text-left
-  px-5
-  sm:px-6
-  py-5
-  border-r
-  border-[#e6dccb]
-  transition-all
-  duration-300
-  min-w-[180px]
-  sm:min-w-[220px]
+                      absolute
+                      left-0
+                      top-0
+                      h-full
+                      w-[3px]
+                      transition-all
+                      duration-300
+
                       ${
-                        activePlan === i
-                          ? "bg-[#03261d] text-white"
-                          : "hover:bg-[#f1eadf]"
+                        active
+                          ? "bg-[#c9a64b]"
+                          : "bg-transparent group-hover:bg-[#d0ac63]"
+                      }
+                    `}
+                  />
+
+
+                  {/* ================= ACTIVE BOTTOM LINE ================= */}
+
+                  {active && (
+                    <div
+                      className="
+                        absolute
+                        bottom-0
+                        left-0
+                        w-full
+                        h-[3px]
+                        bg-[#c9a64b]
+                      "
+                    />
+                  )}
+
+
+                  {/* ================= TAB TITLE ================= */}
+
+                  <h3
+                    className={`
+                      text-[24px]
+                      leading-none
+                      transition-colors
+                      duration-300
+
+                      ${
+                        active
+                          ? "text-white"
+                          : "text-[#17342d] group-hover:text-[#0f2b22]"
+                      }
+                    `}
+                    style={{
+                      fontFamily: "Cormorant Garamond, serif",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {tabTitle}
+                  </h3>
+
+
+                  {/* ================= TAB AREA ================= */}
+
+                  <p
+                    className={`
+                      mt-2
+                      text-[14px]
+                      transition-colors
+                      duration-300
+
+                      ${
+                        active
+                          ? "text-[#d7b367]"
+                          : "text-[#8b6f3d] group-hover:text-[#b58b47]"
                       }
                     `}
                   >
-
-                    {/* ACTIVE BAR */}
-                    {activePlan === i && (
-                      <div className="absolute left-0 top-0 h-full w-[3px] bg-[#c9a64b]" />
-                    )}
-
-                    <div className="flex items-center justify-between gap-4">
-
-                      <div>
-
-                        <h3
-                          className={`
-                            text-[20px]
-                            sm:text-[22px]
-                            leading-none
-                            mb-2
-                            ${
-                              activePlan === i
-                                ? "text-white"
-                                : "text-[#1e352b]"
-                            }
-                          `}
-                          style={{
-                            fontFamily:
-                              "Georgia, Times New Roman, serif",
-                            fontWeight: 400,
-                          }}
-                        >
-                          {u?.unitType || "Luxury Unit"}
-                        </h3>
-
-                        <p
-                          className={`
-                            text-[12px]
-                            sm:text-[13px]
-                            ${
-                              activePlan === i
-                                ? "text-[#d7b367]"
-                                : "text-[#666]"
-                            }
-                          `}
-                        >
-                          {u?.area || "Luxury Residences"}
-                        </p>
-                      </div>
-
-                      <div
-                        className={`
-                          text-[18px]
-                          sm:text-[20px]
-                          transition-all
-                          duration-300
-                          ${
-                            activePlan === i
-                              ? "text-[#d7b367] translate-x-1"
-                              : "text-[#b89149]"
-                          }
-                        `}
-                      >
-                        →
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ================= RIGHT CONTENT ================= */}
-            <div className="p-5 sm:p-6">
-
-              <div
-  className="
-    flex
-    flex-col-reverse
-    gap-8
-    items-start
-  "
->
-
-                {/* ================= DETAILS ================= */}
-                <div>
-
-                  <h3
-                    className="
-                      text-[#1b3127]
-                      text-[28px]
-                      sm:text-[34px]
-                      md:text-[42px]
-                      leading-none
-                    "
-                    style={{
-                      fontFamily:
-                        "Georgia, Times New Roman, serif",
-                    }}
-                  >
-                    {activeFloorPlan?.unitType || "Luxury Unit"}
-                  </h3>
-
-                  <p
-                    className="
-                      mt-3
-                      text-[#b89149]
-                      text-[16px]
-                      sm:text-[18px]
-                    "
-                  >
-                    {activeFloorPlan?.area || "Luxury Residences"}
+                    {tabArea}
                   </p>
 
-                  <div className="w-14 h-[1px] bg-[#c9a64b] mt-6 sm:mt-7 mb-6 sm:mb-7" />
 
-                  {/* ================= METRICS ================= */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-4">
+                  {/* ================= HOVER SHINE ================= */}
+
+                  {!active && (
+                    <div
+                      className="
+                        absolute
+                        inset-0
+                        opacity-0
+                        group-hover:opacity-100
+                        transition-opacity
+                        duration-300
+                        pointer-events-none
+                        bg-gradient-to-r
+                        from-transparent
+                        via-white/40
+                        to-transparent
+                      "
+                    />
+                  )}
+
+                </button>
+              );
+            })}
+
+          </div>
+
+
+          {/* ======================================================= */}
+          {/* ================= CONTENT ============================= */}
+          {/* ======================================================= */}
+
+          <div className="p-5 sm:p-6 lg:p-8">
+
+            <div
+              className="
+                grid
+                lg:grid-cols-[1.45fr_0.65fr]
+                gap-10
+                lg:gap-12
+                items-start
+              "
+            >
+
+              {/* =================================================== */}
+              {/* ================= DETAILS ========================= */}
+              {/* =================================================== */}
+
+              <div>
+
+                {/* ================= TYPE ================= */}
+
+                <h3
+                  className="
+                    text-[#1b3127]
+                    text-[34px]
+                    sm:text-[42px]
+                    leading-none
+                  "
+                  style={{
+                    fontFamily:
+                      "Georgia, Times New Roman, serif",
+                  }}
+                >
+                  {isPlots
+                    ? activeConfiguration?.plotType ||
+                      "Premium Plot"
+                    : activeConfiguration?.unitType ||
+                      "Luxury Unit"}
+                </h3>
+
+
+                {/* ================= AREA ================= */}
+
+                <p
+                  className="
+                    mt-3
+                    text-[#b89149]
+                    text-[16px]
+                    sm:text-[18px]
+                  "
+                >
+                  {isPlots
+                    ? activeConfiguration?.plotArea ||
+                      "Premium Plot Area"
+                    : activeConfiguration?.area ||
+                      "Luxury Residences"}
+                </p>
+
+
+                {/* ================= GOLD DIVIDER ================= */}
+
+                <div
+                  className="
+                    w-14
+                    h-[1px]
+                    bg-[#c9a64b]
+                    mt-6
+                    sm:mt-7
+                    mb-6
+                    sm:mb-7
+                  "
+                />
+
+
+                {/* ================================================= */}
+                {/* ================= METRICS ======================= */}
+                {/* ================================================= */}
+
+                {isPlots ? (
+
+                  /* ================= PLOT METRICS ================= */
+
+                  <div
+                    className="
+                      grid
+                      grid-cols-2
+                      md:grid-cols-3
+                      gap-y-6
+                      gap-x-0
+                    "
+                  >
 
                     {[
                       {
-                        label: "Bedrooms",
-                        value: activeFloorPlan?.bedrooms || "3",
-                        icon: "⌂",
-                      },
-                      {
-                        label: "Bathrooms",
-                        value: activeFloorPlan?.bathrooms || "3",
-                        icon: "◉",
-                      },
-                      {
-                        label: "Balconies",
-                        value: activeFloorPlan?.balconies || "2",
-                        icon: "▤",
+                        label: "Plot Area",
+                        value:
+                          activeConfiguration?.plotArea ||
+                          "On Request",
+                        icon: Building2,
                       },
                       {
                         label: "Price",
-                        value: activeFloorPlan?.price || "On Request",
-                        icon: "₹",
+                        value:
+                          activeConfiguration?.price ||
+                          "On Request",
+                        icon: IndianRupee,
                       },
                       {
                         label: "Payment Plan",
                         value:
-                          activeFloorPlan?.paymentPlan || "Flexible",
-                        icon: "◌",
+                          activeConfiguration?.paymentPlan ||
+                          "Flexible",
+                        icon: WalletCards,
                       },
                     ].map((item, index) => (
+
                       <div
                         key={index}
                         className="
-                          border-r
-                          even:border-r-0
-                          sm:even:border-r
-                          sm:last:border-r-0
-                          border-[#e2d6c2]
-                          pr-3
-                        "
+                        border-r
+                        last:border-r-0
+                        border-[#e2d6c2]
+                        px-4
+                        md:px-6
+                        min-w-0
+                      "
                       >
 
-                        <div className="text-[#c9a64b] text-[18px] sm:text-[20px] mb-2">
-                          {item.icon}
+                        <div className="mb-2">
+
+                          <item.icon
+                            className="
+                              w-5
+                              h-5
+                              sm:w-6
+                              sm:h-6
+                              text-[#c9a64b]
+                            "
+                            strokeWidth={1.7}
+                          />
+
                         </div>
+
 
                         <p
                           className="
                             text-[#1f352c]
-                            text-[16px]
-                            sm:text-[18px]
+                            text-[15px]
+                            lg:text-[17px]
                             leading-snug
                             break-words
                           "
@@ -2579,12 +3072,13 @@ else {
                           {item.value}
                         </p>
 
+
                         <p
                           className="
                             mt-2
                             text-[#6a6a6a]
                             text-[10px]
-                            sm:text-[11px]
+                            lg:text-[10.5px]
                             leading-[1.7]
                             uppercase
                             tracking-[1px]
@@ -2592,29 +3086,166 @@ else {
                         >
                           {item.label}
                         </p>
+
                       </div>
+
                     ))}
+
                   </div>
 
-                  {/* ================= FEATURES ================= */}
-                  <div className="mt-8 sm:mt-10 space-y-4">
+                ) : (
 
-                    {(configurationSection?.features?.length > 0
-                      ? configurationSection.features
-                      : [
-                          "Spacious living & dining area",
-                          "Wide balconies for natural light & ventilation",
-                          "Master suite with walk-in wardrobe",
-                          "Dedicated utility area",
-                          "2–3 car parking",
-                        ]
-                    ).map((item, index) => (
+                  /* ================= APARTMENT METRICS ================= */
+
+                  <div
+                    className="
+                      grid
+                      grid-cols-2
+                      md:grid-cols-5
+                      gap-y-6
+                      gap-x-0
+                    "
+                  >
+
+                    {[
+                      {
+                        label: "Bedrooms",
+                        value:
+                          activeConfiguration?.bedrooms ||
+                          "On Request",
+                        icon: Bed,
+                      },
+                      {
+                        label: "Bathrooms",
+                        value:
+                          activeConfiguration?.bathrooms ||
+                          "On Request",
+                        icon: Bath,
+                      },
+                      {
+                        label: "Balconies",
+                        value:
+                          activeConfiguration?.balconies ||
+                          "On Request",
+                        icon: Building2,
+                      },
+                      {
+                        label: "Price",
+                        value:
+                          activeConfiguration?.price ||
+                          "On Request",
+                        icon: IndianRupee,
+                      },
+                      {
+                        label: "Payment Plan",
+                        value:
+                          activeConfiguration?.paymentPlan ||
+                          "Flexible",
+                        icon: WalletCards,
+                      },
+                    ].map((item, index) => (
+
                       <div
                         key={index}
-                        className="flex items-start gap-3"
+                        className="
+                        border-r
+                        last:border-r-0
+                        border-[#e2d6c2]
+                        px-4
+                        md:px-6
+                        min-w-0
+                      "
                       >
 
-                        <div className="mt-[5px] text-[#c9a64b] text-[14px]">
+                        <div className="mb-2">
+
+                          <item.icon
+                            className="
+                              w-5
+                              h-5
+                              sm:w-6
+                              sm:h-6
+                              text-[#c9a64b]
+                            "
+                            strokeWidth={1.7}
+                          />
+
+                        </div>
+
+
+                        <p
+                          className="
+                            text-[#1f352c]
+                            text-[15px]
+                            lg:text-[17px]
+                            leading-snug
+                            break-words
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                          }}
+                        >
+                          {item.value}
+                        </p>
+
+
+                        <p
+                          className="
+                            mt-2
+                            text-[#6a6a6a]
+                            text-[10px]
+                            lg:text-[10.5px]
+                            leading-[1.7]
+                            uppercase
+                            tracking-[1px]
+                          "
+                        >
+                          {item.label}
+                        </p>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+                )}
+
+
+                {/* ================================================= */}
+                {/* ================= FEATURES ====================== */}
+                {/* ================================================= */}
+
+                {!isPlots && (
+                  <div className="mt-8 sm:mt-10 space-y-4">
+
+                    {(
+                      configurationSection?.features?.length > 0
+                        ? configurationSection.features
+                        : [
+                            "Spacious living & dining area",
+                            "Wide balconies for natural light & ventilation",
+                            "Master suite with walk-in wardrobe",
+                            "Dedicated utility area",
+                          ]
+                    ).map((item, index) => (
+
+                      <div
+                        key={index}
+                        className="
+                          flex
+                          items-start
+                          gap-3
+                        "
+                      >
+
+                        <div
+                          className="
+                            mt-[5px]
+                            text-[#c9a64b]
+                            text-[14px]
+                          "
+                        >
                           ⊚
                         </div>
 
@@ -2628,284 +3259,1387 @@ else {
                         >
                           {item}
                         </p>
+
                       </div>
+
                     ))}
+
                   </div>
+                )}
 
-                  {/* BUTTON */}
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="
-                      mt-8
-                      sm:mt-10
-                      w-full
-                      sm:w-auto
-                      h-[50px]
-                      sm:h-[52px]
-                      px-7
-                      sm:px-8
-                      rounded-[8px]
-                      bg-[#03261d]
-                      hover:bg-[#0a3328]
-                      transition-all
-                      duration-300
-                      text-white
-                      flex
-                      items-center
-                      justify-center
-                      gap-3
-                      text-[14px]
-                      sm:text-[15px]
-                    "
-                  >
-                    {configurationSection?.buttonText ||
-                      "Unlock Floor Plan"}
 
-                    <span className="text-[#d7b367] text-[18px]">
-                      →
-                    </span>
-                  </button>
-                </div>
+                {/* ================================================= */}
+                {/* ================= PLOT DESCRIPTION ============== */}
+                {/* ================================================= */}
 
-                {/* ================= FLOOR PLAN ================= */}
-<div className="relative">
+                {isPlots && (
+  <div className="mt-8 sm:mt-10">
 
-  <div
-    className="
-      relative
-      rounded-[16px]
-      md:rounded-[18px]
-      border
-      border-[#e3d7c5]
-      bg-[#f6f2eb]
-      p-3
-      sm:p-4
-      md:p-5
-      shadow-[0_12px_35px_rgba(0,0,0,0.06)]
-      overflow-hidden
-    "
-  >
+    <div className="flex items-start gap-3">
 
-    {/* ================= IF FLOOR PLAN EXISTS ================= */}
-    {hasFloorPlanImage ? (
-
-      <img
-        src={activeFloorPlan.image}
-        alt="floor-plan"
+      <div
         className="
-w-full
-h-[220px]
-sm:h-[320px]
-object-contain
-"
+          mt-[5px]
+          flex-shrink-0
+          w-[7px]
+          h-[7px]
+          rounded-full
+          bg-[#c9a64b]
+        "
       />
 
-    ) : (
-
-      <>
-        {/* PLACEHOLDER BLUR */}
-        <div className="relative h-[220px] sm:h-[320px] overflow-hidden rounded-[12px] bg-gradient-to-br from-[#f3ede2] to-[#ece3d4]">
-
-          {/* FAKE FLOOR PLAN LINES */}
-          <div className="absolute inset-0 opacity-40">
-            <div className="absolute top-10 left-10 w-40 h-24 border border-[#cbb58c]" />
-            <div className="absolute top-40 left-28 w-56 h-32 border border-[#cbb58c]" />
-            <div className="absolute bottom-20 right-20 w-44 h-28 border border-[#cbb58c]" />
-          </div>
-
-          {/* BLUR OVERLAY */}
-          <div className="absolute inset-0 backdrop-blur-[5px] bg-white/30" />
-
-          {/* LOCK CONTENT */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-
-            {/* LOCK ICON */}
-            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center shadow-2xl border border-white/50">
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-9 h-9 text-[#0b2c23]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16 11V7a4 4 0 10-8 0v4m-2 0h12a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z"
-                />
-              </svg>
-            </div>
-
-            {/* TITLE */}
-            <h4
-              className="mt-7 text-[#17342d] text-[22px] sm:text-[28px] md:text-[34px]"
-              style={{
-                fontFamily:
-                  "Georgia, Times New Roman, serif",
-              }}
-            >
-              Unlock Floor Plan
-            </h4>
-
-
-            {/* BUTTON */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="
-                mt-7
-                h-[52px]
-                px-8
-                rounded-full
-                bg-[#03261d]
-                hover:bg-[#0a3328]
-                text-white
-                text-[14px]
-                tracking-[1px]
-                uppercase
-                flex
-                items-center
-                gap-3
-                transition-all
-                duration-300
-                shadow-xl
-              "
-            >
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5 text-[#d7b367]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2z"
-                />
-              </svg>
-
-              Unlock Now
-            </button>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-</div>
-
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </motion.section>
-  );
-})()}
-
-{/* ================= MOBILE GALLERY ================= */}
-<div className="block md:hidden">
-
-  <section
-    id="gallery"
-    className="bg-[#f7f3ee] py-12 overflow-hidden"
-  >
-
-    <div className="px-4">
-
-      {/* HEADING */}
-      <div className="text-center mb-8">
-
-        <p className="uppercase tracking-[3px] text-[#b58b47] text-[10px] font-semibold mb-3">
-          06 | GALLERY
-        </p>
-
-        <h2
-          className="text-[30px] leading-[1.05] text-[#17342d]"
-          style={{
-            fontFamily: "Cormorant Garamond, serif",
-          }}
-        >
-          A Glimpse Into
-          <span className="text-[#b58b47]">
-            {" "}Elevated Living
-          </span>
-        </h2>
-
-        <p className="mt-4 text-[13px] leading-relaxed text-[#6b6b6b]">
-          Discover elegant architecture, luxurious interiors,
-          lush landscapes and premium experiences.
-        </p>
-
-      </div>
-
-      {/* MAIN IMAGE */}
-      <div
-        onClick={() => {
-          setSelectedImage(gallery[0]);
-          setSelectedIndex(0);
-        }}
-        className="mb-3 overflow-hidden rounded-[22px]"
+      <p
+        className="
+          text-[#4f4f4f]
+          text-[13px]
+          sm:text-[14px]
+          leading-[1.9]
+        "
       >
-        <img
-          src={gallery[0]}
-          alt=""
-          className="w-full h-[240px] object-cover"
-        />
-      </div>
-
-      {/* THUMBNAILS */}
-      <div className="grid grid-cols-2 gap-3">
-
-        {gallery.slice(1, 5).map((img, i) => (
-          <div
-            key={i}
-            onClick={() => {
-              setSelectedImage(img);
-              setSelectedIndex(i + 1);
-            }}
-            className="overflow-hidden rounded-[18px]"
-          >
-            <img
-              src={img}
-              alt=""
-              className="w-full h-[140px] object-cover"
-            />
-          </div>
-        ))}
-
-      </div>
-
-      {/* MORE PHOTOS */}
-      {gallery.length > 5 && (
-        <button
-          onClick={() => {
-            setSelectedImage(gallery[0]);
-            setSelectedIndex(0);
-          }}
-          className="
-            mt-5
-            w-full
-            h-[52px]
-            rounded-xl
-            bg-[#08211c]
-            text-white
-            text-[14px]
-            font-medium
-          "
-        >
-          View All {gallery.length} Photos
-        </button>
-      )}
+        Premium residential plots thoughtfully planned for
+        comfortable living, future growth and long-term
+        investment potential.
+      </p>
 
     </div>
 
-  </section>
+  </div>
+)}
 
-</div>
+
+                {/* ================================================= */}
+                {/* ================= BUTTON ======================== */}
+                {/* ================================================= */}
+
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  className="
+                    mt-8
+                    sm:mt-10
+                    w-full
+                    sm:w-auto
+                    h-[50px]
+                    sm:h-[52px]
+                    px-7
+                    sm:px-8
+                    rounded-[8px]
+                    bg-[#03261d]
+                    hover:bg-[#0a3328]
+                    transition-all
+                    duration-300
+                    text-white
+                    flex
+                    items-center
+                    justify-center
+                    gap-3
+                    text-[14px]
+                    sm:text-[15px]
+                  "
+                >
+
+                  {configurationSection?.buttonText ||
+                    "Unlock Floor Plan"}
+
+                  <span className="text-[#d7b367] text-[18px]">
+                    →
+                  </span>
+
+                </button>
+
+              </div>
+
+
+              {/* =================================================== */}
+              {/* ================= IMAGE =========================== */}
+              {/* =================================================== */}
+
+              <div className="relative">
+
+                <div
+                  className="
+                    relative
+                    rounded-[16px]
+                    md:rounded-[18px]
+                    border
+                    border-[#e3d7c5]
+                    bg-[#f6f2eb]
+                    p-3
+                    sm:p-4
+                    md:p-5
+                    shadow-[0_12px_35px_rgba(0,0,0,0.06)]
+                    overflow-hidden
+                  "
+                >
+
+                  {/* ================================================= */}
+                  {/* ================= IMAGE EXISTS ================== */}
+                  {/* ================================================= */}
+
+                  {hasConfigurationImage ? (
+
+                    <img
+                      src={activeConfiguration.image}
+                      alt={
+                        isPlots
+                          ? activeConfiguration?.plotType ||
+                            "Plot configuration"
+                          : activeConfiguration?.unitType ||
+                            "Floor plan"
+                      }
+                      className="
+                        w-full
+                        h-[260px]
+                        sm:h-[360px]
+                        md:h-[500px]
+                        object-contain
+                      "
+                    />
+
+                  ) : (
+
+                    /* ================================================= */
+                    /* ================= LOCKED PLACEHOLDER ============ */
+                    /* ================================================= */
+
+                    <div
+                      className="
+                        relative
+                        h-[260px]
+                        sm:h-[360px]
+                        md:h-[500px]
+                        overflow-hidden
+                        rounded-[12px]
+                        bg-gradient-to-br
+                        from-[#f3ede2]
+                        to-[#ece3d4]
+                      "
+                    >
+
+                      {/* ================= FAKE PLAN LINES ================= */}
+
+                      <div className="absolute inset-0 opacity-40">
+
+                        <div
+                          className="
+                            absolute
+                            top-10
+                            left-10
+                            w-40
+                            h-24
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            top-40
+                            left-28
+                            w-56
+                            h-32
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            bottom-20
+                            right-20
+                            w-44
+                            h-28
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                        <div
+                          className="
+                            absolute
+                            top-20
+                            right-16
+                            w-28
+                            h-20
+                            border
+                            border-[#cbb58c]
+                          "
+                        />
+
+                      </div>
+
+
+                      {/* ================= BLUR ================= */}
+
+                      <div
+                        className="
+                          absolute
+                          inset-0
+                          backdrop-blur-[5px]
+                          bg-white/30
+                        "
+                      />
+
+
+                      {/* ================= LOCK CONTENT ================= */}
+
+                      <div
+                        className="
+                          absolute
+                          inset-0
+                          flex
+                          flex-col
+                          items-center
+                          justify-center
+                          text-center
+                          px-6
+                        "
+                      >
+
+                        {/* ================= LOCK ICON ================= */}
+
+                        <div
+                          className="
+                            w-20
+                            h-20
+                            rounded-full
+                            bg-white/90
+                            backdrop-blur-xl
+                            flex
+                            items-center
+                            justify-center
+                            shadow-2xl
+                            border
+                            border-white/50
+                          "
+                        >
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-9 h-9 text-[#0b2c23]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M16 11V7a4 4 0 10-8 0v4m-2 0h12a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z"
+                            />
+                          </svg>
+
+                        </div>
+
+
+                        {/* ================= LOCK TITLE ================= */}
+
+                        <h4
+                          className="
+                            mt-7
+                            text-[#17342d]
+                            text-[28px]
+                            sm:text-[34px]
+                          "
+                          style={{
+                            fontFamily:
+                              "Georgia, Times New Roman, serif",
+                          }}
+                        >
+                          {isPlots
+                            ? "Unlock Plot Plan"
+                            : "Unlock Floor Plan"}
+                        </h4>
+
+
+                        {/* ================= LOCK BUTTON ================= */}
+
+                        <button
+                          type="button"
+                          onClick={() => setShowModal(true)}
+                          className="
+                            mt-7
+                            h-[52px]
+                            px-8
+                            rounded-full
+                            bg-[#03261d]
+                            hover:bg-[#0a3328]
+                            text-white
+                            text-[14px]
+                            tracking-[1px]
+                            uppercase
+                            flex
+                            items-center
+                            gap-3
+                            transition-all
+                            duration-300
+                            shadow-xl
+                          "
+                        >
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5 text-[#d7b367]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                            />
+                          </svg>
+
+                          Unlock Now
+
+                        </button>
+
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+                </div>
+
+
+        {/* ========================================================= */}
+        {/* ================= PLOT FEATURES ========================= */}
+        {/* ========================================================= */}
+
+        {isPlots && (
+          <div
+  className="
+    mt-8
+    md:mt-10
+              bg-[#f9f8f4]
+              border
+              border-[#e4dfd5]
+              rounded-[18px]
+              md:rounded-[20px]
+              overflow-hidden
+              shadow-[0_12px_35px_rgba(0,0,0,0.035)]
+            "
+          >
+
+            {/* ================= FEATURE HEADER ================= */}
+
+            <div
+              className="
+                px-6
+                sm:px-8
+                md:px-10
+                pt-6
+                sm:pt-7
+                md:pt-8
+                pb-5
+                md:pb-6
+              "
+            >
+
+              <h3
+                className="
+                  text-[#17342d]
+                  text-[17px]
+                  sm:text-[18px]
+                  md:text-[19px]
+                  uppercase
+                  tracking-[1px]
+                "
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                Plot Features
+              </h3>
+
+            </div>
+
+
+            {/* ================= FEATURES GRID ================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-3
+                xl:grid-cols-6
+                border-t
+                border-[#e4dfd5]
+              "
+            >
+
+              {/* ================= FEATURE 1 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  last:border-r-0
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 19.5c1.5-2.8 4-4.2 6.5-4.2S15.5 16.7 17 19.5"
+                    />
+                    <circle cx="7" cy="9" r="2.2" />
+                    <circle cx="12" cy="7" r="2.2" />
+                    <circle cx="17" cy="9" r="2.2" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.5 19.5h17"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Spacious plots in a
+                  <br />
+                  well-planned layout
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 2 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  lg:border-b-0
+                  xl:border-r
+                  sm:border-r-0
+                  lg:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 17h18"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 17l2-8h10l2 8"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 9l-2-3M16 9l2-3"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 20h4M16 20h4"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Wide internal roads
+                  <br />
+                  and landscaping
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 3 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 21V9"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 9c2-2 4-2 6 0v12"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14 13h4"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14 17h4"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 21h14"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 6h4M5 3h6"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Underground utilities
+                  <br />
+                  and infrastructure
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 4 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r-0
+                  lg:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 3l7 3v5c0 4.7-2.8 7.9-7 10-4.2-2.1-7-5.3-7-10V6l7-3z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12l2 2 4-4"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  24×7 Security in
+                  <br />
+                  a gated community
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 5 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  border-b
+                  sm:border-r
+                  lg:border-b-0
+                  xl:border-r
+                  border-[#e4dfd5]
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 20V9l8-5 8 5v11"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 20v-5h8v5"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 10h.01M12 10h.01M17 10h.01"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Close to schools,
+                  <br />
+                  hospitals & hubs
+                </p>
+
+              </div>
+
+
+              {/* ================= FEATURE 6 ================= */}
+
+              <div
+                className="
+                  group
+                  relative
+                  flex
+                  items-center
+                  gap-4
+                  px-6
+                  sm:px-7
+                  lg:px-6
+                  xl:px-7
+                  py-6
+                  md:py-7
+                  transition-all
+                  duration-300
+                  hover:bg-white
+                "
+              >
+
+                <div
+                  className="
+                    flex-shrink-0
+                    w-[34px]
+                    h-[34px]
+                    flex
+                    items-center
+                    justify-center
+                    text-[#174b3d]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.45"
+                    className="w-[27px] h-[27px]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 21V8l7-4 7 4v13"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 21v-6h8v6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2M9 10h6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 21h18"
+                    />
+                  </svg>
+                </div>
+
+                <p
+                  className="
+                    text-[#26372f]
+                    text-[12px]
+                    sm:text-[13px]
+                    leading-[1.65]
+                  "
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Ideal for living or
+                  <br />
+                  long-term investment
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+
+    </section>
+  );
+})()}
+
+{/* ============================================================
+    PREMIUM GALLERY SECTION — PERFORMANCE OPTIMIZED
+    ============================================================
+
+    Performance changes:
+    - Removed Framer Motion from the gallery
+    - Removed whileInView / whileHover animations
+    - Removed AnimatePresence
+    - Removed priority from gallery thumbnails
+    - Added loading="lazy" to gallery thumbnails
+    - Reduced thumbnail image quality from 100 to 80
+    - Kept fullscreen image priority because it is loaded
+      only after the user explicitly opens it
+    - Preserved gallery navigation and keyboard functionality
+    - Preserved existing premium visual design
+    - Added accessible button labels
+============================================================ */}
+
+{gallery.length > 0 && (
+  <>
+    <section
+      id="gallery"
+      className="relative bg-[#f7f3ee] py-16 md:py-24 overflow-hidden"
+    >
+      {/* BACKGROUND */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, #17342d 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 max-w-[1500px] mx-auto px-4 sm:px-5">
+
+        {/* =====================================================
+            HEADING
+        ===================================================== */}
+
+        <div className="text-center mb-12 md:mb-16">
+
+          <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[11px] sm:text-sm font-medium mb-4">
+            06 | GALLERY
+          </p>
+
+          <h2
+            className="text-[34px] sm:text-5xl md:text-6xl font-light text-[#17342d] leading-[1.05] px-2"
+            style={{
+              fontFamily: "Cormorant Garamond, serif",
+            }}
+          >
+            A Glimpse Into
+            <span className="text-[#b58b47]">
+              {" "}Elevated Living.
+            </span>
+          </h2>
+
+          <div
+            className="w-20 md:w-24 h-[1px] bg-[#c8a66a] mx-auto mt-5 relative"
+            aria-hidden="true"
+          >
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-[#c8a66a]" />
+          </div>
+
+          <p className="max-w-3xl mx-auto mt-6 md:mt-7 text-[#6b6b6b] text-[14px] sm:text-base md:text-lg leading-relaxed px-2">
+            Discover elegant architecture, luxurious interiors, lush
+            landscapes, and thoughtfully curated experiences designed
+            for a timeless lifestyle.
+          </p>
+
+        </div>
+
+
+        {/* =====================================================
+            GALLERY WRAPPER
+        ===================================================== */}
+
+        <div className="relative rounded-[24px] md:rounded-[40px] border border-[#e6d7c3] bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.10)] overflow-hidden">
+
+          {/* SOFT GLOW */}
+          <div
+            className="absolute -top-32 -left-20 w-72 h-72 bg-[#d4b071]/10 blur-3xl rounded-full pointer-events-none"
+            aria-hidden="true"
+          />
+
+          <div className="relative z-10">
+
+            {/* =================================================
+                TOP BAR
+            ================================================= */}
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 md:mb-10">
+
+              <div>
+
+                <p className="uppercase tracking-[3px] md:tracking-[4px] text-[#b58b47] text-[10px] sm:text-xs font-semibold mb-3">
+                  Premium Lifestyle Showcase
+                </p>
+
+                <h3
+                  className="text-[28px] sm:text-4xl md:text-5xl text-[#17342d] font-light leading-tight"
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
+                  }}
+                >
+                  Curated Spaces &amp; Experiences
+                </h3>
+
+              </div>
+
+
+              {/* =================================================
+                  OPEN FULL GALLERY BUTTON
+              ================================================= */}
+
+              <button
+                type="button"
+                aria-label="Open full property gallery"
+                onClick={() => {
+                  if (!gallery.length) return;
+
+                  setSelectedImage(gallery[0]);
+                  setSelectedIndex(0);
+                }}
+                className="group w-full sm:w-auto justify-center bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] text-[#e0bd7d] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl flex items-center gap-3 sm:gap-4 uppercase tracking-[1.5px] sm:tracking-[2px] text-[11px] sm:text-sm font-semibold shadow-lg hover:shadow-[0_0_35px_rgba(212,176,113,0.25)] transition-shadow duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4b071] focus-visible:ring-offset-2"
+              >
+
+                <span
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d4b071] flex items-center justify-center transition-transform duration-300 group-hover:rotate-12"
+                  aria-hidden="true"
+                >
+                  ✦
+                </span>
+
+                Open Full Gallery
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+
+              </button>
+
+            </div>
+
+
+            {/* =================================================
+                PREMIUM SMART GRID
+            ================================================= */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+
+              {gallery.map((img, i) => {
+
+                const remainder = gallery.length % 4;
+
+                /*
+                 * When exactly one image would be left,
+                 * make the first image span the entire row.
+                 */
+                const heroFirst =
+                  remainder === 1 &&
+                  gallery.length > 4 &&
+                  i === 0;
+
+                return (
+                  <button
+                    key={`${img}-${i}`}
+                    type="button"
+                    aria-label={`View gallery image ${i + 1} of ${gallery.length}`}
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setSelectedIndex(i);
+                    }}
+                    className={`
+                      group
+                      relative
+                      block
+                      w-full
+                      cursor-pointer
+                      overflow-hidden
+                      rounded-[28px]
+                      bg-white
+                      border
+                      border-[#ebe2d5]
+                      shadow-[0_15px_45px_rgba(0,0,0,0.08)]
+                      text-left
+                      transition-shadow
+                      duration-300
+                      hover:shadow-[0_25px_60px_rgba(0,0,0,0.14)]
+                      focus:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[#b58b47]
+                      focus-visible:ring-offset-2
+
+                      ${
+                        heroFirst
+                          ? "sm:col-span-2 lg:col-span-3 xl:col-span-4"
+                          : ""
+                      }
+                    `}
+                  >
+
+                    {/* =================================================
+                        IMAGE CONTAINER
+                    ================================================= */}
+
+                    <div
+                      className={`
+                        relative
+                        overflow-hidden
+
+                        ${
+                          heroFirst
+                            ? "aspect-[21/8] lg:aspect-[18/6]"
+                            : "aspect-[4/3]"
+                        }
+                      `}
+                    >
+
+                      <Image
+                        src={img}
+                        alt={getImageAlt(img)}
+                        fill
+                        loading="lazy"
+                        quality={80}
+                        sizes={
+                          heroFirst
+                            ? "(max-width:640px) 100vw, (max-width:1024px) 100vw, 100vw"
+                            : "(max-width:640px) 100vw, (max-width:1024px) 50vw, (max-width:1440px) 33vw, 25vw"
+                        }
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+
+
+                      {/* =================================================
+                          HOVER OVERLAY
+                      ================================================= */}
+
+                      <span
+                        className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        aria-hidden="true"
+                      />
+
+
+                      {/* =================================================
+                          VIEW ICON
+                      ================================================= */}
+
+                      <span
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        aria-hidden="true"
+                      >
+                        <span className="w-16 h-16 rounded-full backdrop-blur-xl border border-white/25 bg-white/10 flex items-center justify-center">
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-7 h-7 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 12H9m0 0l3-3m-3 3l3 3"
+                            />
+                          </svg>
+
+                        </span>
+                      </span>
+
+                    </div>
+
+                  </button>
+                );
+              })}
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    {/* ============================================================
+        FULLSCREEN GALLERY
+        ============================================================
+
+        This remains interactive because it is opened by the user.
+
+        The fullscreen image uses priority because it is intentionally
+        requested only after the user clicks an image.
+    ============================================================ */}
+
+    {selectedImage && (
+      <div
+        className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center px-3 sm:px-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Property image gallery"
+      >
+
+        {/* ========================================================
+            CLOSE
+        ======================================================== */}
+
+        <button
+          type="button"
+          aria-label="Close gallery"
+          onClick={() => setSelectedImage(null)}
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+
+
+        {/* ========================================================
+            LEFT
+        ======================================================== */}
+
+        {gallery.length > 1 && (
+          <button
+            type="button"
+            aria-label="View previous gallery image"
+            onClick={() => {
+
+              const newIndex =
+                selectedIndex === 0
+                  ? gallery.length - 1
+                  : selectedIndex - 1;
+
+              setSelectedIndex(newIndex);
+              setSelectedImage(gallery[newIndex]);
+
+            }}
+            className="absolute left-2 sm:left-5 md:left-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <span
+              className="text-xl sm:text-2xl"
+              aria-hidden="true"
+            >
+              ←
+            </span>
+          </button>
+        )}
+
+
+        {/* ========================================================
+            IMAGE
+        ======================================================== */}
+
+        <div className="relative w-[96vw] h-[92vh]">
+
+          <Image
+            src={selectedImage}
+            alt={getImageAlt(selectedImage)}
+            fill
+            priority
+            quality={80}
+            sizes="100vw"
+            className="object-contain rounded-[24px]"
+          />
+
+        </div>
+
+
+        {/* ========================================================
+            RIGHT
+        ======================================================== */}
+
+        {gallery.length > 1 && (
+          <button
+            type="button"
+            aria-label="View next gallery image"
+            onClick={() => {
+
+              const newIndex =
+                selectedIndex === gallery.length - 1
+                  ? 0
+                  : selectedIndex + 1;
+
+              setSelectedIndex(newIndex);
+              setSelectedImage(gallery[newIndex]);
+
+            }}
+            className="absolute right-2 sm:right-5 md:right-10 z-50 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center backdrop-blur-xl hover:bg-white/20 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <span
+              className="text-xl sm:text-2xl"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </button>
+        )}
+
+      </div>
+    )}
+  </>
+)}
 
 {/* ================= LOCATION ADVANTAGES PREMIUM SECTION ================= */}
 <motion.section
@@ -3090,9 +4824,9 @@ object-contain
         {/* MAP */}
         <div className="relative flex-1 min-h-[420px] sm:min-h-[520px] md:min-h-[720px]">
 
-          {locationData.mapEmbedUrl ? (
+          {safeMapUrl ? (
             <iframe
-              src={locationData.mapEmbedUrl}
+              src={safeMapUrl}
               className="absolute inset-0 w-full h-full"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -3576,9 +5310,9 @@ object-contain
 )}
 
 {/* ================= PREMIUM FAQ SECTION ================= */}
-{faqs.filter((f) => f.question).length > 0 && (
+{Array.isArray(faqs) && faqs.some((f) => f?.question) && (
   <section
-    id="contact"
+    id="faq"
     className="relative bg-[#f7f3ee] py-24 overflow-hidden"
   >
 
@@ -3706,7 +5440,7 @@ object-contain
           </div>
 
           {/* CONTACT BOX */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
+          <div id="contact" className="relative overflow-hidden bg-gradient-to-r from-[#08211c] via-[#0c2d25] to-[#0f3a30] p-8 text-white">
 
             {/* BACKGROUND GLOW */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#d6b16f]/10 blur-3xl rounded-full" />
@@ -4055,7 +5789,7 @@ object-contain
 )}
 
 {/* ================= DEVELOPER PROJECTS PREMIUM SECTION ================= */}
-{developerProjects.length > 0 && (
+{otherDeveloperProjects.length > 0 && (
   <section className="relative bg-[#f7f3ee] py-28 overflow-hidden">
 
     {/* BACKGROUND PATTERN */}
@@ -4283,9 +6017,7 @@ object-contain
       {/* ================= PROJECT GRID ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
 
-        {developerProjects
-          .slice(0, 4)
-          .map((project, i) => (
+        {otherDeveloperProjects.map((project, i) => (
 
             <motion.div
               key={project._id || i}
@@ -4427,9 +6159,7 @@ object-contain
       >
 
         <Link
-          href={`/developers/${developerName
-            ?.toLowerCase()
-            ?.replace(/\s+/g, "-")}`}
+          href={developerPortfolioUrl || "/developers"}
           className="group relative overflow-hidden bg-gradient-to-r from-[#08211c] to-[#0f3a30] border border-[#d4b071] hover:shadow-[0_0_40px_rgba(212,176,113,0.3)] transition-all duration-500 px-10 md:px-14 py-5 rounded-[24px] flex items-center gap-5"
         >
 
@@ -4490,6 +6220,56 @@ object-contain
     </div>
   </section>
 )}
+
+
+{/* ================= PRIVATE CONSULTATION CALLBACK ================= */}
+<section className="bg-[#031611] px-4 py-12 sm:py-16">
+  <div className="mx-auto max-w-xl rounded-[24px] border border-[#c9a64b]/30 bg-[#08211c] p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+    <p className="text-center text-[#d8b46b] text-[10px] tracking-[3px] uppercase font-semibold">
+      Private Consultation
+    </p>
+    <h2
+      className="mt-3 text-center text-white text-[30px] sm:text-[36px] leading-tight"
+      style={{ fontFamily: "Cormorant Garamond, serif" }}
+    >
+      Speak With A Property Advisor
+    </h2>
+    <p className="mt-3 text-center text-white/65 text-[13px] leading-relaxed">
+      Share your details and our property advisor will help you with project information, pricing and availability.
+    </p>
+
+    <div className="mt-7 space-y-4">
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your full name"
+        autoComplete="name"
+        className="w-full h-12 rounded-xl border border-white/15 bg-white/5 px-4 text-white placeholder:text-white/40 outline-none focus:border-[#d8b46b]"
+      />
+      <input
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+        placeholder="10-digit mobile number"
+        inputMode="numeric"
+        autoComplete="tel-national"
+        maxLength={10}
+        className="w-full h-12 rounded-xl border border-white/15 bg-white/5 px-4 text-white placeholder:text-white/40 outline-none focus:border-[#d8b46b]"
+      />
+      <button
+        type="button"
+        onClick={handleCallback}
+        disabled={loading}
+        className="w-full h-12 rounded-xl bg-[#c9a64b] text-[#111] font-semibold text-[11px] uppercase tracking-[2px] disabled:opacity-60"
+      >
+        {loading ? "Submitting..." : "Request A Callback"}
+      </button>
+    </div>
+  </div>
+</section>
+
+<Footer />
   {/* ================= PREMIUM LEAD MODAL ================= */}
 {showModal && (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
@@ -4822,6 +6602,60 @@ object-contain
     </motion.div>
   </div>
 )}
+
+{/* ================= LEAD SUCCESS MODAL ================= */}
+{showSuccessModal && (
+  <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/65 backdrop-blur-sm px-4">
+    <div className="relative w-full max-w-md rounded-[26px] bg-white px-6 py-8 text-center shadow-2xl sm:px-8">
+      <button
+        type="button"
+        onClick={() => setShowSuccessModal(false)}
+        aria-label="Close success message"
+        className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+      >
+        ×
+      </button>
+
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f8f1df]">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12.5L9.5 17L19 7" stroke="#C89B4F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+
+      <h2 className="mt-6 text-2xl font-semibold text-[#111] sm:text-3xl">Thank You!</h2>
+      <p className="mx-auto mt-4 max-w-sm text-sm leading-6 text-gray-600">
+        Your enquiry has been received successfully. One of our property executives will contact you shortly.
+      </p>
+
+      {coreDetails?.title && (
+        <div className="mt-5 rounded-2xl border border-[#eadfca] bg-[#faf8f3] px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-gray-400">Enquiry For</p>
+          <p className="mt-1 text-sm font-semibold text-[#222]">{coreDetails.title}</p>
+        </div>
+      )}
+
+      {gatedContent?.brochurePdfUrl && (
+        <a
+          href={gatedContent.brochurePdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 block w-full rounded-xl border border-[#c89b4f] px-6 py-3.5 text-sm font-semibold text-[#17342d]"
+        >
+          Open Brochure
+        </a>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setShowSuccessModal(false)}
+        className="mt-4 w-full rounded-xl bg-[#C89B4F] px-6 py-3.5 text-sm font-semibold text-[#111] transition hover:bg-[#b88b40] active:scale-[0.98]"
+      >
+        Continue Exploring
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
