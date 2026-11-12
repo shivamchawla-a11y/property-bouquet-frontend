@@ -47,17 +47,38 @@ export default function AICreatePropertyPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          projectName: name,
-          sourceText: name,
-          propertyText: name,
-        }),
-      });
+      
+// ==========================================================
+// GET CURRENT LOGGED-IN USER TOKEN
+// ==========================================================
+
+const token = localStorage.getItem("token");
+
+if (!token) {
+  setError("Your session has expired. Please log in again.");
+  router.push("/login");
+  return;
+}
+
+// ==========================================================
+// SEND REQUEST TO N8N WITH CURRENT USER AUTHENTICATION
+// ==========================================================
+
+const response = await fetch(N8N_WEBHOOK_URL, {
+  method: "POST",
+
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+
+  body: JSON.stringify({
+    projectName: name,
+    sourceText: name,
+    propertyText: name,
+  }),
+});
+
 
       const rawText = await response.text();
 

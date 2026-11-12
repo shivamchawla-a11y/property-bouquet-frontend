@@ -34,6 +34,18 @@ import {
   Bar,
 } from "recharts";
 
+// ============================================================
+// LIVE PROPERTY FILTER
+// ============================================================
+
+const isLiveProperty = (property) => {
+  return (
+    property?.status === "published" &&
+    property?.isActive === true &&
+    property?.isDeleted === false
+  );
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
 
@@ -148,11 +160,13 @@ export default function AdminDashboard() {
         // PUBLISHED PROPERTIES
         // ======================================================
 
-        const publishedProperties =
-          allProperties.filter(
-            (property) =>
-              property.status === "published"
-          );
+        // ======================================================
+// LIVE PROPERTIES ONLY
+// Published + Active + Not Deleted
+// ======================================================
+
+const publishedProperties =
+  allProperties.filter(isLiveProperty);
 
         // ======================================================
         // SUPER ADMIN DATA
@@ -683,14 +697,13 @@ export default function AdminDashboard() {
         );
 
       const myProperties =
-        allPropertiesData.filter(
-          (property) =>
-            String(
-              getPropertyCreatorId(
-                property
-              )
-            ) === currentUserId
-        );
+  allPropertiesData.filter(
+    (property) =>
+      isLiveProperty(property) &&
+      String(
+        getPropertyCreatorId(property)
+      ) === currentUserId
+  );
 
       return {
         today: countPropertiesBetween(
@@ -748,15 +761,13 @@ export default function AdminDashboard() {
             getUserId(agent);
 
           const agentProperties =
-            allPropertiesData.filter(
-              (property) =>
-                String(
-                  getPropertyCreatorId(
-                    property
-                  )
-                ) ===
-                String(agentId)
-            );
+  allPropertiesData.filter(
+    (property) =>
+      isLiveProperty(property) &&
+      String(
+        getPropertyCreatorId(property)
+      ) === String(agentId)
+  );
 
           return {
             id: agentId,
