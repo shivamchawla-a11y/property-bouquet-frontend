@@ -21,6 +21,7 @@ import {
   Route,
   Layers3,
   Sparkles,
+  Mail,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -121,6 +122,13 @@ export default function AdminLayout({ children }) {
       name: "Lead CRM",
       path: "/admin/leads",
       icon: Users,
+      roles: ["SuperAdmin"],
+    },
+
+        {
+      name: "Newsletter Subscribers",
+      path: "/admin/subscribers",
+      icon: Mail,
       roles: ["SuperAdmin"],
     },
 
