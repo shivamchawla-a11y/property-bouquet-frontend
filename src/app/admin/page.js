@@ -57,6 +57,8 @@ export default function AdminDashboard() {
 
   const [user, setUser] = useState(null);
   const [agentPerformancePeriod, setAgentPerformancePeriod] = useState("total");
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState("");
 
   // ============================================================
   // DASHBOARD DATA
@@ -88,6 +90,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setDashboardLoading(true);
+      setDashboardError("");
       try {
         // ======================================================
         // TOKEN
@@ -96,6 +100,7 @@ export default function AdminDashboard() {
         const token = localStorage.getItem("token");
 
         if (!token) {
+          setDashboardLoading(false);
           router.push("/login");
           return;
         }
@@ -116,10 +121,15 @@ export default function AdminDashboard() {
 
         const userData = await userRes.json();
 
-        if (!userRes.ok || !userData?.user) {
+        if (userRes.status === 401 || userRes.status === 403) {
           localStorage.removeItem("token");
+          setDashboardLoading(false);
           router.push("/login");
           return;
+        }
+
+        if (!userRes.ok || !userData?.user) {
+          throw new Error("Unable to load the current user profile.");
         }
 
         // ======================================================
@@ -276,7 +286,8 @@ const publishedProperties =
 
         const locationMap = {};
 
-        allProperties.forEach((property) => {
+        // Location analytics reflect the live inventory shown to visitors.
+        publishedProperties.forEach((property) => {
           const location =
             property?.locationData
               ?.locationName ||
@@ -312,6 +323,7 @@ const publishedProperties =
 
         const sortedProperties =
           [...allProperties]
+            .filter((property) => property?.isDeleted !== true)
             .sort(
               (a, b) =>
                 new Date(b.createdAt) -
@@ -368,6 +380,52 @@ const publishedProperties =
             });
           }
         );
+
+        // ------------------------------------------------------
+        // RECENT PUBLISHED KNOWLEDGE CENTRE ARTICLES
+        // ------------------------------------------------------
+
+        allKnowledge
+          .filter((item) => item?.status === "published" && item?.isDeleted === false)
+          .forEach((item) => {
+            activityFeed.push({
+              type: "knowledge",
+              title: `Knowledge article "${item?.title || "Untitled article"}" published`,
+              subtitle:
+                typeof item?.category === "string"
+                  ? item.category
+                  : item?.category?.name || "Knowledge Centre",
+              createdAt: item.createdAt,
+              actor:
+                item?.createdBy ||
+                item?.createdByUser ||
+                item?.createdByName ||
+                null,
+            });
+          });
+
+        // ------------------------------------------------------
+        // RECENT PUBLISHED NEWS ARTICLES
+        // ------------------------------------------------------
+
+        allNews
+          .filter((item) => item?.status === "published" && item?.isDeleted === false)
+          .forEach((item) => {
+            activityFeed.push({
+              type: "news",
+              title: `News article "${item?.title || "Untitled article"}" published`,
+              subtitle:
+                typeof item?.category === "string"
+                  ? item.category
+                  : item?.category?.name || "News",
+              createdAt: item.createdAt,
+              actor:
+                item?.createdBy ||
+                item?.createdByUser ||
+                item?.createdByName ||
+                null,
+            });
+          });
 
         // ======================================================
         // SUPER ADMIN ONLY ACTIVITY
@@ -506,65 +564,123 @@ const publishedProperties =
         }
 
         // ======================================================
-        // STATS
+        // ROLE-SPECIFIC DASHBOARD SUMMARY
         // ======================================================
 
-        const baseStats = [
-          {
-            title: "Total Properties",
-            value: allProperties.length,
-            icon: Building2,
-            description:
-              "All property records",
-            type: "property",
-          },
+        const currentUserId = String(getUserId(currentUser) || "");
 
-          {
-            title: "Published Properties",
-            value:
-              publishedProperties.length,
-            icon: Eye,
-            description:
-              "Currently published",
-            type: "published",
-          },
-        ];
+        const myLiveProperties = allProperties.filter(
+          (property) =>
+            isLiveProperty(property) &&
+            String(getPropertyCreatorId(property) || "") === currentUserId
+        );
 
-        // ======================================================
-        // SUPER ADMIN ONLY STATS
-        // ======================================================
+        const myPublishedKnowledge = allKnowledge.filter(
+          (item) =>
+            item?.status === "published" &&
+            item?.isDeleted === false &&
+            String(getContentCreatorId(item) || "") === currentUserId
+        );
 
-        if (isSuperAdmin) {
-          baseStats.push(
-            {
-              title: "Total Users",
-              value: allUsers.length,
-              icon: Users,
-              description:
-                "Registered dashboard users",
-              type: "users",
-            },
+        const myPublishedNews = allNews.filter(
+          (item) =>
+            item?.status === "published" &&
+            item?.isDeleted === false &&
+            String(getContentCreatorId(item) || "") === currentUserId
+        );
 
-            {
-              title: "Total Leads",
-              value: allLeads.length,
-              icon: MessageSquare,
-              description:
-                "All enquiries received",
-              type: "leads",
-            }
-          );
-        }
+        const publishedKnowledgeCount = allKnowledge.filter(
+          (item) => item?.status === "published" && item?.isDeleted === false
+        ).length;
+
+        const publishedNewsCount = allNews.filter(
+          (item) => item?.status === "published" && item?.isDeleted === false
+        ).length;
+
+        const baseStats = isSuperAdmin
+          ? [
+              {
+                title: "Property Records",
+                value: allProperties.length,
+                icon: Building2,
+                description: "All property records in the database",
+                type: "property",
+              },
+              {
+                title: "Live Properties",
+                value: publishedProperties.length,
+                icon: Eye,
+                description: "Published, active and not deleted",
+                type: "published",
+              },
+              {
+                title: "Published Knowledge",
+                value: publishedKnowledgeCount,
+                icon: Layers3,
+                description: "Knowledge Centre articles",
+                type: "knowledge",
+              },
+              {
+                title: "Published News",
+                value: publishedNewsCount,
+                icon: Activity,
+                description: "Live news articles",
+                type: "news",
+              },
+              {
+                title: "Total Users",
+                value: allUsers.length,
+                icon: Users,
+                description: "Registered dashboard users",
+                type: "users",
+              },
+              {
+                title: "Total Leads",
+                value: allLeads.length,
+                icon: MessageSquare,
+                description: "All enquiries received",
+                type: "leads",
+              },
+            ]
+          : [
+              {
+                title: "Available Properties",
+                value: publishedProperties.length,
+                icon: Building2,
+                description: "Live property inventory",
+                type: "property",
+              },
+              {
+                title: "My Properties",
+                value: myLiveProperties.length,
+                icon: ShieldCheck,
+                description: "Live listings added by you",
+                type: "published",
+              },
+              {
+                title: "My Knowledge Articles",
+                value: myPublishedKnowledge.length,
+                icon: Layers3,
+                description: "Your published articles",
+                type: "knowledge",
+              },
+              {
+                title: "My News Articles",
+                value: myPublishedNews.length,
+                icon: Activity,
+                description: "Your published news",
+                type: "news",
+              },
+            ];
 
         setStats(baseStats);
       } catch (err) {
-        console.error(
-          "Dashboard error:",
-          err
+        console.error("Dashboard error:", err);
+        setDashboardError(
+          "We couldn't load some dashboard data. Your session has been kept active. Please retry or check the server connection."
         );
-
-        localStorage.removeItem("token");
-        router.push("/login");
+      } finally {
+        setDashboardLoading(false);
       }
     };
 
@@ -1200,6 +1316,18 @@ const publishedProperties =
         "text-amber-700",
       accent:
         "from-amber-100",
+    },
+
+    {
+      iconBg: "bg-violet-100",
+      iconColor: "text-violet-700",
+      accent: "from-violet-100",
+    },
+
+    {
+      iconBg: "bg-sky-100",
+      iconColor: "text-sky-700",
+      accent: "from-sky-100",
     },
   ];
 
@@ -1942,7 +2070,10 @@ const AgentContentPerformanceSection = ({
                   <span className="font-semibold text-gray-700">
                     {currentUserName}
                   </span>
-                  . Here's what's happening today.
+                  .{" "}
+                  {isSuperAdmin
+                    ? "Here is your team's business and content performance at a glance."
+                    : "Here is your property and content workspace at a glance."}
                 </p>
 
               </div>
@@ -2052,15 +2183,38 @@ const AgentContentPerformanceSection = ({
 
       </div>
 
+      {dashboardLoading && (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 shadow-sm">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0f3b2e]/20 border-t-[#0f3b2e]" />
+          Loading your dashboard data...
+        </div>
+      )}
+
+      {dashboardError && (
+        <div
+          role="alert"
+          className="mb-5 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-sm text-amber-900">{dashboardError}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100"
+          >
+            Retry dashboard
+          </button>
+        </div>
+      )}
+
       {/* ======================================================
-          STATS
+          ROLE-SPECIFIC OVERVIEW
       ====================================================== */}
 
       <div
         className={`grid grid-cols-1 sm:grid-cols-2 ${
           isSuperAdmin
-            ? "xl:grid-cols-4"
-            : "xl:grid-cols-2"
+            ? "xl:grid-cols-3 2xl:grid-cols-6"
+            : "xl:grid-cols-4"
         } gap-5 mb-7`}
       >
 
@@ -2637,11 +2791,11 @@ const AgentContentPerformanceSection = ({
             <div>
 
               <h2 className="text-lg font-bold text-[#0f3b2e]">
-                Properties by Location
+                Live Properties by Location
               </h2>
 
               <p className="text-xs text-gray-400 mt-1">
-                Distribution of property inventory
+                Published and active inventory distribution
               </p>
 
             </div>
@@ -2936,6 +3090,48 @@ const AgentContentPerformanceSection = ({
             </button>
 
             {/* ==================================================
+                KNOWLEDGE CENTRE QUICK ACTION
+            ================================================== */}
+
+            <button
+              type="button"
+              onClick={() => router.push("/admin/knowledge/create")}
+              className="group w-full flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 transition hover:bg-amber-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+                  <Layers3 size={16} />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold">Create Knowledge Article</p>
+                  <p className="text-[10px] text-amber-800/70">Publish a buying or investment guide</p>
+                </div>
+              </div>
+              <ArrowUpRight size={16} className="opacity-60 transition group-hover:opacity-100" />
+            </button>
+
+            {/* ==================================================
+                NEWS QUICK ACTION
+            ================================================== */}
+
+            <button
+              type="button"
+              onClick={() => router.push("/admin/insights/create")}
+              className="group w-full flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-blue-900 transition hover:bg-blue-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                  <Eye size={16} />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold">Create News Article</p>
+                  <p className="text-[10px] text-blue-800/70">Add a market update or insight</p>
+                </div>
+              </div>
+              <ArrowUpRight size={16} className="opacity-60 transition group-hover:opacity-100" />
+            </button>
+
+            {/* ==================================================
                 AGENT PRODUCTIVITY MINI SUMMARY
             ================================================== */}
 
@@ -3155,6 +3351,26 @@ const AgentContentPerformanceSection = ({
                   bg = "bg-blue-50";
                   color =
                     "text-blue-600";
+                }
+
+                // ============================================
+                // KNOWLEDGE CENTRE ARTICLE
+                // ============================================
+
+                if (activity.type === "knowledge") {
+                  Icon = Layers3;
+                  bg = "bg-amber-50";
+                  color = "text-amber-700";
+                }
+
+                // ============================================
+                // NEWS ARTICLE
+                // ============================================
+
+                if (activity.type === "news") {
+                  Icon = Eye;
+                  bg = "bg-blue-50";
+                  color = "text-blue-700";
                 }
 
                 // ============================================
