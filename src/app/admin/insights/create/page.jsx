@@ -110,10 +110,20 @@ export default function CreateInsightPage() {
   // CREATE INSIGHT
   // =========================
 
-  const createInsight = async (
-    e
-  ) => {
+  const createInsight = async (e) => {
     e.preventDefault();
+
+    // ==========================================
+    // AUTHENTICATION
+    // ==========================================
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Your session has expired. Please login again.");
+      router.push("/login");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -122,66 +132,57 @@ export default function CreateInsightPage() {
         ...form,
 
         seo: {
-          metaTitle:
-            form.seo.metaTitle,
+          metaTitle: form.seo.metaTitle,
 
-          metaDescription:
-            form.seo
-              .metaDescription,
+          metaDescription: form.seo.metaDescription,
 
           keywords: keywords
             .split(",")
-            .map((item) =>
-              item.trim()
-            )
+            .map((item) => item.trim())
             .filter(Boolean),
         },
       };
 
-      const res = await fetch(
-        `${API_URL}/create`,
-        {
-          method: "POST",
+      // ==========================================
+      // CREATE INSIGHT
+      // ==========================================
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+      const res = await fetch(`${API_URL}/create`, {
+        method: "POST",
 
-          credentials:
-            "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
 
-          body: JSON.stringify(
-            payload
-          ),
-        }
-      );
+        credentials: "include",
 
-      const data =
-        await res.json();
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
 
       if (!res.ok) {
-        return alert(
-          data.message ||
-            "Failed to create insight"
+        alert(
+          data.message || "Failed to create insight"
         );
+        return;
       }
 
-      alert(
-        "Insight created successfully ✅"
-      );
+      alert("Insight created successfully ✅");
 
-      router.push(
-        "/admin/insights"
-      );
+      router.push("/admin/insights");
+
     } catch (err) {
-      console.error(err);
+      console.error("Create insight error:", err);
 
-      alert("Server Error");
+      alert(err.message || "Server Error");
+
     } finally {
       setLoading(false);
     }
   };
+
 
   // ================= VALIDATE FILE =================
 const validateFile = (file) => {

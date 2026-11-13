@@ -85,14 +85,37 @@ export default function CreateKnowledgePage() {
       try {
         setLoadingArticle(true);
 
-        const res = await fetch(
-          `${API_URL}/${editId}`,
-          {
-            method: "GET",
-            credentials: "include",
-            cache: "no-store",
-          }
-        );
+        
+// ==========================================
+// AUTHENTICATION
+// ==========================================
+
+const token = localStorage.getItem("token");
+
+if (!token) {
+  alert("Your session has expired. Please login again.");
+  router.push("/login");
+  return;
+}
+
+// ==========================================
+// LOAD KNOWLEDGE ARTICLE
+// ==========================================
+
+const res = await fetch(
+  `${API_URL}/${editId}`,
+  {
+    method: "GET",
+
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+
+    credentials: "include",
+    cache: "no-store",
+  }
+);
+
 
         const data = await res.json();
 
@@ -258,155 +281,165 @@ export default function CreateKnowledgePage() {
     }));
   };
 
-  // ============================================================
-  // SAVE / CREATE / UPDATE ARTICLE
-  // ============================================================
 
-  const saveKnowledge = async (e) => {
-    e.preventDefault();
+// ============================================================
+// SAVE / CREATE / UPDATE ARTICLE
+// ============================================================
 
-    if (loading) return;
+const saveKnowledge = async (e) => {
+  e.preventDefault();
 
-    if (!form.title.trim()) {
-      alert("Please enter an article title.");
-      return;
+  if (loading) return;
+
+  if (!form.title.trim()) {
+    alert("Please enter an article title.");
+    return;
+  }
+
+  if (!form.slug.trim()) {
+    alert("Please enter a URL slug.");
+    return;
+  }
+
+  if (!form.shortDescription.trim()) {
+    alert("Please enter a short description.");
+    return;
+  }
+
+  if (!form.content.trim()) {
+    alert("Please enter article content.");
+    return;
+  }
+
+  // ==========================================
+  // AUTHENTICATION
+  // ==========================================
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Your session has expired. Please login again.");
+    router.push("/login");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // ==========================================
+    // PREPARE PAYLOAD
+    // ==========================================
+
+    const payload = {
+      title: form.title.trim(),
+
+      slug: form.slug
+        .trim()
+        .toLowerCase(),
+
+      shortDescription:
+        form.shortDescription.trim(),
+
+      content: form.content,
+
+      featuredImage:
+        form.featuredImage || "",
+
+      category:
+        form.category || "General",
+
+      author:
+        form.author?.trim() ||
+        "Property Bouquet Research Team",
+
+      readTime:
+        Number(form.readTime) || 5,
+
+      featured:
+        Boolean(form.featured),
+
+      status:
+        form.status || "draft",
+
+      seo: {
+        metaTitle:
+          form.seo.metaTitle?.trim() || "",
+
+        metaDescription:
+          form.seo.metaDescription?.trim() || "",
+
+        keywords: keywords
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      },
+    };
+
+    // ==========================================
+    // CREATE OR UPDATE
+    // ==========================================
+
+    const url = isEditing
+      ? `${API_URL}/update/${editId}`
+      : `${API_URL}/create`;
+
+    const method = isEditing
+      ? "PUT"
+      : "POST";
+
+    const res = await fetch(url, {
+      method,
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.message ||
+          (isEditing
+            ? "Failed to update article"
+            : "Failed to create article")
+      );
     }
 
-    if (!form.slug.trim()) {
-      alert("Please enter a URL slug.");
-      return;
-    }
+    // ==========================================
+    // SUCCESS
+    // ==========================================
 
-    if (!form.shortDescription.trim()) {
-      alert(
-        "Please enter a short description."
-      );
-      return;
-    }
+    alert(
+      isEditing
+        ? "Knowledge article updated successfully ✅"
+        : "Knowledge article created successfully ✅"
+    );
 
-    if (!form.content.trim()) {
-      alert(
-        "Please enter article content."
-      );
-      return;
-    }
+    router.push("/admin/knowledge");
 
-    try {
-      setLoading(true);
+  } catch (err) {
+    console.error(
+      isEditing
+        ? "Update knowledge article error:"
+        : "Create knowledge article error:",
+      err
+    );
 
-      // ========================================================
-      // PREPARE PAYLOAD
-      // ========================================================
+    alert(
+      err.message || "Server Error"
+    );
 
-      const payload = {
-        title: form.title.trim(),
+  } finally {
+    setLoading(false);
+  }
+};
 
-        slug: form.slug
-          .trim()
-          .toLowerCase(),
-
-        shortDescription:
-          form.shortDescription.trim(),
-
-        content: form.content,
-
-        featuredImage:
-          form.featuredImage || "",
-
-        category:
-          form.category || "General",
-
-        author:
-          form.author?.trim() ||
-          "Property Bouquet Research Team",
-
-        readTime:
-          Number(form.readTime) || 5,
-
-        featured:
-          Boolean(form.featured),
-
-        status:
-          form.status || "draft",
-
-        seo: {
-          metaTitle:
-            form.seo.metaTitle?.trim() || "",
-
-          metaDescription:
-            form.seo.metaDescription?.trim() ||
-            "",
-
-          keywords: keywords
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
-        },
-      };
-
-      // ========================================================
-      // CREATE OR UPDATE
-      // ========================================================
-
-      const url = isEditing
-        ? `${API_URL}/update/${editId}`
-        : `${API_URL}/create`;
-
-      const method = isEditing
-        ? "PUT"
-        : "POST";
-
-      const res = await fetch(url, {
-        method,
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        credentials: "include",
-
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(
-          data.message ||
-            (isEditing
-              ? "Failed to update article"
-              : "Failed to create article")
-        );
-      }
-
-      // ========================================================
-      // SUCCESS
-      // ========================================================
-
-      alert(
-        isEditing
-          ? "Knowledge article updated successfully ✅"
-          : "Knowledge article created successfully ✅"
-      );
-
-      router.push("/admin/knowledge");
-    } catch (err) {
-      console.error(
-        isEditing
-          ? "Update knowledge article error:"
-          : "Create knowledge article error:",
-        err
-      );
-
-      alert(
-        err.message ||
-          "Server Error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ============================================================
   // VALIDATE IMAGE

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -32,6 +33,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  Legend,
 } from "recharts";
 
 // ============================================================
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
   // ============================================================
 
   const [user, setUser] = useState(null);
+  const [agentPerformancePeriod, setAgentPerformancePeriod] = useState("total");
 
   // ============================================================
   // DASHBOARD DATA
@@ -70,6 +73,8 @@ export default function AdminDashboard() {
 
   const [allUsersData, setAllUsersData] = useState([]);
   const [allPropertiesData, setAllPropertiesData] = useState([]);
+  const [allKnowledgeData, setAllKnowledgeData] = useState([]);
+  const [allNewsData, setAllNewsData] = useState([]);
 
   // ============================================================
   // STATS
@@ -157,6 +162,47 @@ export default function AdminDashboard() {
         setAllPropertiesData(allProperties);
 
         // ======================================================
+        // PUBLISHED KNOWLEDGE + NEWS
+        // ======================================================
+
+        const fetchPublishedContent = async (url, label) => {
+          try {
+            const response = await fetch(url, {
+              headers,
+              credentials: "include",
+              cache: "no-store",
+            });
+
+            if (!response.ok) {
+              throw new Error(`${label} request failed (${response.status})`);
+            }
+
+            const result = await response.json();
+
+            return Array.isArray(result?.data)
+              ? result.data
+              : [];
+          } catch (contentError) {
+            console.error(`Dashboard ${label} fetch error:`, contentError);
+            return [];
+          }
+        };
+
+        const [allKnowledge, allNews] = await Promise.all([
+          fetchPublishedContent(
+            "/api/knowledge?status=published",
+            "Knowledge Centre"
+          ),
+          fetchPublishedContent(
+            "/api/news?status=published",
+            "News"
+          ),
+        ]);
+
+        setAllKnowledgeData(allKnowledge);
+        setAllNewsData(allNews);
+
+        // ======================================================
         // PUBLISHED PROPERTIES
         // ======================================================
 
@@ -218,6 +264,8 @@ const publishedProperties =
             allLeads =
               leadsData?.data || [];
           }
+
+
         }
 
         // ======================================================
@@ -553,6 +601,33 @@ const publishedProperties =
     return property.createdBy;
   };
 
+  // ============================================================
+  // CONTENT CREATOR + LIVE CONTENT HELPERS
+  // ============================================================
+
+  const getContentCreatorId = (item) => {
+    if (!item?.createdBy) {
+      return null;
+    }
+
+    if (typeof item.createdBy === "object") {
+      return (
+        item.createdBy?._id ||
+        item.createdBy?.id ||
+        null
+      );
+    }
+
+    return item.createdBy;
+  };
+
+  const isLiveContent = (item) => {
+    return (
+      item?.status === "published" &&
+      item?.isDeleted === false
+    );
+  };
+
   const getUserId = (account) => {
     if (!account) return null;
 
@@ -678,6 +753,45 @@ const publishedProperties =
     }).length;
   };
 
+  // ============================================================
+  // CONTENT PERFORMANCE HELPERS
+  // ============================================================
+
+  const countContentBetween = (items, startDate) => {
+    return items.filter((item) => {
+      if (!item?.createdAt) {
+        return false;
+      }
+
+      return new Date(item.createdAt) >= startDate;
+    }).length;
+  };
+
+  const getContentStats = (items) => {
+    return {
+      today: countContentBetween(items, getStartOfToday()),
+      twoDays: countContentBetween(items, getStartOfDaysAgo(1)),
+      threeDays: countContentBetween(items, getStartOfDaysAgo(2)),
+      sevenDays: countContentBetween(items, getStartOfDaysAgo(6)),
+      month: countContentBetween(items, getStartOfMonth()),
+      total: items.length,
+    };
+  };
+
+  const getContentCreatedByUser = (items, userId) => {
+    if (!userId) return [];
+
+    return items.filter((item) => {
+      const creatorId = getContentCreatorId(item);
+
+      return (
+        isLiveContent(item) &&
+        creatorId &&
+        String(creatorId) === String(userId)
+      );
+    });
+  };
+
   const currentUserPropertyStats =
     useMemo(() => {
       if (!user) {
@@ -689,6 +803,7 @@ const publishedProperties =
           month: 0,
           total: 0,
         };
+
       }
 
       const currentUserId =
@@ -737,6 +852,37 @@ const publishedProperties =
       user,
       allPropertiesData,
     ]);
+
+  // ============================================================
+  // CURRENT USER KNOWLEDGE + NEWS ACTIVITY
+  // USED BY AGENTS + SUPER ADMIN
+  // ============================================================
+
+  const currentUserKnowledgeStats = useMemo(() => {
+    if (!user) {
+      return getContentStats([]);
+    }
+
+    const myKnowledge = getContentCreatedByUser(
+      allKnowledgeData,
+      getUserId(user)
+    );
+
+    return getContentStats(myKnowledge);
+  }, [user, allKnowledgeData]);
+
+  const currentUserNewsStats = useMemo(() => {
+    if (!user) {
+      return getContentStats([]);
+    }
+
+    const myNews = getContentCreatedByUser(
+      allNewsData,
+      getUserId(user)
+    );
+
+    return getContentStats(myNews);
+  }, [user, allNewsData]);
 
   // ============================================================
   // SUPER ADMIN:
@@ -874,6 +1020,146 @@ const publishedProperties =
           ),
       };
     }, [agentPerformance]);
+
+  // ============================================================
+  // KNOWLEDGE + NEWS AGENT PERFORMANCE
+  // ============================================================
+
+  const buildAgentContentPerformance = (items) => {
+    if (!isSuperAdmin) {
+      return [];
+    }
+
+    const agents = allUsersData.filter(
+      (account) => account?.role === "Agent"
+    );
+
+    return agents
+      .map((agent) => {
+        const agentId = getUserId(agent);
+        const agentItems = getContentCreatedByUser(items, agentId);
+
+        return {
+          id: agentId,
+          name:
+            agent?.name ||
+            agent?.fullName ||
+            agent?.username ||
+            agent?.email ||
+            "Unknown Agent",
+          email: agent?.email || "",
+          ...getContentStats(agentItems),
+        };
+      })
+      .sort(
+        (a, b) =>
+          b.month - a.month ||
+          b.total - a.total ||
+          a.name.localeCompare(b.name)
+      );
+  };
+
+  const knowledgeAgentPerformance = useMemo(
+    () => buildAgentContentPerformance(allKnowledgeData),
+    [isSuperAdmin, allUsersData, allKnowledgeData]
+  );
+
+  const newsAgentPerformance = useMemo(
+    () => buildAgentContentPerformance(allNewsData),
+    [isSuperAdmin, allUsersData, allNewsData]
+  );
+
+  const getContentTeamSummary = (performance) => {
+    return {
+      today: performance.reduce((sum, agent) => sum + agent.today, 0),
+      twoDays: performance.reduce((sum, agent) => sum + agent.twoDays, 0),
+      threeDays: performance.reduce((sum, agent) => sum + agent.threeDays, 0),
+      sevenDays: performance.reduce((sum, agent) => sum + agent.sevenDays, 0),
+      month: performance.reduce((sum, agent) => sum + agent.month, 0),
+      total: performance.reduce((sum, agent) => sum + agent.total, 0),
+    };
+  };
+
+  const knowledgeAgentSummary = useMemo(
+    () => getContentTeamSummary(knowledgeAgentPerformance),
+    [knowledgeAgentPerformance]
+  );
+
+  const newsAgentSummary = useMemo(
+    () => getContentTeamSummary(newsAgentPerformance),
+    [newsAgentPerformance]
+  );
+
+
+  // ============================================================
+  // COMBINED AGENT PERFORMANCE
+  // Properties + Knowledge Centre + News
+  // ============================================================
+
+  const combinedAgentPerformance = useMemo(() => {
+    const knowledgeByAgent = new Map(
+      knowledgeAgentPerformance.map((agent) => [String(agent.id), agent])
+    );
+    const newsByAgent = new Map(
+      newsAgentPerformance.map((agent) => [String(agent.id), agent])
+    );
+
+    return agentPerformance.map((propertyAgent) => {
+      const knowledgeAgent = knowledgeByAgent.get(String(propertyAgent.id));
+      const newsAgent = newsByAgent.get(String(propertyAgent.id));
+
+      const periods = {};
+      ["today", "twoDays", "threeDays", "sevenDays", "month", "total"].forEach((period) => {
+        const properties = Number(propertyAgent[period] || 0);
+        const knowledge = Number(knowledgeAgent?.[period] || 0);
+        const news = Number(newsAgent?.[period] || 0);
+
+        periods[period] = {
+          properties,
+          knowledge,
+          news,
+          total: properties + knowledge + news,
+        };
+      });
+
+      return {
+        ...propertyAgent,
+        periods,
+      };
+    }).sort((a, b) => {
+      const aCount = a.periods[agentPerformancePeriod]?.total || 0;
+      const bCount = b.periods[agentPerformancePeriod]?.total || 0;
+      return bCount - aCount || a.name.localeCompare(b.name);
+    });
+  }, [
+    agentPerformance,
+    knowledgeAgentPerformance,
+    newsAgentPerformance,
+    agentPerformancePeriod,
+  ]);
+
+  const combinedAgentPeriodSummary = useMemo(() => {
+    return combinedAgentPerformance.reduce(
+      (summary, agent) => {
+        const period = agent.periods[agentPerformancePeriod] || {};
+        summary.properties += period.properties || 0;
+        summary.knowledge += period.knowledge || 0;
+        summary.news += period.news || 0;
+        summary.total += period.total || 0;
+        return summary;
+      },
+      { properties: 0, knowledge: 0, news: 0, total: 0 }
+    );
+  }, [combinedAgentPerformance, agentPerformancePeriod]);
+
+  const agentPerformancePeriodLabel = {
+    today: "Today",
+    twoDays: "Last 2 Days",
+    threeDays: "Last 3 Days",
+    sevenDays: "Last 7 Days",
+    month: "This Month",
+    total: "All Time",
+  }[agentPerformancePeriod];
 
   // ============================================================
   // STAT CARD STYLES
@@ -1376,6 +1662,250 @@ const PropertyActivitySection = ({
   );
 };
 
+// ============================================================
+// PERSONAL CONTENT ACTIVITY SECTION
+// ============================================================
+
+const ContentActivitySection = ({
+  title,
+  description,
+  stats,
+  icon: Icon = Layers3,
+}) => {
+  const metrics = [
+    {
+      label: "Today",
+      value: stats?.today || 0,
+      helper: "Created today",
+      className: "bg-[#0f3b2e] text-white",
+      labelClassName: "text-white/60",
+      helperClassName: "text-white/60",
+    },
+    {
+      label: "2 Days",
+      value: stats?.twoDays || 0,
+      helper: "Last 2 days",
+      className: "bg-gray-50 border border-gray-200 text-[#0f3b2e]",
+      labelClassName: "text-gray-500",
+      helperClassName: "text-gray-400",
+    },
+    {
+      label: "3 Days",
+      value: stats?.threeDays || 0,
+      helper: "Last 3 days",
+      className: "bg-gray-50 border border-gray-200 text-[#0f3b2e]",
+      labelClassName: "text-gray-500",
+      helperClassName: "text-gray-400",
+    },
+    {
+      label: "7 Days",
+      value: stats?.sevenDays || 0,
+      helper: "Last 7 days",
+      className: "bg-gray-50 border border-gray-200 text-[#0f3b2e]",
+      labelClassName: "text-gray-500",
+      helperClassName: "text-gray-400",
+    },
+    {
+      label: "This Month",
+      value: stats?.month || 0,
+      helper: "Current month",
+      className: "bg-amber-50 border border-amber-200 text-amber-700",
+      labelClassName: "text-amber-700",
+      helperClassName: "text-amber-600/70",
+    },
+    {
+      label: "All Time",
+      value: stats?.total || 0,
+      helper: "Published total",
+      className: "bg-emerald-50 border border-emerald-200 text-emerald-700",
+      labelClassName: "text-emerald-700",
+      helperClassName: "text-emerald-600/70",
+    },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-7">
+      <div className="px-6 py-5 border-b border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e] flex items-center justify-center">
+                <Icon size={18} />
+              </div>
+              <h2 className="text-lg font-bold text-[#0f3b2e]">
+                {title}
+              </h2>
+            </div>
+            <p className="text-xs text-gray-500 mt-1.5 ml-11">
+              {description}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+            <CalendarDays size={14} />
+            Published content activity
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          {metrics.map((metric) => (
+            <div
+              key={metric.label}
+              className={`rounded-2xl p-4 ${metric.className}`}
+            >
+              <p className={`text-[11px] uppercase tracking-wider font-semibold ${metric.labelClassName}`}>
+                {metric.label}
+              </p>
+              <p className="text-3xl font-extrabold mt-2">
+                {metric.value}
+              </p>
+              <p className={`text-[11px] mt-1 ${metric.helperClassName}`}>
+                {metric.helper}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// SUPER ADMIN: AGENT CONTENT PERFORMANCE TABLE
+// ============================================================
+
+const AgentContentPerformanceSection = ({
+  title,
+  description,
+  performance = [],
+  summary = {},
+  icon: Icon = Layers3,
+}) => {
+  const summaryCards = [
+    { label: "Today", value: summary.today || 0, tone: "bg-[#0f3b2e]/5 border-[#0f3b2e]/10 text-[#0f3b2e]" },
+    { label: "2 Days", value: summary.twoDays || 0, tone: "bg-gray-50 border-gray-200 text-gray-700" },
+    { label: "3 Days", value: summary.threeDays || 0, tone: "bg-gray-50 border-gray-200 text-gray-700" },
+    { label: "7 Days", value: summary.sevenDays || 0, tone: "bg-gray-50 border-gray-200 text-gray-700" },
+    { label: "This Month", value: summary.month || 0, tone: "bg-amber-50 border-amber-200 text-amber-700" },
+    { label: "All Time", value: summary.total || 0, tone: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-7">
+      <div className="px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="h-9 w-9 rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e] flex items-center justify-center">
+            <Icon size={18} />
+          </div>
+          <h2 className="text-lg font-bold text-[#0f3b2e]">{title}</h2>
+        </div>
+        <p className="text-xs text-gray-500 mt-1.5 ml-11">
+          {description}
+        </p>
+      </div>
+
+      <div className="p-5 pb-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
+          {summaryCards.map((card) => (
+            <div
+              key={card.label}
+              className={`rounded-xl border px-3 py-2 ${card.tone}`}
+            >
+              <p className="text-[9px] uppercase font-bold tracking-wider opacity-70">
+                {card.label}
+              </p>
+              <p className="text-lg font-extrabold mt-0.5">
+                {card.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {performance.length > 0 ? (
+        <div className="overflow-x-auto mt-5">
+          <table className="w-full min-w-[900px]">
+            <thead className="bg-[#f7f9f8]">
+              <tr>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
+                  Agent
+                </th>
+                {[
+                  "Today",
+                  "2 Days",
+                  "3 Days",
+                  "7 Days",
+                  "This Month",
+                  "All Time",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {performance.map((agent, index) => (
+                <tr
+                  key={agent.id || index}
+                  className="border-t border-gray-100 hover:bg-[#f9fbfa] transition"
+                >
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-[#0f3b2e] text-white flex items-center justify-center text-xs font-bold">
+                        {agent.name?.charAt(0)?.toUpperCase() || "A"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-800">
+                          {agent.name}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {agent.email || "Agent"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  {[agent.today, agent.twoDays, agent.threeDays, agent.sevenDays, agent.month, agent.total].map((value, valueIndex) => (
+                    <td key={valueIndex} className="px-4 py-4 text-center">
+                      <span
+                        className={`text-sm font-extrabold ${
+                          valueIndex === 4
+                            ? "inline-flex min-w-[42px] justify-center px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-700"
+                            : valueIndex === 5
+                            ? "text-[#0f3b2e]"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {value || 0}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="px-6 py-10 text-center mt-5">
+          <div className="h-12 w-12 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
+            <Users size={22} />
+          </div>
+          <p className="text-sm font-semibold text-gray-600 mt-3">
+            No agent users found
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Agent content activity will appear here.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
   // ============================================================
   // RENDER
   // ============================================================
@@ -1601,743 +2131,377 @@ const PropertyActivitySection = ({
         <PropertyActivitySection />
       )}
 
-      {/* ======================================================
-    SUPER ADMIN:
-    AGENT PERFORMANCE + DAILY GOAL TRACKING
-====================================================== */}
-
-{isSuperAdmin && (
-  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-7">
-
-    {/* ====================================================
-        CONSTANT
-    ==================================================== */}
-
-    {(() => {
-      const DAILY_GOAL = 7;
-
-      const totalAgents =
-        agentPerformance.length;
-
-      const agentsCompletedToday =
-        agentPerformance.filter(
-          (agent) =>
-            (agent.today || 0) >= DAILY_GOAL
-        ).length;
-
-      const totalAgentPropertiesToday =
-        agentPerformance.reduce(
-          (sum, agent) =>
-            sum + (agent.today || 0),
-          0
-        );
-
-      const totalDailyTarget =
-        totalAgents * DAILY_GOAL;
-
-      const overallGoalProgress =
-        totalDailyTarget > 0
-          ? Math.min(
-              Math.round(
-                (totalAgentPropertiesToday /
-                  totalDailyTarget) *
-                  100
-              ),
-              100
-            )
-          : 0;
-
-      return (
+      {!isSuperAdmin && (
         <>
-          {/* ==================================================
-              HEADER
-          ================================================== */}
+          <ContentActivitySection
+            title="My Knowledge Centre Activity"
+            description="Track your published Knowledge Centre articles across the same reporting periods as property activity."
+            stats={currentUserKnowledgeStats}
+            icon={Layers3}
+          />
 
-          <div className="px-6 py-5 border-b border-gray-100">
+          <ContentActivitySection
+            title="My News Activity"
+            description="Track your published News articles across the same reporting periods as property activity."
+            stats={currentUserNewsStats}
+            icon={Eye}
+          />
+        </>
+      )}
 
-            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
+      {/* ======================================================
+          SUPER ADMIN:
+          COMBINED AGENT PERFORMANCE
+          PROPERTIES + KNOWLEDGE CENTRE + NEWS
+      ====================================================== */}
 
-              {/* ==================================================
-                  LEFT HEADER
-              ================================================== */}
+      {isSuperAdmin && (
+        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-7">
+          {(() => {
+            const DAILY_GOAL = 7;
+            const totalAgents = combinedAgentPerformance.length;
+            const agentsCompletedToday = agentPerformance.filter(
+              (agent) => (agent.today || 0) >= DAILY_GOAL
+            ).length;
+            const totalAgentPropertiesToday = agentSummary.today || 0;
+            const totalDailyTarget = totalAgents * DAILY_GOAL;
+            const overallGoalProgress = totalDailyTarget > 0
+              ? Math.min(Math.round((totalAgentPropertiesToday / totalDailyTarget) * 100), 100)
+              : 0;
 
-              <div>
+            const chartData = combinedAgentPerformance.map((agent) => {
+              const period = agent.periods[agentPerformancePeriod] || {};
+              return {
+                name: agent.name,
+                properties: period.properties || 0,
+                knowledge: period.knowledge || 0,
+                news: period.news || 0,
+                total: period.total || 0,
+              };
+            });
 
-                <div className="flex items-center gap-2">
+            const periodOptions = [
+              { value: "today", label: "Today" },
+              { value: "twoDays", label: "Last 2 Days" },
+              { value: "threeDays", label: "Last 3 Days" },
+              { value: "sevenDays", label: "Last 7 Days" },
+              { value: "month", label: "This Month" },
+              { value: "total", label: "All Time" },
+            ];
 
-                  <div className="h-9 w-9 rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e] flex items-center justify-center">
-                    <Users size={18} />
-                  </div>
+            const metricCards = [
+              {
+                label: "Total Activity",
+                value: combinedAgentPeriodSummary.total,
+                hint: agentPerformancePeriodLabel,
+                card: "bg-[#0f3b2e] text-white border-[#0f3b2e]",
+                muted: "text-white/65",
+              },
+              {
+                label: "Properties",
+                value: combinedAgentPeriodSummary.properties,
+                hint: "Live property listings",
+                card: "bg-emerald-50 text-[#0f3b2e] border-emerald-200",
+                muted: "text-emerald-700/70",
+              },
+              {
+                label: "Knowledge Centre",
+                value: combinedAgentPeriodSummary.knowledge,
+                hint: "Published articles",
+                card: "bg-amber-50 text-amber-800 border-amber-200",
+                muted: "text-amber-700/70",
+              },
+              {
+                label: "News",
+                value: combinedAgentPeriodSummary.news,
+                hint: "Published news articles",
+                card: "bg-blue-50 text-blue-800 border-blue-200",
+                muted: "text-blue-700/70",
+              },
+            ];
 
-                  <h2 className="text-lg font-bold text-[#0f3b2e]">
-                    Agent Performance
-                  </h2>
-
-                </div>
-
-                <p className="text-xs text-gray-500 mt-1.5 ml-11">
-                  Monitor property creation activity and daily goal
-                  performance across your agents.
-                </p>
-
-              </div>
-
-
-              {/* ==================================================
-                  TEAM DAILY GOAL SUMMARY
-              ================================================== */}
-
-              <div className="flex flex-wrap gap-2">
-
-                {/* TODAY */}
-
-                <div className="px-3 py-2 rounded-xl bg-[#0f3b2e]/5 border border-[#0f3b2e]/10">
-
-                  <p className="text-[9px] uppercase font-bold tracking-wider text-gray-500">
-                    Today
-                  </p>
-
-                  <p className="text-lg font-extrabold text-[#0f3b2e]">
-                    {totalAgentPropertiesToday}
-                  </p>
-
-                </div>
-
-
-                {/* DAILY TARGET */}
-
-                <div className="px-3 py-2 rounded-xl bg-[#fffaf0] border border-[#c9a64b]/25">
-
-                  <p className="text-[9px] uppercase font-bold tracking-wider text-[#9a7425]">
-                    Team Target
-                  </p>
-
-                  <p className="text-lg font-extrabold text-[#a47c25]">
-                    {totalDailyTarget}
-                  </p>
-
-                </div>
-
-
-                {/* GOALS ACHIEVED */}
-
-                <div
-                  className={`px-3 py-2 rounded-xl border ${
-                    agentsCompletedToday === totalAgents &&
-                    totalAgents > 0
-                      ? "bg-emerald-50 border-emerald-200"
-                      : "bg-gray-50 border-gray-200"
-                  }`}
-                >
-
-                  <p
-                    className={`text-[9px] uppercase font-bold tracking-wider ${
-                      agentsCompletedToday === totalAgents &&
-                      totalAgents > 0
-                        ? "text-emerald-700"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    Goals Achieved
-                  </p>
-
-                  <p
-                    className={`text-lg font-extrabold ${
-                      agentsCompletedToday === totalAgents &&
-                      totalAgents > 0
-                        ? "text-emerald-700"
-                        : "text-[#0f3b2e]"
-                    }`}
-                  >
-                    {agentsCompletedToday}
-                    <span className="text-xs font-bold text-gray-400">
-                      {" "}
-                      / {totalAgents}
-                    </span>
-                  </p>
-
-                </div>
-
-
-                {/* OVERALL PROGRESS */}
-
-                <div
-                  className={`px-3 py-2 rounded-xl border ${
-                    overallGoalProgress >= 100
-                      ? "bg-emerald-50 border-emerald-200"
-                      : "bg-blue-50 border-blue-200"
-                  }`}
-                >
-
-                  <p
-                    className={`text-[9px] uppercase font-bold tracking-wider ${
-                      overallGoalProgress >= 100
-                        ? "text-emerald-700"
-                        : "text-blue-700"
-                    }`}
-                  >
-                    Team Progress
-                  </p>
-
-                  <p
-                    className={`text-lg font-extrabold ${
-                      overallGoalProgress >= 100
-                        ? "text-emerald-700"
-                        : "text-blue-700"
-                    }`}
-                  >
-                    {overallGoalProgress}%
-                  </p>
-
-                </div>
-
-
-                {/* 7 DAYS */}
-
-                <div className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200">
-
-                  <p className="text-[9px] uppercase font-bold tracking-wider text-gray-500">
-                    7 Days
-                  </p>
-
-                  <p className="text-lg font-extrabold text-[#0f3b2e]">
-                    {agentSummary.sevenDays}
-                  </p>
-
-                </div>
-
-
-                {/* MONTH */}
-
-                <div className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
-
-                  <p className="text-[9px] uppercase font-bold tracking-wider text-amber-700">
-                    Month
-                  </p>
-
-                  <p className="text-lg font-extrabold text-amber-700">
-                    {agentSummary.month}
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ==================================================
-              DAILY TEAM GOAL BANNER
-          ================================================== */}
-
-          <div className="px-5 pt-5">
-
-            <div
-              className={`rounded-2xl border p-5 ${
-                overallGoalProgress >= 100
-                  ? "bg-emerald-50 border-emerald-200"
-                  : "bg-gradient-to-br from-[#fffdf7] via-white to-[#fffaf0] border-[#c9a64b]/25"
-              }`}
-            >
-
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-
-                {/* LEFT */}
-
-                <div className="flex items-start gap-3">
-
-                  <div
-                    className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center ${
-                      overallGoalProgress >= 100
-                        ? "bg-emerald-600 text-white"
-                        : "bg-[#c9a64b]/15 text-[#a47c25]"
-                    }`}
-                  >
-                    {overallGoalProgress >= 100 ? (
-                      <ShieldCheck size={19} />
-                    ) : (
-                      <TrendingUp size={19} />
-                    )}
-                  </div>
-
-                  <div>
-
-                    <div className="flex items-center gap-2 flex-wrap">
-
-                      <p className="text-sm font-extrabold text-gray-800">
-                        Today's Agent Goal
+            return (
+              <>
+                {/* HEADER + PERIOD FILTER */}
+                <div className="px-6 py-5 border-b border-gray-100">
+                  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-9 w-9 rounded-xl bg-[#0f3b2e]/10 text-[#0f3b2e] flex items-center justify-center">
+                          <Users size={18} />
+                        </div>
+                        <h2 className="text-lg font-bold text-[#0f3b2e]">
+                          Agent Performance Overview
+                        </h2>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5 ml-11">
+                        Compare each agent's property listings, Knowledge Centre articles and News contributions in one place.
                       </p>
-
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-extrabold ${
-                          overallGoalProgress >= 100
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-[#c9a64b]/15 text-[#9a7425]"
-                        }`}
-                      >
-                        {DAILY_GOAL} Properties / Agent
-                      </span>
-
                     </div>
 
-                    <p className="text-[11px] text-gray-500 mt-1">
-
-                      {totalAgents === 0
-                        ? "No agents are currently available."
-                        : overallGoalProgress >= 100
-                        ? "Excellent — the team has completed today's combined property target."
-                        : `${totalAgents - agentsCompletedToday} ${
-                            totalAgents - agentsCompletedToday === 1
-                              ? "agent is"
-                              : "agents are"
-                          } still working toward today's goal.`}
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-
-                {/* RIGHT SUMMARY */}
-
-                <div className="flex items-center gap-4">
-
-                  <div>
-
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
-                      Team Progress
-                    </p>
-
-                    <p
-                      className={`text-2xl font-extrabold leading-none mt-1 ${
-                        overallGoalProgress >= 100
-                          ? "text-emerald-700"
-                          : "text-[#0f3b2e]"
-                      }`}
-                    >
-                      {totalAgentPropertiesToday}
-
-                      <span className="text-sm font-bold text-gray-400">
-                        {" "}
-                        / {totalDailyTarget}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                        Reporting period
                       </span>
-                    </p>
+                      <select
+                        value={agentPerformancePeriod}
+                        onChange={(event) => setAgentPerformancePeriod(event.target.value)}
+                        className="min-w-[170px] rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-[#0f3b2e] outline-none focus:border-[#c9a64b] focus:ring-2 focus:ring-[#c9a64b]/15"
+                      >
+                        {periodOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
+                {/* COMBINED PERIOD SUMMARY */}
+                <div className="p-5 pb-0">
+                  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                    {metricCards.map((card) => (
+                      <div key={card.label} className={`rounded-2xl border p-4 ${card.card}`}>
+                        <p className="text-[10px] uppercase tracking-wider font-bold opacity-75">
+                          {card.label}
+                        </p>
+                        <p className="text-3xl font-extrabold mt-2 tabular-nums">
+                          {card.value.toLocaleString()}
+                        </p>
+                        <p className={`text-[10px] mt-1 ${card.muted}`}>
+                          {card.hint}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* PROPERTY-ONLY DAILY GOAL */}
+                <div className="px-5 pt-4">
+                  <div className={`rounded-2xl border p-5 ${
+                    overallGoalProgress >= 100
+                      ? "bg-emerald-50 border-emerald-200"
+                      : "bg-gradient-to-br from-[#fffdf7] via-white to-[#fffaf0] border-[#c9a64b]/30"
+                  }`}>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center ${
+                          overallGoalProgress >= 100
+                            ? "bg-emerald-600 text-white"
+                            : "bg-[#c9a64b]/15 text-[#a47c25]"
+                        }`}>
+                          <Building2 size={19} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-extrabold text-gray-800">
+                              Property Daily Goal
+                            </p>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#c9a64b]/15 text-[#9a7425] text-[9px] uppercase tracking-wider font-extrabold">
+                              7 Properties / Agent
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 mt-1">
+                            This target counts live properties only. Knowledge Centre and News articles are excluded.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                            Properties created today
+                          </p>
+                          <p className="text-2xl font-extrabold leading-none mt-1 text-[#0f3b2e]">
+                            {totalAgentPropertiesToday}
+                            <span className="text-sm font-bold text-gray-400"> / {totalDailyTarget}</span>
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            {agentsCompletedToday} of {totalAgents} agents achieved the goal
+                          </p>
+                        </div>
+                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xs font-extrabold ${
+                          overallGoalProgress >= 100
+                            ? "bg-emerald-600 text-white"
+                            : "bg-[#0f3b2e] text-white"
+                        }`}>
+                          {overallGoalProgress}%
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-gray-500">
+                          Team property goal progress
+                        </span>
+                        <span className="text-[10px] font-extrabold text-[#a47c25]">
+                          {overallGoalProgress}%
+                        </span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${overallGoalProgress >= 100 ? "bg-emerald-600" : "bg-gradient-to-r from-[#b89135] via-[#c9a64b] to-[#e0be69]"}`}
+                          style={{ width: `${overallGoalProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* STACKED AGENT CHART */}
+                <div className="p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-[#0f3b2e]">
+                        Agent Output by Category
+                      </h3>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        Stacked bars show each agent's combined output for {agentPerformancePeriodLabel.toLowerCase()}.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-semibold text-gray-600">
+                      <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#0f3b2e]" />Properties</span>
+                      <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#c9a24d]" />Knowledge</span>
+                      <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" />News</span>
+                    </div>
                   </div>
 
-                  <div
-                    className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xs font-extrabold ${
-                      overallGoalProgress >= 100
-                        ? "bg-emerald-600 text-white"
-                        : "bg-[#0f3b2e] text-white"
-                    }`}
-                  >
-                    {overallGoalProgress}%
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              {/* ==================================================
-                  TEAM PROGRESS BAR
-              ================================================== */}
-
-              <div className="mt-5">
-
-                <div className="flex items-center justify-between mb-2">
-
-                  <span className="text-[10px] font-bold text-gray-500">
-                    Combined daily target
-                  </span>
-
-                  <span
-                    className={`text-[10px] font-extrabold ${
-                      overallGoalProgress >= 100
-                        ? "text-emerald-700"
-                        : "text-[#a47c25]"
-                    }`}
-                  >
-                    {overallGoalProgress}%
-                  </span>
-
-                </div>
-
-                <div className="h-2.5 w-full rounded-full bg-gray-200 overflow-hidden">
-
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ease-out ${
-                      overallGoalProgress >= 100
-                        ? "bg-emerald-600"
-                        : "bg-gradient-to-r from-[#b89135] via-[#c9a64b] to-[#e0be69]"
-                    }`}
-                    style={{
-                      width: `${overallGoalProgress}%`,
-                    }}
-                  />
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ==================================================
-              AGENT TABLE
-          ================================================== */}
-
-          {agentPerformance.length > 0 ? (
-
-            <div className="overflow-x-auto mt-5">
-
-              <table className="w-full min-w-[1120px]">
-
-                {/* ==================================================
-                    TABLE HEADER
-                ================================================== */}
-
-                <thead className="bg-[#f7f9f8]">
-
-                  <tr>
-
-                    <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      Agent
-                    </th>
-
-                    <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      Today's Goal
-                    </th>
-
-                    <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      2 Days
-                    </th>
-
-                    <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      3 Days
-                    </th>
-
-                    <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      7 Days
-                    </th>
-
-                    <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      This Month
-                    </th>
-
-                    <th className="px-5 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-500">
-                      Total
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-
-                {/* ==================================================
-                    TABLE BODY
-                ================================================== */}
-
-                <tbody>
-
-                  {agentPerformance.map(
-                    (agent, index) => {
-
-                      const todayCount =
-                        agent.today || 0;
-
-                      const goalProgress =
-                        Math.min(
-                          Math.round(
-                            (todayCount /
-                              DAILY_GOAL) *
-                              100
-                          ),
-                          100
-                        );
-
-                      const remaining =
-                        Math.max(
-                          DAILY_GOAL -
-                            todayCount,
-                          0
-                        );
-
-                      const goalReached =
-                        todayCount >=
-                        DAILY_GOAL;
-
-                      return (
-                        <tr
-                          key={
-                            agent.id ||
-                            index
-                          }
-                          className="border-t border-gray-100 hover:bg-[#f9fbfa] transition"
+                  {combinedAgentPerformance.length > 0 ? (
+                    <div className="w-full overflow-y-auto overflow-x-hidden max-h-[520px] rounded-xl border border-gray-100 bg-white p-2">
+                      <ResponsiveContainer
+                        width="100%"
+                        height={Math.max(280, chartData.length * 58 + 70)}
+                      >
+                        <BarChart
+                          data={chartData}
+                          layout="vertical"
+                          margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+                          barCategoryGap="28%"
                         >
-
-                          {/* ==================================================
-                              AGENT
-                          ================================================== */}
-
-                          <td className="px-5 py-4">
-
-                            <div className="flex items-center gap-3">
-
-                              <div
-                                className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold ${
-                                  goalReached
-                                    ? "bg-emerald-600 text-white"
-                                    : "bg-[#0f3b2e] text-white"
-                                }`}
-                              >
-                                {agent.name
-                                  ?.charAt(
-                                    0
-                                  )
-                                  ?.toUpperCase() ||
-                                  "A"}
-                              </div>
-
-                              <div>
-
-                                <div className="flex items-center gap-2">
-
-                                  <p className="text-sm font-bold text-gray-800">
-                                    {agent.name}
-                                  </p>
-
-                                  {goalReached && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[8px] uppercase tracking-wider font-extrabold">
-                                      Goal Achieved
-                                    </span>
-                                  )}
-
-                                </div>
-
-                                <p className="text-[10px] text-gray-400">
-                                  {agent.email ||
-                                    "Agent"}
-                                </p>
-
-                              </div>
-
-                            </div>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              TODAY'S GOAL
-                          ================================================== */}
-
-                          <td className="px-4 py-4">
-
-                            <div className="min-w-[210px]">
-
-                              {/* TOP */}
-
-                              <div className="flex items-center justify-between gap-3">
-
-                                <div className="flex items-center gap-2">
-
-                                  <span
-                                    className={`inline-flex min-w-[42px] justify-center px-2.5 py-1 rounded-lg text-xs font-extrabold ${
-                                      goalReached
-                                        ? "bg-emerald-600 text-white"
-                                        : todayCount >
-                                          0
-                                        ? "bg-[#0f3b2e] text-white"
-                                        : "bg-gray-100 text-gray-400"
-                                    }`}
-                                  >
-                                    {todayCount}
-                                  </span>
-
-                                  <span className="text-[10px] font-bold text-gray-400">
-                                    / {DAILY_GOAL}
-                                  </span>
-
-                                </div>
-
-                                <span
-                                  className={`text-[10px] font-extrabold ${
-                                    goalReached
-                                      ? "text-emerald-700"
-                                      : "text-[#a47c25]"
-                                  }`}
-                                >
-                                  {goalProgress}%
-                                </span>
-
-                              </div>
-
-
-                              {/* PROGRESS BAR */}
-
-                              <div className="mt-2 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-
-                                <div
-                                  className={`h-full rounded-full transition-all duration-700 ease-out ${
-                                    goalReached
-                                      ? "bg-emerald-600"
-                                      : "bg-gradient-to-r from-[#b89135] via-[#c9a64b] to-[#e0be69]"
-                                  }`}
-                                  style={{
-                                    width: `${goalProgress}%`,
-                                  }}
-                                />
-
-                              </div>
-
-
-                              {/* BOTTOM MESSAGE */}
-
-                              <div className="mt-1.5">
-
-                                {goalReached ? (
-
-                                  <p className="text-[9px] font-bold text-emerald-700">
-                                    🎉 Daily goal completed
-                                  </p>
-
-                                ) : (
-
-                                  <p className="text-[9px] text-gray-400">
-
-                                    <span className="font-bold text-gray-600">
-                                      {remaining}
-                                    </span>{" "}
-
-                                    {remaining === 1
-                                      ? "property"
-                                      : "properties"}{" "}
-                                    remaining
-
-                                  </p>
-
-                                )}
-
-                              </div>
-
-                            </div>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              2 DAYS
-                          ================================================== */}
-
-                          <td className="px-4 py-4 text-center">
-
-                            <span className="text-sm font-bold text-gray-700">
-                              {agent.twoDays}
-                            </span>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              3 DAYS
-                          ================================================== */}
-
-                          <td className="px-4 py-4 text-center">
-
-                            <span className="text-sm font-bold text-gray-700">
-                              {agent.threeDays}
-                            </span>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              7 DAYS
-                          ================================================== */}
-
-                          <td className="px-4 py-4 text-center">
-
-                            <span className="text-sm font-bold text-gray-700">
-                              {agent.sevenDays}
-                            </span>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              THIS MONTH
-                          ================================================== */}
-
-                          <td className="px-4 py-4 text-center">
-
-                            <span className="inline-flex min-w-[42px] justify-center px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-extrabold">
-                              {agent.month}
-                            </span>
-
-                          </td>
-
-
-                          {/* ==================================================
-                              TOTAL
-                          ================================================== */}
-
-                          <td className="px-5 py-4 text-center">
-
-                            <span className="text-sm font-extrabold text-[#0f3b2e]">
-                              {agent.total}
-                            </span>
-
-                          </td>
-
-                        </tr>
-                      );
-                    }
+                          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                          <XAxis
+                            type="number"
+                            allowDecimals={false}
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 10, fill: "#94a3b8" }}
+                          />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={125}
+                            interval={0}
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 10, fill: "#475569" }}
+                          />
+                          <Tooltip
+                            cursor={{ fill: "#f8fafc" }}
+                            formatter={(value, name) => [value, name]}
+                            labelStyle={{ color: "#0f3b2e", fontWeight: 700 }}
+                          />
+                          <Legend verticalAlign="bottom" height={30} iconType="circle" />
+                          <Bar dataKey="properties" name="Properties" stackId="agentOutput" fill="#0f3b2e" radius={[0, 0, 0, 0]} />
+                          <Bar dataKey="knowledge" name="Knowledge Centre" stackId="agentOutput" fill="#c9a24d" radius={[0, 0, 0, 0]} />
+                          <Bar dataKey="news" name="News" stackId="agentOutput" fill="#3b82f6" radius={[0, 5, 5, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
+                      <Users size={26} className="mx-auto text-gray-300" />
+                      <p className="text-sm font-semibold text-gray-600 mt-2">No agent users found</p>
+                      <p className="text-xs text-gray-400 mt-1">Agent performance will appear here once agents are available.</p>
+                    </div>
                   )}
+                </div>
 
-                </tbody>
+                {/* EXACT COUNTS TABLE */}
+                {combinedAgentPerformance.length > 0 && (
+                  <div className="border-t border-gray-100">
+                    <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-extrabold text-[#0f3b2e]">
+                          Agent-wise Activity Breakdown
+                        </h3>
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          Exact counts for {agentPerformancePeriodLabel.toLowerCase()}; each category is counted separately.
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                        {combinedAgentPerformance.length} Agents
+                      </span>
+                    </div>
 
-              </table>
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[760px]">
+                        <thead className="bg-[#f7f9f8]">
+                          <tr>
+                            <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider font-extrabold text-gray-500">Agent</th>
+                            <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-[#0f3b2e]">Properties</th>
+                            <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-[#a47c25]">Knowledge Centre</th>
+                            <th className="px-4 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-blue-700">News</th>
+                            <th className="px-5 py-3 text-center text-[10px] uppercase tracking-wider font-extrabold text-gray-700">Total Activity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {combinedAgentPerformance.map((agent) => {
+                            const period = agent.periods[agentPerformancePeriod] || {};
+                            const propertyToday = agent.today || 0;
+                            const goalProgress = Math.min(Math.round((propertyToday / DAILY_GOAL) * 100), 100);
+                            const goalReached = propertyToday >= DAILY_GOAL;
 
-            </div>
-
-          ) : (
-
-            /* ==================================================
-                NO AGENTS
-            ================================================== */
-
-            <div className="px-6 py-10 text-center mt-5">
-
-              <div className="h-12 w-12 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
-
-                <Users size={22} />
-
-              </div>
-
-              <p className="text-sm font-semibold text-gray-600 mt-3">
-                No agent users found
-              </p>
-
-              <p className="text-xs text-gray-400 mt-1">
-                Agent property activity will appear here.
-              </p>
-
-            </div>
-
-          )}
-
-        </>
-      );
-    })()}
-
-  </div>
-)}
+                            return (
+                              <tr key={agent.id} className="border-t border-gray-100 hover:bg-[#f9fbfa] transition">
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`h-9 w-9 shrink-0 rounded-xl flex items-center justify-center text-xs font-bold ${goalReached ? "bg-emerald-600 text-white" : "bg-[#0f3b2e] text-white"}`}>
+                                      {agent.name?.charAt(0)?.toUpperCase() || "A"}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-bold text-gray-800">{agent.name}</p>
+                                      <p className="text-[10px] text-gray-400 truncate max-w-[220px]">{agent.email || "Agent"}</p>
+                                      <p className={`text-[9px] mt-0.5 font-semibold ${goalReached ? "text-emerald-700" : "text-gray-400"}`}>
+                                        Property goal: {propertyToday}/{DAILY_GOAL} ({goalProgress}%)
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3.5 text-center">
+                                  <span className="inline-flex min-w-[42px] justify-center rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-extrabold text-[#0f3b2e]">{period.properties || 0}</span>
+                                </td>
+                                <td className="px-4 py-3.5 text-center">
+                                  <span className="inline-flex min-w-[42px] justify-center rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-extrabold text-amber-700">{period.knowledge || 0}</span>
+                                </td>
+                                <td className="px-4 py-3.5 text-center">
+                                  <span className="inline-flex min-w-[42px] justify-center rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-extrabold text-blue-700">{period.news || 0}</span>
+                                </td>
+                                <td className="px-5 py-3.5 text-center">
+                                  <span className="inline-flex min-w-[48px] justify-center rounded-lg bg-[#0f3b2e] px-3 py-1.5 text-xs font-extrabold text-white">{period.total || 0}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        <tfoot className="bg-gray-50 border-t border-gray-200">
+                          <tr>
+                            <td className="px-5 py-3 text-xs font-extrabold text-gray-700">Team Total</td>
+                            <td className="px-4 py-3 text-center text-xs font-extrabold text-[#0f3b2e]">{combinedAgentPeriodSummary.properties}</td>
+                            <td className="px-4 py-3 text-center text-xs font-extrabold text-amber-700">{combinedAgentPeriodSummary.knowledge}</td>
+                            <td className="px-4 py-3 text-center text-xs font-extrabold text-blue-700">{combinedAgentPeriodSummary.news}</td>
+                            <td className="px-5 py-3 text-center text-xs font-extrabold text-[#0f3b2e]">{combinedAgentPeriodSummary.total}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </section>
+      )}
 
       {/* ======================================================
           SUPER ADMIN:
@@ -2349,6 +2513,25 @@ const PropertyActivitySection = ({
         <PropertyActivitySection
           superAdmin
         />
+      )}
+
+      {isSuperAdmin && (
+        <>
+          <ContentActivitySection
+            title="My Knowledge Centre Activity"
+            description="Track your own published Knowledge Centre articles across the same reporting periods as property activity."
+            stats={currentUserKnowledgeStats}
+            icon={Layers3}
+          />
+
+          <ContentActivitySection
+            title="My News Activity"
+            description="Track your own published News articles across the same reporting periods as property activity."
+            stats={currentUserNewsStats}
+            icon={Eye}
+          />
+
+        </>
       )}
 
       {/* ======================================================
