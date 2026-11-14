@@ -1,9 +1,14 @@
+
 import {
   ShieldCheck,
   BookOpen,
   BadgeCheck,
   Sparkles,
 } from "lucide-react";
+
+// ======================================================
+// STATIC KNOWLEDGE CENTRE FEATURES
+// ======================================================
 
 const features = [
   {
@@ -28,16 +33,23 @@ const features = [
   },
 ];
 
+// ======================================================
+// BOTTOM FEATURES
+// SERVER COMPONENT
+// ======================================================
+
 export default function BottomFeatures() {
   return (
     <section
+      aria-label="Property Bouquet Knowledge Centre benefits"
       className="
-      bg-[#06111d]
-      rounded-2xl
-      overflow-hidden
+        bg-[#06111d]
+        rounded-2xl
+        overflow-hidden
       "
     >
-      <div className="grid lg:grid-cols-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 
         {features.map((item) => {
           const Icon = item.icon;
@@ -46,35 +58,47 @@ export default function BottomFeatures() {
             <div
               key={item.title}
               className="
-              p-8
-              border-r
-              last:border-r-0
-              border-[#1b2d3d]
-              flex
-              gap-5
-              items-start
+                p-8
+                border-b
+                sm:border-r
+                lg:border-b-0
+                last:border-r-0
+                border-[#1b2d3d]
+                flex
+                gap-5
+                items-start
               "
             >
+
+              {/* ICON */}
+
               <div
                 className="
-                w-14
-                h-14
-                rounded-full
-                border
-                border-[#c9a64b]
-                flex
-                items-center
-                justify-center
-                shrink-0
+                  w-14
+                  h-14
+                  rounded-full
+                  border
+                  border-[#c9a64b]
+                  flex
+                  items-center
+                  justify-center
+                  shrink-0
                 "
               >
+
                 <Icon
                   className="text-[#c9a64b]"
                   size={24}
+                  strokeWidth={1.8}
+                  aria-hidden="true"
                 />
+
               </div>
 
-              <div>
+              {/* CONTENT */}
+
+              <div className="min-w-0">
+
                 <h3 className="text-white font-semibold text-lg">
                   {item.title}
                 </h3>
@@ -82,11 +106,15 @@ export default function BottomFeatures() {
                 <p className="text-gray-400 mt-2 leading-7 text-sm">
                   {item.desc}
                 </p>
+
               </div>
+
             </div>
           );
         })}
+
       </div>
+
     </section>
   );
 }
