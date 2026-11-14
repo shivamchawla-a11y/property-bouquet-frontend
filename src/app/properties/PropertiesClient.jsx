@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
-import PropertyFilters from "@/utils/PropertyFilters";
 import { formatPrice } from "@/utils/formatPrice";
 
 import {
@@ -16,18 +17,150 @@ import {
   Heart,
 } from "lucide-react";
 
+// Load the filters only when needed. On mobile the filter module is
+// downloaded only after the visitor opens the filter drawer.
+const PropertyFilters = dynamic(
+  () => import("@/utils/PropertyFilters"),
+  {
+    loading: () => (
+      <div
+        className="min-h-[260px] rounded-2xl bg-white/70 animate-pulse"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
+
+// Keep Next Image limited to hosts already allowed in next.config.js.
+// Unknown image hosts fall back to a native lazy-loaded image so existing
+// property records do not break if they use another image provider.
+const OPTIMIZED_IMAGE_HOSTS = new Set([
+  "res.cloudinary.com",
+  "images.unsplash.com",
+  "d2dy9w7mmecm6m.cloudfront.net",
+  "managemylawsuits.com",
+]);
+
+function canUseNextImage(source) {
+  if (typeof source !== "string" || !source.trim()) {
+    return false;
+  }
+
+  const value = source.trim();
+
+  if (value.startsWith("/") && !value.startsWith("//")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      OPTIMIZED_IMAGE_HOSTS.has(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function PropertyCardImage({ src, alt, priority = false }) {
+  const imageSource =
+    typeof src === "string" ? src.trim() : "";
+
+  if (!imageSource) {
+    return (
+      <div
+        className="absolute inset-0 bg-[#ece8df]"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  const imageClassName = `
+    absolute
+    inset-0
+    w-full
+    h-full
+    object-cover
+    transition-transform
+    duration-700
+    group-hover:scale-105
+  `;
+
+  const imageSizes = `
+    (max-width: 639px) calc(100vw - 2rem),
+    (max-width: 1023px) calc((100vw - 3.25rem) / 2),
+    (max-width: 1279px) calc((100vw - 23.5rem) / 2),
+    (max-width: 1535px) calc((100vw - 25rem) / 3),
+    360px
+  `;
+
+  if (canUseNextImage(imageSource)) {
+    return (
+      <Image
+        src={imageSource}
+        alt={alt}
+        fill
+        sizes={imageSizes}
+        quality={75}
+        preload={priority}
+        loading={priority ? undefined : "lazy"}
+        className={imageClassName}
+      />
+    );
+  }
+
+  // Safe fallback for image hosts that are not configured in next.config.js.
+  return (
+    <img
+      src={imageSource}
+      alt={alt}
+      width="1200"
+      height="800"
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
+      className={imageClassName}
+    />
+  );
+}
+
 export default function PropertiesClient({
   landingPage = null,
+  initialProperties = null,
 }) {
   const API = "/api";
+  const hasInitialProperties = Array.isArray(initialProperties);
 
-  const [properties, setProperties] = useState([]);
-  const [filteredProperties, setFilteredProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const publishedInitialProperties = hasInitialProperties
+    ? initialProperties.filter(
+        (property) =>
+          property?.status === "published" &&
+          property?.isDeleted !== true &&
+          property?.deletedFromStatus !== "trash"
+      )
+    : [];
+
+  const initialSortedProperties = [...publishedInitialProperties].sort(
+    (a, b) =>
+      new Date(b?.createdAt || 0) -
+      new Date(a?.createdAt || 0)
+  );
+
+  const [properties, setProperties] = useState(
+    () => publishedInitialProperties
+  );
+  const [filteredProperties, setFilteredProperties] = useState(
+    () => initialSortedProperties
+  );
+  const [loading, setLoading] = useState(
+    () => !hasInitialProperties
+  );
 
   const [sortBy, setSortBy] = useState("newest");
   const [visibleCards, setVisibleCards] = useState(9);
   const [showFilters, setShowFilters] = useState(false);
+  const [shouldLoadFilters, setShouldLoadFilters] = useState(false);
 
   const CARDS_PER_PAGE = 9;
 
@@ -64,37 +197,58 @@ export default function PropertiesClient({
   // ============================================================
 
   useEffect(() => {
+    // The server page already fetched the published property records.
+    // Reuse them instead of making a second browser request.
+    if (Array.isArray(initialProperties)) {
+      return;
+    }
+
+    const controller = new AbortController();
+
     const fetchProperties = async () => {
       try {
-        const res = await fetch(
-          `${API}/properties`
-        );
+        const res = await fetch(`${API}/properties`, {
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          throw new Error(
+            `Properties request failed: ${res.status}`
+          );
+        }
 
         const data = await res.json();
 
-        if (res.ok) {
-          const activeProperties =
-            (data.data || []).filter(
+        const activeProperties = Array.isArray(data?.data)
+          ? data.data.filter(
               (property) =>
                 property?.status === "published" &&
                 property?.isDeleted !== true &&
                 property?.deletedFromStatus !== "trash"
-            );
+            )
+          : [];
 
+        if (!controller.signal.aborted) {
           setProperties(activeProperties);
         }
       } catch (error) {
-        console.error(
-          "Failed to fetch properties:",
-          error
-        );
+        if (error?.name !== "AbortError") {
+          console.error(
+            "Failed to fetch properties:",
+            error
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProperties();
-  }, []);
+
+    return () => controller.abort();
+  }, [initialProperties]);
 
   // ============================================================
   // FILTER + SORT
@@ -447,15 +601,52 @@ export default function PropertiesClient({
   ]);
 
   // ============================================================
+  // LOAD FILTERS ONLY WHEN NEEDED
+  // Desktop loads them after the initial page render.
+  // Mobile loads them only when the filter drawer is opened.
+  // ============================================================
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    const loadDesktopFilters = (event) => {
+      if (event.matches) {
+        setShouldLoadFilters(true);
+      }
+    };
+
+    loadDesktopFilters(mediaQuery);
+
+    mediaQuery.addEventListener?.("change", loadDesktopFilters);
+
+    return () => {
+      mediaQuery.removeEventListener?.("change", loadDesktopFilters);
+    };
+  }, []);
+
+  const openMobileFilters = () => {
+    setShouldLoadFilters(true);
+    setShowFilters(true);
+  };
+
+  // ============================================================
   // LOCK BODY WHEN MOBILE FILTER DRAWER IS OPEN
   // ============================================================
 
   useEffect(() => {
-    document.body.style.overflow =
-      showFilters ? "hidden" : "auto";
+    if (!showFilters) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = previousOverflow;
     };
   }, [showFilters]);
 
@@ -468,6 +659,12 @@ export default function PropertiesClient({
       0,
       visibleCards
     );
+
+  const firstImageIndex = currentProperties.findIndex(
+    (property) =>
+      typeof property?.media?.heroImageUrl === "string" &&
+      property.media.heroImageUrl.trim()
+  );
 
   // ============================================================
   // LOADING
@@ -483,9 +680,12 @@ export default function PropertiesClient({
             <div className="absolute h-28 w-28 rounded-full bg-[#D4AF37]/10 blur-2xl animate-pulse" />
 
             <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.08)]">
-              <img
+              <Image
                 src="/logo.webp"
                 alt="Property Bouquet"
+                width={56}
+                height={56}
+                priority
                 className="h-14 w-14 object-contain"
               />
             </div>
@@ -639,23 +839,31 @@ export default function PropertiesClient({
           ================================================== */}
 
           <aside className="hidden lg:block sticky top-28 self-start">
-            <PropertyFilters
-              properties={properties}
-              onFiltered={setFilteredProperties}
-              selectedLocation={selectedLocation}
-              selectedDeveloper={selectedDeveloper}
-              selectedBudget={selectedBudget}
-              selectedAmenity={selectedAmenity}
-              selectedBhk={selectedBhk}
-              selectedPropertyType={
-                selectedPropertyType
-              }
-              baseUrl={
-                landingPage
-                  ? `/${landingPage.slug}`
-                  : "/properties"
-              }
-            />
+            {shouldLoadFilters ? (
+              <PropertyFilters
+                properties={properties}
+                onFiltered={(data) => {
+                  setFilteredProperties(data);
+                  setVisibleCards(CARDS_PER_PAGE);
+                }}
+                selectedLocation={selectedLocation}
+                selectedDeveloper={selectedDeveloper}
+                selectedBudget={selectedBudget}
+                selectedAmenity={selectedAmenity}
+                selectedBhk={selectedBhk}
+                selectedPropertyType={selectedPropertyType}
+                baseUrl={
+                  landingPage
+                    ? `/${landingPage.slug}`
+                    : "/properties"
+                }
+              />
+            ) : (
+              <div
+                className="min-h-[360px] rounded-[28px] bg-white/70 animate-pulse"
+                aria-hidden="true"
+              />
+            )}
           </aside>
 
           {/* ==================================================
@@ -719,9 +927,7 @@ export default function PropertiesClient({
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowFilters(true)
-                  }
+                  onClick={openMobileFilters}
                   className="
                     lg:hidden
                     h-14
@@ -829,7 +1035,7 @@ export default function PropertiesClient({
                 "
               >
                 {currentProperties.map(
-                  (property) => (
+                  (property, index) => (
                     <Link
                       key={property._id}
                       href={`/${property.slug}`}
@@ -854,26 +1060,13 @@ export default function PropertiesClient({
 
                       {/* IMAGE */}
 
-                      <img
-                        src={
-                          property?.media
-                            ?.heroImageUrl
-                        }
+                      <PropertyCardImage
+                        src={property?.media?.heroImageUrl}
                         alt={
-                          property?.coreDetails
-                            ?.title ||
+                          property?.coreDetails?.title ||
                           "Luxury Property"
                         }
-                        className="
-                          absolute
-                          inset-0
-                          w-full
-                          h-full
-                          object-cover
-                          transition-transform
-                          duration-700
-                          group-hover:scale-105
-                        "
+                        priority={index === firstImageIndex}
                       />
 
                       {/* OVERLAY */}
@@ -1321,20 +1514,24 @@ export default function PropertiesClient({
 
             {/* OVERLAY */}
 
-            <div
+            <button
+              type="button"
+              aria-label="Close filters"
               className="
                 absolute
                 inset-0
                 bg-black/60
+                cursor-default
               "
-              onClick={() =>
-                setShowFilters(false)
-              }
+              onClick={() => setShowFilters(false)}
             />
 
             {/* DRAWER */}
 
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mobile-filters-heading"
               className="
                 absolute
                 left-0
@@ -1363,7 +1560,10 @@ export default function PropertiesClient({
                   justify-between
                 "
               >
-                <h2 className="text-xl font-bold">
+                <h2
+                  id="mobile-filters-heading"
+                  className="text-xl font-bold"
+                >
                   Filters
                 </h2>
 
@@ -1386,41 +1586,27 @@ export default function PropertiesClient({
               {/* FILTER CONTENT */}
 
               <div className="p-5">
-                <PropertyFilters
-                  properties={properties}
-                  onFiltered={(data) => {
-                    setFilteredProperties(
-                      data
-                    );
-
-                    setVisibleCards(
-                      CARDS_PER_PAGE
-                    );
-
-                    setShowFilters(false);
-                  }}
-                  selectedLocation={
-                    selectedLocation
-                  }
-                  selectedDeveloper={
-                    selectedDeveloper
-                  }
-                  selectedBudget={
-                    selectedBudget
-                  }
-                  selectedAmenity={
-                    selectedAmenity
-                  }
-                  selectedBhk={selectedBhk}
-                  selectedPropertyType={
-                    selectedPropertyType
-                  }
-                  baseUrl={
-                    landingPage
-                      ? `/${landingPage.slug}`
-                      : "/properties"
-                  }
-                />
+                {shouldLoadFilters && (
+                  <PropertyFilters
+                    properties={properties}
+                    onFiltered={(data) => {
+                      setFilteredProperties(data);
+                      setVisibleCards(CARDS_PER_PAGE);
+                      setShowFilters(false);
+                    }}
+                    selectedLocation={selectedLocation}
+                    selectedDeveloper={selectedDeveloper}
+                    selectedBudget={selectedBudget}
+                    selectedAmenity={selectedAmenity}
+                    selectedBhk={selectedBhk}
+                    selectedPropertyType={selectedPropertyType}
+                    baseUrl={
+                      landingPage
+                        ? `/${landingPage.slug}`
+                        : "/properties"
+                    }
+                  />
+                )}
               </div>
             </div>
           </div>
