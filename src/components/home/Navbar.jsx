@@ -281,10 +281,56 @@ export default function Navbar({
   const [accountDropdown, setAccountDropdown] =
     useState(false);
 
-  const [mobileDropdown, setMobileDropdown] =
-    useState(null);
 
-const navData = navigationData?.data || navigationData || {};
+const [mobileDropdown, setMobileDropdown] = useState(null);
+
+// Fallback navigation data for pages that don't pass props
+const [localNavigationData, setLocalNavigationData] = useState(null);
+
+// Fetch navigation data when parent doesn't provide it
+useEffect(() => {
+  if (navigationData) {
+    return;
+  }
+
+  const controller = new AbortController();
+
+  async function fetchNavigationData() {
+    try {
+      const response = await fetch("/api/navigation/home", {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error("Navigation API request failed");
+      }
+
+      const result = await response.json();
+
+      if (result?.success && result?.data) {
+        if (!controller.signal.aborted) {
+          setLocalNavigationData(result.data);
+        }
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Navbar navigation error:", error);
+      }
+    }
+  }
+
+  fetchNavigationData();
+
+  return () => controller.abort();
+}, [navigationData]);
+
+// Use parent data when available, otherwise use locally fetched data
+const navData =
+  navigationData?.data ||
+  navigationData ||
+  localNavigationData?.data ||
+  localNavigationData ||
+  {};
 
 const locations = Array.isArray(navData.locations)
   ? navData.locations

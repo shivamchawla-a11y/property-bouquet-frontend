@@ -355,92 +355,116 @@ const metricIcons = {
   ...BsIcons,
 };
 
-// ================= METRICS (BACKWARD COMPATIBLE) =================
-const displayMetrics = (() => {
-  const customMetrics =
-    keyMetrics?.customMetrics || [];
 
+// ================= METRICS (BACKWARD COMPATIBLE) =================
+
+const displayMetrics = (() => {
   const metrics = [];
 
- // ================= PRICE METRICS =================
+  const hasValue = (value) =>
+    value !== null &&
+    value !== undefined &&
+    String(value).trim() !== "";
 
-if (coreDetails?.priceOnRequest === true) {
-  metrics.push({
-    label: "Price",
-    value: "On Request",
-    icon: "FaTag",
-    isPriceRequest: true, // 👈 important
-  });
-} else {
-  const startPrice = coreDetails?.startingPrice;
-  const maxPrice = coreDetails?.maxPrice;
+  // ================= PRICE METRICS =================
 
-  if (startPrice && maxPrice) {
+  if (coreDetails?.priceOnRequest === true) {
     metrics.push({
-      label: "Price Range",
-      value: `₹ ${formatPrice(startPrice)} - ₹ ${formatPrice(maxPrice)}`,
+      label: "Price",
+      value: "On Request",
       icon: "FaTag",
+      isPriceRequest: true,
     });
-  } else if (startPrice) {
-    metrics.push({
-      label: "Starting Price",
-      value: `₹ ${formatPrice(startPrice)}` ,
-      icon: "FaTag",
-    });
-  }
-}
+  } else {
+    const startPrice = coreDetails?.startingPrice;
+    const maxPrice = coreDetails?.maxPrice;
 
-  // ================= CUSTOM METRICS =================
-
-  if (customMetrics.length > 0) {
-    return [
-      ...metrics,
-      ...customMetrics,
-    ];
+    if (hasValue(startPrice) && hasValue(maxPrice)) {
+      metrics.push({
+        label: "Price Range",
+        value: `₹ ${formatPrice(startPrice)} - ${formatPrice(maxPrice)}`,
+        icon: "FaTag",
+      });
+    } else if (hasValue(startPrice)) {
+      metrics.push({
+        label: "Starting Price",
+        value: `₹ ${formatPrice(startPrice)}`,
+        icon: "FaTag",
+      });
+    }
   }
 
-  // ================= OLD PROPERTY FALLBACK =================
+  // ================= STANDARD METRICS =================
+
+  const standardMetrics = [
+    {
+      label: "Possession",
+      value: keyMetrics?.possession,
+      icon: "FaCalendarAlt",
+    },
+    {
+      label: "Land Area",
+      value: keyMetrics?.landArea,
+      icon: "FaMapMarkedAlt",
+    },
+    {
+      label: "Status",
+      value: keyMetrics?.status,
+      icon: "FaCertificate",
+    },
+    {
+      label: "Units",
+      value: keyMetrics?.totalUnits,
+      icon: "FaBuilding",
+    },
+    {
+      label: "Towers",
+      value: keyMetrics?.totalTowers,
+      icon: "FaCity",
+    },
+    {
+      label: "Floors",
+      value: keyMetrics?.floors,
+      icon: "FaLayerGroup",
+    },
+    {
+      label: "RERA",
+      value: keyMetrics?.reraNumber,
+      icon: "FaCertificate",
+    },
+  ];
+
+  // Keep every standard metric that has a value
+  const visibleStandardMetrics = standardMetrics.filter(
+    (metric) => hasValue(metric.value)
+  );
+
+  // ================= ADDITIONAL METRICS =================
+
+  const customMetrics = Array.isArray(keyMetrics?.customMetrics)
+    ? keyMetrics.customMetrics
+        .filter(
+          (metric) =>
+            metric &&
+            hasValue(metric.label) &&
+            hasValue(metric.value)
+        )
+        .map((metric) => ({
+          label: String(metric.label).trim(),
+          value: metric.value,
+          icon: metric.icon || "FaBuilding",
+        }))
+    : [];
+
+  // ================= FINAL METRICS =================
 
   return [
     ...metrics,
-
-    keyMetrics?.possession && {
-      label: "Possession",
-      value: keyMetrics.possession,
-      icon: "FaCalendarAlt",
-    },
-
-    keyMetrics?.landArea && {
-      label: "Land Area",
-      value: keyMetrics.landArea,
-      icon: "FaMapMarkedAlt",
-    },
-
-    keyMetrics?.totalUnits && {
-      label: "Units",
-      value: keyMetrics.totalUnits,
-      icon: "FaBuilding",
-    },
-
-    keyMetrics?.totalTowers && {
-      label: "Towers",
-      value: keyMetrics.totalTowers,
-      icon: "FaCity",
-    },
-
-    keyMetrics?.floors && {
-      label: "Floors",
-      value: keyMetrics.floors,
-      icon: "FaLayerGroup",
-    },
-
-    keyMetrics?.reraNumber && {
-      label: "RERA",
-      value: keyMetrics.reraNumber,
-      icon: "FaCertificate",
-    },
-  ].filter(Boolean);
+    ...visibleStandardMetrics,
+    ...customMetrics,
+  ];
 })();
+
   
 
 /* KEYBOARD NAVIGATION */

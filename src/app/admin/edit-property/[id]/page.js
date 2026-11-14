@@ -1392,6 +1392,114 @@ if (useCustomLocation) {
     }));
   };
 
+
+// ================= CUSTOM METRICS HANDLERS =================
+
+// Update an existing custom metric without replacing other metrics
+const updateCustomMetric = (index, changes) => {
+  setForm((prev) => {
+    const currentMetrics = Array.isArray(
+      prev.keyMetrics?.customMetrics
+    )
+      ? prev.keyMetrics.customMetrics
+      : [];
+
+    const updatedMetrics = currentMetrics.map((metric, i) =>
+      i === index
+        ? { ...metric, ...changes }
+        : metric
+    );
+
+    return {
+      ...prev,
+      keyMetrics: {
+        ...prev.keyMetrics,
+        customMetrics: updatedMetrics,
+      },
+    };
+  });
+};
+
+
+// Add a new custom metric
+const addCustomMetric = () => {
+  const currentMetrics = Array.isArray(
+    form.keyMetrics?.customMetrics
+  )
+    ? form.keyMetrics.customMetrics
+    : [];
+
+  const newIndex = currentMetrics.length;
+
+  setForm((prev) => {
+    const previousMetrics = Array.isArray(
+      prev.keyMetrics?.customMetrics
+    )
+      ? prev.keyMetrics.customMetrics
+      : [];
+
+    return {
+      ...prev,
+      keyMetrics: {
+        ...prev.keyMetrics,
+        customMetrics: [
+          ...previousMetrics,
+          {
+            label: "",
+            value: "",
+            icon: "FaBuilding",
+          },
+        ],
+      },
+    };
+  });
+
+  setExpandedMetric(newIndex);
+};
+
+
+// Delete a custom metric
+const deleteCustomMetric = (index) => {
+  setForm((prev) => {
+    const currentMetrics = Array.isArray(
+      prev.keyMetrics?.customMetrics
+    )
+      ? prev.keyMetrics.customMetrics
+      : [];
+
+    return {
+      ...prev,
+      keyMetrics: {
+        ...prev.keyMetrics,
+        customMetrics: currentMetrics.filter(
+          (_, i) => i !== index
+        ),
+      },
+    };
+  });
+
+  setExpandedMetric((current) => {
+    if (current === index) return null;
+
+    return current !== null && current > index
+      ? current - 1
+      : current;
+  });
+
+  setActiveMetricIndex((current) => {
+    if (current === index) return null;
+
+    return current !== null && current > index
+      ? current - 1
+      : current;
+  });
+
+  if (activeMetricIndex === index) {
+    setShowIconPicker(false);
+  }
+};
+
+
   // ================= SUBMIT =================
 const handleUpdate = async () => {
   if (isUpdating) return;
@@ -3395,32 +3503,22 @@ if (loading) {
                 className="input mb-4"
                 placeholder="Metric Label"
                 value={item.label || ""}
-                onChange={(e) => {
-                  const updated = [
-                    ...(form.keyMetrics?.customMetrics || []),
-                  ];
-                  updated[index] = {
-                    ...updated[index],
-                    label: e.target.value,
-                  };
-                  handleChange("keyMetrics", "customMetrics", updated);
-                }}
+                onChange={(e) =>
+  updateCustomMetric(index, {
+    label: e.target.value,
+  })
+}
               />
 
               <input
                 className="input mb-4"
                 placeholder="Metric Value"
                 value={item.value || ""}
-                onChange={(e) => {
-                  const updated = [
-                    ...(form.keyMetrics?.customMetrics || []),
-                  ];
-                  updated[index] = {
-                    ...updated[index],
-                    value: e.target.value,
-                  };
-                  handleChange("keyMetrics", "customMetrics", updated);
-                }}
+                onChange={(e) =>
+  updateCustomMetric(index, {
+    value: e.target.value,
+  })
+}
               />
 
               <div className="flex flex-wrap gap-3">
@@ -3437,17 +3535,7 @@ if (loading) {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    const updated = (
-                      form.keyMetrics?.customMetrics || []
-                    ).filter((_, i) => i !== index);
-
-                    handleChange("keyMetrics", "customMetrics", updated);
-
-                    if (expandedMetric === index) {
-                      setExpandedMetric(null);
-                    }
-                  }}
+                  onClick={() => deleteCustomMetric(index)}
                   className="px-4 py-2 rounded-xl bg-red-500 text-white"
                 >
                   Delete
@@ -3461,19 +3549,7 @@ if (loading) {
 
     <button
       type="button"
-      onClick={() => {
-        const updated = [
-          ...(form.keyMetrics?.customMetrics || []),
-          {
-            label: "",
-            value: "",
-            icon: "FaBuilding",
-          },
-        ];
-
-        handleChange("keyMetrics", "customMetrics", updated);
-        setExpandedMetric(updated.length - 1);
-      }}
+      onClick={addCustomMetric}
       className="w-full py-4 rounded-2xl bg-[#D4AF37] text-black font-semibold text-lg hover:opacity-90 transition"
     >
       + Add Metric
@@ -7151,22 +7227,14 @@ if (loading) {
                 key={iconName}
                 type="button"
                 onClick={() => {
+  if (activeMetricIndex === null) return;
 
-                  const updated = [
-                    ...(form.keyMetrics.customMetrics || [])
-                  ];
+  updateCustomMetric(activeMetricIndex, {
+    icon: iconName,
+  });
 
-                  updated[activeMetricIndex].icon =
-                    iconName;
-
-                  handleChange(
-                    "keyMetrics",
-                    "customMetrics",
-                    updated
-                  );
-
-                  setShowIconPicker(false);
-                }}
+  setShowIconPicker(false);
+}}
                 className="
                   h-12
                   rounded-xl
