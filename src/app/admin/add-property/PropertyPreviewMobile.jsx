@@ -435,9 +435,19 @@ const displayMetrics = (() => {
   ];
 
   // Keep every standard metric that has a value
-  const visibleStandardMetrics = standardMetrics.filter(
-    (metric) => hasValue(metric.value)
-  );
+  // Keep standard metrics with valid values.
+// Hide zero values for Units and Towers.
+const visibleStandardMetrics = standardMetrics.filter((metric) => {
+  if (metric.label === "Units" || metric.label === "Towers") {
+    return (
+      hasValue(metric.value) &&
+      Number.isFinite(Number(metric.value)) &&
+      Number(metric.value) > 0
+    );
+  }
+
+  return hasValue(metric.value);
+});
 
   // ================= ADDITIONAL METRICS =================
 
