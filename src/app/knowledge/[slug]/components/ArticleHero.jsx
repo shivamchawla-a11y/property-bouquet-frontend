@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 
@@ -175,7 +174,7 @@ export default function ArticleHero({ article }) {
                     items-center
                     gap-2
                     text-[13px]
-                    text-[#8c8c8c]
+                    text-[#666666]
                   "
                 >
 
@@ -183,7 +182,16 @@ export default function ArticleHero({ article }) {
                     <Link
                       href="/"
                       className="
+                        underline
+                        underline-offset-4
+                        decoration-transparent
+                        hover:decoration-current
                         hover:text-[#163629]
+                        focus-visible:outline-none
+                        focus-visible:ring-2
+                        focus-visible:ring-[#805b1e]
+                        focus-visible:ring-offset-2
+                        rounded-sm
                         transition-colors
                         duration-200
                       "
@@ -200,7 +208,16 @@ export default function ArticleHero({ article }) {
                     <Link
                       href="/knowledge"
                       className="
+                        underline
+                        underline-offset-4
+                        decoration-transparent
+                        hover:decoration-current
                         hover:text-[#163629]
+                        focus-visible:outline-none
+                        focus-visible:ring-2
+                        focus-visible:ring-[#805b1e]
+                        focus-visible:ring-offset-2
+                        rounded-sm
                         transition-colors
                         duration-200
                       "
@@ -247,7 +264,7 @@ export default function ArticleHero({ article }) {
                   className="
                     uppercase
                     tracking-[4px]
-                    text-[#b88638]
+                    text-[#805b1e]
                     text-xs
                     font-semibold
                   "
@@ -271,7 +288,7 @@ export default function ArticleHero({ article }) {
                       items-center
                       rounded-full
                       bg-[#f5ede1]
-                      text-[#b88638]
+                      text-[#805b1e]
                       px-5
                       py-2
                       uppercase
@@ -392,7 +409,7 @@ export default function ArticleHero({ article }) {
                           {article.author}
                         </p>
 
-                        <p className="text-sm text-[#999]">
+                        <p className="text-sm text-[#666666]">
                           Property Bouquet Research
                         </p>
 
@@ -410,7 +427,7 @@ export default function ArticleHero({ article }) {
 
                       <CalendarDays
                         size={18}
-                        className="text-[#b88638] shrink-0"
+                        className="text-[#805b1e] shrink-0"
                         aria-hidden="true"
                       />
 
@@ -430,7 +447,7 @@ export default function ArticleHero({ article }) {
 
                       <Clock3
                         size={18}
-                        className="text-[#b88638] shrink-0"
+                        className="text-[#805b1e] shrink-0"
                         aria-hidden="true"
                       />
 

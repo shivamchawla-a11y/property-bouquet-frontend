@@ -10,6 +10,10 @@ import {
 
 import ConditionalTimedLeadPopup from "@/components/common/ConditionalTimedLeadPopup";
 
+// ============================================================
+// GOOGLE FONTS
+// ============================================================
+
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
@@ -146,6 +150,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${playfair.variable} ${montserrat.variable}`}
     >
       <body>
@@ -160,6 +165,7 @@ export default function RootLayout({ children }) {
             src="https://www.googletagmanager.com/ns.html?id=GTM-5BHWPL29"
             height="0"
             width="0"
+            title="Google Tag Manager"
             style={{
               display: "none",
               visibility: "hidden",
@@ -179,6 +185,7 @@ export default function RootLayout({ children }) {
           {`
             (function(w,d,s,l,i){
               w[l]=w[l]||[];
+
               w[l].push({
                 'gtm.start': new Date().getTime(),
                 event:'gtm.js'
@@ -192,6 +199,7 @@ export default function RootLayout({ children }) {
               j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
 
               f.parentNode.insertBefore(j,f);
+
             })(window,document,'script','dataLayer','GTM-5BHWPL29');
           `}
         </Script>
@@ -228,7 +236,11 @@ export default function RootLayout({ children }) {
 
         {children}
 
-       <ConditionalTimedLeadPopup/>
+        {/* ==================================================
+            CONDITIONAL TIMED LEAD POPUP
+        ================================================== */}
+
+        <ConditionalTimedLeadPopup />
 
         {/* ==================================================
             GLOBAL TOASTER

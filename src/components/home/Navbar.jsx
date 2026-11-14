@@ -2361,7 +2361,8 @@ const locationModal =
                         {hasDropdown && (
                           <button
                             type="button"
-                            aria-label={`Open ${item.title} menu`}
+                            aria-label={`${active === item.title ? "Close" : "Open"} ${item.title} menu`}
+                            aria-expanded={active === item.title}
                             onClick={() =>
                               setActive(
                                 active ===
@@ -2522,6 +2523,8 @@ const locationModal =
               <div className="relative hidden xl:block">
                 <button
                   type="button"
+                  aria-label={accountDropdown ? "Close account menu" : "Open account menu"}
+                  aria-expanded={accountDropdown}
                   onClick={() =>
                     setAccountDropdown(
                       !accountDropdown
@@ -2670,6 +2673,8 @@ const locationModal =
 
               <button
                 type="button"
+                aria-label={mobileMenuOpen ? "Close mobile navigation" : "Open mobile navigation"}
+                aria-expanded={mobileMenuOpen}
                 onClick={() => {
                   setMobileMenuOpen(
                     !mobileMenuOpen
@@ -2697,7 +2702,6 @@ const locationModal =
                   transition-all
                   duration-300
                 "
-                aria-label="Toggle mobile menu"
               >
                 {mobileMenuOpen ? (
                   <X size={18} />
@@ -2840,6 +2844,7 @@ const locationModal =
                         >
                           <button
                             type="button"
+                            aria-expanded={hasDropdown ? isOpen : undefined}
                             onClick={() =>
                               handleMobileItemClick(
                                 item
