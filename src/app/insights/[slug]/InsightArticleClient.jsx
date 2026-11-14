@@ -1,10 +1,3 @@
-"use client";
-
-import {
-  useRef,
-  useState,
-} from "react";
-
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,13 +5,9 @@ import {
   ChevronRight,
   CalendarDays,
   Clock3,
-  Link2,
-  Check,
 } from "lucide-react";
 
-import { FaFacebook } from "react-icons/fa";
-import { FaLinkedinIn } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import ArticleShareButtons from "./ArticleShareButtons";
 
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
@@ -31,178 +20,14 @@ import TagsCard from "../components/TagsCard";
 
 export default function InsightArticleClient({
   article,
-  articles,
   articleContent,
+  previousArticle,
+  nextArticle,
+  latestArticles = [],
 }) {
-  // ==========================================================
-  // ARTICLE REF
-  // ==========================================================
-
-  const articleRef = useRef(null);
-
-  // ==========================================================
-  // COPY LINK STATE
-  // ==========================================================
-
-  const [copied, setCopied] =
-    useState(false);
-
-  // ==========================================================
-  // SAFE ARTICLES ARRAY
-  // ==========================================================
-
-  const safeArticles =
-    Array.isArray(articles)
-      ? articles
-      : [];
-
-  // ==========================================================
-  // CURRENT ARTICLE INDEX
-  // ==========================================================
-
-  const currentIndex =
-    safeArticles.findIndex(
-      (item) =>
-        item?.slug === article?.slug
-    );
-
-  // ==========================================================
-  // PREVIOUS ARTICLE
-  // ==========================================================
-
-  const previousArticle =
-    currentIndex > 0
-      ? safeArticles[
-          currentIndex - 1
-        ]
-      : null;
-
-  // ==========================================================
-  // NEXT ARTICLE
-  // ==========================================================
-
-  const nextArticle =
-    currentIndex >= 0 &&
-    currentIndex <
-      safeArticles.length - 1
-      ? safeArticles[
-          currentIndex + 1
-        ]
-      : null;
-
-  // ==========================================================
-  // ARTICLE URL
-  // ==========================================================
-
-  const getArticleUrl = () => {
-    if (
-      typeof window ===
-      "undefined"
-    ) {
-      return "";
-    }
-
-    return window.location.href;
-  };
-
-  // ==========================================================
-  // FACEBOOK SHARE
-  // ==========================================================
-
-  const shareFacebook = () => {
-    const url =
-      getArticleUrl();
-
-    if (!url) {
-      return;
-    }
-
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        url
-      )}`,
-      "_blank",
-      "noopener,noreferrer,width=700,height=600"
-    );
-  };
-
-  // ==========================================================
-  // X SHARE
-  // ==========================================================
-
-  const shareTwitter = () => {
-    const url =
-      getArticleUrl();
-
-    if (!url) {
-      return;
-    }
-
-    const text =
-      article?.title || "";
-
-    window.open(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-        url
-      )}&text=${encodeURIComponent(
-        text
-      )}`,
-      "_blank",
-      "noopener,noreferrer,width=700,height=600"
-    );
-  };
-
-  // ==========================================================
-  // LINKEDIN SHARE
-  // ==========================================================
-
-  const shareLinkedIn = () => {
-    const url =
-      getArticleUrl();
-
-    if (!url) {
-      return;
-    }
-
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        url
-      )}`,
-      "_blank",
-      "noopener,noreferrer,width=700,height=600"
-    );
-  };
-
-  // ==========================================================
-  // COPY ARTICLE LINK
-  // ==========================================================
-
-  const copyArticleLink =
-    async () => {
-      const url =
-        getArticleUrl();
-
-      if (!url) {
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(
-          url
-        );
-
-        setCopied(true);
-
-        setTimeout(() => {
-          setCopied(false);
-        }, 2000);
-      } catch (error) {
-        console.error(
-          "COPY ARTICLE LINK ERROR:",
-          error
-        );
-      }
-    };
+  // The article body is rendered by this Server Component. The
+  // Table of Contents uses this stable DOM id to find its headings.
+  const articleContentId = "insight-article-content";
 
   // ==========================================================
   // FORMAT DATE
@@ -455,148 +280,7 @@ export default function InsightArticleClient({
                       SHARE
                   ================================================== */}
 
-                  <div className="flex items-center gap-3">
-
-                    <span className="text-sm text-[#777]">
-                      Share
-                    </span>
-
-                    {/* FACEBOOK */}
-
-                    <button
-                      type="button"
-                      onClick={
-                        shareFacebook
-                      }
-                      aria-label="Share on Facebook"
-                      className="
-                        w-11
-                        h-11
-                        rounded-full
-                        border
-                        border-[#d9d2c7]
-                        bg-white
-                        text-[#163629]
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                        flex
-                        items-center
-                        justify-center
-                        shadow-sm
-                      "
-                    >
-                      <FaFacebook
-                        size={16}
-                      />
-                    </button>
-
-                    {/* X */}
-
-                    <button
-                      type="button"
-                      onClick={
-                        shareTwitter
-                      }
-                      aria-label="Share on X"
-                      className="
-                        w-11
-                        h-11
-                        rounded-full
-                        border
-                        border-[#d9d2c7]
-                        bg-white
-                        text-[#163629]
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                        flex
-                        items-center
-                        justify-center
-                        shadow-sm
-                      "
-                    >
-                      <FaXTwitter
-                        size={16}
-                      />
-                    </button>
-
-                    {/* LINKEDIN */}
-
-                    <button
-                      type="button"
-                      onClick={
-                        shareLinkedIn
-                      }
-                      aria-label="Share on LinkedIn"
-                      className="
-                        w-11
-                        h-11
-                        rounded-full
-                        border
-                        border-[#d9d2c7]
-                        bg-white
-                        text-[#163629]
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                        flex
-                        items-center
-                        justify-center
-                        shadow-sm
-                      "
-                    >
-                      <FaLinkedinIn
-                        size={16}
-                        />
-                    </button>
-
-                    {/* COPY LINK */}
-
-                    <button
-                      type="button"
-                      onClick={
-                        copyArticleLink
-                      }
-                      aria-label="Copy article link"
-                      title={
-                        copied
-                          ? "Link copied"
-                          : "Copy article link"
-                      }
-                      className="
-                        w-11
-                        h-11
-                        rounded-full
-                        border
-                        border-[#d9d2c7]
-                        bg-white
-                        text-[#163629]
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                        flex
-                        items-center
-                        justify-center
-                        shadow-sm
-                      "
-                    >
-                      {copied ? (
-                        <Check
-                          size={17}
-                        />
-                      ) : (
-                        <Link2
-                          size={17}
-                        />
-                      )}
-                    </button>
-
-                  </div>
+                  <ArticleShareButtons articleTitle={article?.title || ""} />
 
                 </div>
 
@@ -633,7 +317,10 @@ export default function InsightArticleClient({
                         }
                         width={1600}
                         height={900}
-                        priority
+                        sizes="(max-width: 1023px) calc(100vw - 6.5rem), (max-width: 1450px) calc(100vw - 39rem), 790px"
+                        quality={75}
+                        loading="eager"
+                        fetchPriority="high"
                         className="
                           w-full
                           h-auto
@@ -658,7 +345,7 @@ export default function InsightArticleClient({
                 <div className="max-w-[760px] mx-auto">
 
                   <div
-                    ref={articleRef}
+                    id={articleContentId}
                     className="article-content mt-16"
                     dangerouslySetInnerHTML={{
                       __html:
@@ -968,8 +655,7 @@ export default function InsightArticleClient({
               >
 
                 <TableOfContents
-                  article={article}
-                  articleRef={articleRef}
+                  containerId={articleContentId}
                 />
 
                 <AboutAuthor
@@ -977,10 +663,7 @@ export default function InsightArticleClient({
                 />
 
                 <LatestInsightsSidebar
-                  articles={safeArticles}
-                  currentSlug={
-                    article?.slug
-                  }
+                  articles={latestArticles}
                 />
 
                 <CTAAdvisor />

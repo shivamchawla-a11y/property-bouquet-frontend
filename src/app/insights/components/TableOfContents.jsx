@@ -2,278 +2,145 @@
 
 import { useEffect, useState } from "react";
 
-export default function TableOfContents({
-  article,
-  articleRef,
-}) {
-  const [headings, setHeadings] = useState([]);
-
-useEffect(() => {
-  if (!article) return;
-
-  const generateTOC = () => {
-    const elements =
-  articleRef.current?.querySelectorAll(
-    "h1,h2,h3"
-  ) || [];
-
-    if (!elements.length) {
-      // Try again shortly if the content isn't ready yet
-      setTimeout(generateTOC, 100);
-      return;
-    }
-
-    const list = [];
-
-elements.forEach((heading) => {
-  // Normalize nbsp to normal spaces
-  const text = heading.textContent
+function extractNumberedHeading(heading) {
+  const text = String(heading.textContent || "")
     .replace(/\u00A0/g, " ")
     .trim();
 
-  // Keep ONLY headings beginning with:
-  // 1.
-  // 2.
-  // 10.
-  if (!/^\d+\.\s*/.test(text)) return;
+  const match = text.match(/^(\d+)\.\s*(.*)$/);
+  if (!match) return null;
 
-  const number = text.match(/^\d+/)?.[0];
-
-  const cleanTitle = text.replace(/^\d+\.\s*/, "").trim();
-
-  const id = `section-${number}`;
-
-  heading.id = id;
-
-  list.push({
-    id,
-    number,
-    text: cleanTitle,
-  });
-});
-
-setHeadings(list);
+  return {
+    id: `section-${match[1]}`,
+    number: match[1],
+    text: match[2].trim(),
   };
+}
 
-  const timer = setInterval(() => {
-  generateTOC();
+export default function TableOfContents({ containerId }) {
+  const [headings, setHeadings] = useState([]);
 
-  if (articleRef.current?.querySelector("h1,h2,h3")) {
-    clearInterval(timer);
-  }
-}, 100);
+  useEffect(() => {
+    if (!containerId) return undefined;
 
-return () => clearInterval(timer);
-}, [article]);
+    const container = document.getElementById(containerId);
+    if (!container) return undefined;
+
+    const updateHeadings = () => {
+      const elements = container.querySelectorAll("h1, h2, h3");
+      const nextHeadings = [];
+
+      elements.forEach((heading) => {
+        const item = extractNumberedHeading(heading);
+        if (!item) return;
+
+        // Preserve the existing numbered-section anchor convention.
+        heading.id = item.id;
+        nextHeadings.push(item);
+      });
+
+      setHeadings(nextHeadings);
+    };
+
+    updateHeadings();
+
+    // Supports article content that is amended after the first render,
+    // without repeated polling or accumulating setTimeout callbacks.
+    const observer = new MutationObserver(updateHeadings);
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => observer.disconnect();
+  }, [containerId]);
 
   const scrollToHeading = (id) => {
-  const element = document.getElementById(id);
+    const element = document.getElementById(id);
+    if (!element) return;
 
-  if (!element) return;
+    const top =
+      element.getBoundingClientRect().top + window.scrollY - 120;
 
-  const y =
-    element.getBoundingClientRect().top +
-    window.scrollY -
-    120;
-
-  window.scrollTo({
-    top: y,
-    behavior: "smooth",
-  });
-};
+    window.scrollTo({
+      top,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <div
       className="
-      relative
-      overflow-hidden
-      rounded-[32px]
-      border
-      border-[#ebe5db]
-      bg-gradient-to-b
-      from-white
-      to-[#fcfaf7]
-      p-6
-      shadow-[0_20px_60px_rgba(0,0,0,.06)]
-      transition-all
-      duration-500
-      hover:-translate-y-1
-      hover:shadow-[0_30px_80px_rgba(0,0,0,.09)]
-      !text-[#163629]
+        relative overflow-hidden rounded-[32px]
+        border border-[#ebe5db]
+        bg-gradient-to-b from-white to-[#fcfaf7]
+        p-6 shadow-[0_20px_60px_rgba(0,0,0,.06)]
+        transition-all duration-500
+        hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(0,0,0,.09)]
+        text-[#163629]
       "
     >
-      {/* Gold Glow */}
-
       <div
-        className="
-        absolute
-        -top-20
-        -right-20
-        w-40
-        h-40
-        rounded-full
-        bg-[#b88638]/10
-        blur-3xl
-        pointer-events-none
-        "
+        className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-[#b88638]/10 blur-3xl pointer-events-none"
+        aria-hidden="true"
       />
 
-      {/* Header */}
-
-      <div>
-
-        <p
-          className="
-          uppercase
-          tracking-[3px]
-          text-[11px]
-          font-semibold
-          !text-[#b88638]
-          "
-        >
+      <div className="relative">
+        <p className="text-[#805b1e] text-[11px] font-semibold uppercase tracking-[3px]">
           Navigation
         </p>
 
         <h3
-          className="
-          mt-2
-          text-[26px]
-          leading-tight
-          !text-[#163629]
-          "
-          style={{
-            fontFamily: "Georgia, serif",
-          }}
+          className="mt-2 text-[26px] leading-tight text-[#163629]"
+          style={{ fontFamily: "Georgia, serif" }}
         >
           Table of Contents
         </h3>
-
       </div>
-
-      {/* Divider */}
 
       <div className="my-5 h-px bg-gradient-to-r from-transparent via-[#e6ddcf] to-transparent" />
 
-      {/* Contents */}
-
-      <div className="space-y-1.5">
-
+      <nav aria-label="Article table of contents" className="space-y-1.5">
         {headings.map((heading, index) => (
-
           <button
-            key={heading.id}
+            key={`${heading.id}-${index}`}
+            type="button"
             onClick={() => scrollToHeading(heading.id)}
             className="
-group
-w-full
-flex
-items-start
-gap-3
-rounded-xl
-px-3
-py-2.5
-text-left
-transition-all
-duration-300
-hover:bg-[#f8f4ec]
-hover:shadow-sm
-"
+              group flex w-full items-start gap-3 rounded-xl
+              px-3 py-2.5 text-left transition-all duration-300
+              hover:bg-[#f8f4ec] hover:shadow-sm
+              focus-visible:outline-none focus-visible:ring-2
+              focus-visible:ring-inset focus-visible:ring-[#805b1e]
+            "
           >
-
-            {/* Timeline */}
-
-            <div className="flex flex-col items-center shrink-0">
-
-              <div
-                className="
-                w-3
-                h-3 
-                rounded-full
-                border-2
-                border-[#b88638]
-                bg-white
-                group-hover:bg-[#b88638]
-                transition-all
-                duration-300
-                "
-              />
-
+            <span className="flex shrink-0 flex-col items-center" aria-hidden="true">
+              <span className="h-3 w-3 rounded-full border-2 border-[#805b1e] bg-white transition-all duration-300 group-hover:bg-[#805b1e]" />
               {index !== headings.length - 1 && (
-
-                <div
-                  className="
-                  w-px
-                  flex-1
-                  min-h-[20px]
-                  bg-[#ddd3c5]
-                  "
-                />
-
+                <span className="min-h-[20px] w-px flex-1 bg-[#ddd3c5]" />
               )}
+            </span>
 
-            </div>
-
-            {/* Text */}
-
-            <div>
-
-              <span
-                className="
-                block
-                text-[11px]
-                uppercase
-                tracking-[2px]
-                font-semibold
-                !text-[#b88638]
-                "
-              >
+            <span className="min-w-0">
+              <span className="block text-[11px] font-semibold uppercase tracking-[2px] text-[#805b1e]">
                 {heading.number}
               </span>
-
-              <p
-                className="
-                mt-0.5
-text-[14px]
-leading-6
-                font-medium
-                !text-[#163629]
-                group-hover:translate-x-1
-                transition-all
-                duration-300
-                "
-              >
+              <span className="mt-0.5 block text-[14px] font-medium leading-6 text-[#163629] transition-transform duration-300 group-hover:translate-x-1">
                 {heading.text}
-              </p>
-
-            </div>
-
+              </span>
+            </span>
           </button>
-
         ))}
 
         {headings.length === 0 && (
-
-          <div
-            className="
-            rounded-2xl
-            border
-            border-dashed
-            border-[#e8dfd1]
-            p-6
-            text-center
-            "
-          >
-
-            <p className="!text-[#777] leading-7">
-              Loading table of contents...
+          <div className="rounded-2xl border border-dashed border-[#e8dfd1] p-6 text-center">
+            <p className="leading-7 text-[#666666]">
+              No numbered sections available.
             </p>
-
           </div>
-
         )}
-
-      </div>
-
+      </nav>
     </div>
   );
 }

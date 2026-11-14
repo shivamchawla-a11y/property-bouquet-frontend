@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import "@/app/insights/article.css";
@@ -116,7 +117,7 @@ function getArticleKeywords(article) {
 // FETCH ALL PUBLISHED ARTICLES
 // ============================================================
 
-async function getArticles() {
+const getArticles = cache(async function getArticles() {
   try {
     const res = await fetch(
       `${API}/news?status=published`,
@@ -150,13 +151,13 @@ async function getArticles() {
 
     return [];
   }
-}
+});
 
 // ============================================================
 // GET CURRENT ARTICLE
 // ============================================================
 
-async function getArticle(slug) {
+const getArticle = cache(async function getArticle(slug) {
   const articles = await getArticles();
 
   const currentArticle = articles.find(
@@ -169,7 +170,7 @@ async function getArticle(slug) {
     article: currentArticle || null,
     articles,
   };
-}
+});
 
 // ============================================================
 // SEO METADATA
@@ -815,86 +816,72 @@ export default async function InsightDetailPage({
   params,
 }) {
   const resolvedParams = await params;
-
-  const slug =
-    resolvedParams?.slug;
-
-  // ==========================================================
-  // INVALID SLUG
-  // ==========================================================
+  const slug = resolvedParams?.slug;
 
   if (!slug) {
     notFound();
   }
 
-  // ==========================================================
-  // FETCH ARTICLE
-  // ==========================================================
-
-  const {
-    article,
-    articles,
-  } = await getArticle(slug);
-
-  // ==========================================================
-  // ARTICLE NOT FOUND
-  // ==========================================================
+  // The request-cached function is also used by generateMetadata.
+  // The API still uses no-store to preserve the current publishing freshness.
+  const { article, articles } = await getArticle(slug);
 
   if (!article) {
     notFound();
   }
 
-  // ==========================================================
-  // CLEAN ARTICLE CONTENT
-  // ==========================================================
+  const articleContent = cleanArticleHtml(article.content || "");
+  const safeFeaturedImage = getSafeImageUrl(article.featuredImage);
 
-  const articleContent =
-    cleanArticleHtml(
-      article.content || ""
-    );
-
-  // ==========================================================
-  // SAFE FEATURED IMAGE
-  // ==========================================================
-
-  const safeFeaturedImage =
-    getSafeImageUrl(
-      article.featuredImage
-    );
-
-  // ==========================================================
-  // CREATE SERIALIZABLE ARTICLE OBJECT
-  // ==========================================================
-
+  // Do not send the full HTML body to the browser as part of the article
+  // object: articleContent is rendered by this Server Component instead.
+  const { content: _content, ...articleFieldsForPage } = article;
   const clientArticle = {
-    ...article,
-
-    featuredImage:
-      safeFeaturedImage,
+    ...articleFieldsForPage,
+    featuredImage: safeFeaturedImage,
   };
 
-  // ==========================================================
-  // SERVER RENDER
-  // ==========================================================
+  const currentIndex = articles.findIndex(
+    (item) => String(item?.slug || "") === String(article.slug || "")
+  );
+
+  // Preserve the existing previous/next order, but only send fields used
+  // by those links instead of sending complete article records.
+  const previousRecord = currentIndex > 0 ? articles[currentIndex - 1] : null;
+  const nextRecord =
+    currentIndex >= 0 && currentIndex < articles.length - 1
+      ? articles[currentIndex + 1]
+      : null;
+
+  const previousArticle = previousRecord?.slug
+    ? { slug: previousRecord.slug, title: previousRecord.title || "Previous article" }
+    : null;
+
+  const nextArticle = nextRecord?.slug
+    ? { slug: nextRecord.slug, title: nextRecord.title || "Next article" }
+    : null;
+
+  // LatestInsightsSidebar only uses these four fields and displays four items.
+  const latestArticles = articles
+    .filter((item) => item?.slug && item.slug !== article.slug)
+    .slice(0, 4)
+    .map((item) => ({
+      slug: item.slug,
+      title: item.title || "Property Insight",
+      featuredImage: getSafeImageUrl(item.featuredImage),
+      readTime: item.readTime || null,
+    }));
 
   return (
     <>
-      {/* ======================================================
-          ARTICLE / SEO STRUCTURED DATA
-      ====================================================== */}
-
-      <ArticleSchema
-        article={clientArticle}
-      />
-
-      {/* ======================================================
-          ARTICLE PAGE
-      ====================================================== */}
+      <ArticleSchema article={article} />
 
       <InsightArticleClient
         article={clientArticle}
-        articles={articles}
         articleContent={articleContent}
+        previousArticle={previousArticle}
+        nextArticle={nextArticle}
+        latestArticles={latestArticles}
       />
     </>
   );
