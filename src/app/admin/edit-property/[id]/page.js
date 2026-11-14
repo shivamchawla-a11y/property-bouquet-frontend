@@ -1642,10 +1642,18 @@ const validConfigurations =
     form.keyMetrics.customMetrics || [],
 
   totalUnits:
-    Number(form.keyMetrics.totalUnits) || 0,
+    form.keyMetrics.totalUnits === "" ||
+    form.keyMetrics.totalUnits === null ||
+    form.keyMetrics.totalUnits === undefined
+      ? null
+      : Number(form.keyMetrics.totalUnits),
 
   totalTowers:
-    Number(form.keyMetrics.totalTowers) || 0,
+    form.keyMetrics.totalTowers === "" ||
+    form.keyMetrics.totalTowers === null ||
+    form.keyMetrics.totalTowers === undefined
+      ? null
+      : Number(form.keyMetrics.totalTowers),
 },
       configurationSection: {
         ...form.configurationSection,
