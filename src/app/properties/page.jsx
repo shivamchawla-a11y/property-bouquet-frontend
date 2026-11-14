@@ -602,7 +602,7 @@ export default async function Page() {
           <div className="min-h-screen bg-[#f7f7f7]" />
         }
       >
-        <PropertiesClient initialProper ties={properties} />
+        <PropertiesClient />
       </Suspense>
     </>
   );
