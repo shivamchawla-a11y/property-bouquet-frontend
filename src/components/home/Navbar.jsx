@@ -18,6 +18,32 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
+
+// =========================================================
+// CONTENT CATEGORY SOURCE
+// =========================================================
+
+const CONTENT_API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://propertybouquet.com/api"
+).replace(/\/+$/, "");
+
+const getPublishedCategoryNames = (payload) => {
+  const articles = Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload)
+      ? payload
+      : [];
+
+  const categories = articles
+    .map((article) => String(article?.category || "").trim())
+    .filter(Boolean);
+
+  return [...new Set(categories)].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" })
+  );
+};
+
 // =========================================================
 // NAVIGATION ITEMS
 // =========================================================
@@ -45,23 +71,12 @@ const navItems = [
     title: "Knowledge Centre",
     key: "knowledge",
     href: "/knowledge",
-    items: [
-      "Buying Guides",
-      "Home Loans",
-      "Legal Guides",
-      "Investment Guides",
-    ],
   },
 
   {
     title: "Property Insights",
     key: "insights",
     href: "/insights",
-    items: [
-      "Market Reports",
-      "Luxury News",
-      "Investment Trends",
-    ],
   },
 
   {
@@ -287,6 +302,12 @@ const [mobileDropdown, setMobileDropdown] = useState(null);
 // Fallback navigation data for pages that don't pass props
 const [localNavigationData, setLocalNavigationData] = useState(null);
 
+// Live categories used by the Knowledge Centre and Property Insights filters.
+const [contentCategories, setContentCategories] = useState({
+  knowledge: [],
+  insights: [],
+});
+
 // Fetch navigation data when parent doesn't provide it
 useEffect(() => {
   if (navigationData) {
@@ -331,6 +352,56 @@ const navData =
   localNavigationData?.data ||
   localNavigationData ||
   {};
+
+// Fetch the same published article collections used by the page filters.
+useEffect(() => {
+  const controller = new AbortController();
+
+  const fetchCategories = async (endpoint) => {
+    try {
+      const response = await fetch(
+        `${CONTENT_API_BASE}/${endpoint}?status=published`,
+        {
+          signal: controller.signal,
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Unable to load ${endpoint} categories (${response.status})`
+        );
+      }
+
+      const payload = await response.json();
+      return getPublishedCategoryNames(payload);
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        console.error(`Navbar ${endpoint} categories error:`, error);
+      }
+
+      return [];
+    }
+  };
+
+  const loadContentCategories = async () => {
+    const [knowledge, insights] = await Promise.all([
+      fetchCategories("knowledge"),
+      fetchCategories("news"),
+    ]);
+
+    if (!controller.signal.aborted) {
+      setContentCategories({
+        knowledge,
+        insights,
+      });
+    }
+  };
+
+  loadContentCategories();
+
+  return () => controller.abort();
+}, []);
 
 const locations = Array.isArray(navData.locations)
   ? navData.locations
@@ -434,6 +505,14 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
             ),
           "View All Developers →",
         ];
+      }
+
+      if (item.key === "knowledge") {
+        items = contentCategories.knowledge;
+      }
+
+      if (item.key === "insights") {
+        items = contentCategories.insights;
       }
 
       return {
@@ -580,7 +659,7 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
       closeMobileMenu();
 
       router.push(
-        "/knowledge"
+        `/knowledge?category=${encodeURIComponent(sub)}`
       );
 
       return;
@@ -597,7 +676,7 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
       closeMobileMenu();
 
       router.push(
-        "/insights"
+        `/insights?category=${encodeURIComponent(sub)}`
       );
 
       return;
@@ -725,6 +804,14 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
           ),
         "View All Developers →",
       ];
+    }
+
+    if (item.key === "knowledge") {
+      dropdownItems = contentCategories.knowledge;
+    }
+
+    if (item.key === "insights") {
+      dropdownItems = contentCategories.insights;
     }
 
     return dropdownItems;
@@ -855,7 +942,7 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
       "knowledge"
     ) {
       router.push(
-        "/knowledge"
+        `/knowledge?category=${encodeURIComponent(sub)}`
       );
 
       setActive(null);
@@ -872,7 +959,7 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
       "insights"
     ) {
       router.push(
-        "/insights"
+        `/insights?category=${encodeURIComponent(sub)}`
       );
 
       setActive(null);

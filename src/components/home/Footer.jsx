@@ -50,78 +50,40 @@ const FaInstagram = (props) => (
   </svg>
 );
 
-const FaYoutube = (props) => (
-  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true" {...props}>
-    <rect x="2.5" y="5" width="19" height="14" rx="4" />
-    <path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" />
-  </svg>
-);
-
 const FaWhatsapp = (props) => (
   <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" {...props}>
     <path d="M12.04 2a9.9 9.9 0 0 0-8.48 15.02L2.2 22l5.1-1.33A9.9 9.9 0 1 0 12.04 2Zm0 17.98a8.05 8.05 0 0 1-4.1-1.12l-.3-.18-3.03.79.81-2.95-.2-.31a8.08 8.08 0 1 1 6.82 3.77Zm4.44-6.05c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.11-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.4-.54-.4h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.1 3.62.58.25 1.03.4 1.38.51.58.18 1.1.15 1.51.09.46-.07 1.43-.58 1.63-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z" />
   </svg>
 );
 
+// Only keep Explore destinations that have their own real public route.
 const exploreLinks = [
-
   { label: "Properties", href: "/properties" },
-
   { label: "Locations", href: "/locations" },
-
   { label: "Developers", href: "/developers" },
-
-  { label: "New Launches", href: "/properties" },
-
-  { label: "Luxury Homes", href: "/properties" },
-
-  { label: "Commercial", href: "/properties" },
-
-  { label: "Plots & Land", href: "/properties" },
-
-  { label: "Farmhouses", href: "/properties" },
-
 ];
 
-const knowledgeLinks = [
+// Category labels are loaded from the same published-content APIs as the page filters.
+const CONTENT_API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://propertybouquet.com/api"
+).replace(/\/+$/, "");
 
-  "Buying Guides",
+const getPublishedCategoryNames = (payload) => {
+  const articles = Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload)
+      ? payload
+      : [];
 
-  "Investment Guides",
+  const categories = articles
+    .map((article) => String(article?.category || "").trim())
+    .filter(Boolean);
 
-  "Area Guides",
-
-  "Legal & RERA",
-
-  "Home Loans",
-
-  "NRI Corner",
-
-  "Tax & Finance",
-
-  "Real Estate Dictionary",
-
-];
-
-const insightLinks = [
-
-  "Market Updates",
-
-  "Infrastructure News",
-
-  "Investment Analysis",
-
-  "Project Reviews",
-
-  "Luxury Living",
-
-  "Expert Opinions",
-
-  "Research Reports",
-
-  "Podcast & Videos",
-
-];
+  return [...new Set(categories)].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" })
+  );
+};
 
 const featureCards = [
 
@@ -192,6 +154,9 @@ export default function Footer() {
 
   const [collections, setCollections] = useState([]);
 
+  const [knowledgeLinks, setKnowledgeLinks] = useState([]);
+  const [insightLinks, setInsightLinks] = useState([]);
+
   const [showCollections, setShowCollections] = useState(false);
 
   const [collectionsLoading, setCollectionsLoading] = useState(false);
@@ -205,8 +170,9 @@ export default function Footer() {
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
 
   // =====================================================
-  // FETCH QUALIFYING COLLECTION PAGES ON DEMAND
-  // Delay this optional request until the footer approaches the viewport.
+  // FETCH REAL FOOTER LINKS ON DEMAND
+  // Load published categories and eligible collections when the footer
+  // approaches the viewport, avoiding unnecessary requests on page load.
   // =====================================================
 
   useEffect(() => {
@@ -216,23 +182,45 @@ export default function Footer() {
     const controller = new AbortController();
     let requestStarted = false;
 
-    const fetchCollections = async () => {
-      if (requestStarted) return;
-      requestStarted = true;
-
+    const fetchJson = async (url) => {
       try {
-        setCollectionsLoading(true);
-
-        const res = await fetch("/api/landing-pages", {
+        const response = await fetch(url, {
           credentials: "include",
           cache: "no-store",
           signal: controller.signal,
         });
 
-        if (!res.ok) return;
+        if (!response.ok) {
+          throw new Error(`Request failed (${response.status}): ${url}`);
+        }
 
-        const data = await res.json();
-        const pages = Array.isArray(data?.data) ? data.data : [];
+        return await response.json();
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error("Footer link data request failed:", error);
+        }
+        return null;
+      }
+    };
+
+    const fetchFooterData = async () => {
+      if (requestStarted) return;
+      requestStarted = true;
+      setCollectionsLoading(true);
+
+      try {
+        const [landingPayload, knowledgePayload, insightsPayload] =
+          await Promise.all([
+            fetchJson("/api/landing-pages"),
+            fetchJson(`${CONTENT_API_BASE}/knowledge?status=published`),
+            fetchJson(`${CONTENT_API_BASE}/news?status=published`),
+          ]);
+
+        if (controller.signal.aborted) return;
+
+        const pages = Array.isArray(landingPayload?.data)
+          ? landingPayload.data
+          : [];
 
         const qualifyingCollections = pages
           .filter(
@@ -249,10 +237,8 @@ export default function Footer() {
           );
 
         setCollections(qualifyingCollections);
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          console.error("Failed to fetch collection pages:", error);
-        }
+        setKnowledgeLinks(getPublishedCategoryNames(knowledgePayload));
+        setInsightLinks(getPublishedCategoryNames(insightsPayload));
       } finally {
         if (!controller.signal.aborted) {
           setCollectionsLoading(false);
@@ -261,7 +247,7 @@ export default function Footer() {
     };
 
     if (typeof IntersectionObserver === "undefined") {
-      fetchCollections();
+      fetchFooterData();
       return () => controller.abort();
     }
 
@@ -269,7 +255,7 @@ export default function Footer() {
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
           observer.disconnect();
-          fetchCollections();
+          fetchFooterData();
         }
       },
       { rootMargin: "500px 0px" }
@@ -617,56 +603,6 @@ export default function Footer() {
 
     </a>
 
-    <a
-
-      href="https://www.youtube.com/"
-
-      target="_blank"
-
-      rel="noopener noreferrer"
-
-      aria-label="YouTube"
-
-      className="
-
-        group/social
-
-        flex h-11 w-11 items-center justify-center
-
-        rounded-full
-
-        border border-[#C89D58]/40
-
-        bg-white/[0.025]
-
-        text-[17px] text-[#C89D58]
-
-        transition-all duration-300
-
-        hover:-translate-y-1
-
-        hover:border-[#C89D58]
-
-        hover:bg-[#C89D58]
-
-        hover:text-[#081512]
-
-        hover:shadow-[0_5px_20px_rgba(200,157,88,0.16)]
-
-        focus-visible:outline-none
-
-        focus-visible:ring-2
-
-        focus-visible:ring-[#C89D58]
-
-      "
-
-    >
-
-      <FaYoutube />
-
-    </a>
-
   </div>
 
 </div>
@@ -723,25 +659,20 @@ export default function Footer() {
 
             <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
 
-              {knowledgeLinks.map((item) => (
-
-                <li key={item}>
-
-                  <Link
-
-                    href="/knowledge"
-
-                    className="transition-colors duration-300 hover:text-[#C89B4F]"
-
-                  >
-
-                    {item}
-
-                  </Link>
-
-                </li>
-
-              ))}
+              {knowledgeLinks.length > 0 ? (
+                knowledgeLinks.map((item) => (
+                  <li key={item}>
+                    <Link
+                      href={`/knowledge?category=${encodeURIComponent(item)}`}
+                      className="transition-colors duration-300 hover:text-[#C89B4F]"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="text-white/45">{collectionsLoading ? "Loading categories..." : "No published guides yet"}</li>
+              )}
 
             </ul>
 
@@ -761,25 +692,20 @@ export default function Footer() {
 
             <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
 
-              {insightLinks.map((item) => (
-
-                <li key={item}>
-
-                  <Link
-
-                    href="/insights"
-
-                    className="transition-colors duration-300 hover:text-[#C89B4F]"
-
-                  >
-
-                    {item}
-
-                  </Link>
-
-                </li>
-
-              ))}
+              {insightLinks.length > 0 ? (
+                insightLinks.map((item) => (
+                  <li key={item}>
+                    <Link
+                      href={`/insights?category=${encodeURIComponent(item)}`}
+                      className="transition-colors duration-300 hover:text-[#C89B4F]"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="text-white/45">{collectionsLoading ? "Loading categories..." : "No published insights yet"}</li>
+              )}
 
             </ul>
 
