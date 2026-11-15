@@ -1,1065 +1,396 @@
-"use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-import { motion } from "framer-motion";
 
 import {
   ArrowRight,
   CalendarDays,
+  Clock3,
   Sparkles,
 } from "lucide-react";
 
-import NewsletterCard from "./NewsletterCard";
-import TrendingSidebar from "./TrendingSidebar";
-import LatestInsights from "./LatestInsights";
+// ======================================================
+// DATE
+// ======================================================
 
-const API = "https://propertybouquet.com/api";
+function formatDate(date) {
+  if (!date) return "";
 
-export default function FeaturedInsights() {
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [articles, setArticles] = useState([]);
-  const [error, setError] = useState("");
+  const parsed = new Date(date);
 
-  // ==========================================================
-  // FETCH ARTICLES
-  // ==========================================================
-
-  useEffect(() => {
-    fetchFeatured();
-  }, []);
-
-  async function fetchFeatured() {
-    try {
-      const res = await fetch(
-        `${API}/news?status=published`,
-        {
-          cache: "no-store",
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(
-          `Failed to fetch articles: ${res.status}`
-        );
-      }
-
-      const data = await res.json();
-
-      if (!data?.success) {
-        setError("Unable to load insights.");
-        return;
-      }
-
-      const allArticles = Array.isArray(data.data)
-        ? data.data
-        : [];
-
-      if (allArticles.length === 0) {
-        setArticles([]);
-        setArticle(null);
-        return;
-      }
-
-      setArticles(allArticles);
-
-      const featuredArticle =
-        allArticles.find(
-          (item) => item?.featured === true
-        ) || allArticles[0];
-
-      setArticle(featuredArticle);
-    } catch (err) {
-      console.error(
-        "News Fetch Error:",
-        err
-      );
-
-      setError(
-        "Unable to load insights."
-      );
-    } finally {
-      setLoading(false);
-    }
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
   }
 
-  // ==========================================================
-  // SAFE DATE
-  // ==========================================================
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }).format(parsed);
+}
 
-  function formatDate(date) {
-    if (!date) {
-      return "";
-    }
+// ======================================================
+// FEATURED INSIGHTS
+// ======================================================
 
-    const parsed = new Date(date);
+export default function FeaturedInsights({
+  article,
+}) {
+  if (!article) return null;
 
-    if (Number.isNaN(parsed.getTime())) {
-      return "";
-    }
-
-    return parsed.toLocaleDateString(
-      "en-US",
-      {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }
-    );
-  }
-
-  // ==========================================================
-  // SAFE IMAGE
-  // ==========================================================
-
-  function getImageUrl(image) {
-    if (
-      typeof image === "string" &&
-      image.trim()
-    ) {
-      return image.trim();
-    }
-
-    if (
-      image &&
-      typeof image === "object"
-    ) {
-      if (
-        typeof image.url === "string" &&
-        image.url.trim()
-      ) {
-        return image.url.trim();
-      }
-
-      if (
-        typeof image.src === "string" &&
-        image.src.trim()
-      ) {
-        return image.src.trim();
-      }
-    }
-
-    return null;
-  }
-
-  // ==========================================================
-  // LOADING STATE
-  // ==========================================================
-
-  if (loading) {
-    return (
-      <section
-        className="
-          relative
-          overflow-hidden
-          bg-[#f7f5ef]
-          py-14
-          sm:py-16
-          lg:py-20
-        "
-      >
-        {/* BRAND GLOW */}
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            -top-48
-            -left-48
-            h-[600px]
-            w-[600px]
-            rounded-full
-            bg-[#163629]/7
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            -bottom-48
-            -right-48
-            h-[600px]
-            w-[600px]
-            rounded-full
-            bg-[#b88638]/5
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            relative
-            mx-auto
-            max-w-[1500px]
-            px-5
-            sm:px-6
-            lg:px-10
-          "
-        >
-          <div
-            className="
-              grid
-              grid-cols-1
-              items-start
-              gap-8
-              lg:grid-cols-12
-              xl:gap-10
-            "
-          >
-            {/* FEATURED SKELETON */}
-
-            <div className="lg:col-span-8">
-              <div
-                className="
-                  overflow-hidden
-                  rounded-[28px]
-                  border
-                  border-[#e3e0d7]
-                  bg-white
-                  shadow-[0_20px_60px_rgba(22,54,41,.07)]
-                "
-              >
-                <div
-                  className="
-                    aspect-[16/9]
-                    w-full
-                    animate-pulse
-                    bg-[#e8e5dc]
-                  "
-                />
-
-                <div
-                  className="
-                    space-y-5
-                    bg-[#163629]
-                    p-7
-                    sm:p-9
-                  "
-                >
-                  <div className="h-3 w-28 animate-pulse rounded bg-white/10" />
-
-                  <div className="h-8 w-4/5 animate-pulse rounded bg-white/10" />
-
-                  <div className="h-4 w-full animate-pulse rounded bg-white/10" />
-
-                  <div className="h-4 w-3/4 animate-pulse rounded bg-white/10" />
-                </div>
-              </div>
-            </div>
-
-            {/* SIDEBAR SKELETON */}
-
-            <div className="space-y-7 lg:col-span-4">
-              <div
-                className="
-                  h-[300px]
-                  animate-pulse
-                  rounded-[28px]
-                  border
-                  border-[#e3e0d7]
-                  bg-white
-                "
-              />
-
-              <div
-                className="
-                  h-[420px]
-                  animate-pulse
-                  rounded-[28px]
-                  border
-                  border-[#e3e0d7]
-                  bg-white
-                "
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // ==========================================================
-  // ERROR
-  // ==========================================================
-
-  if (error) {
-    return (
-      <section
-        className="
-          bg-[#f7f5ef]
-          py-20
-        "
-      >
-        <div
-          className="
-            mx-auto
-            max-w-4xl
-            px-6
-            text-center
-          "
-        >
-          <h2
-            className="
-              text-2xl
-              font-medium
-              text-[#163629]
-            "
-            style={{
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            {error}
-          </h2>
-        </div>
-      </section>
-    );
-  }
-
-  // ==========================================================
-  // EMPTY STATE
-  // ==========================================================
-
-  if (!article) {
-    return (
-      <section
-        className="
-          bg-[#f7f5ef]
-          py-24
-        "
-      >
-        <div
-          className="
-            mx-auto
-            max-w-4xl
-            px-6
-            text-center
-          "
-        >
-          <div
-            className="
-              mx-auto
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-[#163629]
-              text-[#d8b46b]
-              shadow-lg
-            "
-          >
-            <Sparkles size={21} />
-          </div>
-
-          <h2
-            className="
-              mt-6
-              text-3xl
-              text-[#163629]
-            "
-            style={{
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            No Insights Available
-          </h2>
-
-          <p
-            className="
-              mt-3
-              text-sm
-              text-[#777]
-            "
-          >
-            Publish a news article to display it here.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  // ==========================================================
-  // ARTICLE DATA
-  // ==========================================================
-
-  const imageUrl = getImageUrl(
-    article.featuredImage
-  );
+  const isFeatured =
+    article.featured === true ||
+    article.featured === "true";
 
   const articleHref =
     `/insights/${article.slug}`;
 
-  // ==========================================================
-  // MAIN
-  // ==========================================================
+  const publishDate = formatDate(
+    article.publishDate || article.createdAt
+  );
+
+  const imageUrl =
+    typeof article.featuredImage === "string"
+      ? article.featuredImage.trim()
+      : article.featuredImage?.url ||
+        article.featuredImage?.src ||
+        "";
 
   return (
-    <section
-      className="
-        relative
+    <section>
+
+      {/* SECTION HEADER */}
+
+      <div className="
+        mb-7
+        flex
+        flex-wrap
+        items-end
+        justify-between
+        gap-4
+      ">
+
+        <div>
+
+          <div className="flex items-center gap-3">
+
+            <span className="h-px w-8 bg-[#b88638]" />
+
+            <p className="
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[3px]
+              text-[#b88638]
+            ">
+              Property Bouquet Research
+            </p>
+
+          </div>
+
+          <h2
+            className="
+              mt-3
+              text-3xl
+              text-[#163629]
+              sm:text-4xl
+            "
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            Featured Insight
+          </h2>
+
+          <p className="
+            mt-2
+            max-w-xl
+            text-sm
+            leading-7
+            text-[#777]
+          ">
+            A selected perspective on the luxury real estate market.
+          </p>
+
+        </div>
+
+        <span className="
+          inline-flex
+          items-center
+          gap-2
+          rounded-full
+          border
+          border-[#e6dfd3]
+          bg-white
+          px-4
+          py-2
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[1px]
+          text-[#163629]
+        ">
+
+          <Sparkles
+            size={13}
+            className="text-[#b88638]"
+          />
+
+          {isFeatured ? "Editor's Pick" : "Latest Story"}
+
+        </span>
+
+      </div>
+
+      {/* FEATURED CARD */}
+
+      <article className="
+        grid
         overflow-hidden
-        bg-[#f7f5ef]
-        py-14
-        sm:py-16
-        lg:py-20
-      "
-    >
-      {/* ======================================================
-          BRAND BACKGROUND GLOWS
-      ====================================================== */}
+        rounded-[26px]
+        border
+        border-[#e8e1d6]
+        bg-white
+        shadow-[0_20px_65px_rgba(22,54,41,.08)]
+        lg:grid-cols-[1.15fr_0.85fr]
+        lg:rounded-[32px]
+      ">
 
-      <div
-        className="
-          pointer-events-none
-          absolute
-          -top-64
-          -left-64
-          h-[700px]
-          w-[700px]
-          rounded-full
-          bg-[#163629]/8
-          blur-3xl
-        "
-      />
+        {/* IMAGE */}
 
-      <div
-        className="
-          pointer-events-none
-          absolute
-          -bottom-72
-          -right-64
-          h-[700px]
-          w-[700px]
-          rounded-full
-          bg-[#b88638]/6
-          blur-3xl
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-1/2
-          top-1/3
-          h-[500px]
-          w-[500px]
-          -translate-x-1/2
-          rounded-full
-          bg-[#163629]/3
-          blur-3xl
-        "
-      />
-
-      {/* ======================================================
-          MAIN CONTAINER
-      ====================================================== */}
-
-      <div
-        className="
-          relative
-          mx-auto
-          max-w-[1500px]
-          px-5
-          sm:px-6
-          lg:px-10
-        "
-      >
-        {/* ====================================================
-            SECTION HEADER
-        ==================================================== */}
-
-        <div
+        <Link
+          href={articleHref}
           className="
-            mb-8
-            flex
-            items-end
-            justify-between
-            gap-6
+            group
+            relative
+            block
+            min-h-[260px]
+            overflow-hidden
+            bg-[#eeeae1]
+            sm:min-h-[380px]
+            lg:min-h-[470px]
           "
         >
-          <div>
-            {/* EYEBROW */}
 
-            <div className="flex items-center gap-3">
-              <span
-                className="
-                  h-px
-                  w-8
-                  bg-[#b88638]
-                "
-              />
+          {imageUrl ? (
 
-              <span
-                className="
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[3px]
-                  text-[#b88638]
-                "
-              >
-                Property Bouquet
-              </span>
+            <Image
+              src={imageUrl}
+              alt={article.title}
+              fill
+              priority
+              sizes="
+                (max-width: 1023px) 100vw,
+                60vw
+              "
+              quality={85}
+              className="
+                object-contain
+                p-1
+                transition-transform
+                duration-700
+                group-hover:scale-[1.02]
+              "
+            />
+
+          ) : (
+
+            <div className="
+              absolute
+              inset-0
+              flex
+              items-center
+              justify-center
+              bg-gradient-to-br
+              from-[#163629]
+              to-[#07111d]
+              text-[#d8b46b]
+            ">
+              <Sparkles size={42} />
             </div>
 
-            {/* HEADING */}
+          )}
 
-            <h2
+        </Link>
+
+        {/* CONTENT */}
+
+        <div className="
+          relative
+          flex
+          flex-col
+          justify-center
+          bg-gradient-to-br
+          from-[#163629]
+          via-[#183d2e]
+          to-[#0d281e]
+          p-6
+          sm:p-9
+          lg:p-10
+        ">
+
+          {/* DECORATIVE GLOW */}
+
+          <div className="
+            pointer-events-none
+            absolute
+            -right-24
+            -top-24
+            h-64
+            w-64
+            rounded-full
+            bg-[#b88638]/10
+            blur-3xl
+          " />
+
+          <div className="relative">
+
+            {/* CATEGORY */}
+
+            <span className="
+              inline-flex
+              max-w-full
+              rounded-full
+              border
+              border-[#d8b46b]/30
+              bg-white/[0.06]
+              px-3
+              py-1.5
+              text-[9px]
+              font-semibold
+              uppercase
+              tracking-[1.8px]
+              text-[#e1bd78]
+            ">
+              {article.category || "Luxury Real Estate"}
+            </span>
+
+            {/* DATE + READING TIME */}
+
+            <div className="
+              mt-6
+              flex
+              flex-wrap
+              gap-x-5
+              gap-y-2
+              text-[11px]
+              text-white/55
+            ">
+
+              {publishDate && (
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={14} className="text-[#d8b46b]" />
+                  {publishDate}
+                </span>
+              )}
+
+              {article.readTime && (
+                <span className="flex items-center gap-2">
+                  <Clock3 size={14} className="text-[#d8b46b]" />
+                  {article.readTime} min read
+                </span>
+              )}
+
+            </div>
+
+            {/* TITLE */}
+
+            <h3
               className="
-                mt-3
-                text-[29px]
-                leading-tight
-                text-[#163629]
+                mt-5
+                text-[27px]
+                leading-[1.2]
+                text-white
                 sm:text-[32px]
-                lg:text-[36px]
+                xl:text-[36px]
               "
               style={{
                 fontFamily: "Georgia, serif",
               }}
             >
-              Featured Insights
-            </h2>
+              {article.title}
+            </h3>
+
+            {/* GOLD DIVIDER */}
+
+            <div className="
+              mt-6
+              h-px
+              w-12
+              bg-[#c9a45f]
+            " />
 
             {/* DESCRIPTION */}
 
-            <p
-              className="
-                mt-2
-                max-w-[620px]
+            {article.shortDescription && (
+              <p className="
+                mt-5
+                line-clamp-4
                 text-[13px]
-                leading-6
-                text-[#777]
-                sm:text-[14px]
+                leading-7
+                text-white/65
+                sm:text-sm
+              ">
+                {article.shortDescription}
+              </p>
+            )}
+
+            {/* AUTHOR */}
+
+            {article.author && (
+              <p className="
+                mt-6
+                text-[10px]
+                uppercase
+                tracking-[1.5px]
+                text-white/40
+              ">
+                By {article.author}
+              </p>
+            )}
+
+            {/* CTA */}
+
+            <Link
+              href={articleHref}
+              className="
+                group/read
+                mt-8
+                inline-flex
+                h-12
+                w-fit
+                items-center
+                gap-3
+                rounded-full
+                bg-[#d8b46b]
+                px-6
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-[1.2px]
+                text-[#14281e]
+                transition-all
+                hover:-translate-y-0.5
+                hover:bg-white
               "
             >
-              Research, market intelligence and
-              perspectives shaping India's luxury
-              real estate landscape.
-            </p>
+
+              Read Featured Insight
+
+              <ArrowRight
+                size={15}
+                className="transition-transform group-hover/read:translate-x-1"
+              />
+
+            </Link>
+
           </div>
 
-          {/* ==================================================
-              VIEW ALL INSIGHTS BUTTON
-              WORKING LINK
-          ================================================== */}
-
-          <Link
-            href="/insights"
-            aria-label="View all Property Bouquet insights"
-            className="
-              group
-              hidden
-              shrink-0
-              items-center
-              gap-2.5
-              rounded-full
-              border
-              border-[#d8d1c4]
-              bg-white
-              px-5
-              py-2.5
-              text-[11px]
-              font-semibold
-              uppercase
-              tracking-[1px]
-              text-[#163629]
-              shadow-[0_8px_25px_rgba(22,54,41,.05)]
-              transition-all
-              duration-300
-              hover:-translate-y-0.5
-              hover:border-[#163629]
-              hover:bg-[#163629]
-              hover:text-white
-              hover:shadow-[0_12px_30px_rgba(22,54,41,.14)]
-              sm:inline-flex
-            "
-          >
-            <span>
-              View All Insights
-            </span>
-
-            <ArrowRight
-              size={14}
-              className="
-                transition-transform
-                duration-300
-                group-hover:translate-x-1
-              "
-            />
-          </Link>
         </div>
 
-        {/* ====================================================
-            MAIN GRID
-        ==================================================== */}
+      </article>
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            items-start
-            gap-8
-            lg:grid-cols-12
-            xl:gap-10
-          "
-        >
-          {/* ==================================================
-              FEATURED ARTICLE
-          ================================================== */}
-
-          <div className="lg:col-span-8">
-            <motion.article
-              whileHover={{
-                y: -4,
-              }}
-              transition={{
-                duration: 0.3,
-              }}
-              className="
-                group
-                overflow-hidden
-                rounded-[30px]
-                border
-                border-[#dfe1d9]
-                bg-white
-                shadow-[0_25px_70px_rgba(22,54,41,.09)]
-              "
-            >
-              {/* ==================================================
-                  IMAGE
-              ================================================== */}
-
-              <Link
-                href={articleHref}
-                className="
-                  block
-                  w-full
-                "
-              >
-                <div
-                  className="
-                    relative
-                    aspect-[16/9]
-                    w-full
-                    overflow-hidden
-                    bg-[#eeeae1]
-                  "
-                >
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={
-                        article.title ||
-                        "Property Insights"
-                      }
-                      fill
-                      priority
-                      sizes="
-                        (max-width: 1024px) 100vw,
-                        66vw
-                      "
-                      className="
-                        object-cover
-                        object-center
-                        transition-transform
-                        duration-700
-                        ease-out
-                        group-hover:scale-[1.035]
-                      "
-                    />
-                  ) : (
-                    <div
-                      className="
-                        absolute
-                        inset-0
-                        flex
-                        items-center
-                        justify-center
-                        bg-gradient-to-br
-                        from-[#102d22]
-                        via-[#163629]
-                        to-[#0c2119]
-                      "
-                    >
-                      <div className="text-center">
-                        <Sparkles
-                          size={25}
-                          className="
-                            mx-auto
-                            text-[#d8b46b]
-                          "
-                        />
-
-                        <p
-                          className="
-                            mt-4
-                            text-xl
-                            text-white
-                          "
-                          style={{
-                            fontFamily:
-                              "Georgia, serif",
-                          }}
-                        >
-                          Property Bouquet
-                        </p>
-
-                        <p
-                          className="
-                            mt-1
-                            text-[10px]
-                            uppercase
-                            tracking-[2px]
-                            text-white/45
-                          "
-                        >
-                          Property Insights
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* IMAGE GRADIENT */}
-
-                  <div
-                    className="
-                      pointer-events-none
-                      absolute
-                      inset-0
-                      bg-gradient-to-t
-                      from-black/25
-                      via-transparent
-                      to-transparent
-                    "
-                  />
-
-                  {/* CATEGORY */}
-
-                  <div
-                    className="
-                      absolute
-                      left-5
-                      top-5
-                      rounded-full
-                      border
-                      border-white/20
-                      bg-[#111]/80
-                      px-3
-                      py-1.5
-                      text-[8px]
-                      font-semibold
-                      uppercase
-                      tracking-[1.7px]
-                      text-white
-                      shadow-lg
-                      backdrop-blur-md
-                    "
-                  >
-                    {article?.category ||
-                      "Real Estate"}
-                  </div>
-                </div>
-              </Link>
-
-              {/* ==================================================
-                  CONTENT BELOW IMAGE
-              ================================================== */}
-
-              <div
-                className="
-                  relative
-                  overflow-hidden
-                  bg-gradient-to-br
-                  from-[#163629]
-                  via-[#183d2e]
-                  to-[#0d281e]
-                  px-6
-                  py-7
-                  sm:px-8
-                  sm:py-8
-                  lg:px-9
-                  lg:py-9
-                "
-              >
-                {/* DECORATIVE GLOW */}
-
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    -right-32
-                    -top-32
-                    h-64
-                    w-64
-                    rounded-full
-                    bg-[#b88638]/8
-                    blur-3xl
-                  "
-                />
-
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    -bottom-32
-                    -left-32
-                    h-64
-                    w-64
-                    rounded-full
-                    bg-white/4
-                    blur-3xl
-                  "
-                />
-
-                <div className="relative">
-                  {/* DATE */}
-
-                  <div
-                    className="
-                      flex
-                      items-center
-                      gap-2
-                      text-[9px]
-                      font-medium
-                      uppercase
-                      tracking-[2px]
-                      text-[#d8b46b]
-                    "
-                  >
-                    <CalendarDays size={13} />
-
-                    <span>
-                      {formatDate(
-                        article.publishDate
-                      )}
-                    </span>
-                  </div>
-
-                  {/* TITLE */}
-
-                  <h3
-                    className="
-                      mt-4
-                      max-w-[850px]
-                      text-[25px]
-                      font-normal
-                      leading-[1.25]
-                      tracking-[-0.2px]
-                      text-white
-                      sm:text-[28px]
-                      lg:text-[30px]
-                      xl:text-[32px]
-                    "
-                    style={{
-                      fontFamily:
-                        "Georgia, serif",
-                    }}
-                  >
-                    {article.title}
-                  </h3>
-
-                  {/* GOLD DIVIDER */}
-
-                  <div
-                    className="
-                      mt-5
-                      h-px
-                      w-12
-                      bg-[#b88638]
-                    "
-                  />
-
-                  {/* DESCRIPTION */}
-
-                  {article.shortDescription && (
-                    <p
-                      className="
-                        mt-5
-                        max-w-[820px]
-                        text-[13px]
-                        leading-6
-                        text-white/70
-                        sm:text-[14px]
-                        sm:leading-7
-                      "
-                    >
-                      {article.shortDescription}
-                    </p>
-                  )}
-
-                  {/* BOTTOM ROW */}
-
-                  <div
-                    className="
-                      mt-7
-                      flex
-                      flex-wrap
-                      items-center
-                      justify-between
-                      gap-5
-                    "
-                  >
-                    {/* META */}
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-4
-                        text-[9px]
-                        uppercase
-                        tracking-[1.5px]
-                        text-white/40
-                      "
-                    >
-                      <span>
-                        Property Bouquet
-                      </span>
-
-                      <span
-                        className="
-                          h-1
-                          w-1
-                          rounded-full
-                          bg-[#b88638]
-                        "
-                      />
-
-                      <span>
-                        Featured Insight
-                      </span>
-                    </div>
-
-                    {/* READ BUTTON */}
-
-                    <Link
-                      href={articleHref}
-                      className="
-                        group/read
-                        inline-flex
-                        items-center
-                        gap-2.5
-                        rounded-full
-                        border
-                        border-[#d8b46b]/40
-                        bg-[#b88638]
-                        px-5
-                        py-2.5
-                        text-[10px]
-                        font-semibold
-                        uppercase
-                        tracking-[1.5px]
-                        text-[#111]
-                        shadow-[0_8px_25px_rgba(184,134,56,.14)]
-                        transition-all
-                        duration-300
-                        hover:-translate-y-0.5
-                        hover:bg-[#d8b46b]
-                        hover:shadow-[0_10px_30px_rgba(184,134,56,.24)]
-                      "
-                    >
-                      Read Article
-
-                      <ArrowRight
-                        size={14}
-                        className="
-                          transition-transform
-                          duration-300
-                          group-hover/read:translate-x-1
-                        "
-                      />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.article>
-
-            <div className="mt-12 sm:mt-14">
-              <LatestInsights articles={articles} />
-            </div>
-          </div>
-
-          {/* ==================================================
-              RIGHT SIDEBAR
-          ================================================== */}
-
-          <div className="lg:col-span-4">
-            <div className="sticky top-28">
-              {/* NEWSLETTER */}
-
-              <NewsletterCard />
-
-              {/* TRENDING */}
-
-              <div className="mt-7">
-                <TrendingSidebar
-                  articles={articles}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ====================================================
-            MOBILE VIEW ALL INSIGHTS
-        ==================================================== */}
-
-        <div
-          className="
-            mt-8
-            flex
-            justify-center
-            sm:hidden
-          "
-        >
-          <Link
-            href="/insights"
-            className="
-              group
-              inline-flex
-              items-center
-              gap-2.5
-              rounded-full
-              border
-              border-[#163629]/20
-              bg-white
-              px-6
-              py-3
-              text-[10px]
-              font-semibold
-              uppercase
-              tracking-[1.2px]
-              text-[#163629]
-              shadow-[0_8px_25px_rgba(22,54,41,.06)]
-              transition-all
-              duration-300
-              hover:border-[#163629]
-              hover:bg-[#163629]
-              hover:text-white
-            "
-          >
-            <span>
-              View All Insights
-            </span>
-
-            <ArrowRight
-              size={14}
-              className="
-                transition-transform
-                duration-300
-                group-hover:translate-x-1
-              "
-            />
-          </Link>
-        </div>
-      </div>
     </section>
   );
 }

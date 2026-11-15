@@ -1,112 +1,376 @@
+
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Search,
+  ArrowUpDown,
+  X,
+  SlidersHorizontal,
+} from "lucide-react";
 
-const categories = [
-  "All",
-  "Market News",
-  "Blogs",
-  "Market Analysis",
-  "Infrastructure Updates",
-  "Project Reviews",
-  "Opinion",
-  "Trends",
-];
+// ======================================================
+// INSIGHTS FILTER BAR
+// NON-STICKY VERSION
+// ======================================================
 
-export default function InsightsFilterBar() {
-  const [activeCategory, setActiveCategory] =
-    useState("All");
-
-  const [search, setSearch] = useState("");
-
+export default function InsightsFilterBar({
+  categories = [],
+  activeCategory = "",
+  onCategoryChange,
+  search = "",
+  onSearchChange,
+  sort = "latest",
+  onSortChange,
+  totalCount = 0,
+}) {
   return (
-    <section className="sticky top-[78px] z-40 bg-[#faf8f3]/90 backdrop-blur-xl border-b border-[#e9e2d7]">
+    <section
+      className="
+        relative
+        z-10
+        rounded-2xl
+        border
+        border-[#e7e0d5]
+        bg-[#faf8f3]
+        p-4
+        shadow-[0_8px_25px_rgba(22,54,41,.04)]
+        sm:p-5
+      "
+    >
 
-      <div className="max-w-[1500px] mx-auto px-6 lg:px-10 py-5">
+      {/* HEADER */}
 
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
+      <div className="
+        mb-4
+        flex
+        items-center
+        justify-between
+        gap-3
+      ">
 
-          {/* Categories */}
+        <div className="flex items-center gap-2">
 
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+          <SlidersHorizontal
+            size={17}
+            className="text-[#b88638]"
+          />
 
-            {categories.map((category) => {
-              const active =
-                activeCategory === category;
+          <h3 className="
+            text-sm
+            font-semibold
+            text-[#163629]
+          ">
+            Discover Insights
+          </h3>
 
-              return (
-                <motion.button
-                  key={category}
-                  whileTap={{
-                    scale: .96,
-                  }}
-                  onClick={() =>
-                    setActiveCategory(category)
-                  }
-                  className={`
-                  whitespace-nowrap
-                  rounded-full
-                  px-5
-                  py-3
-                  text-sm
-                  font-medium
-                  transition-all
-                  duration-300
-                  
-                  ${
-                    active
-                      ? "bg-[#0c0c0c] text-white shadow-lg"
-                      : "bg-white text-[#444] border border-[#ece7de] hover:border-[#C89D58]/40 hover:text-[#C89D58]"
-                  }
-                  `}
-                >
-                  {category}
-                </motion.button>
-              );
-            })}
-          </div>
+        </div>
 
-          {/* Search */}
+        <span className="
+          shrink-0
+          text-xs
+          text-[#999]
+        ">
+          {totalCount} articles
+        </span>
 
-          <div className="relative w-full xl:w-[320px]">
+      </div>
 
-            <Search
-              size={18}
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
+      {/* CATEGORY FILTERS */}
 
-            <input
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
+      <div className="
+        flex
+        flex-wrap
+        items-center
+        gap-2
+      ">
+
+        {/* ALL INSIGHTS */}
+
+        <button
+          type="button"
+          onClick={() => onCategoryChange?.("")}
+          aria-pressed={!activeCategory}
+          className={`
+            rounded-full
+            px-4
+            py-2.5
+            text-xs
+            font-semibold
+            transition-all
+            duration-200
+            ${
+              !activeCategory
+                ? "bg-[#163629] text-white shadow-sm"
+                : "border border-[#e7e0d5] bg-white text-[#555] hover:border-[#b88638] hover:text-[#987126]"
+            }
+          `}
+        >
+          All Insights
+        </button>
+
+        {/* REAL DATABASE CATEGORIES */}
+
+        {categories.map((category) => {
+
+          const isActive =
+            activeCategory.toLowerCase() ===
+            category.name.toLowerCase();
+
+          return (
+            <button
+              key={category.key}
+              type="button"
+              onClick={() =>
+                onCategoryChange?.(category.name)
               }
-              placeholder="Search articles..."
-              className="
+              aria-pressed={isActive}
+              className={`
+                inline-flex
+                items-center
+                gap-2
+                rounded-full
+                px-4
+                py-2.5
+                text-xs
+                font-medium
+                transition-all
+                duration-200
+                ${
+                  isActive
+                    ? "bg-[#163629] text-white shadow-sm"
+                    : "border border-[#e7e0d5] bg-white text-[#555] hover:border-[#b88638] hover:text-[#987126]"
+                }
+              `}
+            >
+
+              {category.name}
+
+              <span className={`
+                rounded-full
+                px-1.5
+                py-0.5
+                text-[9px]
+                ${
+                  isActive
+                    ? "bg-white/15 text-white/80"
+                    : "bg-[#f3efe7] text-[#888]"
+                }
+              `}>
+                {category.count}
+              </span>
+
+            </button>
+          );
+        })}
+
+      </div>
+
+      {/* SEARCH AND SORT */}
+
+      <div className="
+        mt-4
+        grid
+        grid-cols-1
+        gap-3
+        border-t
+        border-[#e9e2d7]
+        pt-4
+        md:grid-cols-[1fr_200px]
+      ">
+
+        {/* SEARCH */}
+
+        <div className="relative">
+
+          <Search
+            size={17}
+            className="
+              pointer-events-none
+              absolute
+              left-4
+              top-1/2
+              -translate-y-1/2
+              text-gray-400
+            "
+          />
+
+          <input
+            type="search"
+            value={search}
+            onChange={(event) =>
+              onSearchChange?.(event.target.value)
+            }
+            placeholder="Search market insights, investment topics or articles..."
+            aria-label="Search Property Insights"
+            className="
+              h-11
               w-full
               rounded-xl
               border
-              border-[#e5dfd6]
+              border-[#e7e0d5]
               bg-white
-              py-3
-              pl-12
-              pr-5
+              pl-11
+              pr-11
               text-sm
+              text-[#163629]
               outline-none
-              transition-all
-              duration-300
-              focus:border-[#C89D58]
+              transition
+              focus:border-[#b88638]
               focus:ring-2
-              focus:ring-[#C89D58]/20
-              "
-            />
+              focus:ring-[#b88638]/10
+            "
+          />
 
-          </div>
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange?.("")}
+              aria-label="Clear search"
+              className="
+                absolute
+                right-4
+                top-1/2
+                -translate-y-1/2
+                text-gray-400
+                transition-colors
+                hover:text-[#163629]
+              "
+            >
+              <X size={16} />
+            </button>
+          )}
+
+        </div>
+
+        {/* SORT */}
+
+        <div className="relative">
+
+          <ArrowUpDown
+            size={16}
+            className="
+              pointer-events-none
+              absolute
+              left-4
+              top-1/2
+              -translate-y-1/2
+              text-[#b88638]
+            "
+          />
+
+          <select
+            value={sort}
+            onChange={(event) =>
+              onSortChange?.(event.target.value)
+            }
+            aria-label="Sort insights"
+            className="
+              h-11
+              w-full
+              appearance-none
+              rounded-xl
+              border
+              border-[#e7e0d5]
+              bg-white
+              pl-10
+              pr-4
+              text-sm
+              text-[#163629]
+              outline-none
+              focus:border-[#b88638]
+            "
+          >
+
+            <option value="latest">
+              Latest First
+            </option>
+
+            <option value="oldest">
+              Oldest First
+            </option>
+
+            <option value="views">
+              Most Viewed
+            </option>
+
+            <option value="title-asc">
+              Title A–Z
+            </option>
+
+            <option value="title-desc">
+              Title Z–A
+            </option>
+
+          </select>
 
         </div>
 
       </div>
+
+      {/* ACTIVE FILTER INDICATORS */}
+
+      {(activeCategory || search) && (
+        <div className="
+          mt-3
+          flex
+          flex-wrap
+          items-center
+          gap-2
+        ">
+
+          <span className="text-xs text-[#888]">
+            Showing:
+          </span>
+
+          {activeCategory && (
+            <span className="
+              rounded-full
+              bg-[#f0e9da]
+              px-3
+              py-1.5
+              text-xs
+              font-medium
+              text-[#163629]
+            ">
+              {activeCategory}
+            </span>
+          )}
+
+          {search && (
+            <span className="
+              max-w-full
+              truncate
+              rounded-full
+              bg-[#f0e9da]
+              px-3
+              py-1.5
+              text-xs
+              text-[#163629]
+            ">
+              Search: {search}
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              onCategoryChange?.("");
+              onSearchChange?.("");
+              onSortChange?.("latest");
+            }}
+            className="
+              ml-auto
+              text-xs
+              font-semibold
+              text-[#a77b27]
+              hover:underline
+            "
+          >
+            Clear Filters
+          </button>
+
+        </div>
+      )}
 
     </section>
   );

@@ -12,7 +12,7 @@ import {
 
 // ======================================================
 // KNOWLEDGE CENTRE HERO SECTION
-// Server Component - No Client-Side JavaScript Required
+// SERVER COMPONENT
 // ======================================================
 
 export default function HeroSection() {
@@ -20,36 +20,34 @@ export default function HeroSection() {
     <section
       className="
         relative
+        isolate
         w-full
+        min-h-[590px]
         overflow-hidden
         bg-[#050b13]
-        min-h-[590px]
-        isolate
       "
     >
 
-      {/* ==================================================
-          OPTIMIZED HERO BACKGROUND
-      ================================================== */}
+      {/* BACKGROUND IMAGE */}
 
       <div className="absolute inset-0 -z-10">
 
         <Image
           src="/knowledge/hero.png"
-          alt="Knowledge Centre"
+          alt="Property Bouquet Knowledge Centre"
           fill
           preload
           quality={75}
           sizes="100vw"
           className="
+            scale-105
             object-cover
             object-center
-            scale-105
             brightness-[0.95]
           "
         />
 
-        {/* LEFT DARK OVERLAY */}
+        {/* LEFT OVERLAY */}
 
         <div
           className="
@@ -57,13 +55,13 @@ export default function HeroSection() {
             inset-0
             bg-gradient-to-r
             from-[#04070d]
-            via-[#04070d]/72
+            via-[#04070d]/75
             to-transparent
           "
           aria-hidden="true"
         />
 
-        {/* BOTTOM GRADIENT */}
+        {/* BOTTOM OVERLAY */}
 
         <div
           className="
@@ -79,17 +77,16 @@ export default function HeroSection() {
 
       </div>
 
-      {/* ==================================================
-          HERO CONTENT
-      ================================================== */}
+      {/* HERO CONTENT */}
 
       <div
         className="
           relative
           z-10
-          max-w-[1400px]
           mx-auto
-          px-6
+          max-w-[1400px]
+          px-5
+          sm:px-6
           lg:px-10
           pt-28
           lg:pt-36
@@ -102,40 +99,24 @@ export default function HeroSection() {
         <nav
           aria-label="Breadcrumb"
           className="
+            mb-10
             flex
             items-center
+            gap-2
             text-sm
             text-white/70
-            gap-2
-            mb-10
           "
         >
 
           <Link
             href="/"
             className="
-              hover:text-[#d4af37]
               transition-colors
               duration-300
+              hover:text-[#d4af37]
             "
           >
             Home
-          </Link>
-
-          <ChevronRight
-            size={15}
-            aria-hidden="true"
-          />
-
-          <Link
-            href="/knowledge"
-            className="
-              hover:text-[#d4af37]
-              transition-colors
-              duration-300
-            "
-          >
-            Knowledge Centre
           </Link>
 
           <ChevronRight
@@ -147,7 +128,7 @@ export default function HeroSection() {
             className="text-white"
             aria-current="page"
           >
-            Buying Guides
+            Knowledge Centre
           </span>
 
         </nav>
@@ -156,18 +137,31 @@ export default function HeroSection() {
 
         <div className="max-w-2xl">
 
+          <p
+            className="
+              mb-5
+              text-[11px]
+              font-semibold
+              uppercase
+              tracking-[4px]
+              text-[#d4af37]
+            "
+          >
+            PROPERTY BOUQUET
+          </p>
+
           <h1
             className="
               text-white
-              text-[48px]
-              sm:text-[58px]
+              text-[42px]
+              sm:text-[54px]
               lg:text-[68px]
               leading-[1.08]
               tracking-[-1px]
               font-serif
             "
           >
-            Buying Guides
+            Knowledge Centre
           </h1>
 
           {/* GOLD DIVIDER */}
@@ -175,8 +169,8 @@ export default function HeroSection() {
           <div
             className="
               mt-7
-              w-24
               h-[3px]
+              w-24
               bg-[#c9a64b]
             "
           />
@@ -185,36 +179,36 @@ export default function HeroSection() {
 
           <p
             className="
-              mt-10
-              text-lg
-              lg:text-xl
-              leading-8
-              lg:leading-9
-              text-gray-200
+              mt-8
               max-w-[560px]
+              text-base
+              leading-8
+              text-gray-200
+              sm:text-lg
+              lg:text-xl
             "
           >
-            Your complete resource to understand everything
-            about buying a property in India.
+            Explore expert real estate guides, investment
+            strategies, area insights, project reviews and
+            legal resources to make informed property decisions.
           </p>
 
         </div>
 
       </div>
 
-      {/* ==================================================
-          FLOATING FEATURES
-      ================================================== */}
+      {/* FLOATING FEATURES */}
 
       <div
         className="
           absolute
+          bottom-[30px]
           left-1/2
-          -translate-x-1/2
-          bottom-[38px]
           z-30
           w-[92%]
           max-w-[1360px]
+          -translate-x-1/2
+          sm:bottom-[38px]
         "
       >
 
@@ -222,38 +216,38 @@ export default function HeroSection() {
           className="
             grid
             grid-cols-2
-            lg:grid-cols-4
-            bg-[#0d1118]
+            overflow-hidden
+            rounded-[18px]
             border
             border-[#8d6f30]
-            rounded-[18px]
-            overflow-hidden
+            bg-[#0d1118]
             shadow-[0_30px_80px_rgba(0,0,0,0.45)]
+            lg:grid-cols-4
           "
         >
 
           <Feature
-            icon={<BookOpen size={34} />}
+            icon={<BookOpen size={30} />}
             title="Step-by-step"
-            subtitle="guides"
+            subtitle="Guides"
           />
 
           <Feature
-            icon={<ShieldCheck size={34} />}
+            icon={<ShieldCheck size={30} />}
             title="Expert"
-            subtitle="insights"
+            subtitle="Insights"
           />
 
           <Feature
-            icon={<FileText size={34} />}
-            title="Legal & financial"
-            subtitle="clarity"
+            icon={<FileText size={30} />}
+            title="Legal & Financial"
+            subtitle="Clarity"
           />
 
           <Feature
-            icon={<Building2 size={34} />}
-            title="Make confident"
-            subtitle="decisions"
+            icon={<Building2 size={30} />}
+            title="Make Confident"
+            subtitle="Decisions"
             last
           />
 
@@ -280,12 +274,14 @@ function Feature({
       className={`
         flex
         items-center
-        gap-5
-        px-4
+        gap-3
+        px-3
+        py-5
+        sm:gap-5
         sm:px-6
-        lg:px-10
-        py-6
-        lg:py-9
+        sm:py-6
+        lg:px-8
+        lg:py-8
         ${
           !last
             ? "border-r border-[#8a6d2f]/40"
@@ -296,7 +292,7 @@ function Feature({
 
       {/* ICON */}
 
-      <div className="text-[#c9a64b] shrink-0">
+      <div className="shrink-0 text-[#c9a64b]">
         {icon}
       </div>
 
@@ -304,11 +300,11 @@ function Feature({
 
       <div className="min-w-0">
 
-        <p className="text-white text-base lg:text-xl font-medium">
+        <p className="text-sm font-medium text-white sm:text-base lg:text-lg">
           {title}
         </p>
 
-        <p className="text-gray-400 text-sm lg:text-[17px]">
+        <p className="text-xs text-gray-400 sm:text-sm">
           {subtitle}
         </p>
 

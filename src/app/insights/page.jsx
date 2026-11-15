@@ -1,47 +1,83 @@
+
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 
 import HeroSectionInsights from "./components/HeroSectionInsights";
-import InsightsFilterBar from "./components/InsightsFilterBar";
-import FeaturedInsights from "./components/FeaturedInsights";
+import InsightsExplorer from "./components/InsightsExplorer";
 import BottomCTA from "./components/BottomCTA";
 
-export const metadata = {
-  title: "Property Insights | Property Bouquet",
-  description:
-    "Luxury real estate news, market intelligence, investment insights and expert analysis by Property Bouquet.",
+// ======================================================
+// SEO METADATA
+// ======================================================
 
-  // =========================================================
-  // CANONICAL URL
-  // =========================================================
+export const metadata = {
+  title: "Property Insights | Market Intelligence & Luxury Real Estate | Property Bouquet",
+
+  description:
+    "Explore luxury real estate market insights, investment analysis, branded residences, developer updates and location intelligence from Property Bouquet.",
+
   alternates: {
     canonical: "https://propertybouquet.com/insights",
   },
+
+  openGraph: {
+    title: "Property Insights | Property Bouquet",
+    description:
+      "Market intelligence, luxury real estate analysis and informed property perspectives from Property Bouquet.",
+    url: "https://propertybouquet.com/insights",
+    siteName: "Property Bouquet",
+    type: "website",
+    locale: "en_IN",
+    images: [
+      {
+        url: "https://propertybouquet.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Property Bouquet Property Insights",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Property Insights | Property Bouquet",
+    description:
+      "Explore luxury real estate intelligence, investment analysis and market perspectives.",
+    images: ["https://propertybouquet.com/og-image.jpg"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
+
+// ======================================================
+// PROPERTY INSIGHTS PAGE
+// ======================================================
 
 export default function InsightsPage() {
   return (
-    <main className="min-h-screen bg-[#050608] text-white">
+    <>
+      <Navbar forceSolid />
 
-      {/* Navbar */}
-      <Navbar />
+      <main className="min-h-screen bg-[#f7f5ef]">
 
-      {/* Hero */}
-      <HeroSectionInsights />
+        {/* HERO */}
 
-      {/* Temporary Section */}
-      {/* Remove this after we build the Filter Bar */}
-      <section className="relative bg-gradient-to-b from-[#050608] via-[#f7f5f1] to-[#faf8f3]"></section>
+        <HeroSectionInsights />
 
-      <InsightsFilterBar />
+        {/* FEATURED + INSIGHTS EXPLORER */}
 
-      <FeaturedInsights />
+        <InsightsExplorer />
 
-      <BottomCTA />
+        {/* BOTTOM CTA */}
 
-      {/* Footer */}
+        <BottomCTA />
+
+      </main>
+
       <Footer />
-
-    </main>
+    </>
   );
 }

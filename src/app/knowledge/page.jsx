@@ -5,9 +5,7 @@ import Footer from "@/components/home/Footer";
 import Navbar from "@/components/home/Navbar";
 
 import HeroSection from "./components/HeroSection";
-import KnowledgeSidebar from "./components/KnowledgeSidebar";
-import FeaturedGuide from "./components/FeaturedGuide";
-import KnowledgeGrid from "./components/KnowledgeGrid";
+import KnowledgeExplorer from "./components/KnowledgeExplorer";
 import FeaturedResources from "./components/FeaturedResources";
 import BottomFeatures from "./components/BottomFeatures";
 
@@ -95,17 +93,20 @@ export const metadata = {
 };
 
 // ======================================================
-// FETCH KNOWLEDGE ARTICLES
+// FETCH PUBLISHED KNOWLEDGE ARTICLES
 // SERVER SIDE ONLY
 // ======================================================
 
 async function getKnowledgeArticles() {
   try {
-    const res = await fetch(`${API}/knowledge`, {
-      next: {
-        revalidate: 300,
-      },
-    });
+    const res = await fetch(
+      `${API}/knowledge?status=published`,
+      {
+        next: {
+          revalidate: 300,
+        },
+      }
+    );
 
     if (!res.ok) {
       console.error(
@@ -119,9 +120,20 @@ async function getKnowledgeArticles() {
 
     const data = await res.json();
 
-    return Array.isArray(data?.data)
-      ? data.data
-      : [];
+    if (!Array.isArray(data?.data)) {
+      return [];
+    }
+
+    // Only return usable published article records.
+
+    return data.data.filter(
+      (article) =>
+        article &&
+        typeof article.title === "string" &&
+        article.title.trim() !== "" &&
+        typeof article.slug === "string" &&
+        article.slug.trim() !== ""
+    );
 
   } catch (error) {
     console.error(
@@ -134,62 +146,101 @@ async function getKnowledgeArticles() {
 }
 
 // ======================================================
-// KNOWLEDGE CONTENT LOADING SKELETON
+// KNOWLEDGE LOADING SKELETON
 // ======================================================
 
 function KnowledgeLoading() {
   return (
     <div
-      className="space-y-8"
+      className="
+        grid
+        grid-cols-1
+        gap-8
+        animate-pulse
+        lg:grid-cols-12
+      "
       aria-hidden="true"
     >
 
-      {/* FEATURED GUIDE SKELETON */}
+      {/* SIDEBAR SKELETON */}
 
-      <div className="overflow-hidden rounded-2xl bg-[#eeeae2] animate-pulse">
+      <div className="space-y-5 lg:col-span-3">
 
-        <div className="h-[280px] sm:h-[320px] bg-[#e7e1d6]" />
+        <div className="overflow-hidden rounded-2xl bg-white">
 
-        <div className="p-6 space-y-4">
+          <div className="h-24 bg-[#07111d]" />
 
-          <div className="h-3 w-28 rounded bg-[#ddd5c8]" />
-
-          <div className="h-7 w-3/4 rounded bg-[#ddd5c8]" />
-
-          <div className="h-4 w-full rounded bg-[#ddd5c8]" />
-
-          <div className="h-4 w-2/3 rounded bg-[#ddd5c8]" />
+          {Array.from({ length: 7 }).map(
+            (_, index) => (
+              <div
+                key={index}
+                className="h-[58px] border-b border-[#eeeae2] bg-white"
+              />
+            )
+          )}
 
         </div>
 
+        <div className="h-64 rounded-2xl bg-[#07111d]" />
+
       </div>
 
-      {/* ARTICLE GRID SKELETON */}
+      {/* MAIN CONTENT SKELETON */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="space-y-8 lg:col-span-9">
 
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="overflow-hidden rounded-2xl bg-[#eeeae2] animate-pulse"
-          >
+        {/* SEARCH SKELETON */}
 
-            <div className="h-[180px] bg-[#e7e1d6]" />
+        <div className="h-24 rounded-2xl bg-[#eeeae2]" />
 
-            <div className="p-5 space-y-3">
+        {/* FEATURED ARTICLE SKELETON */}
 
-              <div className="h-3 w-24 rounded bg-[#ddd5c8]" />
+        <div className="grid overflow-hidden rounded-3xl bg-[#eeeae2] lg:grid-cols-2">
 
-              <div className="h-5 w-full rounded bg-[#ddd5c8]" />
+          <div className="space-y-5 p-8">
 
-              <div className="h-4 w-4/5 rounded bg-[#ddd5c8]" />
+            <div className="h-8 w-40 rounded-full bg-[#ddd5c8]" />
 
-              <div className="h-4 w-2/3 rounded bg-[#ddd5c8]" />
+            <div className="h-12 w-full rounded bg-[#ddd5c8]" />
 
-            </div>
+            <div className="h-5 w-4/5 rounded bg-[#ddd5c8]" />
+
+            <div className="h-12 w-44 rounded-full bg-[#ddd5c8]" />
 
           </div>
-        ))}
+
+          <div className="aspect-[16/11] bg-[#e4ded2]" />
+
+        </div>
+
+        {/* ARTICLE GRID SKELETON */}
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+          {Array.from({ length: 6 }).map(
+            (_, index) => (
+              <div
+                key={index}
+                className="overflow-hidden rounded-2xl bg-white"
+              >
+
+                <div className="aspect-[16/10] bg-[#e4ded2]" />
+
+                <div className="space-y-3 p-5">
+
+                  <div className="h-4 w-2/3 rounded bg-[#ddd5c8]" />
+
+                  <div className="h-4 w-full rounded bg-[#ddd5c8]" />
+
+                  <div className="h-4 w-4/5 rounded bg-[#ddd5c8]" />
+
+                </div>
+
+              </div>
+            )
+          )}
+
+        </div>
 
       </div>
 
@@ -198,28 +249,17 @@ function KnowledgeLoading() {
 }
 
 // ======================================================
-// KNOWLEDGE ARTICLES
+// KNOWLEDGE EXPLORER
 // ASYNC SERVER COMPONENT
 // ======================================================
 
 async function KnowledgeArticleContent() {
-
   const articles = await getKnowledgeArticles();
 
   return (
-    <>
-      {/* FEATURED GUIDE */}
-
-      <FeaturedGuide
-        articles={articles}
-      />
-
-      {/* KNOWLEDGE ARTICLE GRID */}
-
-      <KnowledgeGrid
-        articles={articles}
-      />
-    </>
+    <KnowledgeExplorer
+      articles={articles}
+    />
   );
 }
 
@@ -232,69 +272,58 @@ export default function KnowledgePage() {
   return (
     <>
 
-      {/* ==================================================
-          NAVBAR
-      ================================================== */}
+      {/* NAVBAR */}
 
       <Navbar forceSolid />
 
-      {/* ==================================================
-          MAIN CONTENT
-      ================================================== */}
-
       <main>
 
-        {/* HERO SECTION */}
+        {/* HERO */}
 
         <HeroSection />
 
         {/* KNOWLEDGE CONTENT */}
 
-        <section className="bg-[#faf8f4] pt-36 pb-24">
+        <section
+          className="
+            bg-[#faf8f4]
+            py-14
+            sm:py-16
+            lg:py-20
+          "
+        >
 
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+          <div
+            className="
+              mx-auto
+              max-w-[1400px]
+              px-5
+              sm:px-6
+              lg:px-10
+            "
+          >
 
-            <div className="grid lg:grid-cols-12 gap-8">
+            {/* ARTICLE EXPLORER */}
 
-              {/* ==========================================
-                  LEFT SIDEBAR
-              ========================================== */}
+            <Suspense
+              fallback={<KnowledgeLoading />}
+            >
 
-              <div className="lg:col-span-3">
+              <KnowledgeArticleContent />
 
-                <KnowledgeSidebar />
+            </Suspense>
 
-              </div>
+            {/* FEATURED RESOURCES */}
 
-              {/* ==========================================
-                  MAIN CONTENT
-              ========================================== */}
+            <div className="mt-16 sm:mt-20">
 
-              <div className="lg:col-span-9 space-y-10">
-
-                {/* ASYNC ARTICLE CONTENT */}
-
-                <Suspense
-                  fallback={<KnowledgeLoading />}
-                >
-
-                  <KnowledgeArticleContent />
-
-                </Suspense>
-
-                {/* FEATURED RESOURCES */}
-
-                <FeaturedResources />
-
-              </div>
+              <FeaturedResources />
 
             </div>
 
-            {/* ==========================================
-                BOTTOM FEATURES
-            ========================================== */}
+            {/* BOTTOM FEATURES */}
 
-            <div className="mt-20">
+            <div className="mt-16 sm:mt-20">
 
               <BottomFeatures />
 
@@ -306,9 +335,7 @@ export default function KnowledgePage() {
 
       </main>
 
-      {/* ==================================================
-          FOOTER
-      ================================================== */}
+      {/* FOOTER */}
 
       <Footer />
 

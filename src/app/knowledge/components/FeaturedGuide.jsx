@@ -31,6 +31,17 @@ function formatPublishDate(date) {
 }
 
 // ======================================================
+// FEATURED ARTICLE CHECK
+// ======================================================
+
+function isFeaturedArticle(article) {
+  return (
+    article?.featured === true ||
+    article?.featured === "true"
+  );
+}
+
+// ======================================================
 // FEATURED GUIDE
 // SERVER COMPONENT
 // ======================================================
@@ -39,115 +50,119 @@ export default function FeaturedGuide({
   articles = [],
 }) {
 
-  // Find featured article or fallback to first article.
+  // Find genuinely featured article.
+  // Otherwise use the selected article.
 
   const featured =
-    articles.find((article) => article.featured) ||
+    articles.find(isFeaturedArticle) ||
     articles[0];
 
   if (!featured) return null;
 
   const publishDate = formatPublishDate(
-    featured.publishDate
+    featured.publishDate ||
+    featured.createdAt
   );
+
+  const isFeatured = isFeaturedArticle(featured);
 
   return (
     <section
       className="
         relative
+        isolate
         overflow-hidden
-        rounded-[36px]
+        rounded-[28px]
         border
         border-[#ece4d8]
         bg-[#fcfbf8]
-        shadow-[0_30px_80px_rgba(0,0,0,.08)]
-        isolate
+        shadow-[0_25px_65px_rgba(0,0,0,.07)]
+        sm:rounded-[32px]
       "
     >
 
-      {/* ==================================================
-          BACKGROUND GLOW
-      ================================================== */}
+      {/* BACKGROUND GLOW */}
 
       <div
         className="
+          pointer-events-none
           absolute
           -right-32
           -top-32
-          w-[420px]
           h-[420px]
+          w-[420px]
           rounded-full
           bg-[#c8a34d]/[0.08]
           blur-3xl
-          pointer-events-none
         "
         aria-hidden="true"
       />
 
       <div
         className="
+          pointer-events-none
           absolute
+          -bottom-20
           -left-20
-          bottom-0
-          w-[300px]
           h-[300px]
+          w-[300px]
           rounded-full
           bg-[#163629]/[0.05]
           blur-3xl
-          pointer-events-none
         "
         aria-hidden="true"
       />
 
-      {/* ==================================================
-          MAIN GRID
-      ================================================== */}
+      {/* MAIN GRID */}
 
       <div
         className="
           relative
           grid
-          lg:grid-cols-[1.05fr_1.15fr]
           items-center
+          lg:grid-cols-[1.05fr_0.95fr]
         "
       >
 
-        {/* ==================================================
-            LEFT CONTENT
-        ================================================== */}
+        {/* LEFT CONTENT */}
 
         <div
           className="
             relative
             z-10
-            px-8
-            py-10
-            lg:px-14
-            xl:px-16
-            lg:py-14
             min-w-0
+            px-6
+            py-8
+            sm:px-9
+            sm:py-10
+            lg:px-12
+            lg:py-14
+            xl:px-16
           "
         >
 
-          {/* FEATURED BADGE */}
+          {/* BADGE */}
 
           <div className="flex items-center gap-4">
 
             <span
               className="
                 inline-flex
+                shrink-0
                 items-center
                 gap-2
                 rounded-full
                 bg-[#163629]
-                px-5
+                px-4
                 py-2
-                text-[10px]
-                uppercase
-                tracking-[3px]
+                text-[9px]
                 font-semibold
+                uppercase
+                tracking-[2px]
                 text-white
-                whitespace-nowrap
+                sm:px-5
+                sm:text-[10px]
+                sm:tracking-[3px]
               "
             >
 
@@ -156,7 +171,9 @@ export default function FeaturedGuide({
                 aria-hidden="true"
               />
 
-              Featured Guide
+              {isFeatured
+                ? "Featured Guide"
+                : "Selected Guide"}
 
             </span>
 
@@ -178,12 +195,14 @@ export default function FeaturedGuide({
           {featured.category && (
             <p
               className="
-                mt-8
-                text-[11px]
+                mt-7
+                text-[10px]
+                font-semibold
                 uppercase
                 tracking-[3px]
-                font-semibold
                 text-[#b88638]
+                sm:mt-8
+                sm:text-[11px]
               "
             >
               {featured.category}
@@ -195,13 +214,14 @@ export default function FeaturedGuide({
           <h2
             className="
               mt-4
-              text-[34px]
-              lg:text-[44px]
-              xl:text-[50px]
-              leading-[1.12]
-              font-light
-              text-[#163629]
               break-words
+              text-[30px]
+              font-light
+              leading-[1.15]
+              text-[#163629]
+              sm:text-[36px]
+              lg:text-[42px]
+              xl:text-[44px]
             "
             style={{
               fontFamily: "Cormorant Garamond, serif",
@@ -215,36 +235,42 @@ export default function FeaturedGuide({
           {featured.shortDescription && (
             <p
               className="
-                mt-6
-                text-[17px]
-                leading-8
-                text-[#6d6d6d]
+                mt-5
                 max-w-[560px]
+                line-clamp-4
+                text-[14px]
+                leading-7
+                text-[#6d6d6d]
+                sm:mt-6
+                sm:text-[16px]
+                sm:leading-8
               "
             >
               {featured.shortDescription}
             </p>
           )}
 
-          {/* ==================================================
-              ARTICLE META
-          ================================================== */}
+          {/* ARTICLE META */}
 
           <div
             className="
-              mt-8
+              mt-7
               flex
               flex-wrap
-              gap-8
-              text-[14px]
+              gap-x-7
+              gap-y-3
+              text-[12px]
               text-[#666]
+              sm:mt-8
+              sm:gap-8
+              sm:text-[14px]
             "
           >
 
             {/* READING TIME */}
 
             {featured.readTime && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
 
                 <Clock3
                   size={16}
@@ -259,10 +285,10 @@ export default function FeaturedGuide({
               </div>
             )}
 
-            {/* PUBLISH DATE */}
+            {/* PUBLICATION DATE */}
 
             {publishDate && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
 
                 <CalendarDays
                   size={16}
@@ -271,7 +297,10 @@ export default function FeaturedGuide({
                 />
 
                 <time
-                  dateTime={featured.publishDate}
+                  dateTime={
+                    featured.publishDate ||
+                    featured.createdAt
+                  }
                 >
                   {publishDate}
                 </time>
@@ -281,30 +310,31 @@ export default function FeaturedGuide({
 
           </div>
 
-          {/* ==================================================
-              CTA
-          ================================================== */}
+          {/* CTA */}
 
           {featured.slug && (
-            <div className="mt-10">
+            <div className="mt-8 sm:mt-10">
 
               <Link
                 href={`/knowledge/${featured.slug}`}
                 className="
                   group
                   inline-flex
+                  h-[50px]
                   items-center
                   gap-3
                   rounded-full
                   bg-[#163629]
-                  px-8
-                  h-[54px]
-                  text-white
+                  px-6
+                  text-sm
                   font-medium
-                  hover:bg-[#214a39]
-                  transition-colors
-                  duration-300
+                  text-white
                   shadow-lg
+                  transition-all
+                  duration-300
+                  hover:bg-[#214a39]
+                  sm:h-[54px]
+                  sm:px-8
                 "
               >
 
@@ -327,25 +357,27 @@ export default function FeaturedGuide({
 
         </div>
 
-        {/* ==================================================
-            RIGHT IMAGE
-        ================================================== */}
+        {/* RIGHT IMAGE */}
 
-        <div className="relative p-6 lg:p-8">
+        <div className="relative p-5 sm:p-7 lg:p-8">
 
           <div
             className="
               relative
-              h-[340px]
-              lg:h-[500px]
-              rounded-[30px]
+              aspect-[16/11]
+              max-h-[430px]
+              w-full
               overflow-hidden
-              bg-[#e9e4da]
-              shadow-[0_30px_80px_rgba(0,0,0,.18)]
+              rounded-[22px]
+              border
+              border-[#e9e2d5]
+              bg-[#f1eee8]
+              shadow-[0_25px_65px_rgba(0,0,0,.12)]
+              sm:rounded-[26px]
             "
           >
 
-            {/* OPTIMIZED FEATURED IMAGE */}
+            {/* ARTICLE IMAGE */}
 
             {featured.featuredImage ? (
 
@@ -358,14 +390,14 @@ export default function FeaturedGuide({
                 fill
                 sizes="
                   (max-width: 1023px) 100vw,
-                  (max-width: 1400px) 52vw,
-                  640px
+                  (max-width: 1400px) 45vw,
+                  600px
                 "
-                quality={75}
+                quality={80}
                 loading="lazy"
                 className="
-                  object-cover
-                  object-center
+                  object-contain
+                  p-2
                 "
               />
 
@@ -389,31 +421,18 @@ export default function FeaturedGuide({
 
             )}
 
-            {/* IMAGE OVERLAY */}
+            {/* PREMIUM BORDER */}
 
             <div
               className="
-                absolute
-                inset-0
-                bg-gradient-to-t
-                from-black/15
-                via-transparent
-                to-transparent
                 pointer-events-none
-              "
-              aria-hidden="true"
-            />
-
-            {/* PREMIUM GOLD BORDER */}
-
-            <div
-              className="
                 absolute
-                inset-5
-                rounded-[24px]
+                inset-4
+                rounded-[18px]
                 border
-                border-white/20
-                pointer-events-none
+                border-[#c9a64b]/20
+                sm:inset-5
+                sm:rounded-[22px]
               "
               aria-hidden="true"
             />
