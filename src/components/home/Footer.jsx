@@ -159,8 +159,6 @@ export default function Footer() {
 
   const [showCollections, setShowCollections] = useState(false);
 
-  const [collectionsLoading, setCollectionsLoading] = useState(false);
-
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const [newsletterLoading, setNewsletterLoading] = useState(false);
@@ -203,48 +201,45 @@ export default function Footer() {
       }
     };
 
-    const fetchFooterData = async () => {
-      if (requestStarted) return;
-      requestStarted = true;
-      setCollectionsLoading(true);
+   const fetchFooterData = async () => {
+  if (requestStarted) return;
+  requestStarted = true;
 
-      try {
-        const [landingPayload, knowledgePayload, insightsPayload] =
-          await Promise.all([
-            fetchJson("/api/landing-pages"),
-            fetchJson(`${CONTENT_API_BASE}/knowledge?status=published`),
-            fetchJson(`${CONTENT_API_BASE}/news?status=published`),
-          ]);
+  try {
+    const [landingPayload, knowledgePayload, insightsPayload] =
+      await Promise.all([
+        fetchJson("/api/landing-pages"),
+        fetchJson(`${CONTENT_API_BASE}/knowledge?status=published`),
+        fetchJson(`${CONTENT_API_BASE}/news?status=published`),
+      ]);
 
-        if (controller.signal.aborted) return;
+    if (controller.signal.aborted) return;
 
-        const pages = Array.isArray(landingPayload?.data)
-          ? landingPayload.data
-          : [];
+    const pages = Array.isArray(landingPayload?.data)
+      ? landingPayload.data
+      : [];
 
-        const qualifyingCollections = pages
-          .filter(
-            (page) =>
-              page?.status === "published" &&
-              page?.isDeleted !== true &&
-              page?.ignoreGeneration !== true &&
-              Number(page?.propertyCount || 0) >= 5
-          )
-          .sort(
-            (a, b) =>
-              Number(b.propertyCount || 0) -
-              Number(a.propertyCount || 0)
-          );
+    const qualifyingCollections = pages
+      .filter(
+        (page) =>
+          page?.status === "published" &&
+          page?.isDeleted !== true &&
+          page?.ignoreGeneration !== true &&
+          Number(page?.propertyCount || 0) >= 5
+      )
+      .sort(
+        (a, b) =>
+          Number(b.propertyCount || 0) -
+          Number(a.propertyCount || 0)
+      );
 
-        setCollections(qualifyingCollections);
-        setKnowledgeLinks(getPublishedCategoryNames(knowledgePayload));
-        setInsightLinks(getPublishedCategoryNames(insightsPayload));
-      } finally {
-        if (!controller.signal.aborted) {
-          setCollectionsLoading(false);
-        }
-      }
-    };
+    setCollections(qualifyingCollections);
+    setKnowledgeLinks(getPublishedCategoryNames(knowledgePayload));
+    setInsightLinks(getPublishedCategoryNames(insightsPayload));
+  } catch (error) {
+    console.error("Footer data loading failed:", error);
+  }
+};
 
     if (typeof IntersectionObserver === "undefined") {
       fetchFooterData();
@@ -658,23 +653,17 @@ export default function Footer() {
             <div className="mb-7 mt-4 h-[2px] w-8 bg-[#C89B4F]" />
 
             <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
-
-              {knowledgeLinks.length > 0 ? (
-                knowledgeLinks.map((item) => (
-                  <li key={item}>
-                    <Link
-                      href={`/knowledge?category=${encodeURIComponent(item)}`}
-                      className="transition-colors duration-300 hover:text-[#C89B4F]"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="text-white/45">{collectionsLoading ? "Loading categories..." : "No published guides yet"}</li>
-              )}
-
-            </ul>
+  {knowledgeLinks.map((item) => (
+    <li key={item}>
+      <Link
+        href={`/knowledge?category=${encodeURIComponent(item)}`}
+        className="transition-colors duration-300 hover:text-[#C89B4F]"
+      >
+        {item}
+      </Link>
+    </li>
+  ))}
+</ul>
 
           </div>
 
@@ -691,23 +680,17 @@ export default function Footer() {
             <div className="mb-7 mt-4 h-[2px] w-8 bg-[#C89B4F]" />
 
             <ul className="space-y-3 text-[12px] leading-[1.8] text-white/80">
-
-              {insightLinks.length > 0 ? (
-                insightLinks.map((item) => (
-                  <li key={item}>
-                    <Link
-                      href={`/insights?category=${encodeURIComponent(item)}`}
-                      className="transition-colors duration-300 hover:text-[#C89B4F]"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="text-white/45">{collectionsLoading ? "Loading categories..." : "No published insights yet"}</li>
-              )}
-
-            </ul>
+  {insightLinks.map((item) => (
+    <li key={item}>
+      <Link
+        href={`/insights?category=${encodeURIComponent(item)}`}
+        className="transition-colors duration-300 hover:text-[#C89B4F]"
+      >
+        {item}
+      </Link>
+    </li>
+  ))}
+</ul>
 
           </div>
 
