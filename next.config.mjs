@@ -1,4 +1,6 @@
 
+import redirects from "./propertybouquet-redirects.mjs";
+
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
@@ -6,8 +8,7 @@ const nextConfig = {
     // Prefer modern, compressed image formats.
     formats: ["image/avif", "image/webp"],
 
-    // Keep existing supported quality values
-    // to avoid breaking existing Image components.
+    // Keep existing supported quality values.
     qualities: [75, 78, 80, 85, 90, 100],
 
     remotePatterns: [
@@ -30,6 +31,12 @@ const nextConfig = {
     ],
   },
 
+  // SEO redirects for old URLs.
+  async redirects() {
+    return redirects;
+  },
+
+  // Existing API rewrites.
   async rewrites() {
     return [
       {
