@@ -190,7 +190,15 @@ const redirects = [
 
   {"source":"/www.wlcorp.com","destination":"/developers/whiteland-developer-projects","permanent":true},
   {"source":"/www.elan.co.in","destination":"/developers/elan-developer-projects","permanent":true},
-  {"source":"/www.sobhacitygurgaon.org.in","destination":"/developers/sobha-realty-developer-projects","permanent":true}
+  {"source":"/www.sobhacitygurgaon.org.in","destination":"/developers/sobha-realty-developer-projects","permanent":true},
+
+  // Confirmed additional redirect for the old property-investment landing page.
+  {"source":"/property-investment-in-gurgaon/","destination":"/insights/why-investing-in-luxury-real-estate-in-gurgaon-is-the-smartest-decision-in-2026","permanent":true},
+
+  // /ireo-gurgaon-hills-valley-view-estate-gurgaon is already the live destination URL.
+  // It is intentionally not added as a redirect because source and destination would be identical.
+  // /properties/bptp-green-oaks-sector-70a-gurugram still awaits its destination.
+
 ];
 
 export default redirects;
