@@ -1,6 +1,3 @@
-// Property Bouquet - Candidate SEO Redirects
-// 138 redirects from the Google Search Console audit.
-// Verify destination URLs return HTTP 200 before deployment.
 
 const redirects = [
   {"source":"/properties/m3m-paragon-57-sector-57-gurgaon","destination":"/m3m-paragon-57-sector-57-gurgaon","permanent":true},
@@ -140,7 +137,60 @@ const redirects = [
   {"source":"/properties/emaar-serenity-hills-sector-86-gurgaon","destination":"/emaar-serenity-hills-sector-86-gurgaon","permanent":true},
   {"source":"/properties/hero-homes-sector-104-gurgaon","destination":"/hero-homes-sector-104-gurgaon","permanent":true},
   {"source":"/properties/satya-element-one-sector-47-gurugram","destination":"/satya-element-one-sector-47-gurugram","permanent":true},
-  {"source":"/properties/spiti-homes-sector-99a-gurgaon","destination":"/spiti-homes-sector-99a-gurgaon","permanent":true}
+  {"source":"/properties/spiti-homes-sector-99a-gurgaon","destination":"/spiti-homes-sector-99a-gurgaon","permanent":true},
+
+  // Additional redirects from the Google Search Console audit (47 mappings).
+  {"source":"/commercial-property-in-gurgaon/","destination":"/properties?propertyType=commercial","permanent":true},
+  {"source":"/sco-plots-in-gurgaon/","destination":"/properties?propertyType=plots","permanent":true},
+  {"source":"/bptp-102-eden-estate-3-sector-102-gurugram","destination":"/bptp-102-eden-estate-3-sector-102","permanent":true},
+  {"source":"/bptp-downtown-66","destination":"/bptp-downtown-sector-66-gurgaon","permanent":true},
+  {"source":"/developers/parsvnath-developers","destination":"/developers/parsvnath-developers-projects","permanent":true},
+  {"source":"/dlf-arbour-2-sector-63-gurgaon","destination":"/dlf-aureva-sector-63-gurgaon","permanent":true},
+  {"source":"/projects/adani-the-marq","destination":"/adani-the-marq-sector-102-gurgaon","permanent":true},
+  {"source":"/commercial-properties-in-gurgaon/","destination":"/properties?propertyType=commercial","permanent":true},
+  {"source":"/properties-on-dwarka-expressway/","destination":"/locations/properties-on-dwarka-expressway-gurgaon","permanent":true},
+  {"source":"/commercial-projects-in-gurgaon/","destination":"/properties?propertyType=commercial","permanent":true},
+  {"source":"/projects/","destination":"/properties","permanent":true},
+  {"source":"/emaar-projects-in-gurgaon/","destination":"/developers/emaar-developer-projects","permanent":true},
+  {"source":"/properties-in-sector-89-gurgaon/","destination":"/locations/properties-in-sector-89-gurgaon","permanent":true},
+  {"source":"/www.parasbuildtech.com","destination":"/developers/paras-developer-projects","permanent":true},
+  {"source":"/locations/properties-in-sohna","destination":"/locations/properties-in-sohna-gurgaon","permanent":true},
+  {"source":"/locations/properties-in-spr","destination":"/locations/properties-in-spr-gurgaon","permanent":true},
+  {"source":"/tools","destination":"/#tools","permanent":true},
+  {"source":"/signature-global-daxin-vistas-sector-32-gurgaon","destination":"/signature-global-daxin-vistas-sector-36-sohna-gurgaon","permanent":true},
+  {"source":"/m3mindia.com","destination":"/developers/m3m-developer-projects","permanent":true},
+  {"source":"/locations/properties-in-new-gurgaon","destination":"/locations/properties-in-gurgaon","permanent":true},
+  {"source":"/www.gangarealty.com","destination":"/developers/ganga-realty-developer-projects","permanent":true},
+  {"source":"/developers/indiabulls-developer","destination":"/developers/indiabulls-developer-projects","permanent":true},
+  {"source":"/central-park-the-bignonia-towers-sector-32-sohna-gurgaon","destination":"/central-park-the-bignonia-towers-sector-33-sohna-gurgaon","permanent":true},
+  {"source":"/developers/godrej-projects-development-limited-developer-projects","destination":"/developers/godrej-properties-developer-projects","permanent":true},
+  {"source":"/central-park-the-selene-tower-sector-32-sohna-gurgaon","destination":"/central-park-the-selene-tower-sector-33-sohna-gurgaon","permanent":true},
+  {"source":"/locations/properties-on-dwarka-expressway","destination":"/locations/properties-on-dwarka-expressway-gurgaon","permanent":true},
+  {"source":"/www.emaar.com/en","destination":"/developers/emaar-developer-projects","permanent":true},
+  {"source":"/www.bptp.com","destination":"/developers/bptp-developer-projects","permanent":true},
+  {"source":"/locations/properties-on-golf-course-extension-road","destination":"/locations/properties-on-golf-course-extension-road-gurgaon","permanent":true},
+  {"source":"/www.godrejproperties.com","destination":"/developers/godrej-properties-developer-projects","permanent":true},
+  {"source":"/godrej-samaris","destination":"/godrej-samaris-sector-53-golf-course-road-gurgaon","permanent":true},
+  {"source":"/privacy","destination":"/privacy-policy","permanent":true},
+  {"source":"/property-insights","destination":"/insights","permanent":true},
+  {"source":"/locations/properties-in-sector-36-gurgaon-gurgaon","destination":"/locations/properties-in-sector-36-gurgaon","permanent":true},
+  {"source":"/locations/properties-on-sector-102-dwarka-expressway-gurgaon","destination":"/locations/properties-in-sector-102-gurgaon","permanent":true},
+  {"source":"/signature-global-cloverdale-sector-71-gurgaon","destination":"/signature-global-cloverdale-sector-71-spr-road-gurgaon","permanent":true},
+  {"source":"/locations/properties-in-sector-71-spr-gurugram-gurgaon","destination":"/locations/properties-in-sector-71-gurgaon","permanent":true},
+  {"source":"/www.suncityprojects.com","destination":"/developers/suncity-developer-projects","permanent":true},
+  {"source":"/www.sobha.com","destination":"/developers/sobha-realty-developer-projects","permanent":true},
+  {"source":"/properties/gurgaon/luxury-properties","destination":"/locations/properties-in-gurgaon","permanent":true},
+  {"source":"/properties/gurgaon","destination":"/locations/properties-in-gurgaon","permanent":true},
+  {"source":"/parasbuildtech.co.in","destination":"/developers/paras-developer-projects","permanent":true},
+  {"source":"/Indiabulls","destination":"/developers/indiabulls-developer-projects","permanent":true},
+
+  // Inferred mapping for the malformed GSC row showing "/Sector" and "92, DLF Garden City".
+  // Verify this source path against the original Search Console export before deployment.
+  {"source":"/Sector","destination":"/dlf-garden-city-floors-sector-92-gurgaon","permanent":true},
+
+  {"source":"/www.wlcorp.com","destination":"/developers/whiteland-developer-projects","permanent":true},
+  {"source":"/www.elan.co.in","destination":"/developers/elan-developer-projects","permanent":true},
+  {"source":"/www.sobhacitygurgaon.org.in","destination":"/developers/sobha-realty-developer-projects","permanent":true}
 ];
 
 export default redirects;
