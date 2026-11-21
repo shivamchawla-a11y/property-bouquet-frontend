@@ -194,6 +194,19 @@ const redirects = [
 
   // Confirmed additional redirect for the old property-investment landing page.
   {"source":"/property-investment-in-gurgaon/","destination":"/insights/why-investing-in-luxury-real-estate-in-gurgaon-is-the-smartest-decision-in-2026","permanent":true},
+  
+
+{
+  source: "/insights/sector-56-gurgaon-area-guide-connectivity-location-advantages-why-this-locality-stands-out",
+  destination: "/insights/sector-56-gurgaon-decoded-a-full-area-guide-to-connectivity-location",
+  permanent: true
+},
+{
+  source: "/property/oberoi-three-sixty-north-sector-58-gurgaon",
+  destination: "/oberoi-three-sixty-north-sector-58-gurgaon",
+  permanent: true
+},
+
 
   // /ireo-gurgaon-hills-valley-view-estate-gurgaon is already the live destination URL.
   // It is intentionally not added as a redirect because source and destination would be identical.

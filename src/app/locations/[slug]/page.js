@@ -462,7 +462,7 @@ function resolveLocationContent(
   );
 
   const publicSlug = cleanSlug(
-    buildPublicLocationSlug(location)
+    getCanonicalPublicLocationSlug(location)
   );
 
   const defaultExport =
@@ -691,6 +691,94 @@ function buildPublicLocationSlug(
   }
 
   return `properties-${preposition}-${currentSlug}-${rootSlug}`;
+}
+
+/* ============================================================
+   EXPLICIT SEO LANDING-PAGE SLUGS
+============================================================ */
+
+// These routes are the confirmed, public SEO landing pages.
+// The API may use a shorter or differently structured location slug,
+// so resolve known locations to the exact public URL agreed for SEO.
+// This keeps metadata canonicals, breadcrumb URLs and legacy redirects
+// aligned with the actual landing-page URLs.
+
+function normalizeLocationIdentity(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const PUBLIC_LOCATION_SLUG_OVERRIDES = {
+  "sector 63a": "properties-in-sector-63a-gurgaon",
+  "sector 63a gurgaon": "properties-in-sector-63a-gurgaon",
+  "sector 63a gurugram": "properties-in-sector-63a-gurgaon",
+  "properties in sector 63a gurgaon": "properties-in-sector-63a-gurgaon",
+
+  "golf course road": "properties-on-golf-course-road-gurgaon",
+  "golf course road gurgaon": "properties-on-golf-course-road-gurgaon",
+  "golf course road gurugram": "properties-on-golf-course-road-gurgaon",
+  "properties on golf course road gurgaon": "properties-on-golf-course-road-gurgaon",
+
+  "sohna": "properties-in-sohna-gurgaon",
+  "sohna gurgaon": "properties-in-sohna-gurgaon",
+  "sohna gurugram": "properties-in-sohna-gurgaon",
+  "properties in sohna gurgaon": "properties-in-sohna-gurgaon",
+
+  // The supplied New Gurgaon URL is the broader Gurgaon landing page.
+  "new gurgaon": "properties-in-gurgaon",
+  "properties in new gurgaon": "properties-in-gurgaon",
+  "gurgaon": "properties-in-gurgaon",
+  "properties in gurgaon": "properties-in-gurgaon",
+
+  "sector 58": "properties-in-sector-58-gurgaon",
+  "sector 58 gurgaon": "properties-in-sector-58-gurgaon",
+  "sector 58 gurugram": "properties-in-sector-58-gurgaon",
+  "properties in sector 58 gurgaon": "properties-in-sector-58-gurgaon",
+
+  "spr": "properties-in-spr-gurgaon",
+  "spr gurgaon": "properties-in-spr-gurgaon",
+  "spr gurugram": "properties-in-spr-gurgaon",
+  "southern peripheral road": "properties-in-spr-gurgaon",
+  "southern peripheral road spr": "properties-in-spr-gurgaon",
+  "southern peripheral road gurgaon": "properties-in-spr-gurgaon",
+  "southern peripheral road gurugram": "properties-in-spr-gurgaon",
+  "properties in spr gurgaon": "properties-in-spr-gurgaon",
+
+  "golf course extension road": "properties-on-golf-course-extension-road-gurgaon",
+  "golf course extension road gurgaon": "properties-on-golf-course-extension-road-gurgaon",
+  "golf course extension road gurugram": "properties-on-golf-course-extension-road-gurgaon",
+  "properties on golf course extension road gurgaon": "properties-on-golf-course-extension-road-gurgaon",
+};
+
+function getCanonicalPublicLocationSlug(location) {
+  if (!location) {
+    return "";
+  }
+
+  const identityCandidates = [
+    location?.seoName,
+    location?.name,
+    location?.slug,
+    location?.locationName,
+    location?.publicSlug,
+  ]
+    .map(normalizeLocationIdentity)
+    .filter(Boolean);
+
+  for (const identity of identityCandidates) {
+    const override =
+      PUBLIC_LOCATION_SLUG_OVERRIDES[identity];
+
+    if (override) {
+      return override;
+    }
+  }
+
+  return buildPublicLocationSlug(location);
 }
 
 /* ============================================================
@@ -1585,7 +1673,7 @@ async function getLocationData(
   }
 
   const canonicalPublicSlug =
-    buildPublicLocationSlug(
+    getCanonicalPublicLocationSlug(
       oldData.location
     );
 
@@ -1659,7 +1747,7 @@ export async function generateMetadata({
     getLocationName(location);
 
   const canonicalPublicSlug =
-    buildPublicLocationSlug(
+    getCanonicalPublicLocationSlug(
       location
     );
 
@@ -1828,7 +1916,7 @@ export default async function LocationPage({
   ========================================================== */
 
   const publicSlug =
-    buildPublicLocationSlug(
+    getCanonicalPublicLocationSlug(
       location
     );
 
@@ -1929,7 +2017,7 @@ export default async function LocationPage({
     ...locationChain
       .map((item) => {
         const itemPublicSlug =
-          buildPublicLocationSlug(
+          getCanonicalPublicLocationSlug(
             item
           );
 

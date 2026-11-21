@@ -21,6 +21,7 @@
 // - Draft knowledge content
 // - Draft insight/news content
 // - Query/filter URLs
+// - Non-canonical location filter variants
 // - Duplicate URLs
 // - Non-canonical URLs
 //
@@ -735,6 +736,38 @@ export default async function sitemap() {
       changeFrequency: "weekly",
     }
   );
+
+  // ==========================================================
+  // DEDICATED SEO LOCATION LANDING PAGES
+  // ==========================================================
+  // These are the approved, permanent location landing pages
+  // supplied for Property Bouquet. Add them explicitly so they
+  // are present even if the location API does not return a
+  // matching record or generates a different slug.
+  // Query/filter URLs are intentionally NOT included here.
+  // ==========================================================
+
+  const dedicatedLocationLandingPages = [
+    "/locations/properties-in-sector-63a-gurgaon",
+    "/locations/properties-on-golf-course-road-gurgaon",
+    "/locations/properties-in-sohna-gurgaon",
+    "/locations/properties-in-gurgaon",
+    "/locations/properties-in-sector-58-gurgaon",
+    "/locations/properties-in-spr-gurgaon",
+    "/locations/properties-on-golf-course-extension-road-gurgaon",
+  ];
+
+  dedicatedLocationLandingPages.forEach((path) => {
+    addSitemapEntry(
+      entries,
+      seen,
+      path,
+      {
+        priority: 0.90,
+        changeFrequency: "weekly",
+      }
+    );
+  });
 
   addSitemapEntry(
     entries,

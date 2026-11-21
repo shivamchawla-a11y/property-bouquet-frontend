@@ -5,6 +5,120 @@ const SITE_URL = "https://propertybouquet.com";
 const API = "https://propertybouquet.com/api";
 
 // ============================================================
+// CANONICAL MAPPING FOR PROPERTY FILTER URLS
+// Keep dedicated SEO landing pages as the preferred URLs.
+// ============================================================
+
+const LOCATION_CANONICALS = {
+  "sector 63a": "/locations/properties-in-sector-63a-gurgaon",
+  "golf course road": "/locations/properties-on-golf-course-road-gurgaon",
+  "sohna": "/locations/properties-in-sohna-gurgaon",
+
+  // Supplied destination. A dedicated New Gurgaon page would be
+  // preferable if it is created later and has equivalent content.
+  "new gurgaon": "/locations/properties-in-gurgaon",
+
+  "sector 58": "/locations/properties-in-sector-58-gurgaon",
+  "southern peripheral road": "/locations/properties-in-spr-gurgaon",
+  "golf course extension road": "/locations/properties-on-golf-course-extension-road-gurgaon",
+};
+
+const INDEXABLE_PROPERTY_TYPES = new Set(["commercial", "plots"]);
+
+const TRACKING_QUERY_PARAMS = new Set([
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "fbclid",
+]);
+
+function normalizeLocationFilter(value) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .replace(/\+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function getPropertiesMetadataConfig(searchParams = {}) {
+  const meaningfulEntries = Object.entries(searchParams || {}).filter(
+    ([key, value]) => {
+      if (TRACKING_QUERY_PARAMS.has(key.toLowerCase())) {
+        return false;
+      }
+
+      if (Array.isArray(value)) {
+        return value.some((item) => String(item ?? "").trim() !== "");
+      }
+
+      return value !== undefined && value !== null && String(value).trim() !== "";
+    }
+  );
+
+  // Main /properties URL, including tracking-only query parameters.
+  if (meaningfulEntries.length === 0) {
+    return {
+      canonicalUrl: `${SITE_URL}/properties`,
+      index: true,
+      isDefaultView: true,
+    };
+  }
+
+  // Only map a single, exact location filter to its dedicated landing page.
+  if (meaningfulEntries.length === 1) {
+    const [rawKey, rawValue] = meaningfulEntries[0];
+    const key = rawKey.toLowerCase();
+    const value = Array.isArray(rawValue)
+      ? rawValue.length === 1
+        ? rawValue[0]
+        : null
+      : rawValue;
+
+    if (key === "location" && typeof value === "string") {
+      const location = normalizeLocationFilter(value);
+      const landingPage = LOCATION_CANONICALS[location];
+
+      if (landingPage) {
+        return {
+          canonicalUrl: `${SITE_URL}${landingPage}`,
+          index: true,
+          isDefaultView: false,
+        };
+      }
+    }
+
+    // Keep the commercial and plots category URLs indexable because
+    // they are used as destinations by the existing redirect setup.
+    if (key === "propertytype" && typeof value === "string") {
+      const propertyType = value.trim().toLowerCase();
+
+      if (INDEXABLE_PROPERTY_TYPES.has(propertyType)) {
+        return {
+          canonicalUrl: `${SITE_URL}/properties?propertyType=${encodeURIComponent(propertyType)}`,
+          index: true,
+          isDefaultView: false,
+        };
+      }
+    }
+  }
+
+  // Free-text search, placeholders, unknown filters and combinations
+  // should remain usable for visitors but should not be indexed.
+  // No canonical is emitted for these URLs because they may represent
+  // materially different filtered results.
+  return {
+    canonicalUrl: null,
+    index: false,
+    isDefaultView: false,
+  };
+}
+
+// ============================================================
 // FETCH PUBLISHED PROPERTIES FOR SEO
 // ============================================================
 
@@ -135,7 +249,10 @@ function getUniqueLocations(properties) {
 // METADATA
 // ============================================================
 
-export async function generateMetadata() {
+export async function generateMetadata({ searchParams }) {
+  const params = (await searchParams) || {};
+  const metadataConfig = getPropertiesMetadataConfig(params);
+
   const title =
     "Luxury Properties, Apartments, Villas & Plots | Property Bouquet";
 
@@ -192,21 +309,24 @@ export async function generateMetadata() {
     // CANONICAL
     // ========================================================
 
-    alternates: {
-      canonical:
-        `${SITE_URL}/properties`,
-    },
+    ...(metadataConfig.canonicalUrl
+      ? {
+          alternates: {
+            canonical: metadataConfig.canonicalUrl,
+          },
+        }
+      : {}),
 
     // ========================================================
     // ROBOTS
     // ========================================================
 
     robots: {
-      index: true,
+      index: metadataConfig.index,
       follow: true,
 
       googleBot: {
-        index: true,
+        index: metadataConfig.index,
         follow: true,
         noimageindex: false,
         "max-image-preview": "large",
@@ -225,7 +345,7 @@ export async function generateMetadata() {
       locale: "en_IN",
 
       url:
-        `${SITE_URL}/properties`,
+        metadataConfig.canonicalUrl || `${SITE_URL}/properties`,
 
       siteName:
         "Property Bouquet",
@@ -283,7 +403,11 @@ function safeJsonLd(data) {
 // PAGE
 // ============================================================
 
-export default async function Page() {
+export default async function Page({ searchParams }) {
+  const params = (await searchParams) || {};
+  const metadataConfig = getPropertiesMetadataConfig(params);
+  const showDefaultCollectionSchemas = metadataConfig.isDefaultView;
+
   const properties =
     await getPublishedProperties();
 
@@ -565,33 +689,34 @@ export default async function Page() {
         }}
       />
 
-      {/* ======================================================
-          COLLECTION PAGE SCHEMA
-      ====================================================== */}
+      {showDefaultCollectionSchemas && (
+        <>
+          {/* ======================================================
+              COLLECTION PAGE SCHEMA
+              Only output this for the unfiltered /properties page.
+              Filtered client-side results are not the same as the
+              complete server-fetched collection in this file.
+          ====================================================== */}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              collectionSchema
-            ),
-        }}
-      />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: safeJsonLd(collectionSchema),
+            }}
+          />
 
-      {/* ======================================================
-          BREADCRUMB SCHEMA
-      ====================================================== */}
+          {/* ======================================================
+              BREADCRUMB SCHEMA
+          ====================================================== */}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            safeJsonLd(
-              breadcrumbSchema
-            ),
-        }}
-      />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: safeJsonLd(breadcrumbSchema),
+            }}
+          />
+        </>
+      )}
 
       {/* ======================================================
           CLIENT PROPERTY UI

@@ -402,11 +402,74 @@ function getLocationPreposition(
  * Dwarka Expressway + Gurgaon
  * -> properties-on-dwarka-expressway-gurgaon
  */
+function normalizeLocationIdentity(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Keep client-generated internal links aligned with the canonical
+// location slugs resolved by app/locations/[slug]/page.js.
+const PUBLIC_LOCATION_SLUG_OVERRIDES = {
+  "sector 63a": "properties-in-sector-63a-gurgaon",
+  "sector 63a gurgaon": "properties-in-sector-63a-gurgaon",
+  "properties in sector 63a gurgaon": "properties-in-sector-63a-gurgaon",
+
+  "golf course road": "properties-on-golf-course-road-gurgaon",
+  "golf course road gurgaon": "properties-on-golf-course-road-gurgaon",
+  "properties on golf course road gurgaon": "properties-on-golf-course-road-gurgaon",
+
+  "sohna": "properties-in-sohna-gurgaon",
+  "sohna gurgaon": "properties-in-sohna-gurgaon",
+  "properties in sohna gurgaon": "properties-in-sohna-gurgaon",
+
+  // The supplied New Gurgaon destination is the broader Gurgaon page.
+  "new gurgaon": "properties-in-gurgaon",
+  "properties in new gurgaon": "properties-in-gurgaon",
+  "gurgaon": "properties-in-gurgaon",
+  "properties in gurgaon": "properties-in-gurgaon",
+
+  "sector 58": "properties-in-sector-58-gurgaon",
+  "sector 58 gurgaon": "properties-in-sector-58-gurgaon",
+  "properties in sector 58 gurgaon": "properties-in-sector-58-gurgaon",
+
+  "spr": "properties-in-spr-gurgaon",
+  "spr gurgaon": "properties-in-spr-gurgaon",
+  "southern peripheral road": "properties-in-spr-gurgaon",
+  "southern peripheral road gurgaon": "properties-in-spr-gurgaon",
+  "properties in spr gurgaon": "properties-in-spr-gurgaon",
+
+  "golf course extension road": "properties-on-golf-course-extension-road-gurgaon",
+  "golf course extension road gurgaon": "properties-on-golf-course-extension-road-gurgaon",
+  "properties on golf course extension road gurgaon": "properties-on-golf-course-extension-road-gurgaon",
+};
+
 function buildPublicLocationSlug(
   currentLocation
 ) {
   if (!currentLocation) {
     return "";
+  }
+
+  const identityCandidates = [
+    currentLocation?.seoName,
+    currentLocation?.name,
+    currentLocation?.slug,
+    currentLocation?.locationName,
+    currentLocation?.publicSlug,
+  ]
+    .map(normalizeLocationIdentity)
+    .filter(Boolean);
+
+  for (const identity of identityCandidates) {
+    const override = PUBLIC_LOCATION_SLUG_OVERRIDES[identity];
+
+    if (override) {
+      return override;
+    }
   }
 
   const currentSlug = cleanSlug(
