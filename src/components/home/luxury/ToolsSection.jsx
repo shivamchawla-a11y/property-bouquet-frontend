@@ -25,6 +25,7 @@ import ROICalculator from "./ROICalculator";
    TOOLS
 ============================================================ */
 
+
 const tools = [
   {
     id: "roi",
@@ -56,6 +57,7 @@ const tools = [
     badge: "Popular",
     icon: Calculator,
     iconStyle: "sage",
+    href: "/tools/emi-calculator",
   },
   {
     id: "stamp-duty",
@@ -105,6 +107,7 @@ const tools = [
     iconStyle: "sage",
   },
 ];
+
 
 /* ============================================================
    BENEFITS

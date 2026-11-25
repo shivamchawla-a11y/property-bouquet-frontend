@@ -86,6 +86,7 @@ const navItems = [
     items: [
       "ROI Calculator",
       "Area Converter",
+      "EMI Calculator",
     ],
   },
 
@@ -696,6 +697,9 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
 
         "Area Converter":
           "/tools/area-converter",
+
+        "EMI Calculator":
+          "/tools/emi-calculator",
       };
 
       const route =
@@ -981,6 +985,9 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
 
         "Area Converter":
           "/tools/area-converter",
+
+        "EMI Calculator":
+          "/tools/emi-calculator",
       };
 
       const route =
