@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -18,6 +19,37 @@ import LatestInsightsSidebar from "../components/LatestInsightsSidebar";
 import CTAAdvisor from "../components/CTAAdvisor";
 import TagsCard from "../components/TagsCard";
 
+// ============================================================
+// DATE HELPERS
+// ============================================================
+
+function getSafeDateInfo(value) {
+  if (!value) return null;
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return {
+    iso: parsedDate.toISOString(),
+
+    formatted: parsedDate.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    ),
+  };
+}
+
+// ============================================================
+// ARTICLE PAGE
+// ============================================================
+
 export default function InsightArticleClient({
   article,
   articleContent,
@@ -25,49 +57,66 @@ export default function InsightArticleClient({
   nextArticle,
   latestArticles = [],
 }) {
-  // The article body is rendered by this Server Component. The
-  // Table of Contents uses this stable DOM id to find its headings.
   const articleContentId = "insight-article-content";
 
   // ==========================================================
-  // FORMAT DATE
+  // AUTHOR
   // ==========================================================
 
-  const formatPublishDate =
-    (date) => {
-      if (!date) {
-        return "";
-      }
+  const authorName =
+    typeof article?.author === "string" &&
+    article.author.trim()
+      ? article.author.trim()
+      : "Property Bouquet Research Team";
 
-      const parsedDate =
-        new Date(date);
+  const authorInitial = authorName
+    .charAt(0)
+    .toUpperCase();
 
-      if (
-        Number.isNaN(
-          parsedDate.getTime()
-        )
-      ) {
-        return "";
-      }
+  const authorDesignation =
+    typeof article?.authorDesignation === "string"
+      ? article.authorDesignation.trim()
+      : "";
 
-      return parsedDate.toLocaleDateString(
-        "en-US",
-        {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }
-      );
-    };
+  const authorSubtitle =
+    authorDesignation ||
+    (
+      String(article?.authorType || "").toLowerCase() ===
+      "person"
+        ? ""
+        : "Property Bouquet Research Team"
+    );
 
   // ==========================================================
   // SAFE HERO IMAGE
   // ==========================================================
 
   const hasHeroImage =
-    typeof article?.featuredImage ===
-      "string" &&
-    article.featuredImage.trim();
+    typeof article?.featuredImage === "string" &&
+    article.featuredImage.trim().length > 0;
+
+  const heroImageAlt =
+    typeof article?.featuredImageAlt === "string" &&
+    article.featuredImageAlt.trim()
+      ? article.featuredImageAlt.trim()
+      : article?.title || "Property Bouquet Insights";
+
+  // ==========================================================
+  // PUBLISH DATE
+  // ==========================================================
+
+  const publishDate = getSafeDateInfo(
+    article?.publishDate
+  );
+
+  // ==========================================================
+  // AUTHOR QUOTE
+  // ==========================================================
+
+  const authorQuote =
+    typeof article?.authorQuote === "string"
+      ? article.authorQuote.trim()
+      : "";
 
   // ==========================================================
   // RENDER
@@ -85,54 +134,108 @@ export default function InsightArticleClient({
           MAIN
       ====================================================== */}
 
-      <main className="bg-gradient-to-b from-[#f7f4ee] to-[#fcfbf8] pt-28 pb-24">
+      <main className="
+        bg-gradient-to-b
+        from-[#f7f4ee]
+        to-[#fcfbf8]
+        pt-28
+        pb-24
+      ">
 
-        <section className="max-w-[1400px] mx-auto px-5 lg:px-8">
+        <section className="
+          max-w-[1400px]
+          mx-auto
+          px-5
+          lg:px-8
+        ">
 
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-10 items-start">
+          <div className="
+            grid
+            lg:grid-cols-[minmax(0,1fr)_360px]
+            gap-10
+            items-start
+          ">
 
             {/* ==================================================
-                LEFT COLUMN
+                LEFT ARTICLE COLUMN
             ================================================== */}
 
-            <div className="bg-white rounded-[34px] border border-[#ece7dc] shadow-[0_30px_80px_rgba(0,0,0,.06)] overflow-hidden">
+            <article className="
+              min-w-0
+              bg-white
+              rounded-[34px]
+              border
+              border-[#ece7dc]
+              shadow-[0_30px_80px_rgba(0,0,0,.06)]
+              overflow-hidden
+            ">
 
-              <div className="px-8 lg:px-20 pt-14 lg:pt-20 pb-20">
+              <div className="
+                px-6
+                sm:px-8
+                lg:px-20
+                pt-12
+                lg:pt-20
+                pb-16
+                lg:pb-20
+              ">
 
                 {/* ==================================================
                     BREADCRUMB
                 ================================================== */}
 
-                <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#8b8b8b]">
+                <nav
+                  aria-label="Breadcrumb"
+                  className="
+                    text-[13px]
+                    text-[#8b8b8b]
+                  "
+                >
 
-                  <Link
-                    href="/"
-                    className="hover:text-[#163629]"
-                  >
-                    Home
-                  </Link>
+                  <ol className="
+                    flex
+                    flex-wrap
+                    items-center
+                    gap-2
+                  ">
 
-                  <ChevronRight
-                    size={14}
-                  />
+                    <li>
+                      <Link
+                        href="/"
+                        className="hover:text-[#163629]"
+                      >
+                        Home
+                      </Link>
+                    </li>
 
-                  <Link
-                    href="/insights"
-                    className="hover:text-[#163629]"
-                  >
-                    Property Insights
-                  </Link>
+                    <li aria-hidden="true">
+                      <ChevronRight size={14} />
+                    </li>
 
-                  <ChevronRight
-                    size={14}
-                  />
+                    <li>
+                      <Link
+                        href="/insights"
+                        className="hover:text-[#163629]"
+                      >
+                        Property Insights
+                      </Link>
+                    </li>
 
-                  <span>
-                    {article?.category ||
-                      "Property Insights"}
-                  </span>
+                    <li aria-hidden="true">
+                      <ChevronRight size={14} />
+                    </li>
 
-                </div>
+                    <li
+                      className="text-[#163629]"
+                      aria-current="page"
+                    >
+                      {article?.category ||
+                        "Property Insights"}
+                    </li>
+
+                  </ol>
+
+                </nav>
 
                 {/* ==================================================
                     CATEGORY
@@ -140,7 +243,19 @@ export default function InsightArticleClient({
 
                 <div className="mt-8">
 
-                  <span className="inline-flex items-center rounded-full bg-[#f5ede1] text-[#b88638] px-5 py-2 uppercase tracking-[2px] text-[11px] font-semibold">
+                  <span className="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    bg-[#f5ede1]
+                    text-[#b88638]
+                    px-5
+                    py-2
+                    uppercase
+                    tracking-[2px]
+                    text-[11px]
+                    font-semibold
+                  ">
 
                     {article?.category ||
                       "Property Insights"}
@@ -150,14 +265,22 @@ export default function InsightArticleClient({
                 </div>
 
                 {/* ==================================================
-                    TITLE
+                    MAIN TITLE - SINGLE H1
                 ================================================== */}
 
                 <h1
-                  className="mt-7 text-4xl md:text-5xl xl:text-6xl leading-tight tracking-[-1px] text-[#163629] max-w-[900px]"
+                  className="
+                    mt-7
+                    text-4xl
+                    md:text-5xl
+                    xl:text-6xl
+                    leading-tight
+                    tracking-[-1px]
+                    text-[#163629]
+                    max-w-[900px]
+                  "
                   style={{
-                    fontFamily:
-                      "Georgia, serif",
+                    fontFamily: "Georgia, serif",
                   }}
                 >
                   {article?.title}
@@ -168,107 +291,135 @@ export default function InsightArticleClient({
                 ================================================== */}
 
                 {article?.shortDescription && (
-                  <p className="mt-8 max-w-[820px] text-[21px] leading-10 text-[#666]">
+                  <p className="
+                    mt-8
+                    max-w-[820px]
+                    text-lg
+                    md:text-[21px]
+                    leading-9
+                    text-[#666]
+                  ">
 
-                    {
-                      article.shortDescription
-                    }
+                    {article.shortDescription}
 
                   </p>
                 )}
 
                 {/* ==================================================
-                    META
+                    ARTICLE META
                 ================================================== */}
 
-                <div
-                  className="
-                    mt-12
-                    rounded-3xl
-                    border
-                    border-[#ece7dc]
-                    bg-[#faf8f4]
-                    p-8
-                    !text-[#163629]
-                    xl:flex
-                    xl:justify-between
+                <div className="
+                  mt-12
+                  rounded-3xl
+                  border
+                  border-[#ece7dc]
+                  bg-[#faf8f4]
+                  p-6
+                  lg:p-8
+                  !text-[#163629]
+                  flex
+                  flex-col
+                  gap-8
+                  xl:flex-row
+                  xl:justify-between
+                ">
+
+                  <div className="
                     flex
-                    flex-col
-                    gap-8
-                  "
-                >
+                    flex-wrap
+                    items-center
+                    gap-6
+                    lg:gap-8
+                  ">
 
-                  <div className="flex flex-wrap items-center gap-8">
+                    {/* AUTHOR */}
 
-                    {/* ==================================================
-                        AUTHOR
-                    ================================================== */}
+                    <div className="
+                      flex
+                      items-center
+                      gap-4
+                    ">
 
-                    <div className="flex items-center gap-4">
+                      <div className="
+                        w-14
+                        h-14
+                        rounded-full
+                        bg-[#163629]
+                        text-white
+                        flex
+                        items-center
+                        justify-center
+                        font-semibold
+                        text-lg
+                        shrink-0
+                      ">
 
-                      <div className="w-14 h-14 rounded-full bg-[#163629] text-white flex items-center justify-center font-semibold text-lg">
-
-                        {article?.author?.charAt(
-                          0
-                        ) || "P"}
+                        {authorInitial}
 
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
 
                         <p className="font-semibold">
 
-                          {article?.author ||
-                            "Property Bouquet Research Team"}
+                          {authorName}
 
                         </p>
 
-                        <p className="text-sm text-[#888]">
+                        {authorSubtitle && (
+                          <p className="
+                            text-sm
+                            text-[#888]
+                            mt-1
+                          ">
 
-                          Property Bouquet Research Team
+                            {authorSubtitle}
 
-                        </p>
+                          </p>
+                        )}
 
                       </div>
 
                     </div>
 
-                    {/* ==================================================
-                        DATE
-                    ================================================== */}
+                    {/* PUBLISH DATE */}
 
-                    {article?.publishDate && (
-                      <div className="flex items-center gap-2 text-[#666]">
+                    {publishDate && (
+                      <div className="
+                        flex
+                        items-center
+                        gap-2
+                        text-[#666]
+                      ">
 
                         <CalendarDays
                           size={16}
                         />
 
-                        <span>
-                          {formatPublishDate(
-                            article.publishDate
-                          )}
-                        </span>
+                        <time dateTime={publishDate.iso}>
+                          {publishDate.formatted}
+                        </time>
 
                       </div>
                     )}
 
-                    {/* ==================================================
-                        READ TIME
-                    ================================================== */}
+                    {/* READ TIME */}
 
                     {article?.readTime && (
-                      <div className="flex items-center gap-2 text-[#666]">
+                      <div className="
+                        flex
+                        items-center
+                        gap-2
+                        text-[#666]
+                      ">
 
                         <Clock3
                           size={16}
                         />
 
                         <span>
-                          {
-                            article.readTime
-                          }{" "}
-                          min read
+                          {article.readTime} min read
                         </span>
 
                       </div>
@@ -276,52 +427,48 @@ export default function InsightArticleClient({
 
                   </div>
 
-                  {/* ==================================================
-                      SHARE
-                  ================================================== */}
+                  {/* SHARE BUTTONS */}
 
-                  <ArticleShareButtons articleTitle={article?.title || ""} />
+                  <ArticleShareButtons
+                    articleTitle={article?.title || ""}
+                  />
 
                 </div>
 
                 {/* ==================================================
-                    HERO IMAGE
+                    FEATURED HERO IMAGE
                 ================================================== */}
 
                 {hasHeroImage && (
-                  <div className="mt-16">
+                  <div className="mt-12 lg:mt-16">
 
-                    <figure
-                      className="
-                        relative
-                        overflow-hidden
-                        rounded-[36px]
-                        border
-                        border-[#e8e1d5]
-                        bg-[#f7f4ee]
-                        shadow-[0_40px_90px_rgba(0,0,0,.12)]
-                      "
-                    >
+                    <figure className="
+                      relative
+                      overflow-hidden
+                      rounded-[24px]
+                      lg:rounded-[36px]
+                      border
+                      border-[#e8e1d5]
+                      bg-[#f7f4ee]
+                      shadow-[0_40px_90px_rgba(0,0,0,.12)]
+                    ">
 
                       <Image
-                        src={
-                          article.featuredImage
-                        }
-                        alt={
-                          typeof article.featuredImageAlt ===
-                            "string" &&
-                          article.featuredImageAlt.trim()
-                            ? article.featuredImageAlt
-                            : article.title ||
-                              "Property Bouquet"
-                        }
+                        src={article.featuredImage}
+                        alt={heroImageAlt}
                         width={1600}
                         height={900}
-                        sizes="(max-width: 1023px) calc(100vw - 6.5rem), (max-width: 1450px) calc(100vw - 39rem), 790px"
+                        sizes="
+                          (max-width: 640px) calc(100vw - 3rem),
+                          (max-width: 1023px) calc(100vw - 5rem),
+                          (max-width: 1450px) calc(100vw - 39rem),
+                          790px
+                        "
                         quality={75}
                         loading="eager"
                         fetchPriority="high"
                         className="
+                          block
                           w-full
                           h-auto
                           max-h-[700px]
@@ -333,24 +480,58 @@ export default function InsightArticleClient({
                         "
                       />
 
+                      {article?.featuredImageCaption && (
+                        <figcaption className="
+                          px-5
+                          py-3
+                          text-center
+                          text-sm
+                          text-[#777]
+                        ">
+                          {article.featuredImageCaption}
+                        </figcaption>
+                      )}
+
                     </figure>
 
                   </div>
                 )}
 
                 {/* ==================================================
-                    ARTICLE BODY
+                    ARTICLE CONTENT
                 ================================================== */}
 
-                <div className="max-w-[760px] mx-auto">
+                <div className="
+                  max-w-[760px]
+                  mx-auto
+                ">
+
+                  {/* MOBILE TABLE OF CONTENTS */}
+
+                  <div className="
+                    lg:hidden
+                    mt-12
+                    mb-10
+                  ">
+
+                    <TableOfContents
+                      containerId={articleContentId}
+                      compact
+                    />
+
+                  </div>
+
+                  {/* SERVER-RENDERED ARTICLE HTML */}
 
                   <div
                     id={articleContentId}
-                    className="article-content mt-16"
+                    className="
+                      article-content
+                      mt-12
+                      lg:mt-16
+                    "
                     dangerouslySetInnerHTML={{
-                      __html:
-                        articleContent ||
-                        "",
+                      __html: articleContent || "",
                     }}
                   />
 
@@ -358,30 +539,34 @@ export default function InsightArticleClient({
 
                 {/* ==================================================
                     AUTHOR QUOTE
+                    Only render when a real quote exists.
                 ================================================== */}
 
-                <div
-                  className="
-                    mt-24
-                    rounded-[34px]
+                {authorQuote && (
+                  <section className="
+                    mt-20
+                    lg:mt-24
+                    rounded-[28px]
+                    lg:rounded-[34px]
                     bg-gradient-to-br
                     from-[#163629]
                     to-[#214a39]
                     text-white
-                    p-10
+                    p-7
                     lg:p-14
                     flex
                     flex-col
                     lg:flex-row
-                    gap-8
+                    gap-7
+                    lg:gap-8
                     items-start
-                  "
-                >
+                  ">
 
-                  <div
-                    className="
-                      w-20
-                      h-20
+                    <div className="
+                      w-16
+                      h-16
+                      lg:w-20
+                      lg:h-20
                       rounded-full
                       bg-[#b88638]
                       flex
@@ -390,158 +575,90 @@ export default function InsightArticleClient({
                       text-3xl
                       font-semibold
                       shrink-0
-                    "
-                  >
-                    {article?.author?.charAt(
-                      0
-                    ) || "P"}
-                  </div>
+                    ">
 
-                  <div>
-
-                    <p
-                      className="
-                        text-[30px]
-                        leading-[50px]
-                        italic
-                      "
-                      style={{
-                        fontFamily:
-                          "Georgia, serif",
-                      }}
-                    >
-                      {article?.authorQuote ||
-                        "Knowledge-backed real estate decisions create long-term wealth. Invest with research, not emotions."}
-                    </p>
-
-                    <div className="mt-10">
-
-                      <h4 className="text-xl font-semibold">
-
-                        {article?.author ||
-                          "Property Bouquet Research Team"}
-
-                      </h4>
-
-                      <p className="text-white/70 mt-2">
-
-                        {article?.authorDesignation ||
-                          "Property Bouquet Research Expert"}
-
-                      </p>
+                      {authorInitial}
 
                     </div>
 
-                  </div>
+                    <div className="min-w-0">
 
-                </div>
+                      <p
+                        className="
+                          text-2xl
+                          lg:text-[30px]
+                          leading-relaxed
+                          lg:leading-[50px]
+                          italic
+                        "
+                        style={{
+                          fontFamily: "Georgia, serif",
+                        }}
+                      >
+                        {authorQuote}
+                      </p>
 
-                {/* ==================================================
-                    WAS THIS HELPFUL
-                ================================================== */}
+                      <div className="mt-8 lg:mt-10">
 
-                <div
-                  className="
-                    mt-24
-                    rounded-[32px]
-                    border
-                    border-[#ece7dc]
-                    bg-[#faf8f4]
-                    p-10
-                    flex
-                    flex-col
-                    lg:flex-row
-                    justify-between
-                    items-center
-                    gap-8
-                  "
-                >
+                        <h3 className="
+                          text-xl
+                          font-semibold
+                        ">
 
-                  <div>
+                          {authorName}
 
-                    <h3
-                      className="text-[36px] text-[#163629]"
-                      style={{
-                        fontFamily:
-                          "Georgia, serif",
-                      }}
-                    >
-                      Was this article helpful?
-                    </h3>
+                        </h3>
 
-                    <p className="mt-3 text-[#777]">
-                      We'd love your feedback.
-                    </p>
+                        {authorDesignation && (
+                          <p className="
+                            text-white/70
+                            mt-2
+                          ">
 
-                  </div>
+                            {authorDesignation}
 
-                  <div className="flex gap-4">
+                          </p>
+                        )}
 
-                    <button
-                      type="button"
-                      className="
-                        h-12
-                        px-8
-                        rounded-full
-                        border
-                        border-[#d7d1c7]
-                        bg-white
-                        text-[#163629]
-                        font-medium
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                      "
-                    >
-                      👍 Yes
-                    </button>
+                      </div>
 
-                    <button
-                      type="button"
-                      className="
-                        h-12
-                        px-8
-                        rounded-full
-                        border
-                        border-[#d7d1c7]
-                        bg-white
-                        text-[#163629]
-                        font-medium
-                        hover:bg-[#163629]
-                        hover:text-white
-                        transition-all
-                        duration-300
-                      "
-                    >
-                      👎 No
-                    </button>
+                    </div>
 
-                  </div>
-
-                </div>
+                  </section>
+                )}
 
                 {/* ==================================================
-                    PREVIOUS / NEXT
+                    PREVIOUS / NEXT ARTICLES
                 ================================================== */}
 
-                {(previousArticle ||
-                  nextArticle) && (
-                  <div className="mt-24 grid md:grid-cols-2 gap-8">
+                {(previousArticle || nextArticle) && (
+                  <nav
+                    aria-label="Article navigation"
+                    className="
+                      mt-20
+                      lg:mt-24
+                      grid
+                      md:grid-cols-2
+                      gap-5
+                      lg:gap-8
+                    "
+                  >
 
-                    {/* ==================================================
-                        PREVIOUS
-                    ================================================== */}
+                    {/* PREVIOUS ARTICLE */}
 
                     {previousArticle ? (
                       <Link
-                        href={`/insights/${previousArticle.slug}`}
+                        href={`/insights/${encodeURIComponent(
+                          previousArticle.slug
+                        )}`}
                         className="
                           block
-                          rounded-[30px]
+                          rounded-[26px]
+                          lg:rounded-[30px]
                           border
                           border-[#ece7dc]
-                          p-10
+                          p-7
+                          lg:p-10
                           hover:-translate-y-1
                           hover:shadow-xl
                           transition-all
@@ -549,7 +666,12 @@ export default function InsightArticleClient({
                         "
                       >
 
-                        <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+                        <p className="
+                          uppercase
+                          tracking-[3px]
+                          text-[11px]
+                          text-[#999]
+                        ">
 
                           Previous Article
 
@@ -557,19 +679,18 @@ export default function InsightArticleClient({
 
                         <h3
                           className="
-                            mt-6
-                            text-[30px]
+                            mt-5
+                            lg:mt-6
+                            text-2xl
+                            lg:text-[30px]
                             leading-10
                             text-[#163629]
                           "
                           style={{
-                            fontFamily:
-                              "Georgia, serif",
+                            fontFamily: "Georgia, serif",
                           }}
                         >
-                          {
-                            previousArticle.title
-                          }
+                          {previousArticle.title}
                         </h3>
 
                       </Link>
@@ -577,20 +698,22 @@ export default function InsightArticleClient({
                       <div />
                     )}
 
-                    {/* ==================================================
-                        NEXT
-                    ================================================== */}
+                    {/* NEXT ARTICLE */}
 
                     {nextArticle ? (
                       <Link
-                        href={`/insights/${nextArticle.slug}`}
+                        href={`/insights/${encodeURIComponent(
+                          nextArticle.slug
+                        )}`}
                         className="
                           block
-                          rounded-[30px]
+                          rounded-[26px]
+                          lg:rounded-[30px]
                           border
                           border-[#ece7dc]
-                          p-10
-                          text-right
+                          p-7
+                          lg:p-10
+                          md:text-right
                           hover:-translate-y-1
                           hover:shadow-xl
                           transition-all
@@ -598,7 +721,12 @@ export default function InsightArticleClient({
                         "
                       >
 
-                        <p className="uppercase tracking-[3px] text-[11px] text-[#999]">
+                        <p className="
+                          uppercase
+                          tracking-[3px]
+                          text-[11px]
+                          text-[#999]
+                        ">
 
                           Next Article
 
@@ -606,19 +734,18 @@ export default function InsightArticleClient({
 
                         <h3
                           className="
-                            mt-6
-                            text-[30px]
+                            mt-5
+                            lg:mt-6
+                            text-2xl
+                            lg:text-[30px]
                             leading-10
                             text-[#163629]
                           "
                           style={{
-                            fontFamily:
-                              "Georgia, serif",
+                            fontFamily: "Georgia, serif",
                           }}
                         >
-                          {
-                            nextArticle.title
-                          }
+                          {nextArticle.title}
                         </h3>
 
                       </Link>
@@ -626,15 +753,15 @@ export default function InsightArticleClient({
                       <div />
                     )}
 
-                  </div>
+                  </nav>
                 )}
 
               </div>
 
-            </div>
+            </article>
 
             {/* ====================================================
-                RIGHT SIDEBAR
+                RIGHT SIDEBAR - DESKTOP
             ==================================================== */}
 
             <aside
@@ -644,29 +771,38 @@ export default function InsightArticleClient({
                 sticky
                 top-28
                 self-start
+                min-w-0
               "
             >
 
-              <div
-                className="
-                  space-y-8
-                  rounded-[36px]
-                "
-              >
+              <div className="
+                space-y-8
+                rounded-[36px]
+              ">
+
+                {/* TABLE OF CONTENTS */}
 
                 <TableOfContents
                   containerId={articleContentId}
                 />
 
+                {/* AUTHOR */}
+
                 <AboutAuthor
                   article={article}
                 />
+
+                {/* LATEST INSIGHTS */}
 
                 <LatestInsightsSidebar
                   articles={latestArticles}
                 />
 
+                {/* ADVISORY CTA */}
+
                 <CTAAdvisor />
+
+                {/* TAGS */}
 
                 <TagsCard
                   article={article}
@@ -686,7 +822,11 @@ export default function InsightArticleClient({
           LUXURY BOTTOM CTA
       ========================================================== */}
 
-      <section className="relative overflow-hidden bg-[#163629]">
+      <section className="
+        relative
+        overflow-hidden
+        bg-[#163629]
+      ">
 
         {/* TOP RIGHT GLOW */}
 
@@ -701,6 +841,7 @@ export default function InsightArticleClient({
             bg-[#b88638]/10
             blur-3xl
           "
+          aria-hidden="true"
         />
 
         {/* BOTTOM LEFT GLOW */}
@@ -716,68 +857,75 @@ export default function InsightArticleClient({
             bg-white/5
             blur-3xl
           "
+          aria-hidden="true"
         />
 
         {/* CTA CONTENT */}
 
-        <div className="relative max-w-[1280px] mx-auto px-8 py-28">
+        <div className="
+          relative
+          max-w-[1280px]
+          mx-auto
+          px-6
+          lg:px-8
+          py-20
+          lg:py-28
+        ">
 
           <div className="max-w-[760px]">
 
-            {/* LABEL */}
+            <span className="
+              inline-block
+              uppercase
+              tracking-[4px]
+              text-[#b88638]
+              text-xs
+              font-semibold
+            ">
 
-            <span
-              className="
-                inline-block
-                uppercase
-                tracking-[4px]
-                text-[#b88638]
-                text-xs
-                font-semibold
-              "
-            >
               Property Bouquet
-            </span>
 
-            {/* HEADING */}
+            </span>
 
             <h2
               className="
                 mt-6
-                text-5xl
-                md:text-6xl
+                text-4xl
+                md:text-5xl
+                lg:text-6xl
                 leading-tight
                 text-white
               "
               style={{
-                fontFamily:
-                  "Georgia, serif",
+                fontFamily: "Georgia, serif",
               }}
             >
               Discover India's Finest Luxury
               Properties With Confidence.
             </h2>
 
-            {/* DESCRIPTION */}
-
-            <p
-              className="
-                mt-8
-                text-xl
-                leading-9
-                text-white/75
-                max-w-[640px]
-              "
-            >
+            <p className="
+              mt-8
+              text-lg
+              lg:text-xl
+              leading-9
+              text-white/75
+              max-w-[640px]
+            ">
               Exclusive residences, investment
               advisory, off-market opportunities
               and market intelligence curated for
               discerning buyers.
             </p>
 
-            {/* BUTTONS */}
-
-            <div className="mt-12 flex flex-wrap gap-5">
+            <div className="
+              mt-10
+              lg:mt-12
+              flex
+              flex-wrap
+              gap-4
+              lg:gap-5
+            ">
 
               {/* CONTACT */}
 
@@ -787,8 +935,9 @@ export default function InsightArticleClient({
                   inline-flex
                   items-center
                   justify-center
-                  h-14
-                  px-10
+                  min-h-14
+                  px-8
+                  lg:px-10
                   rounded-full
                   bg-[#b88638]
                   text-black
@@ -809,8 +958,9 @@ export default function InsightArticleClient({
                   inline-flex
                   items-center
                   justify-center
-                  h-14
-                  px-10
+                  min-h-14
+                  px-8
+                  lg:px-10
                   rounded-full
                   border
                   border-white/20
@@ -837,6 +987,7 @@ export default function InsightArticleClient({
       ========================================================== */}
 
       <Footer />
+
     </>
   );
 }

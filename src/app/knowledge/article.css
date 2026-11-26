@@ -1,0 +1,646 @@
+
+/* ======================================================
+   PROPERTY BOUQUET
+   KNOWLEDGE CENTRE ARTICLE STYLES
+====================================================== */
+
+.knowledge-article-content {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+
+  font-size: 18px;
+  line-height: 1.9;
+
+  color: #505050;
+  font-weight: 400;
+
+  letter-spacing: 0.005em;
+
+  word-break: normal;
+  overflow-wrap: break-word;
+
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ======================================================
+   BOX SIZING
+====================================================== */
+
+.knowledge-article-content *,
+.knowledge-article-content *::before,
+.knowledge-article-content *::after {
+  box-sizing: border-box;
+}
+
+.knowledge-article-content img,
+.knowledge-article-content video,
+.knowledge-article-content table,
+.knowledge-article-content pre {
+  max-width: 100%;
+}
+
+.knowledge-article-body > *:first-child {
+  margin-top: 0;
+}
+
+.knowledge-article-body > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ======================================================
+   PARAGRAPHS
+====================================================== */
+
+.knowledge-article-body p {
+  margin: 0 0 28px;
+
+  text-wrap: pretty;
+
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* ======================================================
+   HEADINGS
+====================================================== */
+
+.knowledge-article-body h1,
+.knowledge-article-body h2,
+.knowledge-article-body h3,
+.knowledge-article-body h4,
+.knowledge-article-body h5,
+.knowledge-article-body h6 {
+  color: #163629;
+
+  font-family: Georgia, serif;
+  font-weight: 400;
+
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+
+  text-wrap: balance;
+  word-break: normal;
+
+  scroll-margin-top: 120px;
+}
+
+/* H1 FALLBACK */
+
+.knowledge-article-body h1 {
+  font-size: 42px;
+  margin: 60px 0 24px;
+}
+
+/* H2 */
+
+.knowledge-article-body h2 {
+  font-size: 36px;
+  line-height: 1.25;
+
+  margin: 58px 0 22px;
+}
+
+.knowledge-article-body h2::after {
+  content: "";
+
+  display: block;
+
+  width: 68px;
+  height: 2px;
+
+  background: #b88638;
+
+  margin-top: 15px;
+
+  border-radius: 999px;
+}
+
+/* H3 */
+
+.knowledge-article-body h3 {
+  font-size: 28px;
+  line-height: 1.35;
+
+  margin: 44px 0 18px;
+}
+
+/* H4 */
+
+.knowledge-article-body h4 {
+  font-size: 23px;
+  line-height: 1.4;
+
+  margin: 36px 0 15px;
+}
+
+/* H5 / H6 */
+
+.knowledge-article-body h5 {
+  font-size: 20px;
+  line-height: 1.45;
+
+  margin: 32px 0 14px;
+}
+
+.knowledge-article-body h6 {
+  font-size: 18px;
+  line-height: 1.5;
+
+  margin: 28px 0 12px;
+}
+
+/* ======================================================
+   EMPHASIS
+====================================================== */
+
+.knowledge-article-body strong,
+.knowledge-article-body b {
+  color: #163629;
+  font-weight: 700;
+}
+
+.knowledge-article-body em,
+.knowledge-article-body i {
+  font-style: italic;
+}
+
+/* ======================================================
+   LINKS
+====================================================== */
+
+.knowledge-article-body a {
+  color: #805b1e;
+
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+
+  overflow-wrap: anywhere;
+
+  transition: color 0.2s ease;
+}
+
+.knowledge-article-body a:hover {
+  color: #163629;
+}
+
+.knowledge-article-body a:focus-visible {
+  outline: 2px solid #805b1e;
+  outline-offset: 4px;
+
+  border-radius: 2px;
+}
+
+/* ======================================================
+   UNORDERED LISTS
+====================================================== */
+
+.knowledge-article-body ul {
+  list-style: disc outside;
+
+  margin: 28px 0;
+  padding-left: 30px;
+}
+
+/* ======================================================
+   ORDERED LISTS
+====================================================== */
+
+.knowledge-article-body ol {
+  list-style: decimal outside;
+
+  margin: 28px 0;
+  padding-left: 30px;
+}
+
+.knowledge-article-body li {
+  display: list-item;
+
+  margin: 13px 0;
+
+  line-height: 1.85;
+
+  padding-left: 4px;
+}
+
+.knowledge-article-body li::marker {
+  color: #b88638;
+}
+
+/* ======================================================
+   ARTICLE IMAGES
+====================================================== */
+
+.knowledge-article-body img {
+  display: block;
+
+  width: auto;
+  max-width: 100%;
+  height: auto;
+
+  margin: 45px auto;
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 25px 70px rgba(22, 54, 41, 0.09);
+
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.knowledge-article-body figure {
+  width: 100%;
+  max-width: 100%;
+
+  margin: 45px 0;
+}
+
+.knowledge-article-body figure img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.knowledge-article-body img:hover {
+  transform: scale(1.01);
+
+  box-shadow:
+    0 35px 90px rgba(22, 54, 41, 0.13);
+}
+
+/* IMAGE CAPTION */
+
+.knowledge-article-body figcaption {
+  margin-top: 14px;
+
+  text-align: center;
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  color: #777;
+  font-style: italic;
+}
+
+/* ======================================================
+   TABLE WRAPPER
+====================================================== */
+
+.knowledge-article-body .table-wrapper {
+  width: 100%;
+  max-width: 100%;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  margin: 45px 0;
+
+  border-radius: 20px;
+
+  border: 1px solid #ece7dc;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.05);
+}
+
+/* ======================================================
+   TABLES
+====================================================== */
+
+.knowledge-article-body table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  background: #fff;
+}
+
+.knowledge-article-body thead {
+  background: #163629;
+}
+
+.knowledge-article-body th {
+  color: #fff;
+
+  padding: 17px 20px;
+
+  font-weight: 600;
+  text-align: left;
+}
+
+.knowledge-article-body td {
+  padding: 17px 20px;
+
+  border-top: 1px solid #ece7dc;
+
+  vertical-align: top;
+}
+
+.knowledge-article-body tbody tr:nth-child(even) {
+  background: #faf8f4;
+}
+
+/* ======================================================
+   BLOCKQUOTES
+====================================================== */
+
+.knowledge-article-body blockquote {
+  margin: 45px 0;
+
+  padding: 30px 36px;
+
+  border-left: 4px solid #b88638;
+
+  background:
+    linear-gradient(
+      135deg,
+      #faf8f4,
+      #f7f3ec
+    );
+
+  border-radius: 22px;
+
+  font-size: 21px;
+  line-height: 1.75;
+
+  font-style: italic;
+
+  color: #163629;
+
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.04);
+}
+
+.knowledge-article-body blockquote p {
+  margin-bottom: 0;
+}
+
+/* ======================================================
+   HORIZONTAL RULE
+====================================================== */
+
+.knowledge-article-body hr {
+  border: none;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #d5b16a,
+      transparent
+    );
+
+  margin: 55px 0;
+}
+
+/* ======================================================
+   INLINE CODE
+====================================================== */
+
+.knowledge-article-body code {
+  background: #f6f4ef;
+
+  color: #163629;
+
+  padding: 4px 7px;
+
+  border-radius: 7px;
+
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* ======================================================
+   CODE BLOCK
+====================================================== */
+
+.knowledge-article-body pre {
+  margin: 35px 0;
+
+  overflow-x: auto;
+
+  background: #163629;
+  color: #fff;
+
+  padding: 22px;
+
+  border-radius: 16px;
+}
+
+.knowledge-article-body pre code {
+  background: transparent;
+  color: inherit;
+
+  padding: 0;
+}
+
+/* ======================================================
+   VIDEO
+====================================================== */
+
+.knowledge-article-body video {
+  display: block;
+
+  width: 100%;
+  max-width: 100%;
+
+  height: auto;
+
+  margin: 40px auto;
+
+  border-radius: 22px;
+}
+
+/* ======================================================
+   DETAILS / FAQ
+====================================================== */
+
+.knowledge-article-body details {
+  margin: 18px 0;
+
+  padding: 18px 20px;
+
+  border: 1px solid #ece7dc;
+  border-radius: 16px;
+
+  background: #faf8f4;
+}
+
+.knowledge-article-body summary {
+  cursor: pointer;
+
+  color: #163629;
+  font-weight: 600;
+}
+
+.knowledge-article-body details p {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+/* ======================================================
+   TEXT SELECTION
+====================================================== */
+
+.knowledge-article-body ::selection {
+  background: rgba(184, 134, 56, 0.22);
+  color: #163629;
+}
+
+/* ======================================================
+   TABLET
+====================================================== */
+
+@media (max-width: 992px) {
+
+  .knowledge-article-content {
+    font-size: 17px;
+    line-height: 1.85;
+  }
+
+  .knowledge-article-body h1 {
+    font-size: 38px;
+  }
+
+  .knowledge-article-body h2 {
+    font-size: 32px;
+  }
+
+  .knowledge-article-body h3 {
+    font-size: 26px;
+  }
+
+  .knowledge-article-body h4 {
+    font-size: 22px;
+  }
+
+}
+
+/* ======================================================
+   MOBILE
+====================================================== */
+
+@media (max-width: 640px) {
+
+  .knowledge-article-content {
+    font-size: 16px;
+    line-height: 1.85;
+  }
+
+  .knowledge-article-body p {
+    margin-bottom: 23px;
+  }
+
+  .knowledge-article-body h1 {
+    font-size: 30px;
+
+    margin: 40px 0 18px;
+  }
+
+  .knowledge-article-body h2 {
+    font-size: 27px;
+
+    margin: 42px 0 18px;
+  }
+
+  .knowledge-article-body h2::after {
+    width: 54px;
+    margin-top: 12px;
+  }
+
+  .knowledge-article-body h3 {
+    font-size: 22px;
+
+    margin: 34px 0 15px;
+  }
+
+  .knowledge-article-body h4 {
+    font-size: 20px;
+
+    margin: 29px 0 13px;
+  }
+
+  .knowledge-article-body h5 {
+    font-size: 18px;
+  }
+
+  .knowledge-article-body h6 {
+    font-size: 16px;
+  }
+
+  .knowledge-article-body ul,
+  .knowledge-article-body ol {
+    padding-left: 22px;
+  }
+
+  .knowledge-article-body li {
+    margin: 11px 0;
+  }
+
+  .knowledge-article-body img {
+    margin: 32px auto;
+    border-radius: 17px;
+  }
+
+  .knowledge-article-body figure {
+    margin: 32px 0;
+  }
+
+  .knowledge-article-body blockquote {
+    padding: 22px;
+
+    font-size: 18px;
+    line-height: 1.75;
+
+    border-radius: 17px;
+  }
+
+  .knowledge-article-body .table-wrapper {
+    margin: 32px 0;
+    border-radius: 14px;
+  }
+
+  .knowledge-article-body table {
+    min-width: 650px;
+    font-size: 14px;
+  }
+
+  .knowledge-article-body th,
+  .knowledge-article-body td {
+    padding: 13px 15px;
+  }
+
+  .knowledge-article-body details {
+    padding: 15px;
+  }
+
+  .knowledge-article-body hr {
+    margin: 40px 0;
+  }
+
+}
+
+/* ======================================================
+   REDUCED MOTION
+====================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .knowledge-article-body a,
+  .knowledge-article-body img {
+    transition: none;
+  }
+
+  .knowledge-article-body img:hover {
+    transform: none;
+  }
+
+}
