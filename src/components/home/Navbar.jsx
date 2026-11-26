@@ -87,6 +87,7 @@ const navItems = [
       "ROI Calculator",
       "Area Converter",
       "EMI Calculator",
+      "Stamp Duty Calculator",
     ],
   },
 
@@ -700,6 +701,9 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
 
         "EMI Calculator":
           "/tools/emi-calculator",
+
+        "Stamp Duty Calculator":
+          "/tools/stamp-duty-calculator",
       };
 
       const route =
@@ -988,6 +992,9 @@ const propertyTypes = Array.isArray(navData.propertyTypes)
 
         "EMI Calculator":
           "/tools/emi-calculator",
+
+        "Stamp Duty Calculator":
+          "/tools/stamp-duty-calculator",
       };
 
       const route =

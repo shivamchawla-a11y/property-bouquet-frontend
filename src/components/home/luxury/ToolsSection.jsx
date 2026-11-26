@@ -67,6 +67,7 @@ const tools = [
     action: "Calculate Now",
     icon: FileText,
     iconStyle: "gold",
+    href: "/tools/stamp-duty-calculator",
   },
   {
     id: "construction",
