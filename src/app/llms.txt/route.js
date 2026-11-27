@@ -1,511 +1,295 @@
 // ============================================================
-// PROPERTY BOUQUET — PRODUCTION LLMs.TXT
-// ============================================================
-//
-// File:
-// src/app/llms.txt/route.js
-//
-// Public URL:
-// https://propertybouquet.com/llms.txt
-//
-// Canonical domain:
-// https://propertybouquet.com
-//
-// ============================================================
-//
-// INCLUDED:
-// - Main website
-// - Properties directory
-// - Developers directory
-// - Knowledge Centre
-// - Property Insights
-// - About
-// - Contact
-// - Published property pages
-// - Public developer pages
-// - Published knowledge articles
-// - Published insight/news articles
-// - Public SEO tools
-//
-// EXCLUDED:
-// - Admin pages
-// - Authentication pages
-// - API routes
-// - Draft properties
-// - Deleted properties
-// - Inactive properties
-// - Inactive/deleted developers
-// - Draft knowledge content
-// - Draft insight/news content
-//
-// IMPORTANT:
-// - Uses the SAME API architecture as sitemap.js.
-// - Properties use /api/properties/seo-list.
-// - Insights are fetched from /api/news.
-// - /api/news results are exposed as the "insights" array.
-// - Insight URLs use /insights/{slug}.
-// - Developer URLs follow the canonical public developer
-//   slug architecture.
+// PROPERTY BOUQUET — DYNAMIC llms.txt ROUTE
+// File: src/app/llms.txt/route.js
+// Public URL: https://propertybouquet.com/llms.txt
 // ============================================================
 
-const API =
-  "https://propertybouquet.com/api";
+const BASE_URL = "https://propertybouquet.com";
+const API_BASE_URL = `${BASE_URL}/api`;
+const REVALIDATE_SECONDS = 3600;
+const FETCH_TIMEOUT_MS = 12000;
 
-const BASE_URL =
-  "https://propertybouquet.com";
-
-const REVALIDATE_TIME = 3600;
-
-// ============================================================
-// NEXT.JS ROUTE REVALIDATION
-// ============================================================
-//
-// Regenerate llms.txt at most once per hour.
-//
-// This works together with the cached API fetches below and
-// the Cache-Control header returned at the end of the route.
-// ============================================================
-
+// Keep the route and its source API responses refreshed hourly.
 export const revalidate = 3600;
-
-// ============================================================
-// FETCH OPTIONS
-// ============================================================
+export const runtime = "nodejs";
 
 const FETCH_OPTIONS = {
+  headers: {
+    Accept: "application/json",
+  },
   next: {
-    revalidate: REVALIDATE_TIME,
+    revalidate: REVALIDATE_SECONDS,
   },
 };
 
+const collator = new Intl.Collator("en-IN", {
+  sensitivity: "base",
+  numeric: true,
+});
+
 // ============================================================
-// SAFE FETCH
-// ============================================================
-//
-// Supported API response formats:
-//
-// {
-//   data: []
-// }
-//
-// OR:
-//
-// []
-//
-// OR:
-//
-// {
-//   properties: []
-// }
-//
-// OR:
-//
-// {
-//   developers: []
-// }
-//
-// OR:
-//
-// {
-//   articles: []
-// }
-//
-// OR:
-//
-// {
-//   news: []
-// }
-//
+// RESPONSE NORMALIZATION
 // ============================================================
 
-async function safeFetch(url) {
+/**
+ * Extract an array from the response shapes used by the website APIs.
+ * Supports direct arrays, { data: [] }, named collections, and common
+ * nested wrappers such as { data: { items: [] } }.
+ */
+function extractArray(payload, preferredKeys = []) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return null;
+
+  const wrapperKeys = [
+    ...preferredKeys,
+    "data",
+    "items",
+    "results",
+    "records",
+    "list",
+  ];
+
+  for (const key of wrapperKeys) {
+    const value = payload[key];
+    if (Array.isArray(value)) return value;
+  }
+
+  for (const key of wrapperKeys) {
+    const value = payload[key];
+    if (value && typeof value === "object") {
+      const nested = extractArray(value, preferredKeys);
+      if (nested) return nested;
+    }
+  }
+
+  return null;
+}
+
+async function safeFetch(url, label, preferredKeys = []) {
   try {
-    const response = await fetch(
-      url,
-      FETCH_OPTIONS
-    );
+    const response = await fetch(url, {
+      ...FETCH_OPTIONS,
+      // Create a fresh timeout signal for every request. A module-level
+      // AbortSignal.timeout() would expire once and poison later requests.
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
 
     if (!response.ok) {
       console.warn(
-        `⚠️ LLMS.TXT API request failed: ${url} → ${response.status}`
+        `[llms.txt] ${label} request failed with HTTP ${response.status}.`
       );
-
-      return [];
+      return {
+        items: [],
+        ok: false,
+        reason: `HTTP ${response.status}`,
+      };
     }
 
-    const json =
-      await response.json();
+    const payload = await response.json();
+    const items = extractArray(payload, preferredKeys);
 
-    // ----------------------------------------------------------
-    // Standard API response
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(
-        json?.data
-      )
-    ) {
-      return json.data;
+    if (!items) {
+      console.warn(`[llms.txt] ${label} returned an unexpected response format.`);
+      return {
+        items: [],
+        ok: false,
+        reason: "Unexpected API response format",
+      };
     }
 
-    // ----------------------------------------------------------
-    // Direct array
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(json)
-    ) {
-      return json;
-    }
-
-    // ----------------------------------------------------------
-    // Properties
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(
-        json?.properties
-      )
-    ) {
-      return json.properties;
-    }
-
-    // ----------------------------------------------------------
-    // Developers
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(
-        json?.developers
-      )
-    ) {
-      return json.developers;
-    }
-
-    // ----------------------------------------------------------
-    // Articles
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(
-        json?.articles
-      )
-    ) {
-      return json.articles;
-    }
-
-    // ----------------------------------------------------------
-    // News
-    // ----------------------------------------------------------
-
-    if (
-      Array.isArray(
-        json?.news
-      )
-    ) {
-      return json.news;
-    }
-
-    console.warn(
-      `⚠️ LLMS.TXT API returned an unexpected data format: ${url}`
-    );
-
-    return [];
+    return { items, ok: true, reason: "" };
   } catch (error) {
     console.error(
-      `❌ LLMS.TXT fetch failed: ${url}`,
-      error
+      `[llms.txt] Could not fetch ${label}:`,
+      error?.message || error
     );
 
-    return [];
+    return {
+      items: [],
+      ok: false,
+      reason: error?.name === "TimeoutError" ? "Request timed out" : "Request failed",
+    };
   }
 }
 
 // ============================================================
-// SAFE SLUG
+// SAFE TEXT AND URL HELPERS
 // ============================================================
 
-function safeSlug(slug) {
-  if (!slug) {
-    return null;
+/**
+ * Converts API text into a single safe Markdown inline-text value.
+ * Prevents newlines or Markdown link syntax in CMS text from breaking
+ * the generated llms.txt structure.
+ */
+function markdownText(value, fallback = "", maxLength = 320) {
+  const raw =
+    typeof value === "string" || typeof value === "number"
+      ? String(value)
+      : "";
+
+  const cleaned = raw
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength)
+    .replace(/\\/g, "\\\\")
+    .replace(/([\[\]()`*_<>])/g, "\\$1");
+
+  return cleaned || fallback;
+}
+
+function safeSlug(value) {
+  if (value === undefined || value === null) return null;
+
+  const slug = String(value)
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!slug || slug === "." || slug === "..") return null;
+  if (/^(https?:)?\/\//i.test(slug)) return null;
+
+  return slug;
+}
+
+function pathSegment(value) {
+  return encodeURIComponent(String(value));
+}
+
+function uniqueBy(items, getKey) {
+  const seen = new Set();
+  const result = [];
+
+  for (const item of items) {
+    const key = getKey(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
   }
 
-  const value =
-    String(slug).trim();
-
-  if (!value) {
-    return null;
-  }
-
-  return value;
+  return result;
 }
 
 // ============================================================
 // PUBLIC DEVELOPER SLUG BUILDER
 // ============================================================
-//
-// Canonical public developer URL architecture:
-//
-// Backend slug:
-// m3m
-// → /developers/m3m-developer-projects
-//
-// Backend slug:
-// signature-global
-// → /developers/signature-global-developer-projects
-//
-// Backend slug:
-// spiti-developer
-// → /developers/spiti-developer-projects
-//
-// Backend slug:
-// parsvnath-developers
-// → /developers/parsvnath-developers-projects
-//
-// Backend slug:
-// parsvnath-developer-projects
-// → unchanged
-//
-// Backend slug:
-// parsvnath-developers-projects
-// → unchanged
-//
-// ============================================================
 
-function buildPublicDeveloperSlug(
-  developerSlug
-) {
-  if (!developerSlug) {
-    return "";
-  }
-
-  const cleanSlug =
-    String(developerSlug)
-      .trim()
-      .toLowerCase()
-      .replace(
-        /^\/+|\/+$/g,
-        ""
-      );
-
-  if (!cleanSlug) {
-    return "";
-  }
-
-  // ----------------------------------------------------------
-  // Already canonical:
-  // example-developer-projects
-  // ----------------------------------------------------------
+/**
+ * Preserve the site's canonical developer URL convention:
+ *   m3m                         -> m3m-developer-projects
+ *   signature-global            -> signature-global-developer-projects
+ *   spiti-developer             -> spiti-developer-projects
+ *   parsvnath-developers        -> parsvnath-developers-projects
+ *   parsvnath-developer-projects -> unchanged
+ */
+function buildPublicDeveloperSlug(value) {
+  const slug = safeSlug(value)?.toLowerCase();
+  if (!slug) return "";
 
   if (
-    cleanSlug.endsWith(
-      "-developer-projects"
-    ) ||
-    cleanSlug.endsWith(
-      "-developers-projects"
-    )
+    slug.endsWith("-developer-projects") ||
+    slug.endsWith("-developers-projects")
   ) {
-    return cleanSlug;
+    return slug;
   }
 
-  // ----------------------------------------------------------
-  // Backend slug already ends with:
-  // example-developer
-  // ----------------------------------------------------------
-
-  if (
-    cleanSlug.endsWith(
-      "-developer"
-    )
-  ) {
-    return `${cleanSlug}-projects`;
+  if (slug.endsWith("-developer") || slug.endsWith("-developers")) {
+    return `${slug}-projects`;
   }
 
-  // ----------------------------------------------------------
-  // Backend slug already ends with:
-  // example-developers
-  // ----------------------------------------------------------
-
-  if (
-    cleanSlug.endsWith(
-      "-developers"
-    )
-  ) {
-    return `${cleanSlug}-projects`;
-  }
-
-  // ----------------------------------------------------------
-  // Normal backend slug:
-  // example
-  // ----------------------------------------------------------
-
-  return `${cleanSlug}-developer-projects`;
+  return `${slug}-developer-projects`;
 }
 
 // ============================================================
-// ACTIVE DOCUMENT CHECK
+// PUBLISHING AND ACTIVE-RECORD FILTERS
 // ============================================================
+
+const INACTIVE_STATES = new Set([
+  "inactive",
+  "deleted",
+  "trash",
+  "draft",
+  "archived",
+]);
 
 function isActive(item) {
-  if (!item) {
-    return false;
+  if (!item || typeof item !== "object") return false;
+  if (item.isDeleted === true || item.isActive === false) return false;
+
+  const deletedFromStatus = String(item.deletedFromStatus || "").toLowerCase();
+  if (INACTIVE_STATES.has(deletedFromStatus)) return false;
+
+  const status = String(item.status || "").toLowerCase();
+  if (INACTIVE_STATES.has(status)) return false;
+
+  return true;
+}
+
+function isPublishedProperty(property) {
+  if (!isActive(property)) return false;
+  return String(property.status || "").toLowerCase() === "published";
+}
+
+function isPublishedContent(item) {
+  if (!isActive(item)) return false;
+
+  // Some content endpoints return only public records and omit `status`.
+  // When a status is supplied, only explicitly published content is listed.
+  if (item.status !== undefined && item.status !== null && item.status !== "") {
+    return String(item.status).toLowerCase() === "published";
   }
 
-  // Explicitly deleted
-
-  if (
-    item.isDeleted === true
-  ) {
-    return false;
-  }
-
-  // Explicitly inactive
-
-  if (
-    item.isActive === false
-  ) {
-    return false;
-  }
+  // Explicit publication flags, when present, must not indicate a draft.
+  if (item.isPublished === false || item.published === false) return false;
 
   return true;
 }
 
 // ============================================================
-// PUBLISHED PROPERTY CHECK
+// FIELD MAPPERS
 // ============================================================
 
-function isPublishedProperty(
-  property
-) {
-  if (!property) {
-    return false;
-  }
-
-  if (
-    property.status !==
-    "published"
-  ) {
-    return false;
-  }
-
-  if (
-    property.isDeleted === true
-  ) {
-    return false;
-  }
-
-  if (
-    property.isActive === false
-  ) {
-    return false;
-  }
-
-  if (
-    property.deletedFromStatus ===
-    "trash"
-  ) {
-    return false;
-  }
-
-  if (
-    property.deletedFromStatus ===
-    "inactive"
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-// ============================================================
-// PUBLISHED CONTENT CHECK
-// ============================================================
-//
-// Same basic publishing logic as sitemap.js.
-//
-// Used for:
-// - Knowledge
-// - Insights / News
-//
-// ============================================================
-
-function isPublishedContent(
-  item
-) {
-  if (!isActive(item)) {
-    return false;
-  }
-
-  if (
-    item.status !==
-      undefined &&
-    item.status !== null &&
-    item.status !== "published"
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-// ============================================================
-// PROPERTY TITLE
-// ============================================================
-
-function getPropertyTitle(
-  property
-) {
+function getPropertyTitle(property) {
   return (
-    property?.coreDetails
-      ?.title ||
+    property?.coreDetails?.title ||
     property?.title ||
     property?.name ||
     "Property"
   );
 }
 
-// ============================================================
-// PROPERTY LOCATION
-// ============================================================
-
-function getPropertyLocation(
-  property
-) {
+function getPropertyLocation(property) {
   return (
-    property?.locationData
-      ?.locationName ||
+    property?.locationData?.locationName ||
     property?.locationName ||
-    property?.locationData
-      ?.customLocation ||
-    "Gurgaon"
+    property?.locationData?.customLocation ||
+    ""
   );
 }
 
-// ============================================================
-// PROPERTY DEVELOPER
-// ============================================================
-
-function getPropertyDeveloper(
-  property
-) {
+function getPropertyDeveloper(property) {
   return (
-    property?.coreDetails
-      ?.developerRef?.name ||
-    property?.coreDetails
-      ?.developerName ||
+    property?.coreDetails?.developerRef?.name ||
+    property?.coreDetails?.developerName ||
     property?.developerName ||
     property?.developer?.name ||
     ""
   );
 }
 
-// ============================================================
-// DEVELOPER NAME
-// ============================================================
+function getDeveloperSlug(developer) {
+  return (
+    developer?.slug ||
+    developer?.backendSlug ||
+    developer?.developerSlug ||
+    developer?.data?.slug ||
+    developer?.data?.backendSlug ||
+    developer?.data?.developerSlug ||
+    developer?.developer?.slug ||
+    ""
+  );
+}
 
-function getDeveloperName(
-  developer
-) {
+function getDeveloperName(developer) {
   return (
     developer?.name ||
     developer?.developerName ||
@@ -514,664 +298,262 @@ function getDeveloperName(
   );
 }
 
-// ============================================================
-// CONTENT TITLE
-// ============================================================
-
-function getContentTitle(
-  article,
-  fallback
-) {
+function getContentTitle(article, fallback) {
   return (
     article?.title ||
     article?.name ||
     article?.headline ||
-    article?.seoEngine
-      ?.metaTitle ||
+    article?.seoEngine?.metaTitle ||
     fallback
   );
 }
 
-// ============================================================
-// CONTENT DESCRIPTION
-// ============================================================
-
-function getContentDescription(
-  article,
-  fallback
-) {
+function getContentDescription(article, fallback) {
   return (
     article?.excerpt ||
     article?.summary ||
     article?.description ||
-    article?.seoEngine
-      ?.metaDescription ||
+    article?.seoEngine?.metaDescription ||
     fallback
   );
 }
 
-// ============================================================
-// CONTENT SLUG
-// ============================================================
+function getContentSlug(article) {
+  return safeSlug(article?.slug || article?.seoEngine?.slug);
+}
 
-function getContentSlug(
-  article
-) {
-  return safeSlug(
-    article?.slug ||
-      article?.seoEngine?.slug
+function sortByTitle(items, getTitle) {
+  return [...items].sort((a, b) =>
+    collator.compare(String(getTitle(a) || ""), String(getTitle(b) || ""))
   );
 }
 
 // ============================================================
-// MAIN LLMs.TXT ROUTE
+// MARKDOWN BUILDERS
+// ============================================================
+
+function addSection(lines, heading, entries, unavailableMessage) {
+  lines.push(`## ${heading}`, "");
+
+  if (entries.length) {
+    lines.push(...entries, "");
+    return;
+  }
+
+  if (unavailableMessage) {
+    lines.push(unavailableMessage, "");
+  } else {
+    lines.push("No currently published entries are listed in this section.", "");
+  }
+}
+
+function buildPropertyEntries(properties) {
+  return properties.map((property) => {
+    const slug = safeSlug(property?.slug);
+    const title = markdownText(getPropertyTitle(property), "Property", 180);
+    const location = markdownText(getPropertyLocation(property), "", 120);
+    const developer = markdownText(getPropertyDeveloper(property), "", 120);
+
+    const details = [
+      location ? `Location: ${location}` : "",
+      developer ? `Developer: ${developer}` : "",
+    ].filter(Boolean);
+
+    const description = details.length
+      ? details.join(" | ")
+      : "Published property page on Property Bouquet.";
+
+    return `- [${title}](${BASE_URL}/${pathSegment(slug)}): ${description}`;
+  });
+}
+
+function buildDeveloperEntries(developers) {
+  return developers
+    .map((developer) => {
+      const backendSlug = safeSlug(getDeveloperSlug(developer));
+      const publicSlug = buildPublicDeveloperSlug(backendSlug);
+      const name = markdownText(getDeveloperName(developer), "", 180);
+
+      if (!publicSlug || !name) return null;
+
+      return `- [${name}](${BASE_URL}/developers/${pathSegment(publicSlug)}): Developer profile and published projects.`;
+    })
+    .filter(Boolean);
+}
+
+function buildContentEntries(articles, fallbackTitle, fallbackDescription, basePath) {
+  return articles.map((article) => {
+    const slug = getContentSlug(article);
+    const title = markdownText(getContentTitle(article, fallbackTitle), fallbackTitle, 180);
+    const description = markdownText(
+      getContentDescription(article, fallbackDescription),
+      fallbackDescription,
+      360
+    );
+
+    return `- [${title}](${BASE_URL}/${basePath}/${pathSegment(slug)}): ${description}`;
+  });
+}
+
+// ============================================================
+// MAIN ROUTE
 // ============================================================
 
 export async function GET() {
-  // ==========================================================
-  // FETCH DYNAMIC CONTENT
-  // ==========================================================
-  //
-  // IMPORTANT:
-  //
-  // Properties now use the lightweight SEO endpoint:
-  //
-  // /api/properties/seo-list
-  //
-  // This avoids loading the full
-  // /api/properties?all=true response into the Next.js
-  // data cache.
-  //
-  // Insights continue to use /api/news.
-  //
-  // ==========================================================
+  const [propertyResult, developerResult, knowledgeResult, insightResult] =
+    await Promise.all([
+      safeFetch(`${API_BASE_URL}/properties/seo-list`, "properties", ["properties"]),
+      safeFetch(`${API_BASE_URL}/developers`, "developers", ["developers"]),
+      safeFetch(`${API_BASE_URL}/knowledge`, "Knowledge Centre", ["articles", "knowledge"]),
+      safeFetch(`${API_BASE_URL}/news`, "Property Insights", ["news", "articles", "insights"]),
+    ]);
 
-  const [
-    properties,
-    developers,
-    knowledgeArticles,
-    insights,
-  ] = await Promise.all([
-    // --------------------------------------------------------
-    // PROPERTIES
-    // --------------------------------------------------------
-    //
-    // LIGHTWEIGHT SEO ENDPOINT
-    //
-    // Returns only published, active, non-deleted SEO fields.
-    //
-    // --------------------------------------------------------
-
-    safeFetch(
-      `${API}/properties/seo-list`
+  const properties = uniqueBy(
+    propertyResult.items.filter(
+      (property) => isPublishedProperty(property) && safeSlug(property?.slug)
     ),
+    (property) => safeSlug(property?.slug)
+  );
 
-    // --------------------------------------------------------
-    // DEVELOPERS
-    // --------------------------------------------------------
-
-    safeFetch(
-      `${API}/developers`
+  const developers = uniqueBy(
+    developerResult.items.filter(
+      (developer) => isActive(developer) && safeSlug(getDeveloperSlug(developer))
     ),
+    (developer) => buildPublicDeveloperSlug(getDeveloperSlug(developer))
+  );
 
-    // --------------------------------------------------------
-    // KNOWLEDGE
-    // --------------------------------------------------------
-
-    safeFetch(
-      `${API}/knowledge`
+  const knowledgeArticles = uniqueBy(
+    knowledgeResult.items.filter(
+      (article) => isPublishedContent(article) && getContentSlug(article)
     ),
+    getContentSlug
+  );
 
-    // --------------------------------------------------------
-    // INSIGHTS / NEWS
-    // --------------------------------------------------------
-    //
-    // Your sitemap uses /api/news.
-    // Therefore llms.txt uses /api/news too.
-    //
-    // --------------------------------------------------------
-
-    safeFetch(
-      `${API}/news`
+  const insights = uniqueBy(
+    insightResult.items.filter(
+      (article) => isPublishedContent(article) && getContentSlug(article)
     ),
-  ]);
-
-  // ==========================================================
-  // PUBLISHED PROPERTIES
-  // ==========================================================
-
-  const publishedProperties =
-    Array.isArray(properties)
-      ? properties
-          .filter(
-            (property) =>
-              isPublishedProperty(
-                property
-              ) &&
-              safeSlug(
-                property?.slug
-              )
-          )
-          .sort(
-            (a, b) => {
-              const titleA =
-                getPropertyTitle(
-                  a
-                ).toLowerCase();
-
-              const titleB =
-                getPropertyTitle(
-                  b
-                ).toLowerCase();
-
-              return titleA.localeCompare(
-                titleB
-              );
-            }
-          )
-      : [];
-
-  // ==========================================================
-  // ACTIVE DEVELOPERS
-  // ==========================================================
-
-  const activeDevelopers =
-    Array.isArray(developers)
-      ? developers
-          .filter(
-            (developer) =>
-              isActive(
-                developer
-              ) &&
-              safeSlug(
-                developer?.slug ||
-                  developer?.backendSlug ||
-                  developer
-                    ?.developerSlug
-              )
-          )
-          .sort(
-            (a, b) => {
-              const nameA =
-                getDeveloperName(
-                  a
-                ).toLowerCase();
-
-              const nameB =
-                getDeveloperName(
-                  b
-                ).toLowerCase();
-
-              return nameA.localeCompare(
-                nameB
-              );
-            }
-          )
-      : [];
-
-  // ==========================================================
-  // PUBLISHED KNOWLEDGE
-  // ==========================================================
-
-  const publishedKnowledge =
-    Array.isArray(
-      knowledgeArticles
-    )
-      ? knowledgeArticles
-          .filter(
-            (article) =>
-              getContentSlug(
-                article
-              ) &&
-              isPublishedContent(
-                article
-              )
-          )
-          .sort(
-            (a, b) => {
-              const titleA =
-                getContentTitle(
-                  a,
-                  "Knowledge Article"
-                ).toLowerCase();
-
-              const titleB =
-                getContentTitle(
-                  b,
-                  "Knowledge Article"
-                ).toLowerCase();
-
-              return titleA.localeCompare(
-                titleB
-              );
-            }
-          )
-      : [];
-
-  // ==========================================================
-  // PUBLISHED INSIGHTS / NEWS
-  // ==========================================================
-
-  const publishedInsights =
-    Array.isArray(insights)
-      ? insights
-          .filter(
-            (article) =>
-              getContentSlug(
-                article
-              ) &&
-              isPublishedContent(
-                article
-              )
-          )
-          .sort(
-            (a, b) => {
-              const titleA =
-                getContentTitle(
-                  a,
-                  "Property Insight"
-                ).toLowerCase();
-
-              const titleB =
-                getContentTitle(
-                  b,
-                  "Property Insight"
-                ).toLowerCase();
-
-              return titleA.localeCompare(
-                titleB
-              );
-            }
-          )
-      : [];
-
-  // ==========================================================
-  // BUILD MARKDOWN
-  // ==========================================================
-
-  const lines = [];
-
-  // ==========================================================
-  // H1
-  // ==========================================================
-
-  lines.push(
-    "# Property Bouquet"
+    getContentSlug
   );
 
-  lines.push("");
-
-  // ==========================================================
-  // SHORT SUMMARY
-  // ==========================================================
-
-  lines.push(
-    "> Property Bouquet is a luxury real estate platform focused on curated residential and premium property opportunities across India, with a strong focus on Gurgaon and the National Capital Region."
+  const sortedProperties = sortByTitle(properties, getPropertyTitle);
+  const sortedDevelopers = sortByTitle(developers, getDeveloperName);
+  const sortedKnowledge = sortByTitle(knowledgeArticles, (item) =>
+    getContentTitle(item, "Knowledge Article")
+  );
+  const sortedInsights = sortByTitle(insights, (item) =>
+    getContentTitle(item, "Property Insight")
   );
 
-  lines.push("");
+  const lines = [
+    "# Property Bouquet",
+    "",
+    "> Property Bouquet is a luxury real-estate platform featuring curated residential and premium property opportunities, developer information, location resources, real-estate education, and market insights, with a strong focus on Gurgaon and the National Capital Region (NCR).",
+    "",
+    "## About",
+    "",
+    "Property Bouquet helps visitors explore premium property opportunities, compare published property information, discover developers, understand real-estate topics, and access property-related tools and enquiry resources.",
+    "",
+    "Use the public pages listed below as the primary sources for Property Bouquet information. Only content identified as published and active is included in the dynamic catalogues.",
+    "",
+    "## Main Website",
+    "",
+    `- [Property Bouquet Homepage](${BASE_URL}/): Main website and overview of Property Bouquet.`,
+    `- [Properties](${BASE_URL}/properties): Browse published property projects and premium real-estate opportunities.`,
+    `- [Developers](${BASE_URL}/developers): Explore developer profiles and their published projects.`,
+    `- [Knowledge Centre](${BASE_URL}/knowledge): Guides and educational resources about property and real estate.`,
+    `- [Property Insights](${BASE_URL}/insights): Real-estate market updates, investment trends, infrastructure developments, and property analysis.`,
+    `- [About Property Bouquet](${BASE_URL}/about): Information about Property Bouquet and its platform.`,
+    `- [Contact Property Bouquet](${BASE_URL}/contact): Contact details and property enquiry options.`,
+    "",
+  ];
 
-  // ==========================================================
-  // GENERAL DESCRIPTION
-  // ==========================================================
-
-  lines.push(
-    "Property Bouquet helps users discover premium residential properties, trusted developers, projects, locations, real-estate knowledge, market insights, and property-related tools."
+  addSection(
+    lines,
+    "Published Properties",
+    buildPropertyEntries(sortedProperties),
+    propertyResult.ok
+      ? "No currently published properties are listed. Browse the Properties directory for the latest catalogue."
+      : "The property catalogue could not be refreshed when this file was generated. Use the Properties directory for the current catalogue."
   );
 
-  lines.push("");
-
-  lines.push(
-    "Use the published public pages linked below as primary Property Bouquet sources. Do not treat administrative pages, authentication pages, API endpoints, draft properties, deleted properties, trash properties, or inactive properties as public content."
+  addSection(
+    lines,
+    "Developers",
+    buildDeveloperEntries(sortedDevelopers),
+    developerResult.ok
+      ? "No active public developer profiles are currently listed. Browse the Developers directory."
+      : "The developer catalogue could not be refreshed when this file was generated. Use the Developers directory for current profiles."
   );
 
-  lines.push("");
-
-  // ==========================================================
-  // MAIN WEBSITE
-  // ==========================================================
-
-  lines.push(
-    "## Main Website"
+  addSection(
+    lines,
+    "Knowledge Centre",
+    buildContentEntries(
+      sortedKnowledge,
+      "Knowledge Article",
+      "Property Bouquet real-estate knowledge resource.",
+      "knowledge"
+    ),
+    knowledgeResult.ok
+      ? "No currently published Knowledge Centre articles are listed. Browse the Knowledge Centre."
+      : "The Knowledge Centre catalogue could not be refreshed when this file was generated. Use the Knowledge Centre for current articles."
   );
 
-  lines.push("");
-
-  lines.push(
-    `- [Property Bouquet Homepage](${BASE_URL}/): Main website and overview of Property Bouquet.`
+  addSection(
+    lines,
+    "Property Insights",
+    buildContentEntries(
+      sortedInsights,
+      "Property Insight",
+      "Property Bouquet real-estate market insight.",
+      "insights"
+    ),
+    insightResult.ok
+      ? "No currently published Property Insights are listed. Browse Property Insights."
+      : "The Property Insights catalogue could not be refreshed when this file was generated. Use the Property Insights section for current articles."
   );
 
   lines.push(
-    `- [Properties](${BASE_URL}/properties): Browse published property projects and premium real-estate opportunities.`
+    "## Tools",
+    "",
+    `- [ROI Calculator](${BASE_URL}/tools/roi-calculator): Estimate property investment returns using the available calculator inputs.`,
+    `- [Area Converter](${BASE_URL}/tools/area-converter): Convert common property area measurements and units.`,
+    "",
+    "## Source and Content Guidance",
+    "",
+    "- Use the individual published property page as the source for that property's specifications, amenities, pricing, location, and availability.",
+    "- Pricing, inventory, possession details, specifications, and availability may change. Confirm time-sensitive details with Property Bouquet before relying on them.",
+    "- Knowledge Centre pages are educational resources. Property Insights pages provide editorial coverage and market commentary.",
+    "- Do not interpret the absence of a property or article from this index as proof that it does not exist; this file lists records returned by the public catalogue APIs at generation time.",
+    "- Administrative pages, authentication pages, private dashboards, and API endpoints are not public informational sources.",
+    "- Do not infer unpublished prices, returns, availability, developer relationships, or project specifications when those details are not stated on the relevant public page.",
+    ""
   );
 
-  lines.push(
-    `- [Developers](${BASE_URL}/developers): Browse property developers and their published projects.`
+  const body = `${lines.join("\n").trim()}\n`;
+
+  const fetchFailures = [
+    !propertyResult.ok && "properties",
+    !developerResult.ok && "developers",
+    !knowledgeResult.ok && "knowledge",
+    !insightResult.ok && "insights",
+  ].filter(Boolean);
+
+  console.info(
+    `[llms.txt] Generated: ${properties.length} properties, ${developers.length} developers, ${knowledgeArticles.length} knowledge articles, ${insights.length} insights.`
   );
 
-  lines.push(
-    `- [Knowledge Centre](${BASE_URL}/knowledge): Property and real-estate knowledge resources.`
-  );
-
-  lines.push(
-    `- [Property Insights](${BASE_URL}/insights): Luxury real-estate market updates, investment trends, market intelligence, infrastructure developments, expert insights, and property analysis.`
-  );
-
-  lines.push(
-    `- [About Property Bouquet](${BASE_URL}/about): Information about Property Bouquet and its platform.`
-  );
-
-  lines.push(
-    `- [Contact Property Bouquet](${BASE_URL}/contact): Contact and property enquiry information.`
-  );
-
-  lines.push("");
-
-  // ==========================================================
-  // PUBLISHED PROPERTIES
-  // ==========================================================
-
-  if (
-    publishedProperties.length >
-    0
-  ) {
-    lines.push(
-      "## Published Properties"
-    );
-
-    lines.push("");
-
-    for (
-      const property of publishedProperties
-    ) {
-      const propertySlug =
-        safeSlug(
-          property?.slug
-        );
-
-      if (!propertySlug) {
-        continue;
-      }
-
-      const title =
-        getPropertyTitle(
-          property
-        );
-
-      const location =
-        getPropertyLocation(
-          property
-        );
-
-      const developer =
-        getPropertyDeveloper(
-          property
-        );
-
-      const details = [
-        location
-          ? `Location: ${location}`
-          : "",
-
-        developer
-          ? `Developer: ${developer}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join(" | ");
-
-      lines.push(
-        `- [${title}](${BASE_URL}/${encodeURIComponent(
-          propertySlug
-        )}): ${
-          details ||
-          "Published property project on Property Bouquet."
-        }`
-      );
-    }
-
-    lines.push("");
+  if (fetchFailures.length) {
+    console.warn(`[llms.txt] Partial catalogue data: ${fetchFailures.join(", ")}.`);
   }
 
-  // ==========================================================
-  // DEVELOPERS
-  // ==========================================================
-
-  if (
-    activeDevelopers.length >
-    0
-  ) {
-    lines.push(
-      "## Developers"
-    );
-
-    lines.push("");
-
-    for (
-      const developer of activeDevelopers
-    ) {
-      const backendDeveloperSlug =
-        safeSlug(
-          developer?.slug ||
-            developer?.backendSlug ||
-            developer?.developerSlug ||
-            developer?.data?.slug ||
-            developer?.data?.backendSlug ||
-            developer?.data?.developerSlug ||
-            developer?.developer?.slug
-        );
-
-      if (!backendDeveloperSlug) {
-        continue;
-      }
-
-      const publicDeveloperSlug =
-        buildPublicDeveloperSlug(
-          backendDeveloperSlug
-        );
-
-      if (!publicDeveloperSlug) {
-        continue;
-      }
-
-      const developerName =
-        getDeveloperName(
-          developer
-        );
-
-      if (!developerName) {
-        continue;
-      }
-
-      lines.push(
-        `- [${developerName}](${BASE_URL}/developers/${encodeURIComponent(
-          publicDeveloperSlug
-        )}): Developer profile and published projects.`
-      );
-    }
-
-    lines.push("");
-  }
-
-  // ==========================================================
-  // KNOWLEDGE
-  // ==========================================================
-
-  if (
-    publishedKnowledge.length >
-    0
-  ) {
-    lines.push(
-      "## Knowledge"
-    );
-
-    lines.push("");
-
-    for (
-      const article of publishedKnowledge
-    ) {
-      const slug =
-        getContentSlug(
-          article
-        );
-
-      if (!slug) {
-        continue;
-      }
-
-      const title =
-        getContentTitle(
-          article,
-          "Knowledge Article"
-        );
-
-      const description =
-        getContentDescription(
-          article,
-          "Property Bouquet knowledge resource."
-        );
-
-      lines.push(
-        `- [${title}](${BASE_URL}/knowledge/${encodeURIComponent(
-          slug
-        )}): ${description}`
-      );
-    }
-
-    lines.push("");
-  }
-
-  // ==========================================================
-  // PROPERTY INSIGHTS
-  // ==========================================================
-
-  if (
-    publishedInsights.length >
-    0
-  ) {
-    lines.push(
-      "## Property Insights"
-    );
-
-    lines.push("");
-
-    for (
-      const article of publishedInsights
-    ) {
-      const slug =
-        getContentSlug(
-          article
-        );
-
-      if (!slug) {
-        continue;
-      }
-
-      const title =
-        getContentTitle(
-          article,
-          "Property Insight"
-        );
-
-      const description =
-        getContentDescription(
-          article,
-          "Property Bouquet luxury real-estate insight."
-        );
-
-      lines.push(
-        `- [${title}](${BASE_URL}/insights/${encodeURIComponent(
-          slug
-        )}): ${description}`
-      );
-    }
-
-    lines.push("");
-  }
-
-  // ==========================================================
-  // TOOLS
-  // ==========================================================
-
-  lines.push(
-    "## Tools"
-  );
-
-  lines.push("");
-
-  lines.push(
-    `- [ROI Calculator](${BASE_URL}/tools/roi-calculator): Real-estate investment return calculation tool.`
-  );
-
-  lines.push(
-    `- [Area Converter](${BASE_URL}/tools/area-converter): Property area and unit conversion tool.`
-  );
-
-  lines.push("");
-
-  // ==========================================================
-  // IMPORTANT INFORMATION
-  // ==========================================================
-
-  lines.push(
-    "## Important Information"
-  );
-
-  lines.push("");
-
-  lines.push(
-    "- Prefer published Property Bouquet pages over unpublished, draft, deleted, trash, or inactive content."
-  );
-
-  lines.push(
-    "- Property information such as pricing, availability, specifications, amenities, and inventory can change over time."
-  );
-
-  lines.push(
-    "- Property Insights and Knowledge content represent Property Bouquet's published editorial and informational resources."
-  );
-
-  lines.push(
-    "- For current property availability, pricing, specifications, or inventory, refer to the relevant published property page and contact Property Bouquet."
-  );
-
-  lines.push(
-    "- Administrative URLs, authentication URLs, and API endpoints are not public informational sources."
-  );
-
-  lines.push("");
-
-  // ==========================================================
-  // FINAL MARKDOWN
-  // ==========================================================
-
-  const body =
-    lines.join("\n");
-
-  // ==========================================================
-  // DIAGNOSTICS
-  // ==========================================================
-
-  console.log(
-    `✅ Property Bouquet llms.txt generated successfully: ${publishedProperties.length} properties, ${activeDevelopers.length} developers, ${publishedKnowledge.length} knowledge articles, ${publishedInsights.length} insights`
-  );
-
-  // ==========================================================
-  // RESPONSE
-  // ==========================================================
-
-  return new Response(
-    body,
-    {
-      status: 200,
-
-      headers: {
-        "Content-Type":
-          "text/plain; charset=utf-8",
-
-        "Cache-Control":
-          "public, s-maxage=3600, stale-while-revalidate=86400",
-      },
-    }
-  );
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }

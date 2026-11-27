@@ -29,6 +29,15 @@ const STATUSES = ["New", "Interested", "Not Interested", "Visit", "Closed"];
 const PAGE_SIZES = [10, 25, 50, 100];
 const safeText = (value) => String(value ?? "").trim();
 
+// Highlight enquiries received within the last 24 hours.
+// This is based on createdAt, not the lead's sales status.
+const RECENT_LEAD_WINDOW_MS = 24 * 60 * 60 * 1000;
+const isRecentlyReceived = (dateValue) => {
+  const timestamp = new Date(dateValue).getTime();
+  const age = Date.now() - timestamp;
+  return Number.isFinite(timestamp) && age >= 0 && age <= RECENT_LEAD_WINDOW_MS;
+};
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -541,7 +550,9 @@ export default function LeadsPage() {
                   {value}
                 </button>
               ))}
-              <span className="ml-auto text-[11px] text-[#9aa69f]">Newest enquiries first</span>
+              <div className="ml-auto flex flex-wrap items-center gap-3">
+                <span className="text-[11px] text-[#9aa69f]">Newest enquiries first</span>
+              </div>
             </div>
           </div>
 
@@ -587,14 +598,30 @@ export default function LeadsPage() {
                   paginatedLeads.map((lead) => {
                     const busy = updatingLeadIds.includes(String(lead._id));
                     const received = formatReceived(lead.createdAt);
+                    const isRecentLead = isRecentlyReceived(lead.createdAt);
                     const latestNote = getLatestNote(lead.notes);
                     const whatsappNumber = getWhatsAppNumber(lead.phone);
 
                     return (
-                      <tr key={lead._id} className="align-top transition hover:bg-[#fbfdfb]">
+                      <tr
+                        key={lead._id}
+                        className={`align-top transition ${
+                          isRecentLead
+                            ? "bg-[#f1f8f3] shadow-[inset_3px_0_0_#0b6b48] hover:bg-[#eaf5ee]"
+                            : "hover:bg-[#fbfdfb]"
+                        }`}
+                      >
                         <td className="px-4 py-3.5">
                           <div className="max-w-[230px]">
-                            <p className="truncate text-base font-bold tracking-tight text-[#173b2c]" title={lead.name || "Unnamed lead"}>{lead.name || "Unnamed lead"}</p>
+                            <div className="flex min-w-0 items-center gap-2">
+                              <p className="min-w-0 truncate text-base font-bold tracking-tight text-[#173b2c]" title={lead.name || "Unnamed lead"}>{lead.name || "Unnamed lead"}</p>
+                              {isRecentLead && (
+                                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#c6e4d0] bg-[#e5f4e9] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#176640]">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-[#159455]" />
+                                  JUST IN
+                                </span>
+                              )}
+                            </div>
                             <a href={`tel:${lead.phone || ""}`} className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold tracking-[0.01em] text-[#405b4d] transition hover:text-[#0b6b48]">
                               <Phone size={14} strokeWidth={2.2} /> {lead.phone || "No phone provided"}
                             </a>
