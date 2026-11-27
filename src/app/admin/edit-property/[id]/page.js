@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import StepMedia from "../../add-property/StepMedia";
 import { useParams, useRouter } from "next/navigation";
 import PropertyPreview from "../../add-property/PropertyPreview";
@@ -522,7 +522,26 @@ export default function EditProperty() {
        const [activeMetric, setActiveMetric] = useState(null);
        const [expandedMetric, setExpandedMetric] = useState(null);
        const [isUpdating, setIsUpdating] = useState(false);
-   
+
+       // ============================================================
+       // UNSAVED CHANGES / LOCAL RECOVERY
+       // These safeguards are intentionally local-only. They do not
+       // change the existing PATCH update workflow or create drafts.
+       // ============================================================
+       const [isDirty, setIsDirty] = useState(false);
+       const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+       const [pendingNavigation, setPendingNavigation] = useState(null);
+       const [fetchError, setFetchError] = useState("");
+       const latestFormRef = useRef(form);
+       const lastSavedFormRef = useRef(null);
+       const hasLoadedPropertyRef = useRef(false);
+       const isDirtyRef = useRef(false);
+       const isUpdatingRef = useRef(false);
+       const propertyUpdatedAtRef = useRef(null);
+       const recoveryStorageKey = id
+         ? `propertyBouquet_edit_property_draft_${String(id)}`
+         : "";
+
    // Massive icon library
    const ICONS = {
      ...FaIcons,
@@ -545,7 +564,17 @@ export default function EditProperty() {
        const API = "/api";
 
     useEffect(() => {
+  let cancelled = false;
+
   const fetchProperty = async () => {
+    setLoading(true);
+    setFetchError("");
+    hasLoadedPropertyRef.current = false;
+    lastSavedFormRef.current = null;
+    propertyUpdatedAtRef.current = null;
+    isDirtyRef.current = false;
+    setIsDirty(false);
+
     try {
       const token = localStorage.getItem("token");
 
@@ -560,9 +589,10 @@ export default function EditProperty() {
 
       const data = await res.json();
 
+      if (cancelled) return;
+
       if (res.ok) {
   const property = data.data;
-
 
 // ✅ SAFE NORMALIZATION (NO CRASHES)
 const safeForm = {
@@ -1099,8 +1129,70 @@ gatedContent: {
 
 console.log(property.locationData);
 
+// The freshly fetched database version is the comparison baseline.
+lastSavedFormRef.current = JSON.parse(JSON.stringify(safeForm));
+propertyUpdatedAtRef.current = property.updatedAt || null;
+latestFormRef.current = safeForm;
+hasLoadedPropertyRef.current = true;
+isDirtyRef.current = false;
+setIsDirty(false);
 setForm(safeForm);
 setPreviewData(safeForm);
+
+// Restore an emergency copy only for this exact property.
+// The key is property-specific, so edits to different properties never collide.
+try {
+  const savedRecovery = recoveryStorageKey
+    ? localStorage.getItem(recoveryStorageKey)
+    : null;
+
+  if (savedRecovery) {
+    const parsedRecovery = JSON.parse(savedRecovery);
+    const validRecovery =
+      parsedRecovery?.propertyId === String(id) &&
+      parsedRecovery?.form &&
+      typeof parsedRecovery.form === "object";
+
+    if (!validRecovery) {
+      localStorage.removeItem(recoveryStorageKey);
+    } else if (
+      JSON.stringify(parsedRecovery.form) === JSON.stringify(safeForm)
+    ) {
+      // The database already contains the same data; no recovery is needed.
+      localStorage.removeItem(recoveryStorageKey);
+    } else {
+      const backupIsFromOlderDatabaseVersion = Boolean(
+        parsedRecovery.baseUpdatedAt &&
+        property.updatedAt &&
+        String(parsedRecovery.baseUpdatedAt) !== String(property.updatedAt)
+      );
+
+      const restoreMessage = backupIsFromOlderDatabaseVersion
+        ? "A local recovery copy was found for this property. The property has also been updated in the database since that copy was created. Restoring it may overwrite newer changes. Do you still want to restore your unsaved edits?"
+        : "Unsaved local changes were found for this property. Would you like to restore them?";
+
+      const shouldRestore = window.confirm(restoreMessage);
+
+      if (shouldRestore) {
+        setForm(parsedRecovery.form);
+        setPreviewData(parsedRecovery.form);
+        latestFormRef.current = parsedRecovery.form;
+        isDirtyRef.current = true;
+        setIsDirty(true);
+        toast.success("Previous unsaved edits restored ✅");
+      } else {
+        localStorage.removeItem(recoveryStorageKey);
+      }
+    }
+  }
+} catch (recoveryError) {
+  console.error("Edit property recovery restore failed:", recoveryError);
+  try {
+    if (recoveryStorageKey) localStorage.removeItem(recoveryStorageKey);
+  } catch (storageError) {
+    console.error("Could not clear invalid recovery data:", storageError);
+  }
+}
 
 
   // ✅ toggles
@@ -1108,14 +1200,30 @@ setPreviewData(safeForm);
   if (!property.locationData?.locationRef) setUseCustomLocation(true);
   if (!property.categoryData?.categoryRef) setUseCustomCategory(true);
 
-  setLoading(false); // 🔥 IMPORTANT
-}
+      } else {
+        setFetchError(data?.message || "Unable to load this property. Please try again.");
+        toast.error(data?.message || "Unable to load property");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Edit property fetch failed:", err);
+      if (!cancelled) {
+        setFetchError("Unable to load this property. Check your connection and try again.");
+      }
+    } finally {
+      if (!cancelled) setLoading(false);
     }
   };
 
-  if (id) fetchProperty();
+  if (id) {
+    fetchProperty();
+  } else {
+    setFetchError("Property ID is missing.");
+    setLoading(false);
+  }
+
+  return () => {
+    cancelled = true;
+  };
 }, [id]);
 
     useEffect(() => {
@@ -1181,6 +1289,186 @@ useEffect(() => {
   return () => clearTimeout(t);
 }, [form]);
 
+// Keep a current snapshot and compare it with the last database-loaded/saved form.
+// This avoids marking the initial fetch as an edit.
+useEffect(() => {
+  latestFormRef.current = form;
+
+  if (!hasLoadedPropertyRef.current || !lastSavedFormRef.current) {
+    return;
+  }
+
+  const changed =
+    JSON.stringify(form) !== JSON.stringify(lastSavedFormRef.current);
+
+  isDirtyRef.current = changed;
+  setIsDirty(changed);
+}, [form]);
+
+// Save a property-specific emergency copy after a short pause in editing.
+// No backend draft endpoint is called here, preserving the current edit workflow.
+useEffect(() => {
+  if (!id || !recoveryStorageKey || !hasLoadedPropertyRef.current || !isDirty) {
+    return;
+  }
+
+  const timer = setTimeout(() => {
+    try {
+      localStorage.setItem(
+        recoveryStorageKey,
+        JSON.stringify({
+          propertyId: String(id),
+          form: latestFormRef.current,
+          savedAt: Date.now(),
+          baseUpdatedAt: propertyUpdatedAtRef.current || null,
+        })
+      );
+    } catch (storageError) {
+      console.error("Edit property local backup failed:", storageError);
+    }
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [form, id, isDirty, recoveryStorageKey]);
+
+// Keep the latest form in local storage before refresh, tab close, page hide,
+// or browser back/forward navigation. beforeunload also displays the browser warning.
+useEffect(() => {
+  if (!id || !recoveryStorageKey) return;
+
+  const saveEmergencyCopy = () => {
+    if (!isDirtyRef.current || !hasLoadedPropertyRef.current) return;
+
+    try {
+      localStorage.setItem(
+        recoveryStorageKey,
+        JSON.stringify({
+          propertyId: String(id),
+          form: latestFormRef.current,
+          savedAt: Date.now(),
+          baseUpdatedAt: propertyUpdatedAtRef.current || null,
+        })
+      );
+    } catch (storageError) {
+      console.error("Could not save edit recovery copy:", storageError);
+    }
+  };
+
+  const handleBeforeUnload = (event) => {
+    if (!isDirtyRef.current) return;
+    saveEmergencyCopy();
+    event.preventDefault();
+    event.returnValue = "";
+  };
+
+  const handlePageHide = () => saveEmergencyCopy();
+  const handlePopState = () => saveEmergencyCopy();
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  window.addEventListener("pagehide", handlePageHide);
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+    window.removeEventListener("pagehide", handlePageHide);
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [id, recoveryStorageKey]);
+
+// A final synchronous backup on component unmount also covers client-side
+// navigation initiated by code elsewhere in the admin layout.
+useEffect(() => {
+  return () => {
+    if (!isDirtyRef.current || !hasLoadedPropertyRef.current || !recoveryStorageKey) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(
+        recoveryStorageKey,
+        JSON.stringify({
+          propertyId: String(id),
+          form: latestFormRef.current,
+          savedAt: Date.now(),
+          baseUpdatedAt: propertyUpdatedAtRef.current || null,
+        })
+      );
+    } catch (storageError) {
+      console.error("Final edit recovery backup failed:", storageError);
+    }
+  };
+}, [id, recoveryStorageKey]);
+
+// Protect in-app navigation through links (including Next.js links in the admin layout).
+useEffect(() => {
+  const handleInternalLinkClick = (event) => {
+    if (!isDirtyRef.current || isUpdatingRef.current) return;
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const target = event.target;
+    const anchor = target instanceof Element ? target.closest("a[href]") : null;
+
+    if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) {
+      return;
+    }
+
+    let destination;
+    try {
+      destination = new URL(anchor.href, window.location.href);
+    } catch {
+      return;
+    }
+
+    if (destination.origin !== window.location.origin) return;
+    if (
+      destination.pathname === window.location.pathname &&
+      destination.search === window.location.search
+    ) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+
+    setPendingNavigation(`${destination.pathname}${destination.search}${destination.hash}`);
+    setShowUnsavedModal(true);
+  };
+
+  document.addEventListener("click", handleInternalLinkClick, true);
+  return () => {
+    document.removeEventListener("click", handleInternalLinkClick, true);
+  };
+}, []);
+
+const requestLeave = (destination = "/admin/properties") => {
+  if (isUpdatingRef.current) return;
+
+  if (!isDirtyRef.current) {
+    router.push(destination);
+    return;
+  }
+
+  setPendingNavigation(destination);
+  setShowUnsavedModal(true);
+};
+
+const handleDiscardAndLeave = () => {
+  const destination = pendingNavigation || "/admin/properties";
+
+  try {
+    if (recoveryStorageKey) localStorage.removeItem(recoveryStorageKey);
+  } catch (storageError) {
+    console.error("Could not clear discarded recovery copy:", storageError);
+  }
+
+  isDirtyRef.current = false;
+  setIsDirty(false);
+  setShowUnsavedModal(false);
+  setPendingNavigation(null);
+  router.push(destination);
+};
 
 const getNestedValue = (obj, path) => {
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
@@ -1501,10 +1789,11 @@ const deleteCustomMetric = (index) => {
 
 
   // ================= SUBMIT =================
-const handleUpdate = async () => {
-  if (isUpdating) return;
+const handleUpdate = async (redirectTo = null) => {
+  if (isUpdatingRef.current || isUpdating) return false;
 
   try {
+    isUpdatingRef.current = true;
     setIsUpdating(true);
 
     const token = localStorage.getItem("token");
@@ -1516,7 +1805,7 @@ setTimeout(() => {
   window.location.href = "/login";
 }, 1500);
 
-return;
+return false;
     }
 
     
@@ -1712,11 +2001,29 @@ const validConfigurations =
 setErrors({});
 setErrorList([]);
 
+// Mark this exact form snapshot as saved and remove only this property's backup.
+lastSavedFormRef.current = JSON.parse(JSON.stringify(form));
+propertyUpdatedAtRef.current =
+  data?.data?.updatedAt || data?.updatedAt || propertyUpdatedAtRef.current;
+latestFormRef.current = form;
+isDirtyRef.current = false;
+setIsDirty(false);
+try {
+  if (recoveryStorageKey) localStorage.removeItem(recoveryStorageKey);
+} catch (storageError) {
+  console.error("Could not clear saved recovery copy:", storageError);
+}
+
 setIsUpdating(false);
+isUpdatingRef.current = false;
+setShowUnsavedModal(false);
+setPendingNavigation(null);
 
-router.push("/admin/properties");
+if (redirectTo) {
+  router.push(redirectTo);
+}
 
-      return;
+      return true;
     }
 
     // ================= VALIDATION ERRORS =================
@@ -1779,14 +2086,18 @@ router.push("/admin/properties");
       behavior: "smooth",
     });
 
+    return false;
+
   } catch (err) {
   console.error(err);
 
   setIsUpdating(false);
 
   toast.error("Server Error ❌ Please try again");
+  return false;
 } finally {
   setIsUpdating(false);
+  isUpdatingRef.current = false;
 }
 };
 
@@ -2072,6 +2383,24 @@ const formatIndianPrice = (value) => {
 if (loading) {
   return <div className="text-white p-10">Loading property...</div>;
 }
+
+if (fetchError) {
+  return (
+    <div className="min-h-screen bg-[#041a14] flex items-center justify-center px-5">
+      <div className="max-w-lg w-full rounded-3xl border border-red-500/20 bg-[#071b16] p-8 text-center shadow-2xl">
+        <h2 className="text-xl font-bold text-white">Unable to open property</h2>
+        <p className="mt-3 text-sm leading-6 text-white/65">{fetchError}</p>
+        <button
+          type="button"
+          onClick={() => router.push("/admin/properties")}
+          className="mt-6 rounded-xl bg-[#c8a45d] px-5 py-3 font-semibold text-black"
+        >
+          Back to Properties
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
   <div className="app-bg min-h-screen overflow-x-hidden px-4 md:px-6 xl:px-8 py-6">
 
@@ -2090,6 +2419,14 @@ if (loading) {
   {/* LEFT */}
   <div className="flex items-start gap-4">
 
+    <button
+      type="button"
+      onClick={() => requestLeave("/admin/properties")}
+      className="mt-1 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+    >
+      ← Properties
+    </button>
+
     {/* ICON (smaller) */}
     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c8a45d] to-[#f5d488] flex items-center justify-center shadow-[0_10px_30px_rgba(245,212,136,0.25)]">
       <span className="text-2xl">🏢</span>
@@ -2106,6 +2443,27 @@ if (loading) {
 
   {/* RIGHT ACTIONS */}
   <div className="flex flex-wrap items-center gap-3">
+
+    <span className={`rounded-xl border px-3 py-2 text-xs font-semibold ${
+      isDirty
+        ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
+        : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+    }`}>
+      {isDirty ? "Unsaved changes · Recovery enabled" : "All changes saved"}
+    </span>
+
+    <button
+      type="button"
+      onClick={() => handleUpdate()}
+      disabled={!isDirty || isUpdating}
+      className={`rounded-2xl px-5 py-3 font-semibold transition-all ${
+        !isDirty || isUpdating
+          ? "cursor-not-allowed border border-white/10 bg-white/5 text-white/35"
+          : "bg-gradient-to-r from-[#c8a45d] to-[#f5d488] text-black shadow-[0_10px_30px_rgba(245,212,136,0.18)] hover:-translate-y-0.5"
+      }`}
+    >
+      {isUpdating ? "Saving..." : "Save Changes"}
+    </button>
 
     {/* PREVIEW BUTTON */}
     <button
@@ -6841,7 +7199,7 @@ if (loading) {
             </button>
           ) : (
             <button
-  onClick={handleUpdate}
+  onClick={() => handleUpdate("/admin/properties")}
   disabled={isUpdating}
   className={`
     px-7 py-3
@@ -7704,6 +8062,64 @@ if (loading) {
           </button>
 
         </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* ================= UNSAVED CHANGES CONFIRMATION ================= */}
+{showUnsavedModal && (
+  <div
+    className="fixed inset-0 z-[10050] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="unsaved-changes-title"
+  >
+    <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#071b16] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.55)] sm:p-8">
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-amber-300">
+          <span className="text-xl">⚠</span>
+        </div>
+        <div>
+          <h2 id="unsaved-changes-title" className="text-xl font-bold text-white">
+            You have unsaved changes
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-white/65">
+            Your latest edits are being kept in this browser. Save them before leaving, discard them, or stay on this page.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-7 grid gap-3 sm:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => {
+            setShowUnsavedModal(false);
+            setPendingNavigation(null);
+          }}
+          disabled={isUpdating}
+          className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+        >
+          Stay Here
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDiscardAndLeave}
+          disabled={isUpdating}
+          className="rounded-xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
+        >
+          Leave Without Saving
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleUpdate(pendingNavigation || "/admin/properties")}
+          disabled={isUpdating}
+          className="rounded-xl bg-gradient-to-r from-[#c8a45d] to-[#f5d488] px-4 py-3 text-sm font-bold text-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isUpdating ? "Saving..." : "Save & Leave"}
+        </button>
       </div>
     </div>
   </div>
