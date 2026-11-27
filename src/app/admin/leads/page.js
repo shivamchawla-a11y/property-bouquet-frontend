@@ -23,7 +23,6 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
-  UserPlus,
 } from "lucide-react";
 
 const STATUSES = ["New", "Interested", "Not Interested", "Visit", "Closed"];
@@ -32,7 +31,6 @@ const safeText = (value) => String(value ?? "").trim();
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState([]);
-  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState("");
@@ -45,13 +43,10 @@ export default function LeadsPage() {
   const [propertyFilter, setPropertyFilter] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
-  const [agentFilter, setAgentFilter] = useState("All");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const [assignModal, setAssignModal] = useState(null);
-  const [selectedAgent, setSelectedAgent] = useState("");
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [noteValue, setNoteValue] = useState("");
   const [roiModal, setRoiModal] = useState(null);
@@ -67,7 +62,6 @@ export default function LeadsPage() {
 
   useEffect(() => {
     fetchLeads();
-    fetchAgents();
     // Initial data load only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -97,16 +91,6 @@ export default function LeadsPage() {
     }
   };
 
-  const fetchAgents = async () => {
-    try {
-      const res = await fetch(`${API}/auth/users`, { headers: getHeaders() });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Unable to load agents.");
-      setAgents((data.data || []).filter((user) => user.role === "Agent"));
-    } catch (err) {
-      console.error("FETCH AGENTS ERROR:", err);
-    }
-  };
 
   const updateLead = async (id, payload) => {
     const leadId = String(id);
@@ -146,6 +130,50 @@ export default function LeadsPage() {
     }
   };
 
+  const handleLeadratAction = async (lead, action) => {
+    const leadId = String(lead._id);
+    const isPush = action === "push-to-leadrat";
+    const confirmation = isPush
+      ? `Send ${lead.name || "this lead"} to Leadrat? This will submit the enquiry to your CRM.`
+      : `Reject ${lead.name || "this lead"}? It will remain on the website and will not be sent to Leadrat.`;
+
+    if (!window.confirm(confirmation)) return;
+
+    setUpdatingLeadIds((current) =>
+      current.includes(leadId) ? current : [...current, leadId]
+    );
+
+    try {
+      const res = await fetch(`${API}/leads/${leadId}/${action}`, {
+        method: "POST",
+        headers: getHeaders(),
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.message || "Unable to update Leadrat status.");
+      }
+
+      await fetchLeads({ silent: true });
+      setNotice({
+        type: "success",
+        message: data?.message || (isPush ? "Lead sent to Leadrat." : "Lead rejected."),
+      });
+    } catch (err) {
+      console.error("LEADRAT ACTION ERROR:", err);
+      await fetchLeads({ silent: true });
+      setNotice({
+        type: "error",
+        message: err?.message || "Could not complete the Leadrat action.",
+      });
+    } finally {
+      setUpdatingLeadIds((current) => current.filter((item) => item !== leadId));
+    }
+  };
+
+  const getLeadratStatus = (lead) => lead.leadratSyncStatus || "Pending Review";
+
   const getLatestNote = (notes) => {
     if (Array.isArray(notes) && notes.length > 0) {
       return notes[notes.length - 1]?.text || "";
@@ -181,7 +209,6 @@ export default function LeadsPage() {
   const interestedCount = leads.filter((lead) => lead.status === "Interested").length;
   const visitCount = leads.filter((lead) => lead.status === "Visit").length;
   const closedCount = leads.filter((lead) => lead.status === "Closed").length;
-  const unassignedCount = leads.filter((lead) => !lead.assignedTo).length;
 
   const properties = useMemo(
     () => [...new Set(leads.map((lead) => safeText(lead.property)).filter(Boolean))].sort(),
@@ -203,32 +230,29 @@ export default function LeadsPage() {
       .filter((lead) => {
         const searchMatch =
           !normalizedSearch ||
-          [lead.name, lead.phone, lead.email, lead.property, lead.source, lead.leadType, lead.assignedTo?.name]
+          [lead.name, lead.phone, lead.email, lead.property, lead.source, lead.leadType, lead.leadratSyncStatus]
             .some((value) => safeText(value).toLowerCase().includes(normalizedSearch));
 
         const propertyMatch = propertyFilter === "All" || lead.property === propertyFilter;
         const statusMatch = statusFilter === "All" || (lead.status || "New") === statusFilter;
         const typeMatch = leadTypeFilter === "All" || (lead.leadType || "General") === leadTypeFilter;
         const sourceMatch = sourceFilter === "All" || (lead.source || "Website") === sourceFilter;
-        const assignedId = lead.assignedTo?._id || lead.assignedTo;
-        const agentMatch =
-          agentFilter === "All" ||
-          (agentFilter === "Unassigned" && !lead.assignedTo) ||
-          String(assignedId || "") === agentFilter;
-
         const createdDate = lead.createdAt ? new Date(lead.createdAt) : null;
         const validCreatedDate = createdDate && !Number.isNaN(createdDate.getTime());
         const startMatch = !startDate || (validCreatedDate && createdDate >= new Date(`${startDate}T00:00:00`));
         const endMatch = !endDate || (validCreatedDate && createdDate <= new Date(`${endDate}T23:59:59.999`));
-        const assignmentMatch =
+        const crmStatus = getLeadratStatus(lead);
+        const crmTabMatch =
           tab === "All" ||
-          (tab === "Assigned" && Boolean(lead.assignedTo)) ||
-          (tab === "Unassigned" && !lead.assignedTo);
+          (tab === "Pending Review" && crmStatus === "Pending Review") ||
+          (tab === "Sent" && crmStatus === "Sent") ||
+          (tab === "Rejected" && crmStatus === "Rejected") ||
+          (tab === "Failed" && ["Failed", "Needs Verification"].includes(crmStatus));
 
-        return searchMatch && propertyMatch && statusMatch && typeMatch && sourceMatch && agentMatch && startMatch && endMatch && assignmentMatch;
+        return searchMatch && propertyMatch && statusMatch && typeMatch && sourceMatch && startMatch && endMatch && crmTabMatch;
       })
       .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-  }, [leads, search, propertyFilter, statusFilter, leadTypeFilter, sourceFilter, agentFilter, startDate, endDate, tab]);
+  }, [leads, search, propertyFilter, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate, tab]);
 
   const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -236,13 +260,12 @@ export default function LeadsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, propertyFilter, statusFilter, leadTypeFilter, sourceFilter, agentFilter, startDate, endDate, tab]);
+  }, [search, propertyFilter, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate, tab]);
 
   const activeAdvancedFilterCount = [
     propertyFilter !== "All",
     leadTypeFilter !== "All",
     sourceFilter !== "All",
-    agentFilter !== "All",
     Boolean(startDate),
     Boolean(endDate),
   ].filter(Boolean).length;
@@ -253,7 +276,6 @@ export default function LeadsPage() {
     setPropertyFilter("All");
     setLeadTypeFilter("All");
     setSourceFilter("All");
-    setAgentFilter("All");
     setStartDate("");
     setEndDate("");
     setTab("All");
@@ -293,7 +315,9 @@ export default function LeadsPage() {
         LeadType: lead.leadType || "General",
         Source: lead.source || "Website",
         Status: lead.status || "New",
-        Agent: lead.assignedTo?.name || "Unassigned",
+        LeadratStatus: getLeadratStatus(lead),
+        LeadratSyncedAt: lead.leadratSyncedAt ? new Date(lead.leadratSyncedAt).toLocaleString("en-IN") : "",
+        LeadratError: lead.leadratLastError || "",
         PropertyType: roi.propertyType || "",
         Location: roi.location || "",
         PropertyValue: roi.propertyValue || "",
@@ -473,7 +497,7 @@ export default function LeadsPage() {
 
             {/* ADVANCED FILTERS: COLLAPSED BY DEFAULT */}
             {showAdvancedFilters && (
-              <div className="mt-3 grid grid-cols-1 gap-2.5 rounded-xl border border-[#e8eeea] bg-[#fafcfb] p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              <div className="mt-3 grid grid-cols-1 gap-2.5 rounded-xl border border-[#e8eeea] bg-[#fafcfb] p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 <select value={propertyFilter} onChange={(event) => setPropertyFilter(event.target.value)} className={inputClass} aria-label="Filter by property">
                   <option value="All">All properties</option>
                   {properties.map((property) => <option key={property} value={property}>{property}</option>)}
@@ -489,17 +513,11 @@ export default function LeadsPage() {
                   {sources.map((source) => <option key={source} value={source}>{source}</option>)}
                 </select>
 
-                <select value={agentFilter} onChange={(event) => setAgentFilter(event.target.value)} className={inputClass} aria-label="Filter by agent">
-                  <option value="All">All agents</option>
-                  <option value="Unassigned">Unassigned</option>
-                  {agents.map((agent) => <option key={agent._id} value={agent._id}>{agent.name}</option>)}
-                </select>
-
                 <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className={inputClass} aria-label="From date" />
                 <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className={inputClass} aria-label="To date" />
 
-                <div className="flex items-center justify-between gap-2 sm:col-span-2 lg:col-span-3 xl:col-span-6">
-                  <p className="text-[11px] text-[#849188]">Narrow the list by property, enquiry type, source, agent or received date.</p>
+                <div className="flex items-center justify-between gap-2 sm:col-span-2 lg:col-span-3 xl:col-span-5">
+                  <p className="text-[11px] text-[#849188]">Narrow the list by property, enquiry type, source or received date.</p>
                   <button type="button" onClick={clearFilters} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#557064] transition hover:bg-[#edf3ef]">
                     <RotateCcw size={13} /> Clear filters
                   </button>
@@ -507,9 +525,9 @@ export default function LeadsPage() {
               </div>
             )}
 
-            {/* ASSIGNMENT QUICK TABS */}
+            {/* LEADRAT REVIEW FILTERS */}
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              {["All", "Assigned", "Unassigned"].map((value) => (
+              {["All", "Pending Review", "Sent", "Rejected", "Failed"].map((value) => (
                 <button
                   key={value}
                   type="button"
@@ -520,7 +538,7 @@ export default function LeadsPage() {
                       : "text-[#718078] hover:bg-[#f4f7f5] hover:text-[#315447]"
                   }`}
                 >
-                  {value}{value === "Unassigned" ? ` (${unassignedCount})` : ""}
+                  {value}
                 </button>
               ))}
               <span className="ml-auto text-[11px] text-[#9aa69f]">Newest enquiries first</span>
@@ -551,7 +569,7 @@ export default function LeadsPage() {
 
           {/* LEADS TABLE */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1160px] table-auto text-left">
+            <table className="w-full min-w-[1240px] table-auto text-left">
               <thead className="sticky top-0 z-10 border-b border-[#e8eeea] bg-[#f7faf8]">
                 <tr className="text-[11px] font-bold uppercase tracking-[0.07em] text-[#718078]">
                   <th className="w-[18%] px-4 py-3">Lead</th>
@@ -559,7 +577,7 @@ export default function LeadsPage() {
                   <th className="w-[11%] px-4 py-3">Enquiry type</th>
                   <th className="w-[11%] px-4 py-3">Status</th>
                   <th className="w-[12%] px-4 py-3">Received</th>
-                  <th className="w-[12%] px-4 py-3">Assigned to</th>
+                  <th className="w-[16%] px-4 py-3">Leadrat / Approval</th>
                   <th className="w-[8%] px-4 py-3">Contact</th>
                   <th className="w-[12%] px-4 py-3">Last note</th>
                 </tr>
@@ -621,38 +639,73 @@ export default function LeadsPage() {
                         </td>
 
                         <td className="px-4 py-3.5">
-                          {lead.assignedTo && typeof lead.assignedTo === "object" ? (
-                            <div className="max-w-[140px]">
-                              <p className="truncate text-xs font-semibold text-[#3a5146]" title={lead.assignedTo.name}>{lead.assignedTo.name || "Assigned"}</p>
-                              <div className="mt-1.5 flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setAssignModal(lead);
-                                    setSelectedAgent(lead.assignedTo?._id || "");
-                                  }}
-                                  className="text-[10px] font-semibold text-[#0b6b48] hover:underline"
-                                >Change</button>
-                                <button
-                                  type="button"
-                                  disabled={busy}
-                                  onClick={() => updateLead(lead._id, { assignedTo: null })}
-                                  className="text-[10px] font-semibold text-rose-600 hover:underline disabled:opacity-50"
-                                >Unassign</button>
+                          {(() => {
+                            const crmStatus = getLeadratStatus(lead);
+                            const crmTone = {
+                              "Pending Review": "border-amber-200 bg-amber-50 text-amber-700",
+                              Sending: "border-blue-200 bg-blue-50 text-blue-700",
+                              Sent: "border-emerald-200 bg-emerald-50 text-emerald-700",
+                              Rejected: "border-rose-200 bg-rose-50 text-rose-700",
+                              Failed: "border-rose-200 bg-rose-50 text-rose-700",
+                              "Needs Verification": "border-orange-200 bg-orange-50 text-orange-700",
+                            };
+
+                            return (
+                              <div className="min-w-[175px] max-w-[220px] space-y-2">
+                                <span className={`inline-flex rounded-lg border px-2 py-1 text-[10px] font-bold ${crmTone[crmStatus] || crmTone["Pending Review"]}`}>
+                                  {crmStatus}
+                                </span>
+
+                                {crmStatus === "Pending Review" && (
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() => handleLeadratAction(lead, "push-to-leadrat")}
+                                      className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0b5d3b] px-2.5 text-[11px] font-semibold text-white transition hover:bg-[#084a30] disabled:cursor-wait disabled:opacity-50"
+                                    >
+                                      <CheckCircle2 size={13} /> Push to Leadrat
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() => handleLeadratAction(lead, "reject-from-leadrat")}
+                                      className="text-[10px] font-semibold text-rose-600 hover:underline disabled:opacity-50"
+                                    >
+                                      Reject
+                                    </button>
+                                  </div>
+                                )}
+
+                                {crmStatus === "Failed" && (
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() => handleLeadratAction(lead, "push-to-leadrat")}
+                                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 text-[11px] font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                                  >
+                                    <RefreshCw size={12} /> Retry push
+                                  </button>
+                                )}
+
+                                {crmStatus === "Sending" && (
+                                  <p className="text-[10px] text-blue-600">Sending to Leadrat…</p>
+                                )}
+
+                                {crmStatus === "Sent" && lead.leadratSyncedAt && (
+                                  <p className="text-[10px] text-[#829087]">Sent {formatReceived(lead.leadratSyncedAt).relative}</p>
+                                )}
+
+                                {(crmStatus === "Failed" || crmStatus === "Needs Verification") && lead.leadratLastError && (
+                                  <p className="line-clamp-3 text-[10px] leading-4 text-rose-600" title={lead.leadratLastError}>{lead.leadratLastError}</p>
+                                )}
+
+                                {crmStatus === "Needs Verification" && (
+                                  <p className="text-[10px] font-semibold text-orange-700">Check Leadrat before retrying.</p>
+                                )}
                               </div>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAssignModal(lead);
-                                setSelectedAgent("");
-                              }}
-                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#cfe0d5] bg-[#f3f8f4] px-2.5 text-xs font-semibold text-[#17613f] transition hover:bg-[#e8f2eb]"
-                            >
-                              <UserPlus size={13} /> Assign
-                            </button>
-                          )}
+                            );
+                          })()}
                         </td>
 
                         <td className="px-4 py-3.5">
@@ -770,51 +823,6 @@ export default function LeadsPage() {
         </section>
       </div>
 
-      {/* ASSIGN AGENT MODAL */}
-      {assignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#10251c]/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-[#e1e9e4] bg-white shadow-2xl">
-            <div className="flex items-start justify-between border-b border-[#edf1ee] px-5 py-4">
-              <div>
-                <h2 className="text-lg font-bold text-[#183b2d]">Assign agent</h2>
-                <p className="mt-1 text-xs text-[#819087]">Choose who will handle {assignModal.name || "this enquiry"}.</p>
-              </div>
-              <button type="button" onClick={() => { setAssignModal(null); setSelectedAgent(""); }} aria-label="Close" className="rounded-lg p-1.5 text-[#829188] hover:bg-[#f1f5f2]"><X size={18} /></button>
-            </div>
-            <div className="max-h-[55vh] space-y-2 overflow-y-auto p-4">
-              {agents.length > 0 ? agents.map((agent) => (
-                <button
-                  key={agent._id}
-                  type="button"
-                  onClick={() => setSelectedAgent(agent._id)}
-                  className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${selectedAgent === agent._id ? "border-[#8fb49e] bg-[#f0f7f2]" : "border-[#e5ece7] hover:bg-[#fafcfb]"}`}
-                >
-                  <span>
-                    <span className="block text-sm font-semibold text-[#294439]">{agent.name}</span>
-                    {agent.email && <span className="mt-0.5 block text-xs text-[#8a9890]">{agent.email}</span>}
-                  </span>
-                  {selectedAgent === agent._id && <CheckCircle2 size={17} className="text-[#0b6b48]" />}
-                </button>
-              )) : <p className="py-8 text-center text-sm text-[#87938c]">No agents available.</p>}
-            </div>
-            <div className="flex gap-2 border-t border-[#edf1ee] bg-[#fbfcfb] p-4">
-              <button type="button" onClick={() => { setAssignModal(null); setSelectedAgent(""); }} className="h-10 flex-1 rounded-xl border border-[#dce5e0] bg-white text-sm font-semibold text-[#53675d]">Cancel</button>
-              <button
-                type="button"
-                disabled={!selectedAgent || updatingLeadIds.includes(String(assignModal._id))}
-                onClick={async () => {
-                  const saved = await updateLead(assignModal._id, { assignedTo: selectedAgent });
-                  if (saved) {
-                    setAssignModal(null);
-                    setSelectedAgent("");
-                  }
-                }}
-                className="h-10 flex-1 rounded-xl bg-[#0b5d3b] text-sm font-semibold text-white hover:bg-[#084a30] disabled:cursor-not-allowed disabled:opacity-50"
-              >{updatingLeadIds.includes(String(assignModal._id)) ? "Saving…" : "Save assignment"}</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ROI DETAILS MODAL */}
       {roiModal && <ROIModal lead={roiModal} onClose={() => setRoiModal(null)} formatCurrency={formatCurrency} />}

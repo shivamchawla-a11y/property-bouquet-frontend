@@ -21,6 +21,9 @@ import {
   ChevronRight,
   Sparkles,
   Eye,
+  Phone,
+  MessageCircle,
+  Mail,
 } from "lucide-react";
 
 import {
@@ -47,6 +50,184 @@ const isLiveProperty = (property) => {
     property?.isDeleted === false
   );
 };
+
+const getLeadWhatsAppNumber = (phone) => {
+  let digits = String(phone ?? "").replace(/\D/g, "");
+  if (digits.startsWith("0")) digits = digits.replace(/^0+/, "");
+  if (digits.length === 10) digits = `91${digits}`;
+  return digits;
+};
+
+const getLeadTimeAgo = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "Time unavailable";
+
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60000));
+  if (elapsedMinutes < 1) return "Just now";
+  if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `${elapsedHours} hr${elapsedHours === 1 ? "" : "s"} ago`;
+
+  return `${Math.floor(elapsedHours / 24)} days ago`;
+};
+
+function RecentIncomingLeadsSection({ leads = [] }) {
+  if (!Array.isArray(leads) || leads.length === 0) return null;
+
+  const visibleLeads = leads.slice(0, 5);
+
+  const getStatusStyle = (status) => {
+    if (status === "New") return "border-blue-200 bg-blue-50 text-blue-700";
+    if (status === "Interested") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    if (status === "Not Interested") return "border-rose-200 bg-rose-50 text-rose-700";
+    if (status === "Visit") return "border-amber-200 bg-amber-50 text-amber-700";
+    if (status === "Closed") return "border-violet-200 bg-violet-50 text-violet-700";
+    return "border-gray-200 bg-gray-50 text-gray-600";
+  };
+
+  return (
+    <section className="mb-7 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-[0_5px_22px_rgba(19,55,39,0.06)]">
+      <div className="flex flex-col gap-3 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-[#fffaf0] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0f3b2e] text-white shadow-sm">
+            <MessageSquare size={18} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-extrabold text-[#0f3b2e]">
+                New Incoming Leads
+              </h2>
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                Last 24 hours
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              The 5 newest enquiries from the last 24 hours. This list refreshes every minute.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 sm:justify-end">
+          <span className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-extrabold text-[#0f3b2e]">
+            {leads.length} {leads.length === 1 ? "new lead" : "new leads"}
+          </span>
+          <Link
+            href="/admin/leads"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#0f3b2e] transition hover:text-emerald-700 hover:underline"
+          >
+            View all leads <ArrowUpRight size={14} />
+          </Link>
+        </div>
+      </div>
+
+      <div className="divide-y divide-gray-100">
+        {visibleLeads.map((lead) => {
+          const phone = String(lead?.phone ?? "").trim();
+          const whatsappNumber = getLeadWhatsAppNumber(phone);
+          const assignedTo = lead?.assignedTo;
+          const assignedAgentName =
+            assignedTo && typeof assignedTo === "object"
+              ? assignedTo.name || assignedTo.fullName || "Assigned"
+              : assignedTo
+                ? "Assigned"
+                : "Unassigned";
+          const status = lead?.status || "New";
+          const receivedAt = lead?.createdAt
+            ? new Date(lead.createdAt).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Date unavailable";
+
+          return (
+            <div
+              key={lead?._id || `${lead?.phone || "lead"}-${lead?.createdAt || "recent"}`}
+              className="flex flex-col gap-3 px-5 py-4 transition hover:bg-[#fbfdfb] xl:flex-row xl:items-center xl:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-extrabold text-[#193d2e]">
+                    {lead?.name || lead?.fullName || "Unnamed lead"}
+                  </p>
+                  <span className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold ${getStatusStyle(status)}`}>
+                    {status}
+                  </span>
+                </div>
+
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-gray-700">
+                    <Phone size={12} />
+                    {phone || "No phone provided"}
+                  </span>
+                  <span className="hidden text-gray-300 sm:inline">•</span>
+                  <span className="max-w-full truncate">
+                    {lead?.property || "General Enquiry"}
+                  </span>
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400">
+                  <span>{lead?.leadType || "General"}</span>
+                  <span>Source: {lead?.source || "Website"}</span>
+                  <span>Agent: {assignedAgentName}</span>
+                  <span title={receivedAt}>
+                    Received {getLeadTimeAgo(lead?.createdAt)} · {receivedAt}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                {phone ? (
+                  <a
+                    href={`tel:${phone}`}
+                    title="Call lead"
+                    aria-label={`Call ${lead?.name || "lead"}`}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100"
+                  >
+                    <Phone size={14} /> Call
+                  </a>
+                ) : null}
+
+                {whatsappNumber ? (
+                  <a
+                    href={`https://wa.me/${whatsappNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="WhatsApp lead"
+                    aria-label={`WhatsApp ${lead?.name || "lead"}`}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 text-xs font-bold text-green-700 transition hover:bg-green-100"
+                  >
+                    <MessageCircle size={14} /> WhatsApp
+                  </a>
+                ) : null}
+
+                {lead?.email ? (
+                  <a
+                    href={`mailto:${lead.email}`}
+                    title="Email lead"
+                    aria-label={`Email ${lead?.name || "lead"}`}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+                  >
+                    <Mail size={14} />
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {leads.length > visibleLeads.length && (
+        <div className="border-t border-gray-100 bg-gray-50/70 px-5 py-2.5 text-center text-[11px] font-medium text-gray-500">
+          Showing the 5 newest of {leads.length} leads received in the last 24 hours.
+        </div>
+      )}
+    </section>
+  );
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -77,6 +258,7 @@ export default function AdminDashboard() {
   const [allPropertiesData, setAllPropertiesData] = useState([]);
   const [allKnowledgeData, setAllKnowledgeData] = useState([]);
   const [allNewsData, setAllNewsData] = useState([]);
+  const [allLeadsData, setAllLeadsData] = useState([]);
 
   // ============================================================
   // STATS
@@ -271,11 +453,16 @@ const publishedProperties =
             const leadsData =
               await leadsRes.json();
 
-            allLeads =
-              leadsData?.data || [];
+            allLeads = Array.isArray(leadsData?.data)
+              ? leadsData.data
+              : [];
           }
 
-
+          // Keep the lead list in React state so the dashboard can render
+          // a dedicated latest-incoming-leads panel.
+          setAllLeadsData(allLeads);
+        } else {
+          setAllLeadsData([]);
         }
 
         // ======================================================
@@ -693,6 +880,70 @@ const publishedProperties =
 
   const isSuperAdmin =
     user?.role === "SuperAdmin";
+
+  // Only enquiries received in the last 24 hours are promoted above
+  // Agent Performance. Older leads remain available on the Leads page
+  // and in the regular Recent Activity feed.
+  const recentIncomingLeads = useMemo(() => {
+    const now = Date.now();
+    const recentWindowStart = now - 24 * 60 * 60 * 1000;
+
+    return allLeadsData
+      .filter((lead) => {
+        if (!lead?.createdAt) return false;
+
+        const createdAt = new Date(lead.createdAt).getTime();
+        return (
+          Number.isFinite(createdAt) &&
+          createdAt >= recentWindowStart &&
+          createdAt <= now
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      );
+  }, [allLeadsData]);
+
+  // Refresh only the SuperAdmin lead feed every minute so enquiries
+  // received while the dashboard is open can also appear at the top.
+  useEffect(() => {
+    if (user?.role !== "SuperAdmin") return;
+
+    let isActive = true;
+
+    const refreshIncomingLeads = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("/api/leads", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) return;
+
+        const result = await response.json();
+        if (isActive) {
+          setAllLeadsData(Array.isArray(result?.data) ? result.data : []);
+        }
+      } catch (error) {
+        console.error("Dashboard incoming leads refresh error:", error);
+      }
+    };
+
+    const intervalId = window.setInterval(refreshIncomingLeads, 60_000);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, [user?.role]);
 
   // ============================================================
   // DATE HELPERS
@@ -2281,26 +2532,36 @@ const AgentContentPerformanceSection = ({
           AGENT ONLY
       ====================================================== */}
 
-      {!isSuperAdmin && (
+      {!isSuperAdmin && currentUserPropertyStats.total > 0 && (
         <PropertyActivitySection />
       )}
 
-      {!isSuperAdmin && (
-        <>
-          <ContentActivitySection
-            title="My Knowledge Centre Activity"
-            description="Track your published Knowledge Centre articles across the same reporting periods as property activity."
-            stats={currentUserKnowledgeStats}
-            icon={Layers3}
-          />
+      {!isSuperAdmin && currentUserKnowledgeStats.total > 0 && (
+        <ContentActivitySection
+          title="My Knowledge Centre Activity"
+          description="Track your published Knowledge Centre articles across the same reporting periods as property activity."
+          stats={currentUserKnowledgeStats}
+          icon={Layers3}
+        />
+      )}
 
-          <ContentActivitySection
-            title="My News Activity"
-            description="Track your published News articles across the same reporting periods as property activity."
-            stats={currentUserNewsStats}
-            icon={Eye}
-          />
-        </>
+      {!isSuperAdmin && currentUserNewsStats.total > 0 && (
+        <ContentActivitySection
+          title="My News Activity"
+          description="Track your published News articles across the same reporting periods as property activity."
+          stats={currentUserNewsStats}
+          icon={Eye}
+        />
+      )}
+
+      {/* ======================================================
+          SUPER ADMIN: PRIORITY INCOMING LEADS
+          SHOW ONLY LEADS RECEIVED IN THE LAST 24 HOURS
+          THIS SITS ABOVE AGENT PERFORMANCE
+      ====================================================== */}
+
+      {isSuperAdmin && recentIncomingLeads.length > 0 && (
+        <RecentIncomingLeadsSection leads={recentIncomingLeads} />
       )}
 
       {/* ======================================================
@@ -2663,29 +2924,28 @@ const AgentContentPerformanceSection = ({
           DIRECTLY BELOW AGENT PERFORMANCE
       ====================================================== */}
 
-      {isSuperAdmin && (
+      {isSuperAdmin && currentUserPropertyStats.total > 0 && (
         <PropertyActivitySection
           superAdmin
         />
       )}
 
-      {isSuperAdmin && (
-        <>
-          <ContentActivitySection
-            title="My Knowledge Centre Activity"
-            description="Track your own published Knowledge Centre articles across the same reporting periods as property activity."
-            stats={currentUserKnowledgeStats}
-            icon={Layers3}
-          />
+      {isSuperAdmin && currentUserKnowledgeStats.total > 0 && (
+        <ContentActivitySection
+          title="My Knowledge Centre Activity"
+          description="Track your own published Knowledge Centre articles across the same reporting periods as property activity."
+          stats={currentUserKnowledgeStats}
+          icon={Layers3}
+        />
+      )}
 
-          <ContentActivitySection
-            title="My News Activity"
-            description="Track your own published News articles across the same reporting periods as property activity."
-            stats={currentUserNewsStats}
-            icon={Eye}
-          />
-
-        </>
+      {isSuperAdmin && currentUserNewsStats.total > 0 && (
+        <ContentActivitySection
+          title="My News Activity"
+          description="Track your own published News articles across the same reporting periods as property activity."
+          stats={currentUserNewsStats}
+          icon={Eye}
+        />
       )}
 
       {/* ======================================================
