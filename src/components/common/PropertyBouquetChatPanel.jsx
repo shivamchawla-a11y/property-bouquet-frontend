@@ -59,6 +59,76 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+const CHAT_SESSION_STORAGE_KEY = "pb_assistant_visitor_id_v1";
+
+function createVisitorUuid() {
+  if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
+function getOrCreateChatSessionId() {
+  if (typeof window === "undefined") return "";
+
+  try {
+    const existing = window.localStorage.getItem(CHAT_SESSION_STORAGE_KEY);
+    if (existing && /^[a-f0-9-]{36}$/i.test(existing)) return existing;
+
+    const created = createVisitorUuid();
+    window.localStorage.setItem(CHAT_SESSION_STORAGE_KEY, created);
+    return created;
+  } catch {
+    // Storage-blocked browsers still receive a valid ID; persistence then lasts
+    // only for the life of this mounted chat panel.
+    return createVisitorUuid();
+  }
+}
+
+function extractContactDetails(history) {
+  const userMessages = (history || []).filter((item) => item?.role === "user");
+  let phone = "";
+  let name = "";
+
+  for (const item of [...userMessages].reverse()) {
+    const value = String(item.text || item.content || "");
+    const phoneMatch = value.match(/(?:\+?91[\s().-]*)?([6-9](?:[\s().-]*\d){9})(?!\d)/);
+    if (!phone && phoneMatch) phone = phoneMatch[1].replace(/\D/g, "");
+
+    if (!name) {
+      const nameMatch = value.match(/(?:my name is|i am|i'm|this is|name\s*[:=-]|mera naam(?: hai)?|mera name(?: hai)?)\s+([\p{L}\p{M}][\p{L}\p{M} .'-]{1,49})/iu);
+      let candidate = nameMatch?.[1] || "";
+
+      // Also accept a simple "Rahul 9876543210" reply after the assistant
+      // has asked for contact details, while avoiding phone/call words.
+      if (!candidate && phoneMatch) {
+        candidate = value.slice(0, phoneMatch.index)
+          .replace(/^(?:hi|hello)\s+/i, "")
+          .replace(/^[,;:\s-]+|[,;:\s-]+$/g, "");
+      }
+
+      candidate = candidate
+        .split(/\b(?:and|aur|my|i|phone|number|mobile|no|call|contact)\b/i)[0]
+        .trim()
+        .replace(/\s+(?:hai|hoon|hun|is)$/iu, "")
+        .replace(/^[,;:\s-]+|[.,;:\s-]+$/g, "");
+
+      const nonNameOpening = /^(?:interested|looking|searching|planning|considering|from|based|here|happy|unable|currently|seeking|thinking|going|ready|exploring|visiting|new|a|an|the)\b/i;
+      if (nonNameOpening.test(candidate)) candidate = "";
+
+      if (candidate.length >= 2 && candidate.length <= 50 && /^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u.test(candidate)) {
+        name = candidate;
+      }
+    }
+  }
+
+  return { name, phone };
+}
+
 function AssistantMark({ size = 24 }) {
   return (
     <svg
@@ -373,6 +443,7 @@ function LeadCaptureCard({
   submitted,
   error,
   onDismiss,
+  required = false,
 }) {
   return (
     <motion.div
@@ -388,7 +459,7 @@ function LeadCaptureCard({
           <p className="text-[11px] font-bold text-[#173B2B]">Arrange an expert call</p>
           <p className="mt-0.5 text-[9px] leading-relaxed text-[#7A8178]">A Property Bouquet advisor can contact you.</p>
         </div>
-        {!submitted && (
+        {!submitted && !required && (
           <button type="button" onClick={onDismiss} className="ml-auto rounded-full px-2 py-1 text-[9px] font-semibold text-[#8B9088] transition hover:bg-[#F0EEE8] hover:text-[#36483B]">
             Maybe later
           </button>
@@ -457,6 +528,44 @@ function LeadCaptureCard({
       )}
     </motion.div>
   );
+}
+
+async function postAssistantLead(details) {
+  const cleanName = String(details?.name || "").trim();
+  const digits = String(details?.phone || "").replace(/\D/g, "");
+  if (!cleanName) throw new Error("Please enter your name.");
+  if (!/^[6-9]\d{9}$/.test(digits)) {
+    throw new Error("Please enter a valid 10-digit Indian mobile number.");
+  }
+
+  const payload = {
+    name: cleanName,
+    phone: `+91${digits}`,
+    email: "",
+    property: "Property Bouquet Assistant - Expert Call",
+    source: "Website - Floating Contact Widget",
+    leadType: "Private Consultation",
+    pageUrl: window.location.href,
+    pagePath: window.location.pathname,
+    pageTitle: document.title || "Property Bouquet",
+  };
+
+  const response = await fetch(LEAD_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data?.success !== true) {
+    throw new Error(data?.message || data?.error || `Lead submission failed (${response.status}). Please try again.`);
+  }
+  return { data, cleanName, digits };
+}
+
+function leadReceiptMessage(data, cleanName, digits) {
+  return data?.duplicate
+    ? `Thank you, ${cleanName}. We have already received a recent enquiry from this number. The Property Bouquet team will follow up.`
+    : `Thank you, ${cleanName}. Your expert-call request has been received. The Property Bouquet team will contact you on +91 ******${digits.slice(-4)}.`;
 }
 
 async function readSseStream(response, onDelta) {
@@ -538,6 +647,8 @@ export default function PropertyBouquetChatPanel({ onClose }) {
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [leadError, setLeadError] = useState("");
+  const [chatSessionId, setChatSessionId] = useState("");
+  const [chatLimitReached, setChatLimitReached] = useState(false);
 
   const scrollAreaRef = useRef(null);
   const inputRef = useRef(null);
@@ -550,6 +661,7 @@ export default function PropertyBouquetChatPanel({ onClose }) {
   }, [messages, isSending, error, leadFormOpen, leadSubmitted, leadError]);
 
   useEffect(() => {
+    setChatSessionId(getOrCreateChatSessionId());
     inputRef.current?.focus();
     return () => {
       activeRequestIdRef.current = null;
@@ -561,11 +673,11 @@ export default function PropertyBouquetChatPanel({ onClose }) {
     abortControllerRef.current?.abort();
   }, []);
 
-  const openLeadCapture = useCallback((history) => {
+  const openLeadCapture = useCallback((history, options = {}) => {
     setAwaitingCallConfirmation(false);
     setLeadFormOpen(true);
-    setLeadName("");
-    setLeadPhone("");
+    setLeadName(options.name || "");
+    setLeadPhone(options.phone || "");
     setLeadSubmitted(false);
     setLeadError("");
     setError("");
@@ -574,12 +686,34 @@ export default function PropertyBouquetChatPanel({ onClose }) {
       {
         id: makeId(),
         role: "assistant",
-        text: "Certainly. I can arrange a call with our property advisory team. Please share your name and mobile number below, and our team will get in touch.",
+        text: options.message || "Certainly. I can arrange a call with our property advisory team. Please share your name and mobile number below, and our team will get in touch.",
       },
     ]);
   }, []);
 
-  const startAssistantRequest = useCallback(async (history, assistantMessageId) => {
+  const saveLeadFromChat = useCallback(async (contact) => {
+    if (leadSubmitting) return;
+    setLeadSubmitting(true);
+    setLeadError("");
+    try {
+      const result = await postAssistantLead(contact);
+      setLeadSubmitted(true);
+      setMessages((current) => [
+        ...current,
+        {
+          id: makeId(),
+          role: "assistant",
+          text: leadReceiptMessage(result.data, result.cleanName, result.digits),
+        },
+      ]);
+    } catch (submitError) {
+      setLeadError(submitError?.message || "We could not submit your request. Please try again.");
+    } finally {
+      setLeadSubmitting(false);
+    }
+  }, [leadSubmitting]);
+
+  const startAssistantRequest = useCallback(async (history, assistantMessageId, visitorId) => {
     const requestId = makeId();
     const controller = new AbortController();
 
@@ -596,6 +730,7 @@ export default function PropertyBouquetChatPanel({ onClose }) {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
         body: JSON.stringify({
+          visitorId,
           messages: history.slice(-12).map((message) => ({
             role: message.role,
             content: message.text,
@@ -611,7 +746,9 @@ export default function PropertyBouquetChatPanel({ onClose }) {
         } catch {
           // Keep the friendly fallback below for non-JSON errors.
         }
-        throw new Error(data.error || data.message || `The assistant request failed (${response.status}).`);
+        const requestError = new Error(data.error || data.message || `The assistant request failed (${response.status}).`);
+        requestError.code = data.code || "";
+        throw requestError;
       }
 
       await readSseStream(response, (delta) => {
@@ -627,15 +764,37 @@ export default function PropertyBouquetChatPanel({ onClose }) {
       });
 
       if (activeRequestIdRef.current === requestId) {
+        const responsesUsed = Number(response.headers.get("X-Assistant-Responses-Used") || 0);
+        const reachedFiveResponses = responsesUsed >= 5;
+
         setMessages((current) =>
-          current.map((message) =>
-            message.id === assistantMessageId
-              ? { ...message, streaming: false }
-              : message
-          )
+          current.map((message) => {
+            if (message.id !== assistantMessageId) return message;
+            const quotaMessage = leadSubmitted
+              ? "\n\nYou've now used all five AI responses for this visitor session. Since you have already shared your contact details, a Property Bouquet advisor can continue with you directly."
+              : "\n\nYou've reached the five-response limit. Share your name and mobile number below so a Property Bouquet advisor can continue helping you directly.";
+            return {
+              ...message,
+              text: streamedText + (reachedFiveResponses ? quotaMessage : ""),
+              streaming: false,
+            };
+          })
         );
         setLastFailedMessage("");
-        setAwaitingCallConfirmation(CALL_OFFER.test(streamedText));
+        setAwaitingCallConfirmation(!reachedFiveResponses && CALL_OFFER.test(streamedText));
+
+        // Show the advisor handoff immediately after the fifth AI answer.
+        // No sixth OpenAI request is needed to discover the limit.
+        if (reachedFiveResponses) {
+          setChatLimitReached(true);
+          if (!leadSubmitted) {
+            setLeadFormOpen(true);
+            setLeadName("");
+            setLeadPhone("");
+            setLeadSubmitted(false);
+            setLeadError("");
+          }
+        }
       }
     } catch (requestError) {
       if (activeRequestIdRef.current !== requestId) return;
@@ -646,6 +805,14 @@ export default function PropertyBouquetChatPanel({ onClose }) {
           return streamedText
             ? [...remaining, { id: assistantMessageId, role: "assistant", text: `${streamedText}\n\n(Response stopped.)` }]
             : remaining;
+        });
+      } else if (requestError?.code === "CHAT_LIMIT_REACHED") {
+        const contact = extractContactDetails(history);
+        setChatLimitReached(true);
+        setMessages(history);
+        openLeadCapture(history, {
+          ...contact,
+          message: "You've used your five assistant responses for this visit. Share your name and mobile number below, and a Property Bouquet advisor can continue the conversation with you directly. This handoff does not send another AI request.",
         });
       } else {
         setMessages((current) => current.filter((message) => message.id !== assistantMessageId));
@@ -660,34 +827,72 @@ export default function PropertyBouquetChatPanel({ onClose }) {
         setIsSending(false);
       }
     }
-  }, []);
+  }, [leadSubmitted, openLeadCapture]);
 
   const sendMessage = useCallback(
     (rawText) => {
       const cleanText = String(rawText || "").trim().slice(0, MAX_MESSAGE_LENGTH);
-      if (!cleanText || isSending) return;
+      if (!cleanText || isSending || leadSubmitting || (chatLimitReached && leadSubmitted)) return;
 
       const userMessage = { id: makeId(), role: "user", text: cleanText };
       const history = [...messages, userMessage];
-      setInput("");
-      setError("");
-      setLastFailedMessage("");
+      const contact = extractContactDetails(history);
+      const currentContact = extractContactDetails([userMessage]);
+      const previousAssistantText = [...messages].reverse().find((item) => item.role === "assistant")?.text || "";
+      const assistantAskedForDetails = /name.{0,45}(mobile|phone|number)|(?:mobile|phone|number).{0,45}name|share.{0,45}(details|contact)/i.test(previousAssistantText);
+
+      // If the advisor asked for contact details and the visitor replies with
+      // just their name (for example, "Rahul"), recognise that as the name.
+      if (!currentContact.name && assistantAskedForDetails && /^[\p{L}\p{M}][\p{L}\p{M} .'-]{1,49}$/u.test(cleanText)) {
+        currentContact.name = cleanText.trim();
+      }
 
       const isNegative = NEGATIVE_CALL_REQUEST.test(cleanText);
       const isDirectCall = !isNegative && DIRECT_CALL_REQUEST.test(cleanText);
       const isPositive = POSITIVE_CONFIRMATION.test(cleanText);
 
+      setInput("");
+      setError("");
+      setLastFailedMessage("");
+
+      // Only react to contact details newly supplied in this message. This
+      // prevents an earlier phone number in the chat history from hijacking
+      // every later property question. Combine the new field with a field the
+      // visitor may have shared in a separate message.
+      if (currentContact.phone || currentContact.name || chatLimitReached) {
+        const resolvedContact = {
+          name: currentContact.name || contact.name || leadName,
+          phone: currentContact.phone || contact.phone || leadPhone,
+        };
+        openLeadCapture(history, {
+          ...resolvedContact,
+          message: resolvedContact.name && resolvedContact.phone
+            ? "Thank you. I am sharing your contact details with the Property Bouquet advisory team."
+            : "Please complete your name and mobile number below so our team can contact you.",
+        });
+
+        // A visitor who supplies both their name and valid mobile number is
+        // submitted directly to the existing lead endpoint. This request
+        // does not call OpenAI.
+        if (resolvedContact.name && resolvedContact.phone) {
+          void saveLeadFromChat(resolvedContact);
+        }
+        return;
+      }
+
       if (isDirectCall || (awaitingCallConfirmation && isPositive)) {
-        openLeadCapture(history);
+        openLeadCapture(history, contact);
         return;
       }
 
       if (isNegative) setAwaitingCallConfirmation(false);
       const assistantMessage = { id: makeId(), role: "assistant", text: "", streaming: true };
       setMessages([...history, assistantMessage]);
-      startAssistantRequest(history, assistantMessage.id);
+      const visitorId = chatSessionId || getOrCreateChatSessionId();
+      if (!chatSessionId) setChatSessionId(visitorId);
+      startAssistantRequest(history, assistantMessage.id, visitorId);
     },
-    [awaitingCallConfirmation, isSending, messages, openLeadCapture, startAssistantRequest]
+    [awaitingCallConfirmation, chatLimitReached, chatSessionId, isSending, leadName, leadPhone, leadSubmitting, leadSubmitted, messages, openLeadCapture, saveLeadFromChat, startAssistantRequest]
   );
 
   const retryLastMessage = useCallback(() => {
@@ -700,61 +905,27 @@ export default function PropertyBouquetChatPanel({ onClose }) {
     const assistantMessage = { id: makeId(), role: "assistant", text: "", streaming: true };
     setMessages([...history, assistantMessage]);
     setError("");
-    startAssistantRequest(history, assistantMessage.id);
-  }, [isSending, lastFailedMessage, messages, startAssistantRequest]);
+    const visitorId = chatSessionId || getOrCreateChatSessionId();
+    if (!chatSessionId) setChatSessionId(visitorId);
+    startAssistantRequest(history, assistantMessage.id, visitorId);
+  }, [chatSessionId, isSending, lastFailedMessage, messages, startAssistantRequest]);
 
   const submitLead = useCallback(async (event) => {
     event.preventDefault();
     if (leadSubmitting || leadSubmitted) return;
 
-    const cleanName = leadName.trim();
-    const digits = leadPhone.replace(/\D/g, "");
-
-    if (!cleanName) {
-      setLeadError("Please enter your name.");
-      return;
-    }
-    if (!/^[6-9]\d{9}$/.test(digits)) {
-      setLeadError("Please enter a valid 10-digit Indian mobile number.");
-      return;
-    }
-
     setLeadSubmitting(true);
     setLeadError("");
 
     try {
-      const payload = {
-        name: cleanName,
-        phone: `+91${digits}`,
-        email: "",
-        property: "Property Bouquet Assistant - Expert Call",
-        source: "Website - Floating Contact Widget",
-        leadType: "Private Consultation",
-        pageUrl: window.location.href,
-        pagePath: window.location.pathname,
-        pageTitle: document.title || "Property Bouquet",
-      };
-
-      const response = await fetch(LEAD_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || data?.success !== true) {
-        throw new Error(data?.message || data?.error || "We could not submit your request. Please try again.");
-      }
-
+      const result = await postAssistantLead({ name: leadName, phone: leadPhone });
       setLeadSubmitted(true);
       setMessages((current) => [
         ...current,
         {
           id: makeId(),
           role: "assistant",
-          text: data?.duplicate
-            ? `Thank you, ${cleanName}. We have already received a recent enquiry from this number. The Property Bouquet team will follow up.`
-            : `Thank you, ${cleanName}. Your expert-call request has been received. The Property Bouquet team will contact you on +91 ******${digits.slice(-4)}.`,
+          text: leadReceiptMessage(result.data, result.cleanName, result.digits),
         },
       ]);
     } catch (submitError) {
@@ -778,10 +949,10 @@ export default function PropertyBouquetChatPanel({ onClose }) {
     setLeadName("");
     setLeadPhone("");
     setLeadSubmitting(false);
-    setLeadSubmitted(false);
+    if (!chatLimitReached) setLeadSubmitted(false);
     setLeadError("");
     inputRef.current?.focus();
-  }, []);
+  }, [chatLimitReached]);
 
   const showQuickActions = messages.length === 1 && messages[0].role === "assistant";
 
@@ -927,6 +1098,7 @@ export default function PropertyBouquetChatPanel({ onClose }) {
             submitting={leadSubmitting}
             submitted={leadSubmitted}
             error={leadError}
+            required={chatLimitReached}
             onDismiss={() => setLeadFormOpen(false)}
           />
         )}
@@ -963,10 +1135,10 @@ export default function PropertyBouquetChatPanel({ onClose }) {
             ref={inputRef}
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Ask about properties, locations…"
+            placeholder={chatLimitReached ? (leadSubmitted ? "Your request has been sent to our team" : "Share your details to continue with an advisor") : "Ask about properties, locations…"}
             maxLength={MAX_MESSAGE_LENGTH}
             autoComplete="off"
-            disabled={isSending || leadSubmitting}
+            disabled={isSending || leadSubmitting || (chatLimitReached && leadSubmitted)}
             className="h-[38px] min-w-0 flex-1 bg-transparent text-[11px] text-[#1C2921] outline-none placeholder:text-[#9AA097] disabled:opacity-60 sm:text-[12px]"
           />
           {isSending ? (
@@ -982,7 +1154,7 @@ export default function PropertyBouquetChatPanel({ onClose }) {
           ) : (
             <button
               type="submit"
-              disabled={!input.trim() || leadSubmitting}
+              disabled={!input.trim() || leadSubmitting || (chatLimitReached && leadSubmitted)}
               aria-label="Send message"
               title="Send message"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#244A35_0%,#0E281B_100%)] text-[#F6E8C4] shadow-[0_4px_12px_rgba(18,57,39,0.2)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-[#E5E6E1] disabled:text-[#A9AEA7] disabled:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A24D]"
@@ -994,7 +1166,7 @@ export default function PropertyBouquetChatPanel({ onClose }) {
 
         <div className="mt-2 flex items-center justify-center gap-1.5 text-[8px] text-[#92988F]">
           <ShieldCheck size={10} className="text-[#A78B50]" />
-          Answers based on published information · Confirm prices and availability with our team
+          Five AI responses per visitor session · Further assistance through our property advisory team
         </div>
       </footer>
     </section>
