@@ -142,9 +142,12 @@ export default function LeadsPage() {
   const handleLeadratAction = async (lead, action) => {
     const leadId = String(lead._id);
     const isPush = action === "push-to-leadrat";
+    const isUndo = action === "undo-rejection";
     const confirmation = isPush
       ? `Send ${lead.name || "this lead"} to Leadrat? This will submit the enquiry to your CRM.`
-      : `Reject ${lead.name || "this lead"}? It will remain on the website and will not be sent to Leadrat.`;
+      : isUndo
+        ? `Undo the rejection for ${lead.name || "this lead"}? The lead will return to Pending Review and will NOT be sent to Leadrat until you separately approve it.`
+        : `Reject ${lead.name || "this lead"}? It will remain on the website and will not be sent to Leadrat.`;
 
     if (!window.confirm(confirmation)) return;
 
@@ -167,7 +170,13 @@ export default function LeadsPage() {
       await fetchLeads({ silent: true });
       setNotice({
         type: "success",
-        message: data?.message || (isPush ? "Lead sent to Leadrat." : "Lead rejected."),
+        message:
+          data?.message ||
+          (isPush
+            ? "Lead sent to Leadrat."
+            : isUndo
+              ? "Rejection undone. Lead returned to Pending Review."
+              : "Lead rejected."),
       });
     } catch (err) {
       console.error("LEADRAT ACTION ERROR:", err);
@@ -713,6 +722,22 @@ export default function LeadsPage() {
                                   >
                                     <RefreshCw size={12} /> Retry push
                                   </button>
+                                )}
+
+                                {crmStatus === "Rejected" && (
+                                  <div className="space-y-1">
+                                    <button
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() => handleLeadratAction(lead, "undo-rejection")}
+                                      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#cbded2] bg-white px-2.5 text-[11px] font-semibold text-[#176640] transition hover:bg-[#f0f7f2] disabled:cursor-wait disabled:opacity-50"
+                                    >
+                                      <RotateCcw size={12} /> Undo rejection
+                                    </button>
+                                    <p className="text-[10px] leading-4 text-[#829087]">
+                                      Returns to Pending Review. Not sent automatically.
+                                    </p>
+                                  </div>
                                 )}
 
                                 {crmStatus === "Sending" && (
