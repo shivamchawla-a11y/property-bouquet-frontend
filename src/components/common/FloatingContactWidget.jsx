@@ -16,7 +16,6 @@ import dynamic from "next/dynamic";
 
 import {
 
-  MessageCircle,
 
   Building2,
 
@@ -42,7 +41,6 @@ import {
 
   LoaderCircle,
 
-  Sparkles,
 
 } from "lucide-react";
 
@@ -198,6 +196,59 @@ function WhatsAppIcon({ size = 20 }) {
 
   );
 
+}
+
+// Custom assistant mark designed to stay crisp at the small launcher size.
+function AssistantRobotIcon({ size = 34 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0 overflow-visible"
+    >
+      <path
+        d="M24 7.2v4.1"
+        stroke="#F4E6C5"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <circle cx="24" cy="5.6" r="2.7" fill="#D9B875" />
+      <rect
+        x="10.5"
+        y="12.2"
+        width="27"
+        height="24"
+        rx="8"
+        fill="#183426"
+        stroke="#F4E6C5"
+        strokeWidth="2.1"
+      />
+      <path
+        d="M10.4 21.2H8.7a2.5 2.5 0 0 0-2.5 2.5v2.9a2.5 2.5 0 0 0 2.5 2.5h1.7M37.6 21.2h1.7a2.5 2.5 0 0 1 2.5 2.5v2.9a2.5 2.5 0 0 1-2.5 2.5h-1.7"
+        stroke="#D9B875"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+      />
+      <circle cx="18.7" cy="22.8" r="2.05" fill="#E8CB8B" />
+      <circle cx="29.3" cy="22.8" r="2.05" fill="#E8CB8B" />
+      <path
+        d="M18.2 29.2c1.5 1.8 3.4 2.7 5.8 2.7s4.3-.9 5.8-2.7"
+        stroke="#F4E6C5"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M16.3 39.1h15.4"
+        stroke="#D9B875"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        opacity=".9"
+      />
+    </svg>
+  );
 }
 
 // ============================================================
@@ -743,7 +794,7 @@ export default function FloatingContactWidget() {
                     {ACTIONS.map((action, index) => {
 
                       const Icon = action.icon;
-
+                      const isAssistantAction = action.id === "assistant";
                       const labelHoverColor =
 
                         action.color === "whatsapp"
@@ -818,41 +869,16 @@ export default function FloatingContactWidget() {
 
                           }
 
-                          className="
-
-                            group
-
-                            flex
-
-                            w-full
-
-                            items-center
-
-                            gap-3
-
-                            rounded-[15px]
-
-                            border
-
-                            border-white/70
-
-                            bg-white/95
-
-                            px-3.5
-
-                            py-3
-
-                            text-left
-
-                            shadow-[0_5px_24px_rgba(15,30,22,0.09)]
-
-                            backdrop-blur-xl
-
-                            transition-colors
-
-                            duration-200
-
-                          "
+                          className={`
+                            group relative flex w-full items-center gap-3 rounded-[15px]
+                            border px-3.5 py-3 text-left backdrop-blur-xl
+                            transition-all duration-300
+                            ${
+                              isAssistantAction
+                                ? "border-[#d8ba78]/75 bg-[linear-gradient(110deg,#fffdf7_0%,#fbf7ed_54%,#eef5ef_100%)] shadow-[0_7px_26px_rgba(27,58,43,0.13),0_0_0_1px_rgba(216,186,120,0.18)] ring-1 ring-[#d8ba78]/25 hover:border-[#bd984f] hover:shadow-[0_9px_30px_rgba(27,58,43,0.17),0_0_22px_rgba(201,162,77,0.18)]"
+                                : "border-white/70 bg-white/95 shadow-[0_5px_24px_rgba(15,30,22,0.09)] hover:border-[#d9b875]/50 hover:shadow-[0_7px_26px_rgba(15,30,22,0.13)]"
+                            }
+                          `}
 
                         >
 
@@ -888,7 +914,9 @@ export default function FloatingContactWidget() {
 
                                     ? "border border-[#d9b875]/25 bg-[#c9a96e]/15 text-[#8e6827]"
 
-                                    : "border border-[#173b2b]/10 bg-[#173b2b]/[0.06] text-[#173b2b]"
+                                    : isAssistantAction
+                                      ? "border border-[#c9a24d]/35 bg-[#173b2b] text-[#f3dfae] shadow-[0_3px_12px_rgba(23,59,43,0.18)]"
+                                      : "border border-[#173b2b]/10 bg-[#173b2b]/[0.06] text-[#173b2b]"
 
                               }
 
@@ -897,79 +925,44 @@ export default function FloatingContactWidget() {
                           >
 
                             {action.icon === "whatsapp" ? (
-
                               <WhatsAppIcon size={21} />
-
+                            ) : isAssistantAction ? (
+                              <AssistantRobotIcon size={27} />
                             ) : (
-
-                              <Icon
-
-                                size={20}
-
-                                strokeWidth={1.9}
-
-                              />
-
+                              <Icon size={20} strokeWidth={1.9} />
                             )}
 
                           </span>
 
                           <span className="min-w-0 flex-1">
-
                             <span
-
-                              className={`
-
-                                block
-
-                                text-[12px]
-
-                                font-semibold
-
-                                tracking-[-0.1px]
-
-                                text-[#1c2921]
-
-                                transition-colors
-
-                                duration-300
-
-                                ${labelHoverColor}
-
-                              `}
-
+                              className={`block text-[12px] font-semibold tracking-[-0.1px] ${
+                                isAssistantAction ? "text-[#123c2b]" : "text-[#1c2921]"
+                              } transition-colors duration-300 ${labelHoverColor}`}
                             >
-
                               {action.label}
-
                             </span>
-
+                            {isAssistantAction && (
+                              <span className="mt-0.5 block text-[8px] font-medium tracking-[0.55px] text-[#6b806f]">
+                                SMART PROPERTY GUIDANCE
+                              </span>
+                            )}
                           </span>
 
+                          {isAssistantAction && (
+                            <span className="shrink-0 rounded-full border border-[#c9a24d]/35 bg-[#f4ead0] px-2 py-1 text-[8px] font-bold tracking-[0.7px] text-[#80612a]">
+                              AI
+                            </span>
+                          )}
                           <ArrowUpRight
-
                             size={15}
-
-                            className={`
-
-                              shrink-0
-
-                              transition-colors
-
-                              duration-200
-
-                              ${
-
-                                action.color === "whatsapp"
-
-                                  ? "text-[#25D366]"
-
+                            className={`shrink-0 transition-colors duration-200 ${
+                              action.color === "whatsapp"
+                                ? "text-[#25D366]"
+                                : isAssistantAction
+                                  ? "text-[#9b783d] group-hover:text-[#143f2d]"
                                   : "text-[#a0a198] group-hover:text-[#a47b35]"
-
-                              }
-
-                            `}
-
+                            }`}
                           />
 
                         </motion.button>
@@ -1739,343 +1732,193 @@ export default function FloatingContactWidget() {
             ================================================ */}
 
         <motion.button
-
           type="button"
-
           onClick={toggleWidget}
-
           disabled={submitting}
-
           aria-label={
-
             isOpen
-
               ? "Close contact menu"
-
-              : "Open contact menu"
-
+              : "Open AI assistant and contact options"
           }
-
           aria-expanded={isOpen}
-
-          whileHover={
-
-            reduceMotion
-
-              ? undefined
-
-              : { scale: 1.055 }
-
-          }
-
-          whileTap={
-
-            reduceMotion
-
-              ? undefined
-
-              : { scale: 0.94 }
-
-          }
-
+          whileHover={reduceMotion ? undefined : { scale: 1.045 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.96 }}
           className="
-
             group
-
             relative
-
             flex
-
-            h-[58px]
-
-            w-[58px]
-
+            h-[56px]
             shrink-0
-
             items-center
-
             justify-center
-
-            rounded-full
-
-            border-[2px]
-
-            border-[#d9b875]
-
-            bg-[#111b15]
-
-            text-[#e4c581]
-
-            shadow-[0_8px_30px_rgba(0,0,0,0.23)]
-
-            transition-colors
-
-            duration-300
-
-            hover:bg-[#1b3023]
-
+            gap-1.5
+            border-0
+            bg-transparent
+            p-0
+            outline-none
             disabled:opacity-60
-
           "
-
         >
-
-          <motion.span
-
-            aria-hidden="true"
-
-            className="
-
-              absolute
-
-              inset-[-5px]
-
-              rounded-full
-
-              border
-
-              border-[#d9b875]/30
-
-            "
-
-            animate={
-
-              isOpen || reduceMotion
-
-                ? {
-
-                    opacity: 0,
-
-                    scale: 1,
-
-                  }
-
-                : {
-
-                    opacity: [0.2, 0.65, 0.2],
-
-                    scale: [1, 1.12, 1],
-
-                  }
-
-            }
-
-            transition={
-
-              reduceMotion
-
-                ? { duration: 0 }
-
-                : {
-
-                    duration: 2.6,
-
-                    repeat: Infinity,
-
-                    ease: "easeInOut",
-
-                  }
-
-            }
-
-          />
-
-          <AnimatePresence
-
-            mode="wait"
-
-            initial={false}
-
-          >
-
-            {isOpen ? (
-
+          {/* Compact assistant label shown only while the widget is closed. */}
+          {!isOpen && (
+            <motion.span
+              initial={reduceMotion ? false : { opacity: 0, x: 7, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={reduceMotion ? undefined : { opacity: 0, x: 5, scale: 0.98 }}
+              transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+              className="
+                relative
+                z-[1]
+                flex
+                h-9
+                items-center
+                gap-1.5
+                rounded-full
+                border
+                border-[#173b2b]/10
+                bg-white/95
+                px-3
+                text-[11px]
+                font-semibold
+                tracking-[-0.2px]
+                text-[#1c2921]
+                shadow-[0_4px_18px_rgba(15,30,22,0.10)]
+                backdrop-blur-xl
+                transition-all
+                duration-300
+                group-hover:border-[#d9b875]/65
+                group-hover:shadow-[0_5px_22px_rgba(15,30,22,0.14)]
+              "
+            >
               <motion.span
-
-                key="close"
-
-                initial={
-
-                  reduceMotion
-
-                    ? { opacity: 0 }
-
-                    : {
-
-                        opacity: 0,
-
-                        rotate: -100,
-
-                        scale: 0.45,
-
-                      }
-
-                }
-
-                animate={{
-
-                  opacity: 1,
-
-                  rotate: 0,
-
-                  scale: 1,
-
-                }}
-
-                exit={
-
-                  reduceMotion
-
-                    ? { opacity: 0 }
-
-                    : {
-
-                        opacity: 0,
-
-                        rotate: 100,
-
-                        scale: 0.45,
-
-                      }
-
-                }
-
-                transition={
-
-                  reduceMotion
-
-                    ? { duration: 0 }
-
-                    : {
-
-                        type: "spring",
-
-                        stiffness: 360,
-
-                        damping: 23,
-
-                        mass: 0.65,
-
-                      }
-
-                }
-
-                className="flex items-center justify-center"
-
-              >
-
-                <X size={25} strokeWidth={1.8} />
-
-              </motion.span>
-
-            ) : (
-
-              <motion.span
-
-                key="open"
-
-                initial={
-
-                  reduceMotion
-
-                    ? { opacity: 0 }
-
-                    : {
-
-                        opacity: 0,
-
-                        rotate: -100,
-
-                        scale: 0.45,
-
-                      }
-
-                }
-
-                animate={{
-
-                  opacity: 1,
-
-                  rotate: 0,
-
-                  scale: 1,
-
-                }}
-
-                exit={
-
-                  reduceMotion
-
-                    ? { opacity: 0 }
-
-                    : {
-
-                        opacity: 0,
-
-                        rotate: 100,
-
-                        scale: 0.45,
-
-                      }
-
-                }
-
-                transition={
-
-                  reduceMotion
-
-                    ? { duration: 0 }
-
-                    : {
-
-                        type: "spring",
-
-                        stiffness: 360,
-
-                        damping: 23,
-
-                        mass: 0.65,
-
-                      }
-
-                }
-
-                className="flex items-center justify-center"
-
-              >
-
-                <MessageCircle
-
-                  size={25}
-
-                  strokeWidth={1.7}
-
+                aria-hidden="true"
+                className="h-[6px] w-[6px] rounded-full bg-[#10b981] shadow-[0_0_0_3px_rgba(16,185,129,0.10)]"
+                animate={reduceMotion ? undefined : { opacity: [1, 0.72, 1], scale: [1, 0.88, 1] }}
+                transition={reduceMotion ? undefined : { duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              />
+              Ask Anything
+            </motion.span>
+          )}
+
+          {/* Layered ambient glow and fine pulse ring around the launcher. */}
+          <span className="relative flex h-[56px] w-[56px] shrink-0 items-center justify-center">
+            {!isOpen && (
+              <>
+                {/* Warm champagne halo with a soft emerald core. */}
+                <motion.span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-[-24px] rounded-full bg-[radial-gradient(circle,rgba(217,184,117,0.38)_0%,rgba(217,184,117,0.22)_30%,rgba(16,80,54,0.12)_52%,rgba(217,184,117,0)_74%)] blur-[10px]"
+                  animate={
+                    reduceMotion
+                      ? { opacity: 0.6, scale: 1 }
+                      : { opacity: [0.38, 0.92, 0.38], scale: [0.82, 1.16, 0.82] }
+                  }
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
+                  }
                 />
-
-                <Sparkles
-
-                  size={11}
-
-                  className="
-
-                    absolute
-
-                    right-[15px]
-
-                    top-[13px]
-
-                    text-[#fff1bd]
-
-                  "
-
+                <motion.span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-[-8px] rounded-full border border-[#e8cc8f]/75 shadow-[0_0_14px_rgba(217,184,117,0.28)]"
+                  animate={
+                    reduceMotion
+                      ? { opacity: 0.48, scale: 1 }
+                      : { opacity: [0.62, 0], scale: [0.92, 1.28] }
+                  }
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { duration: 2.35, repeat: Infinity, repeatDelay: 0.12, ease: "easeOut" }
+                  }
                 />
-
-              </motion.span>
-
+                <motion.span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-[-8px] rounded-full border border-[#6ca78a]/55"
+                  animate={
+                    reduceMotion
+                      ? { opacity: 0.28, scale: 1 }
+                      : { opacity: [0.48, 0], scale: [0.92, 1.22] }
+                  }
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { duration: 2.35, delay: 1.15, repeat: Infinity, repeatDelay: 0.12, ease: "easeOut" }
+                  }
+                />
+              </>
             )}
 
-          </AnimatePresence>
+            <motion.span
+              animate={
+                !isOpen && !reduceMotion
+                  ? {
+                      scale: [1, 1.025, 1],
+                      boxShadow: [
+                        "0 7px 25px rgba(0,0,0,0.24), 0 0 16px rgba(201,162,77,0.22), 0 0 0 1px rgba(217,184,117,0.10), inset 0 1px 0 rgba(255,255,255,0.12)",
+                        "0 9px 30px rgba(0,0,0,0.25), 0 0 30px rgba(217,184,117,0.42), 0 0 12px rgba(36,112,75,0.24), inset 0 1px 0 rgba(255,255,255,0.18)",
+                        "0 7px 25px rgba(0,0,0,0.24), 0 0 16px rgba(201,162,77,0.22), 0 0 0 1px rgba(217,184,117,0.10), inset 0 1px 0 rgba(255,255,255,0.12)",
+                      ],
+                    }
+                  : { scale: 1 }
+              }
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 2.8, repeat: isOpen ? 0 : Infinity, ease: "easeInOut" }
+              }
+              className="
+                relative z-[1] flex h-[56px] w-[56px] items-center justify-center
+                rounded-full border-[2px] border-[#e0c27d]
+                bg-[linear-gradient(145deg,#244a35_0%,#14291d_58%,#09140f_100%)]
+                text-[#f4e6c5] transition-colors duration-300
+                group-hover:border-[#fff0c2]
+              "
+            >
+              {!isOpen && (
+                <>
+                  {/* Small, crisp availability indicator attached to the icon. */}
+                  <span
+                    aria-label="Online"
+                    className="
+                      absolute
+                      -right-[2px]
+                      -top-[2px]
+                      z-20
+                      h-[14px]
+                      w-[14px]
+                      rounded-full
+                      border-[2.5px]
+                      border-[#102017]
+                      bg-[#10c987]
+                      shadow-[0_0_0_2px_rgba(16,201,135,0.16),0_0_9px_rgba(16,201,135,0.55)]
+                    "
+                  />
+                  <AssistantRobotIcon size={35} />
+                </>
+              )}
 
+              <AnimatePresence mode="wait" initial={false}>
+                {isOpen && (
+                  <motion.span
+                    key="close"
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, rotate: -100, scale: 0.45 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, rotate: 100, scale: 0.45 }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 360, damping: 23, mass: 0.65 }
+                    }
+                    className="relative z-[1] flex items-center justify-center"
+                  >
+                    <X size={24} strokeWidth={1.9} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.span>
+          </span>
         </motion.button>
 
       </div>
